@@ -1,4 +1,4 @@
-import reforestationImage from '../../shared/assets/proyecto-reforestacion.png'
+import reforestationImage from '../../shared/assets/proyecto-reforestacion.webp'
 import type { Project } from '../../shared/types/project'
 
 // A fixed presentation snapshot: demonstrations do not expire as the clock changes.
@@ -7,8 +7,8 @@ export const DEMO_NOTICE = 'Datos de demostración: campañas, organizaciones, m
 
 const illustrativeImage = {
   image: reforestationImage,
-  imageAlt: 'Personas plantando árboles en una jornada de reforestación',
-  imageCaption: 'Fotografía ilustrativa de la referencia de Brotar; no documenta esta campaña ficticia.',
+  imageAlt: 'Imagen ilustrativa de personas plantando árboles en una jornada de reforestación',
+  imageCaption: 'Imagen ilustrativa generada con IA, incluida en la referencia de Brotar; no documenta esta campaña ficticia.',
   isDemo: true as const
 }
 

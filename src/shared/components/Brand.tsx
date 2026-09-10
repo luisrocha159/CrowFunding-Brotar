@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logo from '../assets/brotar-logo.png'
+import logo from '../assets/brotar-logo.webp'
 import styles from '../layout/layout.module.css'
 
 export function Brand({ inverse = false }: { inverse?: boolean }) {

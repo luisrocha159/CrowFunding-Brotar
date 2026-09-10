@@ -9,7 +9,7 @@
 .desktopNav a:hover, .login:hover { color: var(--color-action); }
 .search { display: flex; align-items: center; width: 180px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-page); }
 .search input { min-width: 0; width: 100%; padding: 11px 8px; background: transparent; border: none; font-size: 12px; }
-.search button { min-height: 44px; min-width: 32px; border: none; background: transparent; cursor: pointer; color: var(--color-brand); }
+.search button { min-height: 44px; min-width: 44px; border: none; background: transparent; cursor: pointer; color: var(--color-brand); }
 .mobileMenu { display: none; }
 .footer { background: var(--color-brand); color: #c5dacf; padding: 56px max(24px, calc((100vw - 1280px) / 2)) 24px; font-size: 13px; }
 .footerGrid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px; }

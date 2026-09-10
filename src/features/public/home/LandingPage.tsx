@@ -1,7 +1,7 @@
 import { Button, ButtonLink } from '../../../shared/components/Button'
 import { EmptyState, ErrorState, ProjectCardSkeleton } from '../../../shared/components/Feedback'
 import { ProjectCard } from '../../../shared/components/ProjectCard'
-import hero from '../../../shared/assets/proyecto-reforestacion.png'
+import hero from '../../../shared/assets/proyecto-reforestacion.webp'
 import { DemoNotice, DemoStates } from '../PublicDemo'
 import { useProjectResource } from '../useProjectResource'
 import styles from '../public.module.css'
@@ -10,7 +10,7 @@ export function LandingPage() {
   const resource = useProjectResource({ featured: true })
   return <>
     <section className={styles.hero}>
-      <img className={styles.heroImage} src={hero} alt="" width={768} height={427} fetchPriority="high" />
+      <img className={styles.heroImage} src={hero} alt="" width={1344} height={768} fetchPriority="high" />
       <div className={styles.heroShade} />
       <span className={styles.heroTag}>Financiamiento colectivo con propósito</span>
       <h1>Impulsa el cambio sostenible en Bolivia</h1>

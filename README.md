@@ -2,17 +2,17 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-## Estado actual: fase 5
+## Estado actual: fase 6 · Revisión de entrega
 
 Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las seis pantallas públicas presentan contenido e interacciones con datos simulados. Las tres pantallas de acceso (inicio de sesión, registro y recuperación) ya incluyen formularios, validación local y respuestas simuladas.
 
 Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
 
-La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. La fase 5 añade acceso simulado. Hay 46 pruebas automáticas de datos, validación, navegación y servicios simulados. Ver `docs/fase-4.md` y `docs/fase-5.md` para alcance, pruebas de navegador y limitaciones.
+La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. La fase 5 añade acceso simulado. La fase 6 contrasta las nueve pantallas y las 39 variantes mínimas con el PDF, optimiza los recursos locales y comprueba la entrega. Hay 49 pruebas automáticas de datos, validación, navegación, servicios simulados y recursos. Ver [matriz de cumplimiento](docs/cumplimiento-frontend-publico.md) para cada requisito y cómo probarlo; las notas de fases 4 y 5 conservan su contexto histórico.
 
 Incluido: destacados, búsqueda por texto, filtros combinables con chips removibles, ordenamiento, dos páginas de tres campañas, detalle correcto por slug, actualizaciones y estados de campaña. Los filtros se conservan en la URL al recargar; el encabezado conduce a los resultados de búsqueda. El CTA de apoyo de una campaña activa lleva al acceso; las cerradas no admiten aportes.
 
-Pendiente: portadas específicas para cada campaña, optimización de imágenes y revisión final de entrega. Las campañas comparten temporalmente la fotografía ilustrativa local. El texto legal definitivo debe proporcionarlo el equipo responsable; solo se presenta una aceptación de demostración. No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
+Pendiente para compartir: definir y configurar el repositorio remoto del equipo. Pendientes de contenido: portadas específicas para cada campaña y texto legal definitivo. Las campañas comparten temporalmente la imagen ilustrativa local y solo se presenta una aceptación de demostración. El logo y la imagen ya tienen versiones WebP optimizadas, con originales conservados. No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
 
 ## Probar el recorrido público
 
@@ -151,7 +151,7 @@ El documento técnico define React + TypeScript + Bun y arquitectura por funcion
 
 ## Repositorio y despliegue
 
-Este repositorio se inicializa localmente; todavía no tiene un remoto de GitHub ni está publicado. Antes de compartirlo, añadir el remoto del equipo y subir los commits.
+Este repositorio está inicializado localmente; todavía no tiene un remoto de GitHub ni está publicado. Antes de compartirlo, definir el destino del equipo, añadir el remoto y subir los commits. No se debe presentar la URL `127.0.0.1` como un enlace accesible desde otros equipos.
 
 Para alojarlo como SPA, el hosting debe redirigir las rutas de frontend a `index.html` conservando los archivos estáticos. Así funcionará también recargar una ruta profunda. Vite ya resuelve esto durante desarrollo y vista previa.
 
