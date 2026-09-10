@@ -2,13 +2,29 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-## Estado actual: fase 1
+## Estado actual: fase 2
 
 Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las nueve rutas muestran contenido **provisional** para comprobar la navegación. Todavía no representan las pantallas terminadas del Figma.
 
-Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First, estilos base responsive y scripts de desarrollo y compilación.
+Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
 
-Pendiente: logo y recursos oficiales, diseño definitivo, componentes de campaña, al menos seis campañas mock, búsqueda y filtros funcionales, detalle de campaña, formularios simulados y variantes de carga/vacío/error/éxito. La URL de detalle acepta un slug, pero la validación de campaña existente se incorporará con los mocks.
+Pendiente: composición definitiva de las páginas, al menos seis campañas mock, búsqueda y filtros funcionales, detalle de campaña y formularios de acceso simulados. Ya existen los componentes de carga/vacío/error/éxito; falta integrarlos con cada flujo. La URL de detalle acepta un slug, pero la validación de campaña existente se incorporará con los mocks. El buscador del encabezado transporta el texto en `?q=`, pero todavía no filtra resultados.
+
+## Componentes y vista de desarrollo
+
+Con `bun run dev`, abrir http://127.0.0.1:5173/?vista=componentes para probar la base visual. Es una vista interna, no una pantalla adicional del alcance: su código se excluye de la compilación de producción. Las campañas mostradas allí son ejemplos de presentación, no el conjunto de datos de la fase 3.
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `Brand` | Logo original y nombre Brotar, con variante para fondo oscuro |
+| `PublicLayout` | Encabezado, navegación responsive, búsqueda por URL y pie |
+| `Button` / `ButtonLink` | Acciones y navegación; variantes, deshabilitado y carga |
+| `FormField` | Input, select o textarea con etiqueta, ayuda y error asociado |
+| `ProjectCard` | Presentación de campaña y estados activa/finalizada/cancelada |
+| `Badge` / `ProgressBar` | Etiquetas semánticas y progreso accesible |
+| `Message`, `EmptyState`, `ErrorState`, `ProjectCardSkeleton` | Información, éxito, vacío, error y carga |
+
+Usar `ButtonLink` para cambiar de página y `Button` para acciones. La lógica de negocio y la validación corresponden a cada feature; `FormField` presenta el resultado. Las vistas consumen los tokens de `src/shared/styles/tokens.css` y no deben duplicar colores arbitrarios. Ver `docs/fase-2.md` para alcance y comprobaciones.
 
 ## Requisitos
 
