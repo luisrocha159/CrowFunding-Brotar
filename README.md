@@ -2,17 +2,17 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-## Estado actual: fase 4
+## Estado actual: fase 5
 
-Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las seis pantallas públicas ya presentan contenido e interacciones con datos simulados. Las tres pantallas de acceso (inicio de sesión, registro y recuperación) todavía son provisionales y corresponden a la siguiente fase.
+Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las seis pantallas públicas presentan contenido e interacciones con datos simulados. Las tres pantallas de acceso (inicio de sesión, registro y recuperación) ya incluyen formularios, validación local y respuestas simuladas.
 
 Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
 
-La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. Hay 29 pruebas automáticas de datos y parámetros URL. Ver `docs/fase-4.md` para el alcance, las pruebas de navegador y las limitaciones visuales.
+La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. La fase 5 añade acceso simulado. Hay 46 pruebas automáticas de datos, validación, navegación y servicios simulados. Ver `docs/fase-4.md` y `docs/fase-5.md` para alcance, pruebas de navegador y limitaciones.
 
 Incluido: destacados, búsqueda por texto, filtros combinables con chips removibles, ordenamiento, dos páginas de tres campañas, detalle correcto por slug, actualizaciones y estados de campaña. Los filtros se conservan en la URL al recargar; el encabezado conduce a los resultados de búsqueda. El CTA de apoyo de una campaña activa lleva al acceso; las cerradas no admiten aportes.
 
-Pendiente: formularios de acceso simulado, portadas específicas para cada campaña y revisión final de entrega. Las campañas comparten temporalmente la fotografía ilustrativa local. No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
+Pendiente: portadas específicas para cada campaña, optimización de imágenes y revisión final de entrega. Las campañas comparten temporalmente la fotografía ilustrativa local. El texto legal definitivo debe proporcionarlo el equipo responsable; solo se presenta una aceptación de demostración. No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
 
 ## Probar el recorrido público
 
@@ -20,9 +20,21 @@ Pendiente: formularios de acceso simulado, portadas específicas para cada campa
 2. Cambiar de página o entrar en Búsqueda y filtros. Buscar `POTOSI` para comprobar que se ignoran mayúsculas y tildes.
 3. Combinar categoría, ubicación y modalidad; quitar filtros individualmente o limpiar todos.
 4. Abrir una tarjeta y consultar historia, impacto, creador y actualizaciones.
-5. En una campaña activa, Apoyar lleva al acceso provisional. Las campañas de Tarija y Beni demuestran cierre y cancelación.
+5. En una campaña activa, Apoyar lleva al acceso simulado y permite volver al proyecto tras la confirmación. Las campañas de Tarija y Beni demuestran cierre y cancelación.
 
 Al final de portada, catálogo, búsqueda y detalle, desplegar **Probar estados de la muestra**: normal, carga lenta, vacío o error. También se puede añadir `?estado=carga`, `?estado=vacio` o `?estado=error`. La carga normal dura 350 ms y la lenta 1,8 s. El reintento elimina el error de muestra y recupera los datos. Para repetir la carga lenta, volver a normal y seleccionar carga lenta nuevamente.
+
+## Probar el acceso simulado
+
+1. Abrir `/iniciar-sesion`, `/registro` o `/recuperar-contrasena`.
+2. Enviar el formulario vacío para revisar campos obligatorios y foco en el primer error.
+3. Desplegar **Probar esta pantalla** y pulsar **Usar datos de prueba**. En registro, aceptar las condiciones manualmente: el botón de prueba no las marca.
+4. Elegir la respuesta simulada y enviar. Se muestran carga y bloqueo temporal, luego éxito o error. Cualquier formulario válido usa el resultado elegido: no se consulta ninguna cuenta ni se verifica una contraseña real.
+5. En recuperación, elegir error y después **Reintentar solicitud**: la segunda solicitud muestra éxito simulado. No se envía correo.
+
+Datos ficticios incluidos: `demo@example.com` y `Brotar2026!`. La regla de contraseña de registro (8 caracteres, mayúscula y número) es provisional para esta muestra, no una política definitiva. Las contraseñas se limpian tras una respuesta. Los formularios solo mantienen estado en memoria mientras la vista está montada; no escriben credenciales en almacenamiento, URL ni solicitudes de red.
+
+El parámetro `continuar` conserva únicamente destinos públicos permitidos; registro e inicio de sesión también conservan el perfil de muestra. No abre paneles privados ni inicia pagos.
 
 ## Componentes y vista de desarrollo
 
@@ -116,11 +128,12 @@ src/
     types/
   mocks/
     projects/
+    access/
 ```
 
 Cada feature conserva sus componentes, estilos y lógica propios. Solo lo utilizado por varias funcionalidades debe ir en `shared/`. Los datos mock están separados de las vistas para sustituirlos por una API posteriormente. Las consultas de búsqueda pertenecen a `features/public/explore-projects/projectQuery.ts`; los tipos y el cálculo compartido de progreso están en `shared/types` y `shared/utils`.
 
-`PhasePlaceholder` permanece únicamente en las tres pantallas de acceso que se implementarán en la siguiente fase. La portada ya no muestra el índice provisional de rutas.
+Las nueve pantallas del alcance ya tienen implementación; no quedan pantallas provisionales. Los formularios comparten presentación, validación y control de solicitudes dentro de `features/access`; el servicio simulado está en `mocks/access` y no recibe datos personales.
 
 ## Alcance de la etapa
 
