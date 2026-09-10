@@ -2,17 +2,19 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-## Estado actual: fase 2
+## Estado actual: fase 3
 
 Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las nueve rutas muestran contenido **provisional** para comprobar la navegación. Todavía no representan las pantallas terminadas del Figma.
 
 Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
 
-Pendiente: composición definitiva de las páginas, al menos seis campañas mock, búsqueda y filtros funcionales, detalle de campaña y formularios de acceso simulados. Ya existen los componentes de carga/vacío/error/éxito; falta integrarlos con cada flujo. La URL de detalle acepta un slug, pero la validación de campaña existente se incorporará con los mocks. El buscador del encabezado transporta el texto en `?q=`, pero todavía no filtra resultados.
+La fase 3 añade seis campañas centralizadas, tipos públicos, cálculo de avance, búsqueda/filtros/ordenamiento/paginación locales y un servicio simulado con carga, vacío, error y cancelación de solicitudes. Incluye 23 pruebas automáticas. Ver `docs/fase-3.md` y `src/mocks/projects/README.md`.
+
+Pendiente: composición definitiva de las páginas y conexión de esta lógica a sus controles, detalle público y formularios de acceso simulados. El servicio ya resuelve slugs válidos y devuelve `null` si no existe la campaña, pero la página de detalle sigue siendo provisional. El buscador del encabezado transporta el texto en `?q=`, pero todavía no muestra resultados filtrados en la interfaz.
 
 ## Componentes y vista de desarrollo
 
-Con `bun run dev`, abrir http://127.0.0.1:5173/?vista=componentes para probar la base visual. Es una vista interna, no una pantalla adicional del alcance: su código se excluye de la compilación de producción. Las campañas mostradas allí son ejemplos de presentación, no el conjunto de datos de la fase 3.
+Con `bun run dev`, abrir http://127.0.0.1:5173/?vista=componentes para probar la base visual. Es una vista interna, no una pantalla adicional del alcance: su código se excluye de la compilación de producción. Sus tarjetas ya consumen las campañas centralizadas de la fase 3 y muestran un aviso explícito de demostración.
 
 | Componente | Responsabilidad |
 | --- | --- |
@@ -52,11 +54,12 @@ Abrir http://127.0.0.1:5173. El servidor usa un puerto fijo; si está ocupado, c
 ```sh
 bun run typecheck
 bun run lint
+bun run test
 bun run build
 bun run preview
 ```
 
-`bun run check` ejecuta lint y build (incluido TypeScript). El resultado de build queda en `dist/`. La vista previa usa http://127.0.0.1:4173.
+`bun run check` ejecuta lint, TypeScript (aplicación y pruebas), los tests con Bun y build. El resultado de build queda en `dist/`. La vista previa usa http://127.0.0.1:4173.
 
 Se fija TypeScript 5.9.3 para mantener compatibilidad con las herramientas de lint seleccionadas; no actualizar las dependencias automáticamente sin ejecutar las comprobaciones.
 
@@ -75,7 +78,7 @@ Se fija TypeScript 5.9.3 para mantener compatibilidad con las herramientas de li
 | Recuperar contraseña | `/recuperar-contrasena` |
 | Dirección inexistente | Cualquier ruta no definida muestra 404 |
 
-Para comprobar el parámetro de detalle en esta fase: `/proyectos/proyecto-demo`.
+Para comprobar el parámetro de detalle: `/proyectos/reforestacion-chiquitana`. La ruta todavía presenta el marcador provisional; su composición final queda para una fase posterior.
 
 ## Organización
 
@@ -103,7 +106,7 @@ src/
     projects/
 ```
 
-Cada feature conserva sus componentes, estilos y lógica propios. Solo lo utilizado por varias funcionalidades debe ir en `shared/`. Los datos mock estarán separados de las vistas para sustituirlos por una API posteriormente.
+Cada feature conserva sus componentes, estilos y lógica propios. Solo lo utilizado por varias funcionalidades debe ir en `shared/`. Los datos mock están separados de las vistas para sustituirlos por una API posteriormente. Las consultas de búsqueda pertenecen a `features/public/explore-projects/projectQuery.ts`; los tipos y el cálculo compartido de progreso están en `shared/types` y `shared/utils`.
 
 `PhasePlaceholder` y los enlaces de comprobación de la página inicial son temporales: se reemplazarán a medida que se implementen las pantallas reales.
 

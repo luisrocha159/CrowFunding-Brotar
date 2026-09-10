@@ -4,18 +4,11 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { Badge } from '../../shared/components/Badge'
 import { FormField } from '../../shared/components/FormField'
 import { EmptyState, ErrorState, Message, ProjectCardSkeleton } from '../../shared/components/Feedback'
-import { ProjectCard, type ProjectCardData } from '../../shared/components/ProjectCard'
-import photo from '../../shared/assets/proyecto-reforestacion.png'
+import { ProjectCard } from '../../shared/components/ProjectCard'
+import { projects, DEMO_NOTICE } from '../../mocks/projects/projects'
 import styles from './preview.module.css'
 
-// A single presentation fixture; the campaign dataset belongs to phase 3.
-const sample: ProjectCardData = {
-  slug: 'proyecto-demo', name: 'Reforestación Chiquitana',
-  summary: 'Recuperación del bosque nativo junto a las comunidades locales.',
-  category: 'Medio ambiente', creator: 'Fundación Raíces Vivas', location: 'Santa Cruz',
-  image: photo, imageAlt: 'Personas plantando árboles en una jornada de reforestación',
-  goal: 85000, raised: 61200, verified: true, status: 'active', daysRemaining: 18
-}
+const cardSamples = [projects.find(project => project.status === 'active'), projects.find(project => project.status === 'finished')].filter(project => project !== undefined)
 
 export default function ComponentPreview() {
   const [loading, setLoading] = useState(false)
@@ -33,7 +26,7 @@ export default function ComponentPreview() {
       <div className={styles.row}><Button loading={loading} loadingLabel="Guardando…" onClick={() => setLoading(true)}>Probar estado de carga</Button><Button variant="secondary" onClick={() => setLoading(false)}>Restablecer</Button></div>
       <div className={styles.row}><Badge tone="success">✓ Verificado</Badge><Badge>Donación</Badge><Badge tone="warning">Finalizada</Badge><Badge tone="error">Cancelada</Badge><Badge tone="info">Información</Badge></div>
     </section>
-    <section><h2>Tarjetas de campaña</h2><p>Ejemplo visual, variante finalizada y carga. Los datos de ejemplo no representan campañas reales.</p><div className={styles.grid3}><ProjectCard project={sample} /><ProjectCard project={{ ...sample, name: 'Reforestación Chiquitana · Finalizada', status: 'finished' }} /><ProjectCardSkeleton /></div></section>
+    <section><h2>Tarjetas de campaña</h2><p>{DEMO_NOTICE}</p><div className={styles.grid3}>{cardSamples.map(project => <ProjectCard key={project.id} project={project} />)}<ProjectCardSkeleton /></div></section>
     <section><h2>Campos y validación</h2><form className={styles.form} noValidate onSubmit={(event) => { event.preventDefault(); setValidated(true) }}>
       <FormField label="Correo electrónico de prueba" type="email" name="demo-email" autoComplete="off" value={email} onChange={(event) => { setEmail(event.target.value); setValidated(false) }} placeholder="nombre@ejemplo.com" required help="Prueba visual local; no se envía ninguna información." error={emailError} />
       <FormField as="select" label="Tipo de campaña" defaultValue="donacion"><option value="donacion">Donación</option><option value="recompensa">Recompensa</option><option value="preventa">Preventa</option></FormField>

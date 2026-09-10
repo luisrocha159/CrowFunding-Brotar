@@ -2,27 +2,15 @@ import { Link } from 'react-router-dom'
 import { Badge } from './Badge'
 import { ProgressBar } from './ProgressBar'
 import styles from './ui.module.css'
+import type { ProjectCardData } from '../types/project'
+import { getProgressPercentage } from '../utils/project'
 
-export type ProjectCardData = {
-  slug: string
-  name: string
-  summary: string
-  category: string
-  creator: string
-  location: string
-  image: string
-  imageAlt: string
-  goal: number
-  raised: number
-  verified: boolean
-  status: 'active' | 'finished' | 'cancelled'
-  daysRemaining: number
-}
+export type { ProjectCardData } from '../types/project'
 
 const amount = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 })
 
 export function ProjectCard({ project }: { project: ProjectCardData }) {
-  const progress = project.goal > 0 ? Math.max(0, project.raised / project.goal * 100) : 0
+  const progress = getProgressPercentage(project)
   return <article className={styles.card}>
     <img className={styles.cardImage} src={project.image} alt={project.imageAlt} width={768} height={427} loading="lazy" />
     <div className={styles.cardBody}>
