@@ -18,7 +18,7 @@
 - `getProgressPercentage(project)` calcula el porcentaje a partir de recaudación y meta. No se guarda un porcentaje duplicado que pueda quedar desactualizado. Se conserva 105 % en texto; la barra visual se limita a 100 %.
 - Fecha fija `DEMO_REFERENCE_DATE = 2026-09-09`: los días restantes son una fotografía de presentación, no un reloj de producción. Esto evita que los escenarios activos desaparezcan al presentar otro día.
 - Hay campañas con y sin actualizaciones, con y sin insignia, y explicaciones públicas para los estados cerrados. El impacto se expresa como objetivo, no como resultado ya alcanzado.
-- Se reutiliza temporalmente la única fotografía local de referencia disponible. `imageCaption` la identifica como ilustrativa; no acredita relación con las campañas. Elegir portadas específicas del diseño durante la composición visual posterior.
+- Cada campaña utiliza una portada diferente: reforestación conserva el recurso de referencia; huertos, textiles, biblioteca, agua y cacao usan imágenes generadas con IA para la demostración. `imageCaption`, el texto alternativo y el aviso general lo indican. No acreditan campañas, ubicaciones ni resultados reales. Los archivos WebP son locales y están versionados.
 
 ## Servicio local
 

@@ -22,6 +22,11 @@ describe('Datos públicos de demostración', () => {
     assert.ok(projects.some(p => p.verified))
     assert.ok(projects.some(p => !p.verified))
   })
+  it('asigna una portada y una descripción distintas a cada campaña', () => {
+    assert.equal(new Set(projects.map(p => p.image)).size, projects.length)
+    assert.equal(new Set(projects.map(p => p.imageAlt)).size, projects.length)
+    for (const project of projects) assert.match(project.imageCaption, /ilustrativa generada con IA/)
+  })
   it('contiene los campos mínimos y distingue objetivos de resultados', () => {
     for (const p of projects) {
       for (const value of [p.name, p.summary, p.category, p.location, p.creator, p.image, p.imageAlt, p.description, p.problem, p.solution, p.beneficiaries, p.creatorDescription, p.imageCaption]) assert.ok(value.trim())

@@ -6,7 +6,7 @@ Revisión: 10 de septiembre de 2026. Alcance: frontend provisional de experienci
 
 Las nueve pantallas y las variantes funcionales mínimas solicitadas están implementadas con datos simulados. El código utiliza React, TypeScript y Bun, está separado por funcionalidades y no incorpora operaciones privadas reales. La comprobación combina lectura del código, tests automáticos y recorridos en navegador; no representa una certificación exhaustiva de accesibilidad o compatibilidad.
 
-La entrega compartida requiere todavía un destino de repositorio del equipo: actualmente Git es local, sin remoto. Esto debe distinguirse de la funcionalidad del frontend. Las portadas distintas por campaña y el texto legal definitivo son pendientes de contenido; no se presentan como recursos oficiales ya recibidos ni impiden representar los estados de esta muestra.
+La entrega compartida requiere todavía un destino de repositorio del equipo: actualmente Git es local, sin remoto. Esto debe distinguirse de la funcionalidad del frontend. El texto legal definitivo sigue pendiente. Las portadas distintas por campaña ya están resueltas mediante cinco imágenes generadas a petición del usuario y el recurso original de reforestación; no se presentan como fotografías reales ni exportaciones oficiales de Figma.
 
 Fuentes normativas:
 
@@ -55,7 +55,7 @@ Los nueve componentes mínimos de la página 3 están cubiertos:
 
 Ejemplos comprobables: Reforestación (72 %), Huertos (40 %, sin actualizaciones), Textiles (105 %), Biblioteca (0 %, sin verificación), Agua (finalizada) y Cacao (cancelada). La barra se limita visualmente a 100 %, pero el porcentaje y monto reales del ejemplo se conservan.
 
-Cada campaña tiene imagen; temporalmente comparten el recurso ilustrativo de referencia. El PDF no exige seis fotografías diferentes. Mejorarlas aumenta la calidad visual, no añade una funcionalidad requerida. Las fechas y los montos son una instantánea de demostración, no datos actuales de campañas reales.
+Cada campaña tiene una imagen diferente. Reforestación conserva el recurso de referencia y las otras cinco tienen portadas generadas con IA a petición del usuario; los textos lo identifican. Esta mejora visual no añade una funcionalidad fuera del alcance. Las fechas y los montos son una instantánea de demostración, no datos actuales de campañas reales.
 
 ## 3. Pantallas y contenido explícito
 
@@ -139,7 +139,7 @@ Controles: las páginas dinámicas tienen **Probar estados de la muestra**; acce
 ## 6. Qué falta y qué no falta
 
 1. **Compartir el repositorio del equipo:** falta definir/configurar el remoto y dar acceso a los responsables. No se creó ni publicó uno externo sin elegir destino y permisos.
-2. **Portadas específicas:** mejora visual pendiente de recursos; cada campaña ya tiene la imagen requerida. El conector Figma informa límite de consultas. No se fabricaron portadas supuestamente oficiales.
+2. **Portadas específicas resueltas:** cinco portadas generadas con IA y la imagen de referencia de reforestación, todas locales e identificadas como ilustrativas. No son portadas supuestamente oficiales del Figma. Ver `portadas-generadas.md`.
 3. **Texto legal definitivo:** pendiente del responsable; la casilla, bloqueo y aviso de demostración funcionan. No hace falta inventar términos para demostrar el formulario.
 4. **No falta desarrollar backend ni paneles privados para esta entrega:** el PDF los excluye expresamente.
 

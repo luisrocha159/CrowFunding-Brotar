@@ -1,15 +1,29 @@
 import reforestationImage from '../../shared/assets/proyecto-reforestacion.webp'
+import gardenImage from '../../shared/assets/campaigns/huertos.webp'
+import textileImage from '../../shared/assets/campaigns/textiles.webp'
+import libraryImage from '../../shared/assets/campaigns/biblioteca.webp'
+import waterImage from '../../shared/assets/campaigns/agua.webp'
+import cacaoImage from '../../shared/assets/campaigns/cacao.webp'
 import type { Project } from '../../shared/types/project'
 
 // A fixed presentation snapshot: demonstrations do not expire as the clock changes.
 export const DEMO_REFERENCE_DATE = '2026-09-09'
-export const DEMO_NOTICE = 'Datos de demostración: campañas, organizaciones, montos y verificaciones ficticios. No se reciben aportes reales.'
+export const DEMO_NOTICE = 'Datos de demostración: campañas, organizaciones, montos y verificaciones ficticios. Portadas ilustrativas generadas con IA. No se reciben aportes reales.'
 
 const illustrativeImage = {
   image: reforestationImage,
   imageAlt: 'Imagen ilustrativa de personas plantando árboles en una jornada de reforestación',
   imageCaption: 'Imagen ilustrativa generada con IA, incluida en la referencia de Brotar; no documenta esta campaña ficticia.',
   isDemo: true as const
+}
+
+function generatedCover(image: string, imageAlt: string) {
+  return {
+    image,
+    imageAlt,
+    imageCaption: 'Imagen ilustrativa generada con IA para esta demostración; no documenta una campaña real ni sus resultados.',
+    isDemo: true as const
+  }
 }
 
 export const projects: readonly Project[] = [
@@ -30,7 +44,7 @@ export const projects: readonly Project[] = [
     updates: [{ id: 'demo-001-u1', date: '2026-09-05', title: 'Preparación del vivero', content: 'Actualización ficticia: el equipo organizó los espacios para producir los primeros plantines.' }]
   },
   {
-    ...illustrativeImage,
+    ...generatedCover(gardenImage, 'Ilustración con IA de dos personas cultivando hortalizas en un huerto comunitario'),
     id: 'demo-002', slug: 'huertos-comunitarios-cochabamba', name: 'Huertos comunitarios de Cochabamba',
     summary: 'Impulsamos huertos barriales y talleres de alimentación sostenible.',
     category: 'Producción sostenible', location: 'Cochabamba', creator: 'Semilla Compartida',
@@ -46,7 +60,7 @@ export const projects: readonly Project[] = [
     updates: []
   },
   {
-    ...illustrativeImage,
+    ...generatedCover(textileImage, 'Ilustración con IA de bolsos reutilizables de retazos textiles en un taller de costura'),
     id: 'demo-003', slug: 'textiles-circulares-la-paz', name: 'Textiles circulares de La Paz',
     summary: 'Una primera colección de bolsos reutilizables elaborados con retazos textiles.',
     category: 'Economía circular', location: 'La Paz', creator: 'Tejido Circular',
@@ -62,7 +76,7 @@ export const projects: readonly Project[] = [
     updates: [{ id: 'demo-003-u1', date: '2026-09-07', title: 'Prototipos de la colección', content: 'Actualización ficticia: se completó la revisión de los diseños iniciales.' }]
   },
   {
-    ...illustrativeImage,
+    ...generatedCover(libraryImage, 'Ilustración con IA de una biblioteca comunitaria con estantes de libros y mesa de lectura'),
     id: 'demo-004', slug: 'biblioteca-comunitaria-potosi', name: 'Biblioteca comunitaria de Potosí',
     summary: 'Creamos un espacio de lectura y acompañamiento escolar para el barrio.',
     category: 'Educación', location: 'Potosí', creator: 'Lecturas Abiertas',
@@ -78,7 +92,7 @@ export const projects: readonly Project[] = [
     updates: []
   },
   {
-    ...illustrativeImage,
+    ...generatedCover(waterImage, 'Ilustración con IA de un depósito cerrado de captación de lluvia y un grifo comunitario'),
     id: 'demo-005', slug: 'agua-segura-tarija', name: 'Agua segura para comunidades de Tarija',
     summary: 'Una iniciativa comunitaria de captación y uso responsable del agua.',
     category: 'Desarrollo comunitario', location: 'Tarija', creator: 'Agua Compartida',
@@ -95,7 +109,7 @@ export const projects: readonly Project[] = [
     updates: [{ id: 'demo-005-u1', date: '2026-09-01', title: 'Cierre de la recaudación', content: 'Actualización ficticia: terminó el periodo de aportes. Los resultados de ejecución todavía no están publicados.' }]
   },
   {
-    ...illustrativeImage,
+    ...generatedCover(cacaoImage, 'Ilustración con IA de mazorcas de cacao en un árbol y una cesta de cosecha bajo sombra'),
     id: 'demo-006', slug: 'cacao-agroforestal-beni', name: 'Cacao agroforestal del Beni',
     summary: 'Producción de cacao vinculada al cuidado del bosque y al trabajo local.',
     category: 'Producción sostenible', location: 'Beni', creator: 'Bosque y Cacao',
