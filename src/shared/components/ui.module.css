@@ -36,7 +36,7 @@
 @keyframes pulse { 50% { opacity: .45; } }
 .card { overflow: hidden; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); transition: box-shadow .2s; }
 .card:hover { box-shadow: var(--shadow-hover); }
-.cardImage { width: 100%; aspect-ratio: 1.8; object-fit: cover; }
+.cardImage { width: 100%; height: auto; aspect-ratio: 1.8; object-fit: cover; }
 .cardBody { padding: 20px; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .card h3 { margin: 0 0 8px; font-size: 18px; }

@@ -1,0 +1,24 @@
+.breadcrumb { margin-bottom: 24px; color: var(--color-muted); font-size: 14px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: 'overview funding' 'story funding'; gap: 0 36px; align-items: start; }
+.overview { min-width: 0; grid-area: overview; }
+.story { min-width: 0; grid-area: story; }
+.overview h1 { font-size: clamp(30px, 3.6vw, 44px); }
+.cover { aspect-ratio: 16/9; width: 100%; height: auto; object-fit: cover; border-radius: var(--radius-lg); }
+.figure { margin: 28px 0 0; }
+.figure figcaption { font-size: 12px; color: var(--color-muted); margin-top: 8px; }
+.funding { grid-area: funding; position: sticky; top: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 28px; background: var(--color-surface); box-shadow: var(--shadow-card); }
+.funding h2 { font-size: 20px; margin: 0 0 20px; }
+.percentage { font: 600 36px var(--font-heading); color: var(--color-brand); }
+.funding dl { margin: 24px 0; }
+.funding dl div { border-bottom: 1px solid var(--color-border); padding-block: 12px; }
+.funding dt { font-size: 13px; color: var(--color-muted); }
+.funding dd { margin: 0; font-weight: 600; }
+.funding > a, .funding > button { width: 100%; margin-block: 12px; }
+.small { font-size: 13px; color: var(--color-muted); }
+.metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.metrics strong { display: block; font: 600 24px var(--font-heading); color: var(--color-brand); }
+.update { border-left: 3px solid var(--color-border); padding: 4px 0 4px 20px; margin-block: 24px; }
+.update h3 { margin-block: 8px; }
+.update time { color: var(--color-muted); font-size: 13px; }
+@media(max-width: 900px) { .layout { display: flex; flex-direction: column; gap: 28px; } .overview, .story { width: 100%; } .funding { position: static; width: 100%; } }
+@media(max-width: 480px) { .metrics { grid-template-columns: 1fr; } }

@@ -1,0 +1,14 @@
+.toolbar { margin-block: 24px 32px; padding: 28px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.searchForm { display: flex; align-items: end; gap: 12px; margin-bottom: 24px; }
+.searchForm > div { flex: 1; }
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.chips button { background: var(--color-soft); color: var(--color-brand); border: 1px solid var(--color-border); padding: 8px 12px; min-height: 44px; border-radius: var(--radius-pill); cursor: pointer; overflow-wrap: anywhere; max-width: 100%; }
+.chips button:last-child { background: transparent; border-color: transparent; text-decoration: underline; }
+.resultsBar { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-block: 32px 24px; }
+.resultsBar h2 { font-size: 24px; margin: 0 0 4px; }
+.resultsBar p { color: var(--color-muted); margin: 0; }
+.resultsBar > div:last-child { min-width: 220px; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 32px; }
+.results { scroll-margin-top: 24px; }
+@media(max-width: 600px) { .filters { grid-template-columns: 1fr; } .toolbar { padding: 20px; } .resultsBar { flex-direction: column; align-items: stretch; } .searchForm { align-items: stretch; flex-direction: column; } }

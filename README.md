@@ -2,15 +2,27 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-## Estado actual: fase 3
+## Estado actual: fase 4
 
-Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las nueve rutas muestran contenido **provisional** para comprobar la navegación. Todavía no representan las pantallas terminadas del Figma.
+Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las seis pantallas públicas ya presentan contenido e interacciones con datos simulados. Las tres pantallas de acceso (inicio de sesión, registro y recuperación) todavía son provisionales y corresponden a la siguiente fase.
 
 Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
 
-La fase 3 añade seis campañas centralizadas, tipos públicos, cálculo de avance, búsqueda/filtros/ordenamiento/paginación locales y un servicio simulado con carga, vacío, error y cancelación de solicitudes. Incluye 23 pruebas automáticas. Ver `docs/fase-3.md` y `src/mocks/projects/README.md`.
+La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. Hay 29 pruebas automáticas de datos y parámetros URL. Ver `docs/fase-4.md` para el alcance, las pruebas de navegador y las limitaciones visuales.
 
-Pendiente: composición definitiva de las páginas y conexión de esta lógica a sus controles, detalle público y formularios de acceso simulados. El servicio ya resuelve slugs válidos y devuelve `null` si no existe la campaña, pero la página de detalle sigue siendo provisional. El buscador del encabezado transporta el texto en `?q=`, pero todavía no muestra resultados filtrados en la interfaz.
+Incluido: destacados, búsqueda por texto, filtros combinables con chips removibles, ordenamiento, dos páginas de tres campañas, detalle correcto por slug, actualizaciones y estados de campaña. Los filtros se conservan en la URL al recargar; el encabezado conduce a los resultados de búsqueda. El CTA de apoyo de una campaña activa lleva al acceso; las cerradas no admiten aportes.
+
+Pendiente: formularios de acceso simulado, portadas específicas para cada campaña y revisión final de entrega. Las campañas comparten temporalmente la fotografía ilustrativa local. No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
+
+## Probar el recorrido público
+
+1. Abrir `/` y entrar a Explorar proyectos.
+2. Cambiar de página o entrar en Búsqueda y filtros. Buscar `POTOSI` para comprobar que se ignoran mayúsculas y tildes.
+3. Combinar categoría, ubicación y modalidad; quitar filtros individualmente o limpiar todos.
+4. Abrir una tarjeta y consultar historia, impacto, creador y actualizaciones.
+5. En una campaña activa, Apoyar lleva al acceso provisional. Las campañas de Tarija y Beni demuestran cierre y cancelación.
+
+Al final de portada, catálogo, búsqueda y detalle, desplegar **Probar estados de la muestra**: normal, carga lenta, vacío o error. También se puede añadir `?estado=carga`, `?estado=vacio` o `?estado=error`. La carga normal dura 350 ms y la lenta 1,8 s. El reintento elimina el error de muestra y recupera los datos. Para repetir la carga lenta, volver a normal y seleccionar carga lenta nuevamente.
 
 ## Componentes y vista de desarrollo
 
@@ -78,7 +90,7 @@ Se fija TypeScript 5.9.3 para mantener compatibilidad con las herramientas de li
 | Recuperar contraseña | `/recuperar-contrasena` |
 | Dirección inexistente | Cualquier ruta no definida muestra 404 |
 
-Para comprobar el parámetro de detalle: `/proyectos/reforestacion-chiquitana`. La ruta todavía presenta el marcador provisional; su composición final queda para una fase posterior.
+Detalle de ejemplo: `/proyectos/reforestacion-chiquitana`. Un slug desconocido muestra una campaña no disponible con salida hacia Explorar.
 
 ## Organización
 
@@ -108,7 +120,7 @@ src/
 
 Cada feature conserva sus componentes, estilos y lógica propios. Solo lo utilizado por varias funcionalidades debe ir en `shared/`. Los datos mock están separados de las vistas para sustituirlos por una API posteriormente. Las consultas de búsqueda pertenecen a `features/public/explore-projects/projectQuery.ts`; los tipos y el cálculo compartido de progreso están en `shared/types` y `shared/utils`.
 
-`PhasePlaceholder` y los enlaces de comprobación de la página inicial son temporales: se reemplazarán a medida que se implementen las pantallas reales.
+`PhasePlaceholder` permanece únicamente en las tres pantallas de acceso que se implementarán en la siguiente fase. La portada ya no muestra el índice provisional de rutas.
 
 ## Alcance de la etapa
 

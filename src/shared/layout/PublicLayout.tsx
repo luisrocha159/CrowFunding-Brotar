@@ -24,14 +24,17 @@ export function PublicLayout() {
 
   useEffect(() => {
     if (menu.current) menu.current.open = false
-    if (previousLocation.current && previousLocation.current !== location.key) {
+  }, [location.key])
+
+  useEffect(() => {
+    if (previousLocation.current && previousLocation.current !== location.pathname) {
       main.current?.focus({ preventScroll: true })
       window.scrollTo(0, 0)
     }
-    previousLocation.current = location.key
+    previousLocation.current = location.pathname
     const heading = main.current?.querySelector('h1')?.textContent
     document.title = heading ? `${heading} | Brotar` : 'Brotar'
-  }, [location.key])
+  }, [location.pathname])
 
   return <>
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
@@ -46,7 +49,7 @@ export function PublicLayout() {
             navigate(`/explorar/buscar${query ? `?q=${encodeURIComponent(query)}` : ''}`)
           }}>
             <label className={styles.srOnly} htmlFor="header-search">Buscar proyectos</label>
-            <input id="header-search" name="q" type="search" placeholder="Buscar proyectos" />
+            <input key={location.search} id="header-search" name="q" type="search" placeholder="Buscar proyectos" defaultValue={new URLSearchParams(location.search).get('q') ?? ''} />
             <button type="submit" aria-label="Enviar búsqueda">→</button>
           </form>
           <Link className={styles.login} to="/iniciar-sesion">Iniciar sesión</Link>

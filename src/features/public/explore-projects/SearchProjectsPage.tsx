@@ -1,4 +1,4 @@
-import { PhasePlaceholder } from '../../../shared/components/PhasePlaceholder'
+import { ProjectCatalog } from './ProjectCatalog'
 export function SearchProjectsPage() {
-  return <PhasePlaceholder title="Búsqueda y filtros" description="Búsqueda por texto y filtros de categoría, ubicación y tipo de campaña sobre datos simulados." />
+  return <ProjectCatalog search />
 }

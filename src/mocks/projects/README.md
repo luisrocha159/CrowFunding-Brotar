@@ -55,6 +55,6 @@ const result = queryProjects(campaigns, {
 - Al cambiar o limpiar filtros, la vista debe reiniciar `page` a 1. Al avanzar página, debe conservar los filtros.
 - Ordenamientos: destacados, más recientes, mayor avance y cierre próximo (campañas cerradas al final).
 - La página se limita a los resultados disponibles y el tamaño a 1–24 (6 por defecto). Con `pageSize: 3` se pueden probar dos páginas.
-- La lectura y validación de parámetros URL, chips de filtros y controles visuales se integrarán con las pantallas; no se consideran terminados en esta fase.
+- La fase 4 conecta estas consultas con los parámetros URL, chips y controles visuales de catálogo y búsqueda. Ver `docs/fase-4.md` para el recorrido y sus límites.
 
 Ejecutar `bun run test` para verificar los escenarios e invariantes.

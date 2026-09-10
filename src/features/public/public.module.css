@@ -1,0 +1,47 @@
+.section { margin-block: 64px; }
+.section h2 { margin-top: 0; }
+.sectionHeading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.sectionHeading h2 { margin: 0 0 8px; }
+.sectionHeading p { margin: 0; color: var(--color-muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.twoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.panel { padding: 28px; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-lg); }
+.panel h3 { margin: 0 0 12px; font-size: 20px; }
+.panel p { color: var(--color-muted); }
+.panel p:last-child { margin-bottom: 0; }
+.number { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--color-soft); color: var(--color-brand); font: 600 16px var(--font-heading); margin-bottom: 20px; }
+.centered { text-align: center; max-width: 720px; margin: 0 auto 32px; }
+.hero { position: relative; isolation: isolate; padding: clamp(32px, 6vw, 80px); border-radius: var(--radius-lg); background: var(--color-brand); color: white; overflow: hidden; }
+.hero h1, .hero h2 { color: white; }
+.hero h1 { max-width: 780px; font-size: clamp(34px, 5vw, 60px); margin: 20px 0; }
+.hero p { max-width: 660px; color: #e0ede5; }
+.heroImage { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; z-index: -2; }
+.heroShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(4 40 26 / 94%), rgb(4 40 26 / 65%) 60%, rgb(4 40 26 / 30%)); z-index: -1; }
+.heroTag { display: inline-block; border: 1px solid #b7d6c4; padding: 6px 12px; border-radius: var(--radius-pill); font-size: 12px; letter-spacing: .07em; text-transform: uppercase; }
+.hero .actions { margin-top: 28px; }
+.hero .actions a:first-child { background: white; color: var(--color-brand); border-color: white; }
+.hero .actions a:not(:first-child) { color: white; border-color: #b7d6c4; background: transparent; }
+.hero :focus-visible { outline-color: white; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 28px 32px; background: var(--color-soft); border-radius: var(--radius-lg); margin-top: 16px; }
+.stats strong { display: block; font: 600 24px var(--font-heading); color: var(--color-brand); }
+.stats span { color: var(--color-muted); font-size: 14px; }
+.demoNotice { font-size: 13px; color: var(--color-muted); border-left: 3px solid var(--color-border); padding-left: 12px; margin-block: 24px; }
+.demoControls { border-top: 1px solid var(--color-border); margin-top: 48px; padding-top: 20px; color: var(--color-muted); font-size: 14px; }
+.demoControls summary { cursor: pointer; padding: 10px 0; }
+.demoControls button { font-size: 12px; }
+.demoControls [aria-pressed=true] { background: var(--color-soft); }
+.stepList { list-style: none; padding: 0; display: grid; gap: 20px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.stepList .panel { padding: 24px; }
+.stepList h3 { font-size: 17px; }
+.checklist { padding-left: 20px; color: var(--color-muted); }
+.checklist li { margin-bottom: 12px; }
+.softSection { background: var(--color-soft); border-radius: var(--radius-lg); padding: clamp(24px, 4vw, 48px); }
+.softSection h2 { margin-top: 0; }
+.anchorNav { display: flex; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid var(--color-border); margin-block: 24px; padding-bottom: 16px; }
+.anchorNav a { padding: 8px 0; }
+.contentSection { scroll-margin-top: 24px; margin-top: 36px; }
+.contentSection h2 { font-size: 26px; }
+@media(max-width: 1100px) { .stepList { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media(max-width: 800px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stepList { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media(max-width: 600px) { .grid, .twoColumns, .stepList { grid-template-columns: 1fr; } .section { margin-block: 44px; } .sectionHeading { align-items: start; flex-direction: column; } .stats { gap: 16px; padding: 20px; } .stats strong { font-size: 20px; } .stats span { font-size: 12px; } .hero { padding: 32px 24px; } .panel { padding: 24px; } }
