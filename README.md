@@ -2,7 +2,7 @@
 
 Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
 
-Repositorio de destino: [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar).
+Repositorio del equipo: [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar).
 
 Este código permite **abrir y demostrar la experiencia pública**, no ejecutar todavía todo el sistema Brotar. No requiere base de datos, servidor backend, cuentas reales, claves de API ni pagos.
 
@@ -30,7 +30,7 @@ bun run dev
 
 Después abre **http://127.0.0.1:5173/** en tu navegador. Mantén abierta la terminal mientras utilizas la aplicación; `Ctrl+C` detiene el servidor.
 
-Los comandos de clonación estarán disponibles cuando se complete la primera subida al repositorio de destino. Si ya tienes la copia local del proyecto, no la clones otra vez: entra en la carpeta que contiene `package.json` y utiliza los dos comandos de Bun.
+Si ya tienes la copia local del proyecto, no la clones otra vez: entra en la carpeta que contiene `package.json` y utiliza los dos comandos de Bun.
 
 Para una primera instalación, consulta las instrucciones detalladas de abajo. No abras `index.html` haciendo doble clic y no uses Live Server: este proyecto necesita Vite para procesar React y TypeScript.
 
@@ -44,7 +44,7 @@ La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 l
 
 Incluido: destacados, búsqueda por texto, filtros combinables con chips removibles, ordenamiento, dos páginas de tres campañas, detalle correcto por slug, actualizaciones y estados de campaña. Los filtros se conservan en la URL al recargar; el encabezado conduce a los resultados de búsqueda. El CTA de apoyo de una campaña activa lleva al acceso; las cerradas no admiten aportes.
 
-Pendiente para compartir: completar la primera subida al repositorio del equipo con una cuenta autorizada. Pendiente de contenido: texto legal definitivo; solo se presenta una aceptación de demostración. Las seis campañas ya tienen portadas diferentes: reforestación conserva la referencia y las otras cinco utilizan imágenes generadas con IA a petición del usuario. Todas tienen versiones WebP optimizadas y avisos de uso ilustrativo. El logo oficial no se reemplazó. Ver [archivos y prompts de las portadas](docs/portadas-generadas.md). No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
+El código y la documentación se comparten en el repositorio del equipo. Pendiente de contenido: texto legal definitivo; solo se presenta una aceptación de demostración. Las seis campañas ya tienen portadas diferentes: reforestación conserva la referencia y las otras cinco utilizan imágenes generadas con IA a petición del usuario. Todas tienen versiones WebP optimizadas y avisos de uso ilustrativo. El logo oficial no se reemplazó. Ver [archivos y prompts de las portadas](docs/portadas-generadas.md). No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
 
 ## Probar el recorrido público
 
@@ -263,7 +263,9 @@ El documento técnico define React + TypeScript + Bun y arquitectura por funcion
 
 ## Repositorio y despliegue
 
-El destino elegido es [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar). La primera publicación del código está pendiente de autenticación con permisos de escritura. El nombre y correo del autor de Git no conceden acceso: la cuenta autenticada debe ser propietaria o colaboradora autorizada. No es necesario cambiar la cuenta global para todos los proyectos ni reescribir commits anteriores.
+El código y los documentos están en [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar), rama `main`. La publicación del repositorio no incluye un despliegue de la aplicación: cada integrante puede ejecutarla localmente siguiendo el inicio rápido.
+
+Para contribuir, el nombre y correo del autor de Git no conceden acceso: la cuenta autenticada debe ser propietaria o colaboradora autorizada. No es necesario cambiar la cuenta global para todos los proyectos ni reescribir commits anteriores.
 
 El repositorio de destino es público: solo deben incorporarse código y entregables aprobados para compartir, nunca tokens, contraseñas, documentos privados de identidad o datos reales de participantes. `node_modules`, `dist`, archivos `.env` reales y temporales están excluidos por `.gitignore`.
 

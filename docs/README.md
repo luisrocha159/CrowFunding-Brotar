@@ -38,7 +38,7 @@ La guía define el MVP; la tarea del frontend define el incremento público con 
 - [Fase 6 — verificación de entrega](fase-6.md).
 - [Origen de las portadas ilustrativas](portadas-generadas.md).
 
-Las notas de fases y los documentos generales conservan el estado de su fecha de corte. Las menciones antiguas a un remoto pendiente deben leerse como antecedentes; el README principal describe la preparación de la publicación actual.
+Las notas de fases y los documentos generales conservan el estado de su fecha de corte. Las menciones antiguas a un remoto pendiente deben leerse como antecedentes; el código y los documentos ya se comparten en el repositorio indicado en el README principal.
 
 ## 4. Antecedente del Equipo 2
 
