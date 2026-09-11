@@ -1,0 +1,6 @@
+Brotar — Figma final unificado CrownFundingV3
+
+https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574
+
+Consultar Producto y las variantes pertinentes al flujo. No incorporar automáticamente Descartes ni propuestas alternativas.
+El enlace no cambia permisos: comprobar que los destinatarios tengan acceso al archivo.
