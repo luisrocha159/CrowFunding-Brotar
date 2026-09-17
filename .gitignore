@@ -11,3 +11,9 @@ coverage/
 .idea/
 .vscode/
 tmp/
+dist-test/
+# Backups y datos privados: nunca publicar en el repositorio público.
+backup_brotar*
+*.dump
+*.backup
+infra/postgres/private/
