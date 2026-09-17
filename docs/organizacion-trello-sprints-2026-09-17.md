@@ -1,5 +1,7 @@
 # Organización de Trello por sprints
 
+Este registro conserva la comprobación inicial de organización. Actualización posterior del mismo día: publicación en main, cierre técnico de E01/E09 y asignaciones verificadas. El estado vigente es 9 tareas cerradas y 11 pendientes en Sprint 1; ver [entrega](entrega-integracion-2026-09-17.md) y [reparto aprobado](asignacion-sprint-1.md).
+
 Fecha: 17/09/2026. [Tablero Brotar](https://trello.com/b/37xCrdes/crowudfunding).
 
 Se aplicó el plan v2.2 al mismo tablero. BG significa **Backlog General**: una historia de producto. Las tarjetas E y S son tareas que desarrollan esas historias; no son historias adicionales.

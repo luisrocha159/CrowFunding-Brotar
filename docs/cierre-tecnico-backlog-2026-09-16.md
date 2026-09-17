@@ -1,5 +1,7 @@
 # Cierre técnico del backlog de Brotar
 
+Actualización posterior: el 17/09 se publicaron implementación y documentación en main (067f832 y dc7bcad), y se cerraron técnicamente E01/E09. El resto de este documento conserva el corte histórico del 16/09. Estado actual: [informe de entrega](entrega-integracion-2026-09-17.md).
+
 Corte: 16/09/2026. El responsable solicitó cerrar las historias verificables y conservar los pendientes. Este registro y Trello actualizan el avance técnico sin cambiar criterios de negocio ni presentar una aprobación del cliente. Posteriormente, el Word v2.2 incorporó este corte y la [planificación por sprints](planificacion-sprints.md). El PDF explicativo conserva su corte anterior. El nuevo reparto se sincronizó con Trello el 17/09/2026; ver [organización y comprobaciones](organizacion-trello-sprints-2026-09-17.md).
 
 ## Resumen sin duplicados

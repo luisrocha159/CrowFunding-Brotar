@@ -32,7 +32,9 @@ Total: 114 pruebas. Se utilizó ALLOW_DB_TEST_WRITES=true y DB_TEST_RESTART=fals
 
 ## E01 y E09
 
-Los criterios de ambas tarjetas ya cuentan con implementación, pruebas y documentación. El cierre técnico requiere confirmar el push del incremento al repositorio; la evidencia remota se añade al seguimiento después de verificarlo. E09 no exige aprobar el MVP completo: su último criterio pide repositorio, instrucciones y límites explícitos. La aceptación de los líderes se mantiene separada.
+Push confirmado a main: [067f832 — implementación](https://github.com/luisrocha159/CrowFunding-Brotar/commit/067f832) y [dc7bcad — entrega, README y reparto](https://github.com/luisrocha159/CrowFunding-Brotar/commit/dc7bcad). E01 y E09 cerradas técnicamente en Trello con sus checklists originales 3/3. E09 no exige aprobar el MVP completo: su último criterio pide repositorio, instrucciones y límites explícitos. La aceptación de los líderes se mantiene separada.
+
+Sprint 1 vigente: 20 tareas, 9 cierres técnicos y 11 pendientes (Alison 4, Santiago 7). No hay tareas parciales de la entrega básica después de este cierre; las historias transversales BG conservan sus pendientes. Las cinco historias previamente cerradas y las nueve tareas E se atribuyen a Ricardo.
 
 ## Trabajo posterior
 

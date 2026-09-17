@@ -6,14 +6,16 @@ Se conservan 64 historias: 5 con cierre técnico local, 16 parciales y 43 pendie
 
 | Sprint | Tareas | Cierre técnico | Parciales | Pendientes |
 | --- | ---: | ---: | ---: | ---: |
-| 1 | 20 | 7 | 2 | 11 |
+| 1 | 20 | 9 | 0 | 11 |
 | 2 | 21 | 0 | 0 | 21 |
 | 3 | 21 | 0 | 0 | 21 |
-| Total | 62 | 7 | 2 | 53 |
+| Total | 62 | 9 | 0 | 53 |
 
 El Sprint 1 conserva E01 a E09 y agrega S1-10 a S1-20; sigue abierto. El antecedente público AP no es otra tarea E. La cantidad similar de tareas no implica esfuerzo idéntico: finanzas conserva mayor complejidad externa. M/L son tamaños orientativos, no estimaciones acordadas. Refinar tareas L y dividir en más iteraciones si la capacidad lo exige.
 
 [Word actualizado](entregables/general/03_Product_Backlog_General_Brotar.docx) · [Datos del plan](planificacion-sprints.json) · [Evidencia del corte](cierre-tecnico-backlog-2026-09-16.md)
+
+Estado de entrega actualizado el 17/09/2026: E01 y E09 cerradas técnicamente tras publicar 067f832 y dc7bcad en main. [Evidencia y límites](entrega-integracion-2026-09-17.md). La aceptación externa sigue pendiente.
 
 ## Sprint 1 Base integrada y borrador inicial
 
@@ -21,9 +23,9 @@ Alcanzar acceso, perfil y organización persistentes, preparar los servicios com
 
 ### E01 Preparar repositorio y backend
 
-**Historias:** BG-57, BG-58, BG-63. **Estado:** Parcial. **Tamaño:** M. Responsable: Ricardo.
+**Historias:** BG-57, BG-58, BG-63. **Estado:** Cierre técnico. **Tamaño:** M. Responsable: Ricardo.
 
-Aplicaciones separadas y arranque documentado. Falta revisar y versionar el incremento, sus ejemplos de configuración y commits sin secretos.
+Aplicaciones separadas, arranque y configuración documentados; incremento publicado en main con commits 067f832 y dc7bcad, sin secretos.
 
 Dependencias y validación: Autorización y revisión antes de publicar.
 
@@ -85,9 +87,9 @@ Dependencias y validación: E05 y E07.
 
 ### E09 Probar y entregar la integración básica
 
-**Historias:** BG-62, BG-63. **Estado:** Parcial. **Tamaño:** M. Responsable: Ricardo.
+**Historias:** BG-62, BG-63. **Estado:** Cierre técnico. **Tamaño:** M. Responsable: Ricardo.
 
-114 pruebas registradas en el corte técnico y guion local. Falta publicar el incremento revisado y obtener revisión externa; no repetir como trabajo nuevo las pruebas ya hechas.
+114 pruebas repetidas y guion publicados en main (067f832 y dc7bcad). Cierre técnico de la tarea; revisión y aceptación de líderes separadas.
 
 Dependencias y validación: E01 a E08 y revisión de los responsables.
 

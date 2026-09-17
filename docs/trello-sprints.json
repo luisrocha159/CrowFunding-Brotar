@@ -41,7 +41,7 @@
       "taskId": "E01",
       "sprint": 1,
       "size": "M",
-      "state": "Parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo",
       "stories": [
         "BG-57",
@@ -147,7 +147,7 @@
       "taskId": "E09",
       "sprint": 1,
       "size": "M",
-      "state": "Parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo",
       "stories": [
         "BG-62",
@@ -1484,5 +1484,13 @@
   ],
   "note": "Mapa de tarjetas; la verificación final se documenta por separado. M/L son tamaños preliminares, no puntos ni horas acordadas.",
   "assignmentDate": "2026-09-17",
-  "assignmentReference": "asignacion-sprint-1.md"
+  "assignmentReference": "asignacion-sprint-1.md",
+  "delivery": {
+    "date": "2026-09-17",
+    "implementationCommit": "067f832",
+    "documentationCommit": "dc7bcad",
+    "publishedBranch": "main",
+    "technicalTasksComplete": 9,
+    "externalAcceptance": "Pendiente"
+  }
 }

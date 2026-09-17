@@ -20,10 +20,10 @@
         "BG-58",
         "BG-63"
       ],
-      "result": "Aplicaciones separadas y arranque documentado. Falta revisar y versionar el incremento, sus ejemplos de configuración y commits sin secretos.",
+      "result": "Aplicaciones separadas, configuración de ejemplo sin credenciales, instalación y commits descriptivos publicados en main (067f832 y dc7bcad).",
       "dependencies": "Autorización y revisión antes de publicar",
       "size": "M",
-      "state": "Parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo"
     },
     {
@@ -125,10 +125,10 @@
         "BG-62",
         "BG-63"
       ],
-      "result": "114 pruebas registradas en el corte técnico y guion local. Falta publicar el incremento revisado y obtener revisión externa; no repetir como trabajo nuevo las pruebas ya hechas.",
+      "result": "114 pruebas correctas y guion reproducible publicados en main (067f832 y dc7bcad). Cierre técnico de la entrega básica; aceptación de líderes separada.",
       "dependencies": "E01 a E08 y revisión de los responsables",
       "size": "M",
-      "state": "Parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo"
     },
     {
@@ -2136,5 +2136,13 @@
       "BG-63"
     ],
     "countsAsTask": false
+  },
+  "delivery": {
+    "date": "2026-09-17",
+    "implementationCommit": "067f832",
+    "documentationCommit": "dc7bcad",
+    "publishedBranch": "main",
+    "technicalTasksComplete": 9,
+    "externalAcceptance": "Pendiente"
   }
 }
