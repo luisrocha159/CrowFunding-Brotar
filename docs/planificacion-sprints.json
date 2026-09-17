@@ -1,0 +1,2140 @@
+{
+  "version": "2.2",
+  "cutoff": "2026-09-16",
+  "status": "Reparto Sprint 1 aprobado; capacidad, estimaciones finales y fechas pendientes",
+  "trelloSync": {
+    "date": "2026-09-17",
+    "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
+    "mapping": "trello-sprints.json",
+    "verification": "organizacion-trello-sprints-2026-09-17.md"
+  },
+  "totalStories": 64,
+  "totalTasks": 62,
+  "tasks": [
+    {
+      "sprint": 1,
+      "id": "E01",
+      "title": "Preparar repositorio y backend",
+      "stories": [
+        "BG-57",
+        "BG-58",
+        "BG-63"
+      ],
+      "result": "Aplicaciones separadas y arranque documentado. Falta revisar y versionar el incremento, sus ejemplos de configuración y commits sin secretos.",
+      "dependencies": "Autorización y revisión antes de publicar",
+      "size": "M",
+      "state": "Parcial",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E02",
+      "title": "Restaurar y conectar PostgreSQL",
+      "stories": [
+        "BG-59"
+      ],
+      "result": "Base provisional V2 restaurada de forma aislada y persistencia con TypeORM comprobada. No cierra las migraciones de BG-59.",
+      "dependencies": "E01",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E03",
+      "title": "Conectar formularios y API",
+      "stories": [
+        "BG-60"
+      ],
+      "result": "HTTP real para acceso, perfil y organización, con validación y estados de carga, éxito y error. Las campañas públicas siguen simuladas.",
+      "dependencies": "E01 y E02",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E04",
+      "title": "Registrar usuarios reales",
+      "stories": [
+        "BG-10"
+      ],
+      "result": "Registro básico persistente, validaciones, contraseña protegida y rol básico. Texto legal y política definitiva siguen en S1-11.",
+      "dependencies": "E02 y E03",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E05",
+      "title": "Iniciar y cerrar sesión",
+      "stories": [
+        "BG-09"
+      ],
+      "result": "Ingreso, consulta de sesión, expiración y cierre probados contra API y PostgreSQL, bajo la política local ADR-002.",
+      "dependencies": "E04",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E06",
+      "title": "Consultar y editar el perfil propio",
+      "stories": [
+        "BG-12"
+      ],
+      "result": "Datos básicos propios consultables y editables, con persistencia. Guardados y compatibilidad de perfiles se completan después.",
+      "dependencies": "E05",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E07",
+      "title": "Preparar roles y acceso privado",
+      "stories": [
+        "BG-53"
+      ],
+      "result": "Roles iniciales y controles de autenticación y propiedad operativos. No equivale a toda la matriz de permisos del MVP.",
+      "dependencies": "E05",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E08",
+      "title": "Registrar una organización vinculada",
+      "stories": [
+        "BG-26"
+      ],
+      "result": "Organización DRAFT persistida y relacionada con su usuario. Sin autoaprobación ni verificación KYB ficticia.",
+      "dependencies": "E05 y E07",
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "E09",
+      "title": "Probar y entregar la integración básica",
+      "stories": [
+        "BG-62",
+        "BG-63"
+      ],
+      "result": "114 pruebas registradas en el corte técnico y guion local. Falta publicar el incremento revisado y obtener revisión externa; no repetir como trabajo nuevo las pruebas ya hechas.",
+      "dependencies": "E01 a E08 y revisión de los responsables",
+      "size": "M",
+      "state": "Parcial",
+      "owner": "Ricardo"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-10",
+      "title": "Preparar migraciones y recuperación",
+      "stories": [
+        "BG-59"
+      ],
+      "result": "Versionar mecanismo de migración sobre la baseline oficial y ensayar respaldo y recuperación en copia aislada, conservando vistas, funciones y triggers.",
+      "dependencies": "E02; D01 y VT",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-11",
+      "title": "Completar condiciones del registro",
+      "stories": [
+        "BG-10"
+      ],
+      "result": "Aplicar texto legal y datos por perfil aprobados; documentar y probar la política de verificación sin confundirla con KYC o KYB.",
+      "dependencies": "E04; D03 y D08",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Alison"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-12",
+      "title": "Implementar recuperación de contraseña",
+      "stories": [
+        "BG-11"
+      ],
+      "result": "Conectar un remitente autorizado y restablecimiento con caducidad y uso único; comprobar solicitud, error y enlace vencido sin afirmar envíos ficticios.",
+      "dependencies": "E05; D08 y configuración del correo",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Alison"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-13",
+      "title": "Preparar permisos del flujo creador",
+      "stories": [
+        "BG-53"
+      ],
+      "result": "Refinar permisos de creador, revisor y cumplimiento; probar pertenencia y denegaciones en API. Las responsabilidades financieras se completan en S3-16.",
+      "dependencies": "E07; D06",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-14",
+      "title": "Separar archivos públicos y privados",
+      "stories": [
+        "BG-61"
+      ],
+      "result": "Implementar almacenamiento autorizado, límites de carga, acceso por caso y rol, errores y limpieza de cargas fallidas; configurar privacidad y retención acordadas.",
+      "dependencies": "E07; D03 y D08",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Alison"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-15",
+      "title": "Preparar categorías y catálogos de campaña",
+      "stories": [
+        "BG-55"
+      ],
+      "result": "API y edición autorizada de categorías necesarias, con referencias existentes protegidas. No crear parámetros de negocio todavía no aprobados.",
+      "dependencies": "E07; D02 y D10",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-16",
+      "title": "Guardar y recuperar un borrador",
+      "stories": [
+        "BG-18"
+      ],
+      "result": "Persistir datos y posición del asistente; recuperar después de cerrar sesión y comprobar propiedad, guardado, reintento y navegación entre pasos.",
+      "dependencies": "E05, S1-10 y S1-13",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-17",
+      "title": "Elegir la modalidad de campaña",
+      "stories": [
+        "BG-15"
+      ],
+      "result": "Guardar donación, recompensa o preventa, mostrar progreso y omitir recompensas en donación; confirmar cambios sin descartar datos silenciosamente.",
+      "dependencies": "S1-16; D02",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-18",
+      "title": "Completar información general",
+      "stories": [
+        "BG-16"
+      ],
+      "result": "Capturar nombre, categoría, ubicación y resumen con validaciones y límites acordados, reutilizando los datos de tarjeta y revisión.",
+      "dependencies": "S1-15, S1-16 y S1-17; D02",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-19",
+      "title": "Cargar y reemplazar la portada",
+      "stories": [
+        "BG-17"
+      ],
+      "result": "Seleccionar, previsualizar, sustituir y persistir portada; validar en cliente y servidor y conservar formulario ante un fallo.",
+      "dependencies": "S1-14 y S1-16; D03",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Alison"
+    },
+    {
+      "sprint": 1,
+      "id": "S1-20",
+      "title": "Describir historia e impacto",
+      "stories": [
+        "BG-19"
+      ],
+      "result": "Guardar problema, solución, beneficiarios e indicadores esperados; distinguir metas de resultados y recuperar el contenido del borrador.",
+      "dependencies": "S1-16",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-01",
+      "title": "Adjuntar multimedia de la campaña",
+      "stories": [
+        "BG-20"
+      ],
+      "result": "Persistir galería y recursos admitidos, con orden, previsualización y errores; aplicar los límites de archivos acordados.",
+      "dependencies": "S1-14 y S1-16; D03",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-02",
+      "title": "Planificar actividades e hitos",
+      "stories": [
+        "BG-21"
+      ],
+      "result": "Registrar actividades, fechas y responsables, relacionar hitos y validar coherencia temporal; recuperar todo desde el borrador.",
+      "dependencies": "S1-16; reglas de planificación aprobadas",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-03",
+      "title": "Registrar presupuesto y riesgos",
+      "stories": [
+        "BG-22"
+      ],
+      "result": "Persistir partidas y riesgos y comprobar totales y coherencia con la meta, sin inventar el tratamiento de diferencias.",
+      "dependencies": "S1-16 y S2-02; D02",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-04",
+      "title": "Configurar el financiamiento",
+      "stories": [
+        "BG-23"
+      ],
+      "result": "Guardar meta, plazo y condiciones permitidas, con validaciones y explicación visible del modelo aprobado.",
+      "dependencies": "S2-03; D02 y D04",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-05",
+      "title": "Configurar recompensas y preventas",
+      "stories": [
+        "BG-24"
+      ],
+      "result": "Gestionar niveles, importes, cupos y condiciones según modalidad, con validación y reglas aprobadas; excluir logística no autorizada.",
+      "dependencies": "S1-17 y S2-04; D02 y D07",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-06",
+      "title": "Registrar identidad y respaldos de persona",
+      "stories": [
+        "BG-25",
+        "BG-27"
+      ],
+      "result": "Preparar caso KYC con datos, documentos y cuenta destino requeridos; conservar privacidad y distinguir documento cargado de validado.",
+      "dependencies": "S1-14; D03",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-07",
+      "title": "Completar organización y respaldos KYB",
+      "stories": [
+        "BG-26",
+        "BG-27"
+      ],
+      "result": "Ampliar el registro básico con representación, documentos y destino autorizado, vinculando usuario, organización y caso KYB.",
+      "dependencies": "E08 y S1-14; D03 y D06",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-08",
+      "title": "Revisar casos KYC y KYB",
+      "stories": [
+        "BG-43",
+        "BG-44"
+      ],
+      "result": "Implementar colas, consulta privada y decisiones con motivo, responsable y fecha; impedir autoaprobación y exponer solo distintivos permitidos.",
+      "dependencies": "S2-06, S2-07 y S1-13; D03, D06 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-09",
+      "title": "Mostrar y corregir la verificación",
+      "stories": [
+        "BG-28"
+      ],
+      "result": "Mostrar estado y observaciones al titular y permitir completar o corregir respaldos sin perder historial.",
+      "dependencies": "S2-08; D03 y D09",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-10",
+      "title": "Revisar la campaña antes del envío",
+      "stories": [
+        "BG-29"
+      ],
+      "result": "Resumen y vista previa con datos persistidos, faltantes y enlaces al paso correspondiente; impedir envío incompleto según requisitos aprobados.",
+      "dependencies": "S2-01 a S2-09; D03 y D05",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-11",
+      "title": "Enviar la campaña a revisión",
+      "stories": [
+        "BG-30"
+      ],
+      "result": "Crear solicitud y transición válidas, confirmar recepción y evitar envíos duplicados con trazabilidad y comunicación acordada.",
+      "dependencies": "S2-10; D05, D08 y D09",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-12",
+      "title": "Decidir sobre campañas recibidas",
+      "stories": [
+        "BG-42"
+      ],
+      "result": "Listar y examinar contenido e historial; aprobar, rechazar o pedir cambios por sección, con motivos y notificación por canal acordado.",
+      "dependencies": "S2-11 y S1-13; D05, D06 y D08",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-13",
+      "title": "Corregir observaciones y reenviar",
+      "stories": [
+        "BG-31"
+      ],
+      "result": "El creador recibe observaciones, modifica lo permitido y reenvía una versión trazable; conservar historial de revisiones.",
+      "dependencies": "S2-12; D05",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-14",
+      "title": "Publicar y controlar estados de campaña",
+      "stories": [
+        "BG-32"
+      ],
+      "result": "Separar aprobación y publicación; aplicar transiciones, restricciones de edición, cierre y cancelación acordadas sin activar operaciones financieras no implementadas.",
+      "dependencies": "S2-12 y S2-13; D02, D05 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-15",
+      "title": "Conectar panel y proyectos del creador",
+      "stories": [
+        "BG-13",
+        "BG-14"
+      ],
+      "result": "Mostrar indicadores y proyectos propios con acciones por estado, continuación de borrador, observaciones y lista vacía; rechazar accesos ajenos.",
+      "dependencies": "S1-16, S2-11 y S2-14",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-16",
+      "title": "Conectar experiencia pública y guardados",
+      "stories": [
+        "BG-01",
+        "BG-05",
+        "BG-06",
+        "BG-07",
+        "BG-08",
+        "BG-12"
+      ],
+      "result": "Sustituir campañas simuladas por API pública: destacados, catálogo, búsqueda, filtros, paginación, detalle y estados; persistir guardados. Excluir borradores y datos privados.",
+      "dependencies": "S2-14; BG-51 añade novedades en S3-12",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-17",
+      "title": "Crear el panel administrativo inicial",
+      "stories": [
+        "BG-41"
+      ],
+      "result": "Mostrar pendientes e indicadores reales de revisión y cumplimiento, con accesos por permiso; finanzas y disputas se incorporan al existir sus módulos.",
+      "dependencies": "S2-08 y S2-12; D06",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-18",
+      "title": "Seleccionar el apoyo y su modalidad",
+      "stories": [
+        "BG-35"
+      ],
+      "result": "Elegir monto y recompensa aplicable, comprobar mínimos y cupos y revalidar la selección antes del checkout.",
+      "dependencies": "S2-05 y S2-14; D02",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-19",
+      "title": "Preparar el checkout",
+      "stories": [
+        "BG-36"
+      ],
+      "result": "Mostrar resumen y condiciones aprobadas, permitir corrección y confirmar expresamente; separar visibilidad pública de identidad interna y recoger solo contacto autorizado.",
+      "dependencies": "S2-18; D04 y D07",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-20",
+      "title": "Representar pagos de prueba",
+      "stories": [
+        "BG-37"
+      ],
+      "result": "Simulación rotulada de método, procesamiento, confirmado, pendiente, rechazado y expirado, con recuperación y reintento. Sin dinero real ni proveedor supuesto.",
+      "dependencies": "S2-19; diseño y nomenclatura acordada",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 2,
+      "id": "S2-21",
+      "title": "Verificar y documentar el segundo incremento",
+      "stories": [
+        "BG-04",
+        "BG-53",
+        "BG-60",
+        "BG-61",
+        "BG-62",
+        "BG-63"
+      ],
+      "result": "Versionar contratos y probar registro, borrador, revisión, publicación, consulta y checkout de prueba, con permisos, carga, errores, teclado y móvil; registrar evidencia y actualizar documentación.",
+      "dependencies": "Tareas S2 y revisión de los responsables",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-01",
+      "title": "Integrar el proveedor autorizado",
+      "stories": [
+        "BG-38"
+      ],
+      "result": "Adaptador y confirmaciones verificables en sandbox, sin datos sensibles de tarjeta; activación en producción solo con aprobación explícita y configuración autorizada.",
+      "dependencies": "S2-19 y S2-20; D04 y acceso al proveedor",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-02",
+      "title": "Asegurar importes y estados del aporte",
+      "stories": [
+        "BG-39"
+      ],
+      "result": "Transacciones, cupos, idempotencia y notificaciones repetidas; aumentar recaudación solo con confirmación válida y conservar relación con devoluciones y disputas.",
+      "dependencies": "S3-01; D02, D04 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-03",
+      "title": "Conectar el panel del patrocinador",
+      "stories": [
+        "BG-33"
+      ],
+      "result": "Resumen real de aportes, proyectos apoyados o seguidos y novedades, con enlaces y vacíos; completar novedades al disponer de S3-12.",
+      "dependencies": "S3-02 y S2-16",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-04",
+      "title": "Consultar mis aportes",
+      "stories": [
+        "BG-34"
+      ],
+      "result": "Historial propio con filtros, estados, vínculos a comprobantes y devoluciones, sin exponer operaciones ajenas.",
+      "dependencies": "S3-02; D04 y D09",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-05",
+      "title": "Consultar detalle y comprobante",
+      "stories": [
+        "BG-40"
+      ],
+      "result": "Mostrar importe, método no sensible, fecha, estado y referencia verificable; ofrecer comprobante de pago según corresponda, no comprobante logístico.",
+      "dependencies": "S3-02; D04 y D07",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-06",
+      "title": "Consultar operaciones financieras",
+      "stories": [
+        "BG-45"
+      ],
+      "result": "Listado, filtros, totales y exportaciones con permisos y privacidad; distinguir los estados propios de pago, aporte y otros movimientos.",
+      "dependencies": "S3-02 y permisos de S3-16; D04 y D09",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-07",
+      "title": "Conciliar operaciones",
+      "stories": [
+        "BG-46"
+      ],
+      "result": "Comparar referencias e importes, detectar faltantes y duplicados y registrar resolución con responsable y motivo; reimportar sin duplicación.",
+      "dependencies": "S3-06; D04",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-08",
+      "title": "Autorizar y seguir desembolsos",
+      "stories": [
+        "BG-47"
+      ],
+      "result": "Implementar solicitud, autorización y seguimiento con bruto, costos y neto aprobados, cuenta y referencia; probar fallos y consulta del creador antes de operar.",
+      "dependencies": "S3-07 y S2-08; D04, D06 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-09",
+      "title": "Gestionar devoluciones",
+      "stories": [
+        "BG-48"
+      ],
+      "result": "Solicitud, autorización y resultado vinculados al aporte; impedir duplicados y excesos, conservar trazabilidad y mostrar estado al titular.",
+      "dependencies": "S3-02 y S3-06; D04, D05 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-10",
+      "title": "Registrar incidencias",
+      "stories": [
+        "BG-49"
+      ],
+      "result": "Tipo, descripción y evidencias permitidas vinculadas a campaña u operación; confirmar con referencia sin inventar plazos de atención.",
+      "dependencies": "S1-14 y S3-04; D05",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-11",
+      "title": "Atender y resolver disputas",
+      "stories": [
+        "BG-50"
+      ],
+      "result": "Bandeja, mensajes, estados y escalamiento con motivo e historial; ninguna resolución mueve dinero sin autorización financiera correspondiente.",
+      "dependencies": "S3-10 y S3-09; D05 y D09",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-12",
+      "title": "Publicar avances y seguimiento",
+      "stories": [
+        "BG-07",
+        "BG-33",
+        "BG-51"
+      ],
+      "result": "Capturar avances, hitos, responsables y evidencias; mostrar novedades y ausencia de ellas al público y patrocinador, sin construir seguimiento de paquetes.",
+      "dependencies": "S2-02 y S2-14; D05, D07 y D10",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-13",
+      "title": "Registrar rendición y cierre",
+      "stories": [
+        "BG-52"
+      ],
+      "result": "Comparar presupuesto y ejecución, fondos, saldo e indicadores; explicar variaciones y conservar evidencia final con permisos y aprobación acordados.",
+      "dependencies": "S3-08 y S3-12; D05 y D10",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-14",
+      "title": "Administrar personas y organizaciones",
+      "stories": [
+        "BG-54"
+      ],
+      "result": "Consulta y actualización autorizadas de datos y representación, separadas de verificación y permisos. Altas, restricciones y bajas solo bajo reglas aprobadas.",
+      "dependencies": "E08 y S2-08; D06 y D10",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-15",
+      "title": "Consultar auditoría del sistema",
+      "stories": [
+        "BG-56"
+      ],
+      "result": "Registrar y consultar actor, fecha, objeto, acción y resultado de decisiones y operaciones; verificar actor por transacción y excluir secretos.",
+      "dependencies": "Instrumentar desde cada módulo; D03, D06 y VT",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-16",
+      "title": "Completar permisos por responsabilidad",
+      "stories": [
+        "BG-12",
+        "BG-41",
+        "BG-53"
+      ],
+      "result": "Aplicar matriz aprobada a finanzas, soporte, administrador y auditor de lectura, así como perfiles compatibles; probar denegaciones y completar accesos del panel.",
+      "dependencies": "S1-13; D06. Preparar cada permiso antes de exponer su módulo",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-17",
+      "title": "Completar parámetros acordados",
+      "stories": [
+        "BG-55"
+      ],
+      "result": "Agregar solo parámetros de negocio aprobados, proteger referencias y auditar cambios; completar la interfaz acordada sin ampliar modalidades.",
+      "dependencies": "S1-15; D02 y D10",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-18",
+      "title": "Cerrar contratos y persistencia integrados",
+      "stories": [
+        "BG-59",
+        "BG-60",
+        "BG-61"
+      ],
+      "result": "Revisar contratos de todos los módulos, reemplazo controlado de mocks, privacidad y compatibilidad de migraciones; ensayar recuperación sobre el esquema final del incremento.",
+      "dependencies": "Módulos S3 y S1-10; D01, D03, D09 y VT",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-19",
+      "title": "Verificar el MVP y la interfaz completa",
+      "stories": [
+        "BG-04",
+        "BG-62"
+      ],
+      "result": "Pruebas de reglas, API, persistencia, reintentos, cupos, permisos y transacciones; revisar todas las rutas en móvil, escritorio y teclado y corregir fallos.",
+      "dependencies": "S2-21 y módulos S3",
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-20",
+      "title": "Actualizar y publicar la entrega general",
+      "stories": [
+        "BG-63"
+      ],
+      "result": "Revisar y publicar código, configuración sin secretos y documentación; actualizar backlog y explicativo y adjuntar enlace Figma y PDF general de pantallas finales.",
+      "dependencies": "S3-18 y S3-19; autorización de publicación y acceso a Figma",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    },
+    {
+      "sprint": 3,
+      "id": "S3-21",
+      "title": "Validar el recorrido integral",
+      "stories": [
+        "BG-64"
+      ],
+      "result": "Demostrar registro, campaña, revisión, publicación, aporte, seguimiento y gestión interna, incluyendo fallos y límites; registrar aceptación de los responsables.",
+      "dependencies": "S3-19 y S3-20; decisiones aplicables y revisión externa",
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar"
+    }
+  ],
+  "stories": [
+    {
+      "id": "BG-01",
+      "title": "Comunicar la propuesta de Brotar",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2
+      ],
+      "tasks": [
+        "S2-16"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Mostrar propósito e impacto social, ambiental y productivo, con al menos tres destacados cuando existan.",
+        "CA 2. Conectar explorar, cómo funciona, para creadores y acceso con rutas existentes.",
+        "CA 3. Resolver carga, ausencia de destacados y error con una salida útil."
+      ],
+      "dependencies": "Dependencias: BG-57, BG-60.",
+      "source": "Fuente: P p. 3; T p. 3; F 01.Landing Principal."
+    },
+    {
+      "id": "BG-02",
+      "title": "Explicar el ciclo de participación",
+      "state": "Cierre técnico local",
+      "sprints": [
+        1
+      ],
+      "tasks": [],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Explicar descubrimiento, revisión de confianza, apoyo, seguimiento y resultados.",
+        "CA 2. Presentar pasos ordenados y llamadas a explorar.",
+        "CA 3. Distinguir impacto esperado de resultados logrados; evitar garantías absolutas."
+      ],
+      "dependencies": "Dependencias: BG-04.",
+      "source": "Fuente: P p. 3; T pp. 3-4; F 02. Como Funciona.",
+      "owner": "Ricardo"
+    },
+    {
+      "id": "BG-03",
+      "title": "Orientar a futuros creadores",
+      "state": "Cierre técnico local",
+      "sprints": [
+        1
+      ],
+      "tasks": [],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Explicar preparación, verificación y revisión antes de publicar.",
+        "CA 2. Describir donación, recompensa y preventa, con requisitos aprobados o señalados como pendientes.",
+        "CA 3. Dirigir a registro o ingreso sin prometer publicación automática."
+      ],
+      "dependencies": "Dependencias: BG-04, D02, D03.",
+      "source": "Fuente: P pp. 3-4; T p. 4; F 3. Para creadores.",
+      "owner": "Ricardo"
+    },
+    {
+      "id": "BG-04",
+      "title": "Aplicar identidad y navegación compartidas",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "S2-21",
+        "S3-19"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Conservar nombre y logo oficial, familia visual y navegación según contexto.",
+        "CA 2. Reutilizar botones, campos, tarjetas, progreso, avisos y estados; permitir uso con teclado y foco visible.",
+        "CA 3. Verificar los recorridos en escritorio y móvil sin ocultar acciones esenciales."
+      ],
+      "dependencies": "Dependencias: BG-57.",
+      "source": "Fuente: P p. 2; T pp. 3, 7-8; F Producto."
+    },
+    {
+      "id": "BG-05",
+      "title": "Explorar campañas publicadas",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2
+      ],
+      "tasks": [
+        "S2-16"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Mostrar portada, nombre, categoría, creador, meta, monto y avance.",
+        "CA 2. Ordenar o agrupar y paginar conservando los criterios activos.",
+        "CA 3. La API pública no expone borradores ni documentos privados; cada tarjeta abre su campaña."
+      ],
+      "dependencies": "Dependencias: BG-32, BG-59, BG-60.",
+      "source": "Fuente: P p. 4; T p. 4; F 4.Explorar proyectos."
+    },
+    {
+      "id": "BG-06",
+      "title": "Buscar y combinar filtros",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2
+      ],
+      "tasks": [
+        "S2-16"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Combinar categoría, ubicación y tipo de campaña con el texto buscado.",
+        "CA 2. Mostrar criterios activos, cantidad de resultados y opciones de quitar uno o limpiar todos.",
+        "CA 3. Tratar filtros inválidos y ausencia de coincidencias sin errores técnicos visibles."
+      ],
+      "dependencies": "Dependencias: BG-05, BG-60.",
+      "source": "Fuente: P p. 4; T pp. 4-5; F 05 Búsqueda y filtros."
+    },
+    {
+      "id": "BG-07",
+      "title": "Consultar el detalle público",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "S2-16",
+        "S3-12"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Mostrar historia, problema, solución, beneficiarios, impacto esperado, meta, progreso, creador y actualizaciones.",
+        "CA 2. Explicar las verificaciones efectivas sin revelar documentos ni garantizar resultados.",
+        "CA 3. Mantener visible la acción de apoyo; exigir acceso cuando corresponda y deshabilitarla en campañas cerradas o canceladas."
+      ],
+      "dependencies": "Dependencias: BG-05, BG-09, BG-32, BG-51.",
+      "source": "Fuente: P pp. 4-5; T p. 5; F 06 Detalle público del proyecto."
+    },
+    {
+      "id": "BG-08",
+      "title": "Resolver estados públicos alternativos",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2
+      ],
+      "tasks": [
+        "S2-16"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Cubrir carga, vacío, error y recuperación en landing, explorar y detalle.",
+        "CA 2. Distinguir campaña activa, finalizada, cancelada, inexistente y sin novedades.",
+        "CA 3. Conservar navegación y criterios al reintentar; mantener los escenarios de prueba reproducibles."
+      ],
+      "dependencies": "Dependencias: BG-01, BG-05, BG-06, BG-07.",
+      "source": "Fuente: T pp. 3-5; F Variantes y estados."
+    },
+    {
+      "id": "BG-09",
+      "title": "Iniciar y cerrar una sesión real",
+      "state": "Cierre técnico local",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "E05"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Validar correo y contraseña; mostrar errores y procesamiento sin envíos duplicados.",
+        "CA 2. Crear y finalizar una sesión real con el mecanismo que se acuerde; nunca guardar contraseñas en claro.",
+        "CA 3. Aplicar permisos en la API y dirigir al destino permitido sin aceptar redirecciones externas arbitrarias."
+      ],
+      "dependencies": "Dependencias: BG-58, BG-59, BG-53, D08.",
+      "source": "Fuente: P p. 5; G pp. 3-5; F 07-Inicio Sesion.",
+      "owner": "Ricardo"
+    },
+    {
+      "id": "BG-10",
+      "title": "Registrar una cuenta",
+      "state": "Parcial",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "E04",
+        "S1-11"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Recoger los datos básicos según perfil y validar correo, contraseña y confirmación.",
+        "CA 2. Evitar correos duplicados y exigir aceptación del texto legal aprobado, con confirmación de creación.",
+        "CA 3. No permitir que el registro público conceda roles internos; concretar verificación de correo según D08."
+      ],
+      "dependencies": "Dependencias: BG-58, BG-59, D03, D08.",
+      "source": "Fuente: P pp. 5-6; G pp. 3-5; F 08-Crear Cuenta.",
+      "owner": "Alison"
+    },
+    {
+      "id": "BG-11",
+      "title": "Recuperar el acceso",
+      "state": "Parcial",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-12"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Solicitar recuperación por correo y mostrar validación, envío o error recuperable.",
+        "CA 2. Implementar el enlace y restablecimiento real con caducidad y uso único según política aprobada.",
+        "CA 3. No simular un correo enviado en producción; resolver la discrepancia sobre revelar cuentas existentes en D08."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-10, BG-58, D08.",
+      "source": "Fuente: P p. 6; T pp. 6-7; F 09-Recuperacion Contra.",
+      "owner": "Alison"
+    },
+    {
+      "id": "BG-12",
+      "title": "Administrar perfil y proyectos guardados",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "E06",
+        "S2-16",
+        "S3-16"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Separar información pública de datos privados y permitir modificar solo datos autorizados.",
+        "CA 2. Guardar o dejar de seguir una campaña sin duplicados; recuperar la selección al volver a ingresar.",
+        "CA 3. Permitir la participación como creador o patrocinador sin crear cuentas independientes; definir preferencias concretas antes de ampliar formularios."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-53, BG-59.",
+      "source": "Fuente: G pp. 3, 5-6; F Detalle público y Panel Patrocinador."
+    },
+    {
+      "id": "BG-13",
+      "title": "Consultar el panel del creador",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-15"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar resumen de proyectos, indicadores y estados de borrador, pendiente, aprobado y publicado.",
+        "CA 2. Ofrecer crear campaña, continuar borrador y acceder a observaciones o mensajes relacionados.",
+        "CA 3. Si no hay campañas, mostrar un vacío con invitación a crear la primera."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-53, BG-59.",
+      "source": "Fuente: C p. 2; F 01 Panel y variantes. Antecedente: PB-01, PB-02, PB-03."
+    },
+    {
+      "id": "BG-14",
+      "title": "Gestionar mis proyectos",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-15"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Listar nombre, categoría, meta, avance y estado de las campañas propias.",
+        "CA 2. Mostrar acciones según estado y permisos; continuar una campaña incompleta en el punto guardado.",
+        "CA 3. Cubrir lista vacía y evitar consultar o modificar campañas ajenas mediante la API."
+      ],
+      "dependencies": "Dependencias: BG-13, BG-18, BG-53.",
+      "source": "Fuente: C p. 3; F 02 Mis proyectos con proyectos. Antecedente: PB-04, PB-05, PB-06."
+    },
+    {
+      "id": "BG-15",
+      "title": "Elegir el tipo de campaña",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-17"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Permitir una modalidad con explicación clara y conservarla durante el asistente.",
+        "CA 2. Mostrar el progreso del flujo de ocho etapas; omitir requisitos de recompensas en donación.",
+        "CA 3. Gestionar cambios de modalidad sin descartar datos silenciosamente y según reglas aprobadas."
+      ],
+      "dependencies": "Dependencias: BG-18, D02.",
+      "source": "Fuente: C p. 3; G p. 3; F 03 Tipo de campaña. Antecedente: PB-07, PB-08, PB-31.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-16",
+      "title": "Registrar la información general",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-18"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Capturar nombre, categoría, ubicación y resumen corto con límites visibles acordados.",
+        "CA 2. Validar campos requeridos y mostrar errores asociados a cada campo.",
+        "CA 3. Reutilizar los datos en tarjeta y revisión, sin cifras o verificaciones inventadas."
+      ],
+      "dependencies": "Dependencias: BG-15, BG-18, BG-55.",
+      "source": "Fuente: C pp. 3-4; F 04 Información general. Antecedente: PB-09, PB-11.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-17",
+      "title": "Cargar y reemplazar la portada",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-19"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Permitir selección, previsualización y reemplazo del archivo con confirmación.",
+        "CA 2. Validar formato y tamaño tanto en interfaz como en servidor según límites acordados.",
+        "CA 3. Guardar una referencia al recurso y comunicar fallos de carga sin perder el formulario."
+      ],
+      "dependencies": "Dependencias: BG-18, BG-61, D03.",
+      "source": "Fuente: C p. 3; F 04 Información general. Antecedente: PB-10.",
+      "owner": "Alison"
+    },
+    {
+      "id": "BG-18",
+      "title": "Guardar y recuperar el borrador",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-16"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Persistir los pasos y la posición del asistente con confirmación de guardado manual o automático.",
+        "CA 2. Recuperar el mismo borrador tras salir y volver a ingresar; mostrar errores de guardado y reintento.",
+        "CA 3. Mantener datos coherentes entre pasos, botones anterior y siguiente, lista y revisión final."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-58, BG-59.",
+      "source": "Fuente: C pp. 2-6; F asistente y Guardar Progreso. Antecedente: PB-11, PB-31, PB-32.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-19",
+      "title": "Describir historia e impacto esperado",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "S1-20"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar problema, solución, beneficiarios y resultados esperados.",
+        "CA 2. Incluir indicadores con unidad y meta cuando apliquen, sin presentarlos como resultados ejecutados.",
+        "CA 3. Reutilizar el contenido en revisión, detalle público y seguimiento posterior."
+      ],
+      "dependencies": "Dependencias: BG-18.",
+      "source": "Fuente: C p. 4; G pp. 5, 8; F 05 Historia e impacto. Antecedente: PB-12, PB-13.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-20",
+      "title": "Adjuntar apoyo multimedia",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-01"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Distinguir archivos pendientes, cargados y fallidos con opción de corregir.",
+        "CA 2. Validar formatos y tamaños acordados y conservar el contenido narrativo ante fallos.",
+        "CA 3. Publicar solo recursos autorizados; los documentos de identidad no se incorporan a la galería."
+      ],
+      "dependencies": "Dependencias: BG-19, BG-61, D03.",
+      "source": "Fuente: C p. 4; F 05 Historia e impacto. Antecedente: PB-14."
+    },
+    {
+      "id": "BG-21",
+      "title": "Planificar actividades e hitos",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-02"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar descripción, responsable y fechas de cada actividad con un cronograma comprensible.",
+        "CA 2. Identificar hitos y corregir fechas incoherentes antes del envío.",
+        "CA 3. Conservar la planificación como referencia para seguimiento y rendición."
+      ],
+      "dependencies": "Dependencias: BG-18.",
+      "source": "Fuente: C p. 4; G pp. 5, 8; F 06 Plan y presupuesto. Antecedente: PB-15."
+    },
+    {
+      "id": "BG-22",
+      "title": "Detallar presupuesto y riesgos",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-03"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar gastos y sumar importes con moneda consistente.",
+        "CA 2. Comparar el presupuesto con la meta y mostrar diferencias como advertencia, no como aprobación institucional.",
+        "CA 3. Registrar riesgos y medidas de mitigación; definir con los líderes cuándo el descuadre bloquea el envío."
+      ],
+      "dependencies": "Dependencias: BG-21, BG-23, D02.",
+      "source": "Fuente: C p. 4; F Plan y presupuesto Aprobado y Advertencia. Antecedente: PB-16, PB-17."
+    },
+    {
+      "id": "BG-23",
+      "title": "Configurar las condiciones de financiamiento",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-04"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Validar meta positiva y duración; usar moneda y límites autorizados.",
+        "CA 2. Presentar flexible y todo o nada y conservar la elección en el resumen.",
+        "CA 3. No deducir elegibilidad, comisión o devolución automática de los ejemplos del Figma; aplicar D02 y D04."
+      ],
+      "dependencies": "Dependencias: BG-15, BG-18, D02, D04.",
+      "source": "Fuente: C p. 4; G p. 3; F 07 Financiamiento. Antecedente: PB-18, PB-19."
+    },
+    {
+      "id": "BG-24",
+      "title": "Gestionar recompensas y preventas",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-05"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar tipo, descripción, aporte mínimo, cupo y fecha estimada; permitir listar y editar.",
+        "CA 2. Cubrir ausencia de recompensas y omisión de esta etapa cuando sea donación.",
+        "CA 3. Informar disponibilidad sin implementar transportistas, paquetes o comprobantes de entrega."
+      ],
+      "dependencies": "Dependencias: BG-15, BG-18, D02, D07.",
+      "source": "Fuente: C p. 5; G pp. 6, 8; F 08 Recompensas y recompensas-omitida. Antecedente: PB-20, PB-21, PB-22."
+    },
+    {
+      "id": "BG-25",
+      "title": "Recopilar identidad de la persona",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-06"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Solicitar los datos personales y respaldos acordados para la persona responsable.",
+        "CA 2. Diferenciar datos privados y señal pública de confianza.",
+        "CA 3. No considerar identidad aprobada por el solo hecho de cargar un archivo."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-61, D03.",
+      "source": "Fuente: C p. 5; G pp. 4-5; F verificacion-kyc-en-proceso. Antecedente: PB-23."
+    },
+    {
+      "id": "BG-26",
+      "title": "Recopilar información de la organización",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2
+      ],
+      "tasks": [
+        "E08",
+        "S2-07"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Identificar entidad, representante y respaldo de representación según requisitos aprobados.",
+        "CA 2. Distinguir KYB y KYC y conservar correctamente la información aplicable.",
+        "CA 3. Vincular el caso a la organización sin conceder permisos a representantes no autorizados."
+      ],
+      "dependencies": "Dependencias: BG-25, BG-54, D03, D06.",
+      "source": "Fuente: C p. 5; G p. 4; F Verificación KYC KYB. Antecedente: PB-24."
+    },
+    {
+      "id": "BG-27",
+      "title": "Registrar documentos y cuenta destino",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-06",
+        "S2-07"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Cargar respaldos y datos de cuenta según persona u organización, con aviso de tratamiento de datos.",
+        "CA 2. Confirmar recepción y proteger los archivos y datos bancarios mediante permisos; no hacerlos públicos.",
+        "CA 3. Registrar aceptación cuando la política aprobada la requiera y separar cuenta declarada de cuenta verificada."
+      ],
+      "dependencies": "Dependencias: BG-25, BG-26, BG-61, D03.",
+      "source": "Fuente: C p. 5; G pp. 4-5; F Verificación KYC KYB. Antecedente: PB-25."
+    },
+    {
+      "id": "BG-28",
+      "title": "Consultar y corregir la verificación",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-09"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Distinguir carga correcta, en proceso, verificado, rechazado y documentación adicional.",
+        "CA 2. Mostrar motivo de rechazo o ilegibilidad y permitir reemplazar o completar lo solicitado.",
+        "CA 3. Conservar historial y comunicar el resultado sin confundir revisión de campaña con identidad."
+      ],
+      "dependencies": "Dependencias: BG-27, BG-43, BG-44.",
+      "source": "Fuente: C p. 5; A pp. 6-7; F verificacion-kyc-rechazado. Antecedente: PB-26."
+    },
+    {
+      "id": "BG-29",
+      "title": "Revisar el resumen y sus faltantes",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-10"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar tipo, datos, historia, plan, financiamiento, recompensas aplicables y verificación.",
+        "CA 2. Identificar secciones incompletas y enlazar su edición sin perder información.",
+        "CA 3. Bloquear el envío incompleto en interfaz y API; una vista previa no constituye una campaña publicada."
+      ],
+      "dependencies": "Dependencias: BG-16 a BG-28.",
+      "source": "Fuente: C pp. 5-6; F 10 Revision final y 10 Revisión - Error. Antecedente: PB-27, PB-28."
+    },
+    {
+      "id": "BG-30",
+      "title": "Enviar la campaña a revisión",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-11"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Validar los requisitos de envío aprobados y crear un registro de revisión trazable.",
+        "CA 2. Confirmar el envío, evitar envíos duplicados y reflejar el estado pendiente en el panel.",
+        "CA 3. Conservar versión y fecha de lo enviado; no prometer un plazo de respuesta no aprobado."
+      ],
+      "dependencies": "Dependencias: BG-29, BG-42, D05.",
+      "source": "Fuente: C p. 6; G p. 6; F 11 Campaña enviada. Antecedente: PB-29."
+    },
+    {
+      "id": "BG-31",
+      "title": "Corregir observaciones y reenviar",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-13"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar comentarios por sección y distinguir cambios solicitados de validación local incompleta.",
+        "CA 2. Permitir corregir las secciones autorizadas conservando el historial de revisión.",
+        "CA 3. Revalidar y reenviar; la corrección no cambia automáticamente el resultado a aprobado."
+      ],
+      "dependencies": "Dependencias: BG-30, BG-42, D05.",
+      "source": "Fuente: C p. 6; F 10 Revisión - Requiere cambios. Antecedente: PB-30."
+    },
+    {
+      "id": "BG-32",
+      "title": "Publicar y controlar el ciclo de campaña",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-14"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Exigir revisión y verificaciones aplicables antes de publicar, también en la API.",
+        "CA 2. Distinguir borrador, revisión, aprobación, publicación, fin de recaudación, ejecución, cierre y cancelación.",
+        "CA 3. Definir transiciones, permisos de edición y cierre con D02 y D05; retirar acciones de aporte cuando ya no correspondan."
+      ],
+      "dependencies": "Dependencias: BG-30, BG-42, BG-44, D02, D05.",
+      "source": "Fuente: G pp. 6, 8-9; C p. 2; F 01 Panel - Aprobado. Antecedente: PB-01, PB-05."
+    },
+    {
+      "id": "BG-33",
+      "title": "Consultar el panel del patrocinador",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-03",
+        "S3-12"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar resumen de aportes, proyectos apoyados o seguidos y actualizaciones recientes.",
+        "CA 2. Conectar explorar, mis aportes y seguimiento del proyecto correcto.",
+        "CA 3. Si no hay aportes, mostrar un estado vacío útil sin inventar actividad."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-12, BG-34, BG-51.",
+      "source": "Fuente: A p. 3; F Panel Patrocinador Propuesta Light Version."
+    },
+    {
+      "id": "BG-34",
+      "title": "Consultar mis aportes",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-04"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar proyecto, monto, fecha y estado, con filtro por fecha o estado.",
+        "CA 2. Distinguir confirmado, pendiente, rechazado y devuelto y enlazar el comprobante disponible.",
+        "CA 3. Mostrar solo operaciones propias y enlazar seguimiento o devolución relacionada."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-39, BG-40, BG-48.",
+      "source": "Fuente: A p. 3; G p. 6; F Mis Aportes Propuesta Light Version."
+    },
+    {
+      "id": "BG-35",
+      "title": "Elegir monto y modalidad de apoyo",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-18"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar opciones aplicables a la campaña, monto y beneficio correspondiente.",
+        "CA 2. Validar monto mínimo y disponibilidad; bloquear recompensas agotadas o sin cupo.",
+        "CA 3. Conservar la selección al avanzar y revalidarla antes de confirmar la operación."
+      ],
+      "dependencies": "Dependencias: BG-07, BG-24, BG-32, D02.",
+      "source": "Fuente: A pp. 3-4; F 3 Elegir aporte."
+    },
+    {
+      "id": "BG-36",
+      "title": "Revisar y confirmar el checkout",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-19"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar campaña, monto, desglose, recompensa y condiciones, con confirmación explícita.",
+        "CA 2. Permitir corregir la selección y ocultar el nombre públicamente cuando aplique, sin anonimizar el registro interno.",
+        "CA 3. Recoger contacto mínimo; resolver en D07 los datos de entrega antes de añadir direcciones o logística."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-35, D04, D07, D08.",
+      "source": "Fuente: A p. 4; G p. 6; F 4 Checkout Revisar aporte."
+    },
+    {
+      "id": "BG-37",
+      "title": "Representar métodos y resultados de pago",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-20"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Representar selección de método, procesamiento y resultados confirmado, pendiente, rechazado y expirado.",
+        "CA 2. Ofrecer consulta de estado, reintento o cambio de método según el caso, conservando el aporte.",
+        "CA 3. Usar solo datos de prueba en la simulación y rotularla; QR y tarjeta del Figma no implican un proveedor contratado."
+      ],
+      "dependencies": "Dependencias: BG-36.",
+      "source": "Fuente: A p. 4; F Pago QR, Tarjeta, Pendiente, Confirmado, Fallido, Expirado."
+    },
+    {
+      "id": "BG-38",
+      "title": "Integrar el proveedor de pagos aprobado",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-01"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Cerrar proveedor, moneda, costos, custodia y responsables antes de activar dinero real.",
+        "CA 2. Implementar el adaptador y probarlo en entorno de pruebas con referencias y confirmaciones verificables.",
+        "CA 3. No recopilar ni almacenar datos sensibles de tarjeta directamente; acordar el flujo seguro del proveedor y autorización de producción."
+      ],
+      "dependencies": "Dependencias: BG-37, BG-58, BG-60, D04.",
+      "source": "Fuente: G pp. 7, 9; S pp. 4-6; A p. 4 limita el prototipo a simulación."
+    },
+    {
+      "id": "BG-39",
+      "title": "Mantener estados e importes consistentes",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-02"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar iniciado, pendiente, confirmado, fallido o rechazado y expirado; vincular reembolso o disputa sin perder el historial.",
+        "CA 2. Solo la confirmación válida aumenta la recaudación; procesar reintentos o notificaciones repetidas sin duplicar aportes.",
+        "CA 3. Aplicar transacciones y acordar nomenclatura, transiciones y cupos con D02, D04 y D09."
+      ],
+      "dependencies": "Dependencias: BG-38, BG-59, D02, D04, D09.",
+      "source": "Fuente: G pp. 7, 9; A pp. 3-4; S p. 6."
+    },
+    {
+      "id": "BG-40",
+      "title": "Consultar detalle y comprobante del aporte",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-05"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar proyecto, importe, método no sensible, fecha, estado y referencia verificable.",
+        "CA 2. Ofrecer el comprobante cuando corresponda y acceso a mis aportes y seguimiento.",
+        "CA 3. Distinguir comprobante de pago de comprobante de entrega física, que está fuera del MVP."
+      ],
+      "dependencies": "Dependencias: BG-34, BG-39, BG-53.",
+      "source": "Fuente: A pp. 3-5; G pp. 6-8; F Pago Confirmado y Mis Aportes."
+    },
+    {
+      "id": "BG-41",
+      "title": "Consultar pendientes administrativos",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2,
+        3
+      ],
+      "tasks": [
+        "S2-17",
+        "S3-16"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar indicadores, pendientes por revisar, alertas y casos críticos.",
+        "CA 2. Enlazar revisión, verificación, finanzas y disputas según permisos.",
+        "CA 3. Calcular datos desde registros reales; no convertir indicadores de ejemplo en cifras de producción."
+      ],
+      "dependencies": "Dependencias: BG-42, BG-43, BG-45, BG-50, BG-53.",
+      "source": "Fuente: A p. 6; F Panel admin 1."
+    },
+    {
+      "id": "BG-42",
+      "title": "Revisar y decidir sobre una campaña",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-12"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Listar pendientes por antigüedad y abrir todo el contenido y su historial.",
+        "CA 2. Registrar aprobar, rechazar con motivo o solicitar cambios con comentarios por sección.",
+        "CA 3. Notificar el resultado al creador mediante el canal acordado y mantener separadas aprobación y publicación."
+      ],
+      "dependencies": "Dependencias: BG-30, BG-53, BG-56, D05.",
+      "source": "Fuente: A p. 6; G p. 6; F Admin revision campañas y detalle."
+    },
+    {
+      "id": "BG-43",
+      "title": "Gestionar colas y documentos KYC y KYB",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-08"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Separar las colas de personas y organizaciones con sus estados.",
+        "CA 2. Abrir el caso y visualizar documentos solo con permisos apropiados.",
+        "CA 3. No enviar documentos o cuentas privadas al detalle público ni a roles sin autorización."
+      ],
+      "dependencies": "Dependencias: BG-25, BG-26, BG-27, BG-53, BG-61.",
+      "source": "Fuente: A pp. 6-7; F Admin verificar identidad, KYC y kyb."
+    },
+    {
+      "id": "BG-44",
+      "title": "Registrar decisiones de verificación",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        2
+      ],
+      "tasks": [
+        "S2-08"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar decisión, motivo cuando corresponda, responsable y fecha.",
+        "CA 2. Distinguir pendiente, verificado, rechazado y documentación adicional; devolver observaciones al creador.",
+        "CA 3. Publicar solo distintivos que expliquen qué se verificó; no permitir autoaprobación del creador."
+      ],
+      "dependencies": "Dependencias: BG-43, BG-53, BG-56, D03.",
+      "source": "Fuente: A pp. 6-7; G pp. 4-5; F detalle KYC y KYB."
+    },
+    {
+      "id": "BG-45",
+      "title": "Consultar operaciones financieras",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-06"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Listar pagos con importe, proyecto, patrocinador, fecha y estado, con filtros por fecha, proyecto y estado.",
+        "CA 2. Calcular totales y exportar reportes respetando permisos y privacidad.",
+        "CA 3. Distinguir pendiente, completado y fallido de los estados propios de cada tipo de operación."
+      ],
+      "dependencies": "Dependencias: BG-39, BG-53, D04, D09.",
+      "source": "Fuente: A p. 7; G p. 7; F Finanzas Resumen Financiero."
+    },
+    {
+      "id": "BG-46",
+      "title": "Conciliar operaciones",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-07"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Detectar operaciones faltantes, duplicaciones, diferencias de monto o estado y pendientes.",
+        "CA 2. Mostrar ambas referencias y registrar resolución, responsable y motivo.",
+        "CA 3. No ajustar cifras silenciosamente ni duplicar movimientos al reimportar información."
+      ],
+      "dependencies": "Dependencias: BG-38, BG-39, BG-45, BG-56, D04.",
+      "source": "Fuente: A p. 7; G p. 7; F Conciliación y Conciliación ACCION."
+    },
+    {
+      "id": "BG-47",
+      "title": "Autorizar y seguir desembolsos",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-08"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Identificar campaña, creador, bruto, costos, neto, cuenta, autorización, fecha y referencia.",
+        "CA 2. Registrar pendiente, aprobado, procesando, completado o fallido y permitir consulta autorizada por el creador.",
+        "CA 3. Exigir las condiciones y responsables acordados; no fijar comisiones ni doble aprobación a partir de un ejemplo visual."
+      ],
+      "dependencies": "Dependencias: BG-32, BG-44, BG-46, BG-56, D02, D04.",
+      "source": "Fuente: A p. 7; G p. 7; F Desembolsos y Detalle de Desembolso."
+    },
+    {
+      "id": "BG-48",
+      "title": "Gestionar devoluciones",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-09"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar motivo, importe, fecha, referencia y autorizaciones vinculadas al aporte.",
+        "CA 2. Distinguir solicitada, en procesamiento, reembolsada o fallida; mostrar el estado al titular.",
+        "CA 3. Evitar devoluciones duplicadas y aplicar reglas de procedencia y efecto contable aprobadas."
+      ],
+      "dependencies": "Dependencias: BG-39, BG-45, BG-53, D04, D05, D09.",
+      "source": "Fuente: A pp. 3, 7; G pp. 7-8; F Estado de Devolución."
+    },
+    {
+      "id": "BG-49",
+      "title": "Reportar una incidencia",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-10"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Permitir elegir tipo de incidencia, describirla y adjuntar evidencias autorizadas.",
+        "CA 2. Vincular caso, campaña y operación cuando aplique; confirmar recepción con una referencia.",
+        "CA 3. Cubrir pago no reconocido, devolución, información incorrecta, recompensa no recibida u otra incidencia sin inventar plazos de resolución."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-40, BG-61, D05.",
+      "source": "Fuente: A pp. 5, 7; G p. 8; F Reportar Problema."
+    },
+    {
+      "id": "BG-50",
+      "title": "Atender y resolver disputas",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-11"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar bandeja con prioridad, tipo, proyecto, operación e historial de mensajes.",
+        "CA 2. Registrar abierto, en revisión, esperando respuesta, resuelto, escalado o cerrado según transiciones aprobadas.",
+        "CA 3. Resolver o escalar con motivo y trazabilidad; una resolución no mueve dinero sin la autorización financiera correspondiente."
+      ],
+      "dependencies": "Dependencias: BG-49, BG-53, BG-56, D05, D09.",
+      "source": "Fuente: A p. 7; G p. 8; F Disputas y DETALLE CASO."
+    },
+    {
+      "id": "BG-51",
+      "title": "Publicar avances y dar seguimiento",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-12"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Reutilizar actividades e hitos previstos y registrar avances, fechas, responsables y evidencias.",
+        "CA 2. Permitir consultar novedades y progreso del proyecto apoyado, incluyendo ausencia de actualizaciones.",
+        "CA 3. Informar resultados y situación de recompensas sin construir seguimiento de paquetes; concretar la edición del creador que aún no tiene pantalla final específica."
+      ],
+      "dependencies": "Dependencias: BG-21, BG-32, BG-61, D07, D10.",
+      "source": "Fuente: G p. 8; A pp. 4-5; F Seguimiento del Proyecto."
+    },
+    {
+      "id": "BG-52",
+      "title": "Presentar rendición y cierre",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-13"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Mostrar presupuesto frente a ejecución, variaciones, fondos recibidos y usados, saldo y evidencias.",
+        "CA 2. Comparar indicadores esperados y resultados publicados, explicando desvíos relevantes.",
+        "CA 3. Conservar información final al cierre con permisos acordados; precisar pantallas de captura y aprobación antes del desarrollo."
+      ],
+      "dependencies": "Dependencias: BG-19, BG-22, BG-47, BG-51, D05, D10.",
+      "source": "Fuente: G pp. 8-10; F Seguimiento y Rendición Pública."
+    },
+    {
+      "id": "BG-53",
+      "title": "Aplicar permisos por responsabilidad",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "E07",
+        "S1-13",
+        "S2-21",
+        "S3-16"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Separar creador, patrocinador, revisor, cumplimiento, finanzas, soporte, administrador y auditor.",
+        "CA 2. Validar permisos y pertenencia en la API, no solo ocultando botones.",
+        "CA 3. Mantener al auditor en lectura; permitir perfiles compatibles sin conceder privilegios por registro público."
+      ],
+      "dependencies": "Dependencias: BG-09, BG-58, D06.",
+      "source": "Fuente: G pp. 3-4, 9; S p. 4; F navegación por rol.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-54",
+      "title": "Administrar personas y organizaciones",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-14"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Consultar y actualizar los datos permitidos y los vínculos de representación.",
+        "CA 2. Separar perfil público, datos privados, verificación y permisos internos.",
+        "CA 3. Acordar altas, restricciones y bajas antes de implementar operaciones destructivas; conservar historial necesario."
+      ],
+      "dependencies": "Dependencias: BG-10, BG-12, BG-53, BG-56, D03, D06.",
+      "source": "Fuente: G pp. 4, 6; pantalla administrativa por detallar en D10."
+    },
+    {
+      "id": "BG-55",
+      "title": "Gestionar categorías y parámetros",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        1,
+        3
+      ],
+      "tasks": [
+        "S1-15",
+        "S3-17"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Administrar categorías y catálogos necesarios con validación de referencias existentes.",
+        "CA 2. Gestionar solo parámetros de negocio previamente acordados, registrando quién los modifica.",
+        "CA 3. No introducir configuraciones avanzadas o nuevas modalidades fuera del MVP; definir su interfaz en D10."
+      ],
+      "dependencies": "Dependencias: BG-53, BG-56, D02, D04, D10.",
+      "source": "Fuente: G pp. 4, 6; S pp. 6-7.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-56",
+      "title": "Consultar historial de auditoría",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-15"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Registrar actor, fecha, acción, objeto y resultado; integrar el actor de sesión del servidor con brotar.actor_id y distinguir audit_log de status_history.",
+        "CA 2. Permitir consulta restringida del historial de revisiones, verificaciones y operaciones.",
+        "CA 3. Excluir contraseñas y datos completos de tarjeta del registro; acordar retención y acceso a documentos sensibles."
+      ],
+      "dependencies": "Dependencias: BG-53, BG-59, D03, D06.",
+      "source": "Fuente: G pp. 4, 9; A pp. 6-7; F Registro de auditoría; B función brotar_current_actor y tablas de auditoría."
+    },
+    {
+      "id": "BG-57",
+      "title": "Mantener el frontend por funcionalidades",
+      "state": "Cierre técnico local",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "E01"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Usar React y TypeScript con Bun y su lockfile, sin mezclar gestores.",
+        "CA 2. Mantener app, features y shared; incorporar creador, patrocinador y administración cuando se implementen.",
+        "CA 3. Conservar mocks separados y componentes reutilizables; no importar entidades del ORM a la interfaz."
+      ],
+      "dependencies": "Dependencias: Ninguna.",
+      "source": "Fuente: S pp. 2-3, 6-8; T pp. 2-3; E repositorio frontend.",
+      "owner": "Ricardo"
+    },
+    {
+      "id": "BG-58",
+      "title": "Construir el backend modular",
+      "state": "Cierre técnico local",
+      "sprints": [
+        1
+      ],
+      "tasks": [
+        "E01"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Usar NestJS y TypeScript con pnpm y su lockfile.",
+        "CA 2. Separar dominio, aplicación e infraestructura por módulo; validar DTO e inyectar dependencias.",
+        "CA 3. Mantener reglas fuera de controladores y ORM; evitar microservicios o servicios extra sin necesidad demostrada."
+      ],
+      "dependencies": "Dependencias: S; contratos a definir en BG-60.",
+      "source": "Fuente: S pp. 4-5, 7-8; B y M como base de persistencia.",
+      "owner": "Ricardo"
+    },
+    {
+      "id": "BG-59",
+      "title": "Integrar la base provisional y controlar migraciones",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        3
+      ],
+      "tasks": [
+        "E02",
+        "S1-10",
+        "S3-18"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Restaurar el SQL en una base de desarrollo aislada brotar_db y verificar tablas, datos de prueba, vistas, secuencias, funciones, triggers y restricciones; conservar evidencia.",
+        "CA 2. Usar TypeORM seleccionado, mapear el esquema recibido y establecer una línea base y mecanismo de migraciones sin recrear ni eliminar objetos existentes; verificar recuperación en una copia aislada.",
+        "CA 3. Probar lectura, escritura y transacciones desde NestJS; preservar vistas y triggers al migrar y documentar configuración sin credenciales ni datos privados."
+      ],
+      "dependencies": "Dependencias: BG-58, D01.",
+      "source": "Fuente: S p. 6; G pp. 6-9; H base provisional anunciada; B; M; comprobación VT.",
+      "owner": "Santiago"
+    },
+    {
+      "id": "BG-60",
+      "title": "Definir contratos e integrar las experiencias",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "E03",
+        "S2-21",
+        "S3-18"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Acordar contratos, validaciones, paginación y errores; mapear los enums provisionales a etiquetas de interfaz sin mezclar pago y aporte.",
+        "CA 2. Sustituir servicios simulados de forma controlada, conservando los estados de interfaz.",
+        "CA 3. Actualizar cliente y API coordinadamente y probar contratos sin compartir código interno de backend."
+      ],
+      "dependencies": "Dependencias: BG-57, BG-58, BG-59.",
+      "source": "Fuente: S p. 6; T pp. 2-3, 8; B; M."
+    },
+    {
+      "id": "BG-61",
+      "title": "Proteger archivos y datos privados",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "S1-14",
+        "S2-21",
+        "S3-18"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Separar recursos públicos de documentos privados y restringir acceso por caso y rol.",
+        "CA 2. Validar tipo y tamaño de archivos en servidor y gestionar errores sin publicar cargas incompletas.",
+        "CA 3. Versionar un ejemplo de configuración sin secretos; acordar almacenamiento, retención y textos de privacidad antes de operar."
+      ],
+      "dependencies": "Dependencias: BG-53, BG-58, D03, D08.",
+      "source": "Fuente: G pp. 4-5; S pp. 4, 7; propuesta técnica derivada.",
+      "owner": "Alison"
+    },
+    {
+      "id": "BG-62",
+      "title": "Probar reglas y recorridos",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "E09",
+        "S2-21",
+        "S3-19"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Mantener pruebas de frontend y agregar pruebas de dominio, API, persistencia y contratos.",
+        "CA 2. Probar publicación, propiedad, pagos, reintentos, cupos, permisos y trazabilidad; comprobar también las restricciones y triggers de la base provisional.",
+        "CA 3. Probar estados vacíos y fallidos y uso en móvil y teclado; las pruebas actuales del frontend no certifican el sistema futuro."
+      ],
+      "dependencies": "Dependencias: Funcionalidades bajo prueba; BG-58 a BG-60.",
+      "source": "Fuente: S pp. 2, 4-7; T pp. 7-8; E pruebas existentes; B; M; comprobación VT."
+    },
+    {
+      "id": "BG-63",
+      "title": "Mantener repositorio y documentación de entrega",
+      "state": "Parcial",
+      "sprints": [
+        1,
+        2,
+        3
+      ],
+      "tasks": [
+        "E01",
+        "E09",
+        "S2-21",
+        "S3-20"
+      ],
+      "antecedent": true,
+      "criteria": [
+        "CA 1. Conservar README, lockfiles, migraciones y configuración de ejemplo con instrucciones de ejecución.",
+        "CA 2. Compartir el repositorio en el destino y con los permisos acordados; actualizar backlog y documento explicativo.",
+        "CA 3. Mantener enlace Figma y PDF de pantallas final separado del prototipo histórico; no publicar credenciales ni datos privados."
+      ],
+      "dependencies": "Dependencias: BG-57 a BG-60; aceptación de entregables.",
+      "source": "Fuente: T pp. 2, 7-8; S p. 7; H entrega original; E publicación confirmada. Antecedente: PB-33 como antecedente de diseño."
+    },
+    {
+      "id": "BG-64",
+      "title": "Validar el recorrido integral del MVP",
+      "state": "Pendiente de desarrollo",
+      "sprints": [
+        3
+      ],
+      "tasks": [
+        "S3-21"
+      ],
+      "antecedent": false,
+      "criteria": [
+        "CA 1. Demostrar registro, campaña, revisión, publicación, aporte, resultado, seguimiento y gestión interna conectados.",
+        "CA 2. Cubrir alternativas de error y permisos y documentar qué proveedores siguen simulados.",
+        "CA 3. No marcar el MVP terminado por tener pantallas o pruebas aisladas; obtener revisión de los responsables y evidencias de aceptación."
+      ],
+      "dependencies": "Dependencias: BG-01 a BG-63 según alcance; D01 a D10.",
+      "source": "Fuente: G p. 10; F Producto; propuesta de aceptación integral."
+    }
+  ],
+  "antecedent": {
+    "id": "AP",
+    "stories": [
+      "BG-01",
+      "BG-02",
+      "BG-03",
+      "BG-04",
+      "BG-05",
+      "BG-06",
+      "BG-07",
+      "BG-08",
+      "BG-57",
+      "BG-62",
+      "BG-63"
+    ],
+    "countsAsTask": false
+  }
+}

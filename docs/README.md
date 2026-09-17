@@ -2,11 +2,16 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Entrega de integración y trabajo en equipo · 17/09/2026
+
+La etapa vigente incluye acceso, perfil y organizaciones reales. Ver [informe de entrega](entrega-integracion-2026-09-17.md), [asignación del Sprint 1](asignacion-sprint-1.md) y [ramas/PR](../CONTRIBUTING.md). El reparto aprobado es Alison 4 tareas y Santiago 7; los documentos Word/PDF conservan sus cortes anteriores. Los registros fechados abajo son históricos; este informe complementa su estado.
+
 ## 1. Proyecto general y Figma final
 
-Los documentos generales tienen fecha de corte del 10 de septiembre de 2026. Son una planificación del MVP completo, no una declaración de que todo el software esté desarrollado.
+El backlog se actualiza a la versión 2.2, con planificación propuesta y corte técnico del 16 de septiembre de 2026. El PDF explicativo conserva su versión 2.0, con corte del 10 de septiembre. Son una planificación del MVP completo, no una declaración de que todo el software esté desarrollado.
 
-- [Product Backlog General — Word](entregables/general/03_Product_Backlog_General_Brotar.docx): 24 páginas, 64 elementos, 192 criterios de aceptación y continuidad de las 33 historias anteriores.
+- [Product Backlog General — Word](entregables/general/03_Product_Backlog_General_Brotar.docx): 64 historias, 192 criterios de aceptación y continuidad de las 33 historias anteriores. Actualiza el estado técnico y distribuye 62 tareas en tres sprints propuestos de 20, 21 y 21 tareas. Mantiene las decisiones pendientes separadas del desarrollo.
+- [Planificación por sprints](planificacion-sprints.md): catálogo de tareas y trazabilidad completa de historias. El Sprint 1 conserva E01 a E09 y añade once tareas pendientes; tiene 7 cierres técnicos y 2 tareas parciales, por lo que sigue abierto. Sincronizado con Trello el 17/09/2026; [organización y comprobaciones](organizacion-trello-sprints-2026-09-17.md), [mapa de tarjetas](trello-sprints.json).
 - [Documento Explicativo General — PDF](entregables/general/04_Documento_Explicativo_General_Brotar.pdf): 9 páginas sobre alcance, recorridos, arquitectura, avance, fases y decisiones pendientes.
 - [Enlace al Figma final — texto](entregables/general/01_Enlace_Figma_Final.txt).
 - [Abrir CrownFundingV3 en Figma](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574).
@@ -14,6 +19,8 @@ Los documentos generales tienen fecha de corte del 10 de septiembre de 2026. Son
 **Pendiente:** exportar las pantallas del Figma final completo a un PDF general. El PDF histórico del creador que aparece más abajo no sustituye ese archivo.
 
 Las prioridades son propuestas; estimaciones, responsables individuales y fechas se refinan con el equipo. Las diez decisiones abiertas deben validarse con los líderes. El enlace de Figma no concede permisos de acceso automáticamente.
+
+La base oficial provisional V2 ya está restaurada de forma aislada y conectada mediante TypeORM. Hay acceso, perfil y organizaciones básicos con persistencia. D01 mantiene pendientes de migración y recuperación; D06 y D09 requieren completar permisos y reglas. Tener tablas no acredita todos los módulos del MVP. El backup con datos iniciales no se publica aquí. El Word v2.2 y el registro de cierre técnico prevalecen sobre las menciones antiguas del PDF explicativo relativas a base de datos, integración y remoto.
 
 ## 2. Requisitos del proyecto
 

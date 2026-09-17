@@ -1,0 +1,1488 @@
+{
+  "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
+  "planVersion": "2.2",
+  "organizationDate": "2026-09-17",
+  "lists": [
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d740cc2acfb00c5c7e8",
+      "name": "00 · General y decisiones"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa179f4810fc902e8d94ee",
+      "name": "01 · Sprint 1 · Pendientes"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7a0c3d6d59cfa52e96",
+      "name": "02 · En curso"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7bd9384957e5065c66",
+      "name": "03 · En revisión"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7e2cd056c5bc29435f",
+      "name": "04 · Terminadas · cierre técnico"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d790787566c4156a4e6",
+      "name": "05 · Sprint 2 · Planificado"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
+      "name": "06 · Sprint 3 · Planificado"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7864fa82427a63b257",
+      "name": "07 · Backlog general · 64 historias"
+    }
+  ],
+  "taskCards": [
+    {
+      "taskId": "E01",
+      "sprint": 1,
+      "size": "M",
+      "state": "Parcial",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-57",
+        "BG-58",
+        "BG-63"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c260255882ab67cf5f",
+      "url": "https://trello.com/c/3FKHa1Di",
+      "checklistId": null
+    },
+    {
+      "taskId": "E02",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-59"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c431922de49e427bf6",
+      "url": "https://trello.com/c/fded62s5",
+      "checklistId": null
+    },
+    {
+      "taskId": "E03",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-60"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c61c06ccb199a9fc0e",
+      "url": "https://trello.com/c/hhbNHNoQ",
+      "checklistId": null
+    },
+    {
+      "taskId": "E04",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-10"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c760255882ab67d393",
+      "url": "https://trello.com/c/dAsZpxd9",
+      "checklistId": null
+    },
+    {
+      "taskId": "E05",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-09"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c8083372080d396c5f",
+      "url": "https://trello.com/c/byJiVP4l",
+      "checklistId": null
+    },
+    {
+      "taskId": "E06",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17c9449836b088f3cf6a",
+      "url": "https://trello.com/c/5ePv0ef8",
+      "checklistId": null
+    },
+    {
+      "taskId": "E07",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-53"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17cb25e7d7eab9d3a194",
+      "url": "https://trello.com/c/JfdXTdBb",
+      "checklistId": null
+    },
+    {
+      "taskId": "E08",
+      "sprint": 1,
+      "size": "M",
+      "state": "Cierre técnico",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-26"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17cd5213dcc165a2b3a9",
+      "url": "https://trello.com/c/4YcePqWB",
+      "checklistId": null
+    },
+    {
+      "taskId": "E09",
+      "sprint": 1,
+      "size": "M",
+      "state": "Parcial",
+      "owner": "Ricardo",
+      "stories": [
+        "BG-62",
+        "BG-63"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa17ceb77f5cc83bff257f",
+      "url": "https://trello.com/c/qMbzt3ok",
+      "checklistId": null
+    },
+    {
+      "taskId": "S1-10",
+      "sprint": 1,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-59"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab67f71ee51aa2c4d98164",
+      "url": "https://trello.com/c/IeRMDahq",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab68d0ac0be7e9716e4430"
+    },
+    {
+      "taskId": "S1-11",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Alison",
+      "stories": [
+        "BG-10"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68121aeea93389af6b5f",
+      "url": "https://trello.com/c/Mk5I3PVJ",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab691b3170f610f5714ee6"
+    },
+    {
+      "taskId": "S1-12",
+      "sprint": 1,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Alison",
+      "stories": [
+        "BG-11"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6813eab9dbac72930191",
+      "url": "https://trello.com/c/Y6mwzal0",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab691ded05fa12af95a99f"
+    },
+    {
+      "taskId": "S1-13",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-53"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68150d446bf7f683ce26",
+      "url": "https://trello.com/c/Mb98mxDE",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab691ffcd60bf360b924f6"
+    },
+    {
+      "taskId": "S1-14",
+      "sprint": 1,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Alison",
+      "stories": [
+        "BG-61"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6817ee852bca6d348d0f",
+      "url": "https://trello.com/c/xnSwoQwP",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6920d8fab371bff2f629"
+    },
+    {
+      "taskId": "S1-15",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-55"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab681812213d81ec2d5544",
+      "url": "https://trello.com/c/N3JGR5CO",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69226116b936f175b8da"
+    },
+    {
+      "taskId": "S1-16",
+      "sprint": 1,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab681aa789571f1adc4574",
+      "url": "https://trello.com/c/Kytz8JbS",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab692491697fdbf26dc200"
+    },
+    {
+      "taskId": "S1-17",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-15"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab681bc8bf348ca66fe1d8",
+      "url": "https://trello.com/c/5ELH7FaQ",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6925fb14e25283ff06c6"
+    },
+    {
+      "taskId": "S1-18",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab681d6b16b848d925e3b4",
+      "url": "https://trello.com/c/8BhXXJUD",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69275ec0221130ffdf73"
+    },
+    {
+      "taskId": "S1-19",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Alison",
+      "stories": [
+        "BG-17"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab681f26075045d3b82a47",
+      "url": "https://trello.com/c/MDQ8Sz16",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69288c1ffa301847ddaa"
+    },
+    {
+      "taskId": "S1-20",
+      "sprint": 1,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Santiago",
+      "stories": [
+        "BG-19"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68219fe23dd83541c6b4",
+      "url": "https://trello.com/c/sHj2kFal",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693a980c9ee6b1f9cf69"
+    },
+    {
+      "taskId": "S2-01",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-20"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6841013c8569861b8ddb",
+      "url": "https://trello.com/c/aW8N2PsG",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693bd4be0d8ded9446c0"
+    },
+    {
+      "taskId": "S2-02",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-21"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684255b6fc2c70192130",
+      "url": "https://trello.com/c/GvQVAEEo",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693d843dcf92451ad2c7"
+    },
+    {
+      "taskId": "S2-03",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-22"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6844196b59ef1f1d7e1b",
+      "url": "https://trello.com/c/C3c5lbVP",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693e7a8f44d2ba1fab67"
+    },
+    {
+      "taskId": "S2-04",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-23"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6845ab8a7e6f21bf7b62",
+      "url": "https://trello.com/c/Q4m8tguD",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6940c79bebb10c210dc6"
+    },
+    {
+      "taskId": "S2-05",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-24"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684646b3321f0a8aba35",
+      "url": "https://trello.com/c/mQ72WcrQ",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694193d26f7c2684cd09"
+    },
+    {
+      "taskId": "S2-06",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-25",
+        "BG-27"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6848cb315f5401187b36",
+      "url": "https://trello.com/c/mXia80Q5",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69432c6e0ed2040f229e"
+    },
+    {
+      "taskId": "S2-07",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-26",
+        "BG-27"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684aa032a8d01f7f7d37",
+      "url": "https://trello.com/c/QzpTCGZ6",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6945c40c63285a2bf000"
+    },
+    {
+      "taskId": "S2-08",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-43",
+        "BG-44"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684c9d3313701af4a55a",
+      "url": "https://trello.com/c/iN5WZPEd",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6947f1982482974b6ee5"
+    },
+    {
+      "taskId": "S2-09",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-28"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684d63d5d0ec4c7153ef",
+      "url": "https://trello.com/c/f2wKElZK",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694862c767b23e0b0618"
+    },
+    {
+      "taskId": "S2-10",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-29"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684e6739a93c773232ed",
+      "url": "https://trello.com/c/M7WEue5G",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694ca5dffd37b87b2019"
+    },
+    {
+      "taskId": "S2-11",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-30"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68509ca51130d9e57cd4",
+      "url": "https://trello.com/c/39GELv0D",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694e85c230f76a003762"
+    },
+    {
+      "taskId": "S2-12",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-42"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6851287254da1f90de98",
+      "url": "https://trello.com/c/BC2tZad4",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694fd0fb93d3f7cc7798"
+    },
+    {
+      "taskId": "S2-13",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-31"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68524aa974be222d8c0c",
+      "url": "https://trello.com/c/3zokcK8z",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6951c7f0d2f2d256d1be"
+    },
+    {
+      "taskId": "S2-14",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-32"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68550a6f1a5f91b31454",
+      "url": "https://trello.com/c/b0SfOnc0",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6952b8da8b56d31fd136"
+    },
+    {
+      "taskId": "S2-15",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-13",
+        "BG-14"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6856599309d4c0a4ceaa",
+      "url": "https://trello.com/c/tdYcbrv3",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6953a1b487bc8e374e22"
+    },
+    {
+      "taskId": "S2-16",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-01",
+        "BG-05",
+        "BG-06",
+        "BG-07",
+        "BG-08",
+        "BG-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6859ca9434d04db0644d",
+      "url": "https://trello.com/c/6YyGoAQU",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69554aa4064ee79eee3a"
+    },
+    {
+      "taskId": "S2-17",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-41"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685a3de5fc808e5ff4d5",
+      "url": "https://trello.com/c/DUoK6ILY",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6957e46b860b92386377"
+    },
+    {
+      "taskId": "S2-18",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-35"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685b8141459ba8958cf6",
+      "url": "https://trello.com/c/Fb0YQnbF",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6958a9597f6f787d503d"
+    },
+    {
+      "taskId": "S2-19",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-36"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685d7ad79ee368df1195",
+      "url": "https://trello.com/c/jn96M3kd",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69592896a2f056e246d5"
+    },
+    {
+      "taskId": "S2-20",
+      "sprint": 2,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-37"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685ee37f61507e32fc05",
+      "url": "https://trello.com/c/UMGYVbmE",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab695b9b12d09815fa7c90"
+    },
+    {
+      "taskId": "S2-21",
+      "sprint": 2,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-04",
+        "BG-53",
+        "BG-60",
+        "BG-61",
+        "BG-62",
+        "BG-63"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6860b55d3f9051e416b5",
+      "url": "https://trello.com/c/5Phzs40B",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab695cdf1d4075634bbc36"
+    },
+    {
+      "taskId": "S3-01",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-38"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688812eaccdbcf03b19a",
+      "url": "https://trello.com/c/003Q6udE",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab695e3ffdd171219580cd"
+    },
+    {
+      "taskId": "S3-02",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-39"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688a58a27482fb55a14f",
+      "url": "https://trello.com/c/ONoYcbCB",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69607d93d30a1456ab78"
+    },
+    {
+      "taskId": "S3-03",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-33"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688cd471009c3b764d46",
+      "url": "https://trello.com/c/GhSvBSpq",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6961b8fbd1011cc2a78c"
+    },
+    {
+      "taskId": "S3-04",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-34"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688d48c1795b213e1ab4",
+      "url": "https://trello.com/c/yH3AVvNa",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab696365db5a8335f9cbd9"
+    },
+    {
+      "taskId": "S3-05",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-40"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688f0dee9ae923d93eeb",
+      "url": "https://trello.com/c/mAYpejK5",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6964b41b17664428f2c2"
+    },
+    {
+      "taskId": "S3-06",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-45"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68918860cf733f9a6209",
+      "url": "https://trello.com/c/YyzU54ve",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69652cf1fec47d0d7938"
+    },
+    {
+      "taskId": "S3-07",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-46"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689289af108a54259431",
+      "url": "https://trello.com/c/JWVj9Mjh",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69679ced14470ed53b12"
+    },
+    {
+      "taskId": "S3-08",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-47"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6894c599a27b0e9510c4",
+      "url": "https://trello.com/c/Bl3KhxK4",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6968be514e1e035e1709"
+    },
+    {
+      "taskId": "S3-09",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-48"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689622427465e06b41d0",
+      "url": "https://trello.com/c/TPFXEeaS",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab696a8141459ba8971f6b"
+    },
+    {
+      "taskId": "S3-10",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-49"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6897b8da8b56d31e98e2",
+      "url": "https://trello.com/c/wOJdAFK4",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab696c843dcf92451b224a"
+    },
+    {
+      "taskId": "S3-11",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-50"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689817e78aa1faef8af3",
+      "url": "https://trello.com/c/IyIZIgso",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab696d78f9d75095f3abd0"
+    },
+    {
+      "taskId": "S3-12",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-07",
+        "BG-33",
+        "BG-51"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689a5b5f9d2e321072af",
+      "url": "https://trello.com/c/GfwdpFM3",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab696fa263f10571dfc087"
+    },
+    {
+      "taskId": "S3-13",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-52"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689bedebea45d30e22a1",
+      "url": "https://trello.com/c/qbBmvUPd",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab697073a8eabdee9148ff"
+    },
+    {
+      "taskId": "S3-14",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-54"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689d196841971612e149",
+      "url": "https://trello.com/c/Tx8F84Ts",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69710116e4a3ee86ba57"
+    },
+    {
+      "taskId": "S3-15",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-56"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689e25f2f4be5ffdf668",
+      "url": "https://trello.com/c/sLKDJe4q",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69740f4a5974922a89a7"
+    },
+    {
+      "taskId": "S3-16",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-12",
+        "BG-41",
+        "BG-53"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a0d366704e1235d764",
+      "url": "https://trello.com/c/hNo1pl1D",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6975edf11563e57291c2"
+    },
+    {
+      "taskId": "S3-17",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-55"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a1610cb8a354504dea",
+      "url": "https://trello.com/c/RNolTk1j",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6977b552395917ac5ce9"
+    },
+    {
+      "taskId": "S3-18",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-59",
+        "BG-60",
+        "BG-61"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a383b2db481d2588b8",
+      "url": "https://trello.com/c/rNXI5zUy",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6979b94dc0d22aec484c"
+    },
+    {
+      "taskId": "S3-19",
+      "sprint": 3,
+      "size": "L",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-04",
+        "BG-62"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a40dd2fef9df30b944",
+      "url": "https://trello.com/c/Uvg6Lvlq",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69a67f799254755ae528"
+    },
+    {
+      "taskId": "S3-20",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-63"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a6428254631773d80d",
+      "url": "https://trello.com/c/91EYkwLi",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69a706f78ce63fe89f33"
+    },
+    {
+      "taskId": "S3-21",
+      "sprint": 3,
+      "size": "M",
+      "state": "Pendiente",
+      "owner": "Por asignar",
+      "stories": [
+        "BG-64"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a8b38e9ac82af14180",
+      "url": "https://trello.com/c/S2ULIrQD",
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69a99c2363f7fba6c67c"
+    }
+  ],
+  "storyCards": [
+    {
+      "storyId": "BG-01",
+      "state": "Parcial",
+      "tasks": [
+        "S2-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e07ded98d721511e1a9",
+      "url": "https://trello.com/c/pLasr9oW"
+    },
+    {
+      "storyId": "BG-02",
+      "state": "Cierre técnico local",
+      "tasks": [],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e08af0bd91f81ad06e2",
+      "url": "https://trello.com/c/p8jguk6U",
+      "owner": "Ricardo"
+    },
+    {
+      "storyId": "BG-03",
+      "state": "Cierre técnico local",
+      "tasks": [],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e0a18cec54248131601",
+      "url": "https://trello.com/c/xnA4Hzxo",
+      "owner": "Ricardo"
+    },
+    {
+      "storyId": "BG-04",
+      "state": "Parcial",
+      "tasks": [
+        "S2-21",
+        "S3-19"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e0c434af0681bd90a25",
+      "url": "https://trello.com/c/69mmQZWe"
+    },
+    {
+      "storyId": "BG-05",
+      "state": "Parcial",
+      "tasks": [
+        "S2-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e0db1415a1af29b0dd8",
+      "url": "https://trello.com/c/DMBtkZiy"
+    },
+    {
+      "storyId": "BG-06",
+      "state": "Parcial",
+      "tasks": [
+        "S2-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e0f3272b009d9ffaf13",
+      "url": "https://trello.com/c/hz31jn90"
+    },
+    {
+      "storyId": "BG-07",
+      "state": "Parcial",
+      "tasks": [
+        "S2-16",
+        "S3-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1013e390d777dd13e0",
+      "url": "https://trello.com/c/2HcQrdjw"
+    },
+    {
+      "storyId": "BG-08",
+      "state": "Parcial",
+      "tasks": [
+        "S2-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e11d6c23d4d368f0d6d",
+      "url": "https://trello.com/c/64UCYLXV"
+    },
+    {
+      "storyId": "BG-09",
+      "state": "Cierre técnico local",
+      "tasks": [
+        "E05"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e13f300c19ef056ab14",
+      "url": "https://trello.com/c/8erDKIXY",
+      "owner": "Ricardo"
+    },
+    {
+      "storyId": "BG-10",
+      "state": "Parcial",
+      "tasks": [
+        "E04",
+        "S1-11"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e15697503f93efa7586",
+      "url": "https://trello.com/c/UHPMRuMr",
+      "owner": "Alison"
+    },
+    {
+      "storyId": "BG-11",
+      "state": "Parcial",
+      "tasks": [
+        "S1-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1641ba8870764875e1",
+      "url": "https://trello.com/c/IBhnrreN",
+      "owner": "Alison"
+    },
+    {
+      "storyId": "BG-12",
+      "state": "Parcial",
+      "tasks": [
+        "E06",
+        "S2-16",
+        "S3-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e18e205bdf36dfd81f1",
+      "url": "https://trello.com/c/buDtyfgI"
+    },
+    {
+      "storyId": "BG-13",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-15"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1aed4a744a8216163c",
+      "url": "https://trello.com/c/50EfNv1s"
+    },
+    {
+      "storyId": "BG-14",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-15"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1cd2debab994629a61",
+      "url": "https://trello.com/c/WSIcfQFP"
+    },
+    {
+      "storyId": "BG-15",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-17"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1d0f066014f1536715",
+      "url": "https://trello.com/c/d8jdNiMo",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-16",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e1e58db1665c1932963",
+      "url": "https://trello.com/c/lr6m8ezd",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-17",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-19"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e2ee1a12bf932c6babb",
+      "url": "https://trello.com/c/NLQClEVX",
+      "owner": "Alison"
+    },
+    {
+      "storyId": "BG-18",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e2f3a3e382a590699b8",
+      "url": "https://trello.com/c/4uEIGkfp",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-19",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-20"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e3227f16f481b75a87b",
+      "url": "https://trello.com/c/oagdnklL",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-20",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-01"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e34c8e2879101a49c00",
+      "url": "https://trello.com/c/PQpbvs17"
+    },
+    {
+      "storyId": "BG-21",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-02"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e359de1a1a2c850ce59",
+      "url": "https://trello.com/c/Pq7LUiv9"
+    },
+    {
+      "storyId": "BG-22",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-03"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e37ed4a744a82164884",
+      "url": "https://trello.com/c/yGbzgyxu"
+    },
+    {
+      "storyId": "BG-23",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-04"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e39562515efc31f396a",
+      "url": "https://trello.com/c/cYtyhO3k"
+    },
+    {
+      "storyId": "BG-24",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-05"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e3a406abc38414a881a",
+      "url": "https://trello.com/c/Og9Nw3vZ"
+    },
+    {
+      "storyId": "BG-25",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-06"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e3c0b202704d211fcc6",
+      "url": "https://trello.com/c/fWp2mj7d"
+    },
+    {
+      "storyId": "BG-26",
+      "state": "Parcial",
+      "tasks": [
+        "E08",
+        "S2-07"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e3e0b202704d211fee7",
+      "url": "https://trello.com/c/PlZOLV2o"
+    },
+    {
+      "storyId": "BG-27",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-06",
+        "S2-07"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e3f6303f24dec0dc6cb",
+      "url": "https://trello.com/c/P20eZtcE"
+    },
+    {
+      "storyId": "BG-28",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-09"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e413221d83ef3694a26",
+      "url": "https://trello.com/c/vLwo4f6C"
+    },
+    {
+      "storyId": "BG-29",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-10"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e43851ea947fb2d1d88",
+      "url": "https://trello.com/c/lsnqZhcx"
+    },
+    {
+      "storyId": "BG-30",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-11"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e44050203f698199910",
+      "url": "https://trello.com/c/KK0dlbiH"
+    },
+    {
+      "storyId": "BG-31",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-13"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e46d8893acb30d6766e",
+      "url": "https://trello.com/c/uMSvFu3U"
+    },
+    {
+      "storyId": "BG-32",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-14"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e48b6c9d44be4cadd02",
+      "url": "https://trello.com/c/FLv1kWmY"
+    },
+    {
+      "storyId": "BG-33",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-03",
+        "S3-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e49d0b14588edf3f25e",
+      "url": "https://trello.com/c/YcCdsVTc"
+    },
+    {
+      "storyId": "BG-34",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-04"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e4b7abd92550607dceb",
+      "url": "https://trello.com/c/2gRQs7Mh"
+    },
+    {
+      "storyId": "BG-35",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e4cd147f347ae405c0e",
+      "url": "https://trello.com/c/IWMbeShG"
+    },
+    {
+      "storyId": "BG-36",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-19"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e4d406d0a9981235b79",
+      "url": "https://trello.com/c/OLIZTGxB"
+    },
+    {
+      "storyId": "BG-37",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-20"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e4fa489c93439660ea7",
+      "url": "https://trello.com/c/wqjhV80E"
+    },
+    {
+      "storyId": "BG-38",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-01"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e50edf158b2b5181147",
+      "url": "https://trello.com/c/VqwUI1cW"
+    },
+    {
+      "storyId": "BG-39",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-02"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e523a3e382a5906c1aa",
+      "url": "https://trello.com/c/XWW00juP"
+    },
+    {
+      "storyId": "BG-40",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-05"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e53b20f1a2743e631de",
+      "url": "https://trello.com/c/VYQJ8sjz"
+    },
+    {
+      "storyId": "BG-41",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-17",
+        "S3-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e6afeb5671eff7262a4",
+      "url": "https://trello.com/c/36sjWxJ5"
+    },
+    {
+      "storyId": "BG-42",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e6cd05139550431af4a",
+      "url": "https://trello.com/c/oH9rPEdD"
+    },
+    {
+      "storyId": "BG-43",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-08"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e6d0d1a7456332fb1e9",
+      "url": "https://trello.com/c/8yv6t3lN"
+    },
+    {
+      "storyId": "BG-44",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S2-08"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e6f2f862e7447c124e8",
+      "url": "https://trello.com/c/8jJ6sJIh"
+    },
+    {
+      "storyId": "BG-45",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-06"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e70c977aeea66394875",
+      "url": "https://trello.com/c/yIS9xNLs"
+    },
+    {
+      "storyId": "BG-46",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-07"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e723075dba1ece4a3e5",
+      "url": "https://trello.com/c/511LIjj4"
+    },
+    {
+      "storyId": "BG-47",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-08"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e7354a0a60973890323",
+      "url": "https://trello.com/c/Z1rngbV3"
+    },
+    {
+      "storyId": "BG-48",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-09"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e74d8893acb30d6ca7d",
+      "url": "https://trello.com/c/mXbH2NYp"
+    },
+    {
+      "storyId": "BG-49",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-10"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e76f137285014ee9aa3",
+      "url": "https://trello.com/c/w1oRpHIH"
+    },
+    {
+      "storyId": "BG-50",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-11"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e789e580c6f00a476f1",
+      "url": "https://trello.com/c/imujWHI1"
+    },
+    {
+      "storyId": "BG-51",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-12"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e7a083372080d299061",
+      "url": "https://trello.com/c/TaDomRPJ"
+    },
+    {
+      "storyId": "BG-52",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-13"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e7b25ef57ba46bd1b96",
+      "url": "https://trello.com/c/5qW6sdXc"
+    },
+    {
+      "storyId": "BG-53",
+      "state": "Parcial",
+      "tasks": [
+        "E07",
+        "S1-13",
+        "S2-21",
+        "S3-16"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e7debaa734d5bcf7556",
+      "url": "https://trello.com/c/90q6hIvk",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-54",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-14"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e7fdc38438ea4923fed",
+      "url": "https://trello.com/c/NalSkyIy"
+    },
+    {
+      "storyId": "BG-55",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S1-15",
+        "S3-17"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e80ef8ca28d1e1840aa",
+      "url": "https://trello.com/c/WcIopFMk",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-56",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-15"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e824994442d1b61b47d",
+      "url": "https://trello.com/c/QXfNJYgi"
+    },
+    {
+      "storyId": "BG-57",
+      "state": "Cierre técnico local",
+      "tasks": [
+        "E01"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e83bb8e6f02115bf1ec",
+      "url": "https://trello.com/c/TAu77KfG",
+      "owner": "Ricardo"
+    },
+    {
+      "storyId": "BG-58",
+      "state": "Cierre técnico local",
+      "tasks": [
+        "E01"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e85ed62dfa352ee9365",
+      "url": "https://trello.com/c/6ejU9pI5",
+      "owner": "Ricardo"
+    },
+    {
+      "storyId": "BG-59",
+      "state": "Parcial",
+      "tasks": [
+        "E02",
+        "S1-10",
+        "S3-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e867a7d8d2c59c710f5",
+      "url": "https://trello.com/c/jDE14XQr",
+      "owner": "Santiago"
+    },
+    {
+      "storyId": "BG-60",
+      "state": "Parcial",
+      "tasks": [
+        "E03",
+        "S2-21",
+        "S3-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e882086ede2b5bd02d8",
+      "url": "https://trello.com/c/OZoPidvq"
+    },
+    {
+      "storyId": "BG-61",
+      "state": "Parcial",
+      "tasks": [
+        "S1-14",
+        "S2-21",
+        "S3-18"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e897f25f502b6f324f4",
+      "url": "https://trello.com/c/50Hu13Aw",
+      "owner": "Alison"
+    },
+    {
+      "storyId": "BG-62",
+      "state": "Parcial",
+      "tasks": [
+        "E09",
+        "S2-21",
+        "S3-19"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e8b774969c078f84952",
+      "url": "https://trello.com/c/6Ibfd6L5"
+    },
+    {
+      "storyId": "BG-63",
+      "state": "Parcial",
+      "tasks": [
+        "E01",
+        "E09",
+        "S2-21",
+        "S3-20"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0e8cc0edcf8ac1ce08d1",
+      "url": "https://trello.com/c/QAMxJaSM"
+    },
+    {
+      "storyId": "BG-64",
+      "state": "Pendiente de desarrollo",
+      "tasks": [
+        "S3-21"
+      ],
+      "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aaa0efa769a556fea763c6b",
+      "url": "https://trello.com/c/NVYPbElu"
+    }
+  ],
+  "note": "Mapa de tarjetas; la verificación final se documenta por separado. M/L son tamaños preliminares, no puntos ni horas acordadas.",
+  "assignmentDate": "2026-09-17",
+  "assignmentReference": "asignacion-sprint-1.md"
+}

@@ -1,274 +1,269 @@
-# Brotar · Frontend público
+# Brotar · Base integrada del equipo
 
-Primera implementación del frontend público de Brotar y del acceso básico simulado. Cada equipo mantiene su versión independiente.
+Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
-Repositorio del equipo: [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar).
+[Repositorio](https://github.com/luisrocha159/CrowFunding-Brotar) · [Trello](https://trello.com/b/37xCrdes/crowudfunding) · [Documentación](docs/README.md) · [Trabajo en equipo y ramas](CONTRIBUTING.md)
 
-Este código permite **abrir y demostrar la experiencia pública**, no ejecutar todavía todo el sistema Brotar. No requiere base de datos, servidor backend, cuentas reales, claves de API ni pagos.
+## 1. Qué pueden revisar los líderes
 
-## Documentación para el equipo
-
-El repositorio reúne el código ejecutable, los documentos generales, el antecedente del Equipo 2 y los PDF de requisitos. Consulta el [índice de documentación](docs/README.md) para saber qué corresponde a cada etapa.
-
-- [Product Backlog general en Word](docs/entregables/general/03_Product_Backlog_General_Brotar.docx): 64 elementos para el MVP completo.
-- [Documento explicativo general en PDF](docs/entregables/general/04_Documento_Explicativo_General_Brotar.pdf): alcance, arquitectura, avance y decisiones pendientes.
-- [Figma final unificado](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574): guía visual del producto; requiere los permisos de acceso correspondientes.
-- [Matriz de cumplimiento del frontend](docs/cumplimiento-frontend-publico.md): nueve pantallas y 39 variantes de la entrega simulada.
-
-En GitHub, los PDF pueden abrirse en la vista del archivo. Para Word, pulsa **Download raw file / Descargar** y abre el `.docx` en Word o un editor compatible. No hace falta arrancar la aplicación para leer los documentos. Los PDF generales describen el proyecto completo; eso no significa que todo su backlog esté implementado.
-
-## Inicio rápido
-
-Con Git, Node.js 24 y Bun instalados, abre PowerShell o una terminal y ejecuta los comandos uno por uno:
-
-```sh
-git clone https://github.com/luisrocha159/CrowFunding-Brotar.git
-cd CrowFunding-Brotar
-bun install --frozen-lockfile
-bun run dev
-```
-
-Después abre **http://127.0.0.1:5173/** en tu navegador. Mantén abierta la terminal mientras utilizas la aplicación; `Ctrl+C` detiene el servidor.
-
-Si ya tienes la copia local del proyecto, no la clones otra vez: entra en la carpeta que contiene `package.json` y utiliza los dos comandos de Bun.
-
-Para una primera instalación, consulta las instrucciones detalladas de abajo. No abras `index.html` haciendo doble clic y no uses Live Server: este proyecto necesita Vite para procesar React y TypeScript.
-
-## Estado actual: fase 6 · Revisión de entrega
-
-Proyecto configurado con React, TypeScript, Vite, React Router y Bun. Las seis pantallas públicas presentan contenido e interacciones con datos simulados. Las tres pantallas de acceso (inicio de sesión, registro y recuperación) ya incluyen formularios, validación local y respuestas simuladas.
-
-Incluido: TypeScript estricto, ESLint, rutas de navegador, ruta 404, estructura Feature-First y scripts de desarrollo y compilación. La fase 2 incorpora el logo original, fuentes locales Poppins e Inter, tokens visuales, encabezado y pie compartidos, menú móvil y componentes reutilizables.
-
-La fase 3 añadió seis campañas centralizadas y consultas locales. La fase 4 las conecta con portada, páginas informativas, catálogo, búsqueda y detalle. La fase 5 añade acceso simulado. La fase 6 contrasta las nueve pantallas y las 39 variantes mínimas con el PDF, optimiza los recursos locales y comprueba la entrega. Hay 51 pruebas automáticas de datos, validación, navegación, servicios simulados y recursos. Ver [matriz de cumplimiento](docs/cumplimiento-frontend-publico.md) para cada requisito y cómo probarlo; las notas de fases 4 y 5 conservan su contexto histórico.
-
-Incluido: destacados, búsqueda por texto, filtros combinables con chips removibles, ordenamiento, dos páginas de tres campañas, detalle correcto por slug, actualizaciones y estados de campaña. Los filtros se conservan en la URL al recargar; el encabezado conduce a los resultados de búsqueda. El CTA de apoyo de una campaña activa lleva al acceso; las cerradas no admiten aportes.
-
-El código y la documentación se comparten en el repositorio del equipo. Pendiente de contenido: texto legal definitivo; solo se presenta una aceptación de demostración. Las seis campañas ya tienen portadas diferentes: reforestación conserva la referencia y las otras cinco utilizan imágenes generadas con IA a petición del usuario. Todas tienen versiones WebP optimizadas y avisos de uso ilustrativo. El logo oficial no se reemplazó. Ver [archivos y prompts de las portadas](docs/portadas-generadas.md). No es una réplica píxel a píxel del Figma ni una plataforma con operaciones reales.
-
-## Probar el recorrido público
-
-1. Abrir `/` y entrar a Explorar proyectos.
-2. Cambiar de página o entrar en Búsqueda y filtros. Buscar `POTOSI` para comprobar que se ignoran mayúsculas y tildes.
-3. Combinar categoría, ubicación y modalidad; quitar filtros individualmente o limpiar todos.
-4. Abrir una tarjeta y consultar historia, impacto, creador y actualizaciones.
-5. En una campaña activa, Apoyar lleva al acceso simulado y permite volver al proyecto tras la confirmación. Las campañas de Tarija y Beni demuestran cierre y cancelación.
-
-Al final de portada, catálogo, búsqueda y detalle, desplegar **Probar estados de la muestra**: normal, carga lenta, vacío o error. También se puede añadir `?estado=carga`, `?estado=vacio` o `?estado=error`. La carga normal dura 350 ms y la lenta 1,8 s. El reintento elimina el error de muestra y recupera los datos. Para repetir la carga lenta, volver a normal y seleccionar carga lenta nuevamente.
-
-## Probar el acceso simulado
-
-1. Abrir `/iniciar-sesion`, `/registro` o `/recuperar-contrasena`.
-2. Enviar el formulario vacío para revisar campos obligatorios y foco en el primer error.
-3. Desplegar **Probar esta pantalla** y pulsar **Usar datos de prueba**. En registro, aceptar las condiciones manualmente: el botón de prueba no las marca.
-4. Elegir la respuesta simulada y enviar. Se muestran carga y bloqueo temporal, luego éxito o error. Cualquier formulario válido usa el resultado elegido: no se consulta ninguna cuenta ni se verifica una contraseña real.
-5. En recuperación, elegir error y después **Reintentar solicitud**: la segunda solicitud muestra éxito simulado. No se envía correo.
-
-Datos ficticios incluidos: `demo@example.com` y `Brotar2026!`. La regla de contraseña de registro (8 caracteres, mayúscula y número) es provisional para esta muestra, no una política definitiva. Las contraseñas se limpian tras una respuesta. Los formularios solo mantienen estado en memoria mientras la vista está montada; no escriben credenciales en almacenamiento, URL ni solicitudes de red.
-
-El parámetro `continuar` conserva únicamente destinos públicos permitidos; registro e inicio de sesión también conservan el perfil de muestra. No abre paneles privados ni inicia pagos.
-
-## Componentes y vista de desarrollo
-
-Con `bun run dev`, abrir http://127.0.0.1:5173/?vista=componentes para probar la base visual. Es una vista interna, no una pantalla adicional del alcance: su código se excluye de la compilación de producción. Sus tarjetas ya consumen las campañas centralizadas de la fase 3 y muestran un aviso explícito de demostración.
-
-| Componente | Responsabilidad |
+| Función | Estado de esta entrega |
 | --- | --- |
-| `Brand` | Logo original y nombre Brotar, con variante para fondo oscuro |
-| `PublicLayout` | Encabezado, navegación responsive, búsqueda por URL y pie |
-| `Button` / `ButtonLink` | Acciones y navegación; variantes, deshabilitado y carga |
-| `FormField` | Input, select o textarea con etiqueta, ayuda y error asociado |
-| `ProjectCard` | Presentación de campaña y estados activa/finalizada/cancelada |
-| `Badge` / `ProgressBar` | Etiquetas semánticas y progreso accesible |
-| `Message`, `EmptyState`, `ErrorState`, `ProjectCardSkeleton` | Información, éxito, vacío, error y carga |
+| Frontend ↔ API HTTP ↔ PostgreSQL oficial V2 | Integrado |
+| Registro de usuarios y perfil inicial | Persistencia real y contraseña protegida |
+| Inicio, consulta y cierre de sesión | Sesión revocable con cookie HttpOnly |
+| Perfil propio | Consulta y edición real de nombre, apellido y teléfono |
+| Roles iniciales | Usuario registrado, consulta de roles y controles básicos; sin otorgar administrador desde el formulario |
+| Organización/empresa | Alta real en borrador, catálogo oficial y vínculo con el usuario |
+| Rutas privadas | Exigen sesión; la API también aplica controles |
+| Carga, éxito, error y validación | Implementados en los flujos de esta etapa |
+| Portada, catálogo, filtros y detalle de campañas | Datos simulados, identificados como demostración |
+| Recuperación de contraseña | Demostración: no envía correos ni restablece cuentas reales |
+| Campañas completas, KYC/KYB, aportes, pagos y administración completa | Pendientes de etapas posteriores |
 
-Usar `ButtonLink` para cambiar de página y `Button` para acciones. La lógica de negocio y la validación corresponden a cada feature; `FormField` presenta el resultado. Las vistas consumen los tokens de `src/shared/styles/tokens.css` y no deben duplicar colores arbitrarios. Ver `docs/fase-2.md` para alcance y comprobaciones.
+Las cuentas nuevas conservan `PENDING_VERIFICATION`, pero pueden iniciar sesión básica y gestionar perfil/organizaciones en borrador. Esto **no** verifica correo/identidad, no publica campañas ni habilita pagos. Decisión local: [ADR-002](docs/decisiones/ADR-002-acceso-basico-sin-verificacion.md). Las reglas definitivas y la aceptación formal corresponden a los líderes.
 
-## Requisitos
+La ampliación planificada del Sprint 1 (constructor inicial, archivos, recuperación, etc.) **no forma parte del requisito original de esta entrega de integración**.
 
-- **Node.js 24 LTS:** versión 24.13.0 o posterior de la rama 24, conforme a `package.json`. La versión comprobada localmente es 24.13.0. Descarga una versión compatible desde [Node.js](https://nodejs.org/en/download).
-- **Bun 1.4.2:** versión fijada en `packageManager` y utilizada en las verificaciones. Sigue la [instalación oficial de Bun](https://bun.com/docs/installation); su documentación también explica cómo instalar una versión concreta.
-- **Git:** necesario para clonar y actualizar el repositorio; no es necesario si solo descargas el ZIP.
-- Un navegador actualizado. Un editor como VS Code es opcional para ejecutar la muestra y útil para modificar el código.
+## 2. Requisitos y versiones utilizadas
 
-En Windows, abre una terminal nueva después de instalar Node.js, Bun o Git para que se actualice el PATH. Comprueba su disponibilidad:
+- Git.
+- Node.js **24**, mínimo **24.13.0**, menor que 25.
+- **Bun 1.4.2** para el frontend, en la raíz.
+- **pnpm 11.19.0** para el backend, dentro de `backend/`.
+- Docker Desktop iniciado, con motor Linux operativo, para PostgreSQL **18.6**.
+- SQL oficial **Brotar_BD_Provisional (3).sql**, recibido de coordinación por canal privado.
 
-```sh
+Comprueba en PowerShell:
+
+```powershell
+git --version
 node --version
 bun --version
-git --version
+pnpm --version
+docker version
 ```
 
-No hace falta instalar PostgreSQL, Docker, NestJS, Figma ni servicios de pago para abrir esta entrega. La instalación inicial necesita conexión a Internet para descargar las dependencias; las campañas, imágenes y fuentes de la muestra son locales.
+`docker version` debe mostrar cliente y servidor. Si solo aparece el cliente o falla el motor, resuelve Docker antes de instalar la base. No uses Factory Reset ni borres volúmenes para corregirlo.
 
-El gestor exclusivo del frontend es **Bun**. No utilizar npm, yarn ni pnpm para instalar dependencias aquí. Versionar `bun.lock`; no subir `node_modules` ni `dist`.
+No usar npm/yarn para instalar este proyecto. No mezclar gestores: conservar `bun.lock` y `backend/pnpm-lock.yaml`. NestJS y TypeORM se instalan como dependencias del backend, no necesitan instalación global.
 
-## Instalar y ejecutar
+## 3. Primera instalación completa
 
-### 1. Obtener y abrir el proyecto
+Estas instrucciones son para PowerShell en Windows, desde una copia nueva. Ejecuta los bloques en orden y **detente si un comando falla**. Cada integrante utiliza su base local, no la base de otro compañero.
 
-Puedes elegir una de estas dos opciones:
+### A. Obtener el código
 
-- **Clonar con Git:** usa `git clone` y `cd` del inicio rápido. La carpeta descargada se llama `CrowFunding-Brotar`.
-- **Descargar ZIP:** en GitHub, selecciona **Code → Download ZIP**, descomprime todo y abre la carpeta extraída. En Windows puedes hacer clic derecho dentro de ella y elegir **Abrir en Terminal**. No ejecutes el proyecto dentro del archivo ZIP.
-
-Si usas VS Code, selecciona **Archivo → Abrir carpeta** y después **Terminal → Nueva terminal**. En la raíz debes ver `package.json`, `bun.lock`, `index.html` y la carpeta `src`. La copia original local se llama `brotar-frontend`, pero la clonación usa el nombre del repositorio: lo importante es estar junto a `package.json`.
-
-### 2. Instalar las dependencias
-
-```sh
+```powershell
+git clone https://github.com/luisrocha159/CrowFunding-Brotar.git
+cd CrowFunding-Brotar
+git switch main
+git pull --ff-only origin main
 bun install --frozen-lockfile
+cd backend
+pnpm install --frozen-lockfile
 ```
 
-Este comando instala las versiones registradas en `bun.lock` y crea `node_modules`. Espera a que termine sin errores. No borres el lockfile ni cambies de gestor para resolver una instalación fallida; revisa primero las versiones y el mensaje del error.
+Para demostrar la entrega utiliza `main`. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) después de instalar la base.
 
-### 3. Arrancar y abrir la aplicación
+### B. Instalar PostgreSQL oficial V2, una sola vez
 
-```sh
+Desde `backend/`, sustituye la ruta de ejemplo por la ubicación real del SQL:
+
+```powershell
+node scripts/adopt-provisional-v2.mjs install 'C:\ruta\Brotar_BD_Provisional (3).sql'
+node scripts/verify-provisional-v2.mjs
+pnpm run check
+```
+
+El instalador comprueba el hash de la versión oficial, levanta una instancia exclusiva en `127.0.0.1:15433`, instala solamente sobre una base vacía y genera credenciales locales distintas para administrador y aplicación. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente.
+
+El SQL **no se incluye en el repositorio público**. Pídelo a los líderes. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente.
+
+Antes de activar el candidato, verifica sus cinco pruebas de integración:
+
+```powershell
+$env:ALLOW_DB_TEST_WRITES='true'
+$env:DB_TEST_RESTART='false'
+try {
+  node --env-file=../infra/postgres-v2/.env.backend --test --test-concurrency=1 dist-test/integration/*.test.js
+} finally {
+  Remove-Item Env:\ALLOW_DB_TEST_WRITES
+  Remove-Item Env:\DB_TEST_RESTART
+}
+```
+
+Solo si todo pasó, y con la API detenida:
+
+```powershell
+node scripts/adopt-provisional-v2.mjs activate
+pnpm run dev
+```
+
+No vuelvas a ejecutar `install` ni `activate` cada vez que abras el proyecto. Si ya hay configuración V2, el instalador se detiene para no sobreescribirla. Para una instalación anterior a los permisos de organizaciones, consulta [la guía V2](infra/postgres-v2/README.md); no reinstales el SQL.
+
+### C. Abrir el frontend
+
+En **otra terminal**, desde la raíz (donde está `bun.lock`):
+
+```powershell
 bun run dev
 ```
 
-Abre **http://127.0.0.1:5173/**. Debe aparecer la portada de Brotar con navegación y campañas destacadas. Si cambias el código, Vite actualiza el navegador durante el desarrollo.
+Abre **http://127.0.0.1:5173/**. No abras `index.html` directamente ni uses Live Server. Mantén ambas terminales abiertas. Vite reenvía `/api` al backend en `127.0.0.1:3000`.
 
-El servidor usa un puerto fijo. Para cerrarlo, vuelve a la terminal y pulsa `Ctrl+C`. Para abrirlo otro día, entra en la misma carpeta y ejecuta `bun run dev`; no necesitas reinstalar dependencias cada vez.
+Comprueba:
 
-La dirección `127.0.0.1` funciona únicamente en el equipo donde está ejecutándose el servidor. Subir código a GitHub no publica automáticamente una página web accesible para todos.
+- http://127.0.0.1:3000/api/health/live — 200: API viva; no demuestra conexión con la base.
+- http://127.0.0.1:3000/api/health/ready — 200: conexión y tablas base comprobadas.
+- http://127.0.0.1:5173/api/health/ready — mismo resultado a través del frontend.
 
-### 4. Recorrido sugerido para una presentación
+Si `ready` devuelve 503, revisa PostgreSQL y la configuración; no continúes como si registro y login funcionaran.
 
-1. Portada: comprobar logo, explicación y proyectos destacados.
-2. **Cómo funciona** y **Para creadores**: revisar las páginas informativas.
-3. **Explorar**: cambiar orden y página, abrir búsqueda y combinar filtros.
-4. Detalle: abrir una campaña activa y revisar historia, financiamiento, impacto y novedades.
-5. **Apoyar**: seguir al acceso simulado y utilizar **Usar datos de prueba**; no ingresar información personal real.
-6. Registro y recuperación: probar validaciones, éxito y error mediante los controles de muestra.
-7. Volver a explorar y mostrar una campaña finalizada, una cancelada y los estados vacíos o de error.
+## 4. Abrirlo otro día o actualizar una copia existente
 
-Los apartados **Probar el recorrido público** y **Probar el acceso simulado** explican cada escenario con más detalle.
+Con cambios locales propios, revisa `git status` y consérvalos antes de cambiar de rama o actualizar. No utilices `reset --hard`, force-push ni borres trabajo para “sincronizar”.
 
-## Verificar y compilar
+Para revisar una copia limpia de la entrega:
 
-Para ejecutar todas las comprobaciones de una vez:
+```powershell
+git switch main
+git pull --ff-only origin main
+bun install --frozen-lockfile
+docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.yaml up -d --wait
+cd backend
+pnpm install --frozen-lockfile
+pnpm run dev
+```
 
-```sh
+En otra terminal, raíz: `bun run dev`. Actualizar código **no** exige restaurar nuevamente la base. Si cambia el esquema, leer el procedimiento acordado antes de aplicar cambios.
+
+Para cerrar, usa `Ctrl+C` en ambas terminales. Opcionalmente, desde la raíz:
+
+```powershell
+docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.yaml stop
+```
+
+`stop` conserva los datos. No usar `down -v`, `docker volume rm` ni reinstalar una base poblada.
+
+## 5. Guion para probar y presentar la entrega
+
+Usar datos ficticios, un correo de prueba único y una contraseña exclusiva de demostración. **No hay una cuenta demo compartida** ni se entregan contraseñas en este README.
+
+1. Abrir `/registro`. Enviar vacío y comprobar campos/errores. Completar nombre, apellido, correo y una contraseña de **15 a 128 caracteres**; confirmar contraseña y aceptar manualmente el consentimiento de demostración. Si se añade teléfono, completar código y número.
+2. Registrar. Debe aparecer confirmación y estado pendiente de verificación. No debe afirmar que envió un correo.
+3. Abrir `/iniciar-sesion`. Probar una contraseña incorrecta: debe mostrar error, no crear sesión. Entrar con la cuenta recién registrada: **no requiere activarla por SQL**.
+4. Abrir `/mi-cuenta`. Cambiar nombre/apellido y teléfono; guardar y recargar. Los datos deben persistir. Mostrar el rol Usuario registrado y aclarar que no es administrador ni verificación de identidad.
+5. Abrir `/mis-organizaciones`. Registrar nombre legal, nombre comercial, tipo del catálogo oficial y contacto. Debe guardarse como **DRAFT/Borrador**, relacionada con el usuario. Recargar y comprobar que aparece.
+6. Cerrar sesión. Entrar de nuevo en `/mi-cuenta` o `/mis-organizaciones`: debe pedir acceso. Volver a iniciar sesión: perfil y organización siguen guardados.
+7. Para mostrar persistencia entre arranques, detener **solo la API** con `Ctrl+C`, volver a ejecutar `pnpm run dev` y comprobar los datos. No restaurar el SQL ni borrar el volumen.
+8. En otra ventana privada, sin sesión, comprobar que las rutas privadas exigen acceso. Las suites de integración comprueban también aislamiento entre usuarios, expiración y revocación.
+9. Mostrar los resultados de pruebas y explicar los límites de la entrega. La validación de líderes se registra aparte del cierre técnico.
+
+No probar con pagos, correos reales ni documentos de identidad. Evita publicar capturas de cookies, contraseñas o credenciales. La recuperación de contraseña **sigue simulada**: para esta demostración conserva tus credenciales de prueba.
+
+### Experiencia pública que se conserva
+
+- `/`, `/como-funciona`, `/para-creadores`: contenido e identidad Brotar.
+- `/explorar` y `/explorar/buscar`: búsqueda, filtros, orden y paginación simulados.
+- `/proyectos/reforestacion-chiquitana`: detalle de ejemplo; un slug inexistente muestra no disponible.
+- Los selectores **Probar estados de la muestra** permiten carga, vacío y error. También se puede utilizar `?estado=carga`, `?estado=vacio` o `?estado=error` donde corresponda.
+- Apoyar no procesa dinero. Registro/login son reales; campañas y recuperación no deben presentarse como integradas a PostgreSQL.
+
+Se puede abrir **solo la muestra pública** con `bun install --frozen-lockfile` y `bun run dev`, sin backend. En ese modo los flujos reales de registro, sesión, perfil y organizaciones **no funcionarán**.
+
+## 6. Pruebas, compilación y evidencia
+
+Desde la raíz:
+
+```powershell
 bun run check
 ```
 
-También puedes ejecutarlas por separado:
+Desde `backend/`:
 
-```sh
-bun run typecheck
-bun run lint
-bun run test
-bun run build
-bun run preview
+```powershell
+pnpm run check
+$env:ALLOW_DB_TEST_WRITES='true'
+$env:DB_TEST_RESTART='false'
+try { pnpm run test:integration }
+finally {
+  Remove-Item Env:\ALLOW_DB_TEST_WRITES
+  Remove-Item Env:\DB_TEST_RESTART
+}
 ```
 
-`bun run check` ejecuta lint, TypeScript (aplicación y pruebas), los tests con Bun y build. El resultado de build queda en `dist/`. La vista previa usa http://127.0.0.1:4173.
+Verificación local repetida el **17/09/2026**: **64 pruebas frontend + 45 backend + 5 de integración = 114**, además de lint, TypeScript y build. Las pruebas de integración escriben fixtures ficticios propios en la base local y los limpian al finalizar; nunca ejecutarlas en producción. Si se interrumpen abruptamente, revisar solamente sus fixtures, no limpiar tablas completas.
 
-Para revisar solo la versión compilada, ejecuta `bun run build` y después `bun run preview`. Mantén la terminal abierta y visita **http://127.0.0.1:4173/**. La vista de componentes de desarrollo no se incluye en esa compilación. `preview` es una comprobación local, no un servicio de producción ni un despliegue público.
+Esta ejecución no reinicia el contenedor; comprueba reconexión y reinicios de APIs temporales. El ensayo opcional de reinicio de PostgreSQL se describe en [backend/README.md](backend/README.md).
 
-La última verificación documentada del frontend pasó con **51 pruebas**, además de lint, revisión de tipos y build. No equivale a pruebas de backend o pagos, que todavía no existen en esta entrega.
+Para ejecutar compilado: raíz `bun run build` y `bun run preview`; backend `pnpm run build` y `pnpm run start`. Para probar acceso real en preview (puerto 4173), añadir su origen exacto a `CORS_ORIGINS` del backend y reiniciar la API. Usar siempre el mismo hostname, preferentemente `127.0.0.1`. Preview no es un despliegue de producción.
 
-Se fija TypeScript 5.9.3 para mantener compatibilidad con las herramientas de lint seleccionadas; no actualizar las dependencias automáticamente sin ejecutar las comprobaciones.
+## 7. Configuración y seguridad de la entrega
 
-## Problemas frecuentes
+- El instalador crea `infra/postgres-v2/.env`, `.env.backend` y, al activar, `backend/.env`. Están excluidos de Git. La copia anterior, si existe, se conserva como `.env.before-v2`.
+- `backend/.env.example` es una plantilla sin contraseña; con `DATABASE_ENABLED=false` solo sirve para probar la API sin base. No la copies encima de la configuración generada.
+- `DB_HOST=127.0.0.1`, `DB_PORT=15433`, `DB_NAME=brotar_db` y `DB_USER=brotar_app` corresponden a V2. No conectar la aplicación como `postgres`.
+- La API escucha localmente en 3000 y Vite en 5173. `CORS_ORIGINS` admite orígenes concretos; no sustituirlo por `*`.
+- No incluir secretos en variables `VITE_*`, commits, Trello, capturas o comentarios. Cada integrante genera sus propias credenciales.
+- El repositorio es público. No subir SQL con datos iniciales/privados, backups, `node_modules`, `dist` ni archivos `.env`.
+- No habilitar `synchronize`, `dropSchema` ni migraciones automáticas. La base sigue siendo provisional.
 
-| Problema | Qué revisar |
-| --- | --- |
-| `bun`, `node` o `git` no se reconoce | Instalar la herramienta, cerrar y abrir la terminal y comprobar su versión. Para Bun, revisar el PATH según su documentación oficial. |
-| No se encuentra `package.json` o el script `dev` | La terminal está en otra carpeta. Entrar en la raíz que contiene `package.json` y `bun.lock`. |
-| Puerto 5173 ocupado | Puede haber otra ejecución de Brotar. Usar esa ventana o detener únicamente el servidor conocido con `Ctrl+C`. Como alternativa, ejecutar `bun run dev --port 5174` y abrir `http://127.0.0.1:5174/`. |
-| No conecta con `127.0.0.1` | Confirmar que `bun run dev` sigue activo, que no terminó con error y que se abrió el puerto correcto. |
-| Error de versión o de lockfile | Usar la rama Node 24 compatible y Bun 1.4.2. Ejecutar la instalación desde la raíz, conservar `bun.lock` y comprobar acceso a Internet. No sustituirlo con un lockfile de npm. |
-| Pantalla vacía al abrir un archivo HTML | No usar `file://` ni doble clic sobre `index.html`; arrancar Vite o la vista previa compilada. |
-| No hay carpeta `dist` al usar `preview` | Ejecutar primero `bun run build` y corregir cualquier error antes de previsualizar. |
-| El ingreso no abre un panel o no llega el correo | Es el comportamiento previsto: autenticación y recuperación son simuladas; no hay cuentas ni correo reales. |
-| Una campaña está vacía o muestra error | Revisar el selector de estados de la muestra y el parámetro `estado` de la URL; elegir Normal o Reintentar. |
-| Una ruta da 404 al recargar después de desplegar | El hosting necesita fallback de SPA a `index.html`; subir archivos sin esa configuración no basta. |
+## 8. Ramas, asignaciones y forma de trabajar
 
-## Actualizar una copia existente
+`main` es la entrega revisable. `DEV` integra el trabajo. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas.
 
-Si clonaste el repositorio y no tienes cambios locales pendientes:
+Flujo: **rama personal → PR a DEV → pruebas/revisión → PR de DEV a main**. No trabajar directamente en `main` después de esta entrega. No dar por hecho que hay protección técnica de ramas: esta es la convención del equipo; los cambios de permisos/protección requieren al propietario.
 
-```sh
-git pull --ff-only
-bun install --frozen-lockfile
-bun run dev
-```
+- Alison: S1-11, S1-12, S1-14 y S1-19.
+- Santiago (Thiago Rocha en Trello): S1-10, S1-13, S1-15, S1-16, S1-17, S1-18 y S1-20.
+- Ricardo: entrega base E01–E09 y atribución de las historias ya cerradas; coordina la integración y la revisión.
 
-Si tienes cambios propios, revísalos primero con `git status` y coordina cómo conservarlos. No uses un reinicio forzado para actualizar ni reemplaces el trabajo de otro integrante.
+Ambos pueden iniciar en paralelo, pero la portada S1-19 depende del borrador S1-16. Hay que acordar el contrato antes de modificar sus componentes compartidos. Las decisiones pendientes de cliente no desaparecen por asignar responsables.
 
-## Rutas
+Lee [CONTRIBUTING.md](CONTRIBUTING.md) para comandos exactos, orden de trabajo, conflictos y criterios de PR; [asignación del Sprint 1](docs/asignacion-sprint-1.md) para los límites de cada responsable.
 
-| Pantalla | Dirección |
-| --- | --- |
-| Landing | `/` |
-| Cómo funciona | `/como-funciona` |
-| Para creadores | `/para-creadores` |
-| Explorar proyectos | `/explorar` |
-| Búsqueda y filtros | `/explorar/buscar` |
-| Detalle público | `/proyectos/:slug` |
-| Iniciar sesión | `/iniciar-sesion` |
-| Crear cuenta | `/registro` |
-| Recuperar contraseña | `/recuperar-contrasena` |
-| Dirección inexistente | Cualquier ruta no definida muestra 404 |
-
-Detalle de ejemplo: `/proyectos/reforestacion-chiquitana`. Un slug desconocido muestra una campaña no disponible con salida hacia Explorar.
-
-## Organización
+## 9. Estructura del proyecto
 
 ```text
-src/
-  app/                 # Aplicación y rutas
-  features/
-    public/
-      home/
-      how-it-works/
-      for-creators/
-      explore-projects/ # Listado y búsqueda comparten funcionalidad
-      project-detail/
-    access/
-      login/
-      register/
-      recover-password/
-  shared/
-    components/
-    layout/
-    assets/
-    styles/
-    types/
-  mocks/
-    projects/
-    access/
+src/                  React: app, features, shared y mocks
+tests/                Pruebas del frontend
+backend/
+  src/                NestJS: auth, users, profiles, roles, organizations
+  test/               Pruebas sin base externa
+  integration/        Pruebas con PostgreSQL local
+  scripts/            Instalación y verificación V2
+infra/postgres-v2/    Compose, permisos y baseline vigentes
+infra/postgres/       Entorno anterior; no usar para instalar V2
+docs/                 Requisitos, entregables, decisiones y evidencias
 ```
 
-Cada feature conserva sus componentes, estilos y lógica propios. Solo lo utilizado por varias funcionalidades debe ir en `shared/`. Los datos mock están separados de las vistas para sustituirlos por una API posteriormente. Las consultas de búsqueda pertenecen a `features/public/explore-projects/projectQuery.ts`; los tipos y el cálculo compartido de progreso están en `shared/types` y `shared/utils`.
+Frontend por funcionalidades. Backend separado en dominio, aplicación e infraestructura; dominio/aplicación no deben importar NestJS, SQL ni TypeORM. Compartir solo lo realmente reutilizable. [Detalles del backend](backend/README.md).
 
-Las nueve pantallas del alcance ya tienen implementación; no quedan pantallas provisionales. Los formularios comparten presentación, validación y control de solicitudes dentro de `features/access`; el servicio simulado está en `mocks/access` y no recibe datos personales.
+## 10. Problemas frecuentes
 
-## Alcance de la etapa
+| Problema | Comprobación |
+| --- | --- |
+| Herramienta no reconocida | Instalar la versión requerida y abrir otra terminal; comprobar PATH y versión. |
+| No encuentra package.json | Frontend en raíz; backend en su propia carpeta. |
+| Docker no responde | Comprobar motor Linux y `docker version`. No borrar volúmenes ni reinstalar la base. |
+| Instalador rechaza hash/configuración | Revisar versión SQL o instalación previa; no quitar la protección. |
+| API viva pero registro falla | Revisar `/api/health/ready`, base V2 y `DATABASE_ENABLED`; reiniciar API tras corregir. |
+| Puerto ocupado | Utilizar el proceso de Brotar ya abierto o detener solo ese proceso; no matar aplicaciones ajenas. |
+| Cookie/sesión no persiste | Mantener hostname consistente, usar la URL de Vite y revisar CORS; no alternar localhost y 127.0.0.1. |
+| 401 al abrir perfil | Iniciar sesión; 401 sin cookie es esperado. |
+| 403 al modificar | Revisar origen, sesión y permisos; no desactivar guards para ocultarlo. |
+| No llega correo de recuperación | Es simulación; no está incluido el envío real en esta entrega. |
+| Base nueva no muestra cuentas anteriores | V2 usa volumen separado; no se migraron usuarios de la versión antigua. |
+| Credencial incorrecta o correo duplicado | Usar otra cuenta ficticia única y recordar su contraseña; no activar usuarios ni modificar datos ajenos. |
+| Cambios de otro compañero no aparecen | Integrar por DEV según CONTRIBUTING, reinstalar dependencias si cambian lockfiles y reiniciar procesos. |
 
-Frontend estático interactivo con campañas simuladas, navegación, búsqueda, filtros, detalle público y formularios de acceso con validación local. El alcance final incluye estados de carga, vacío, error y éxito, así como diseño adaptable.
+## 11. Documentos y aceptación
 
-Quedan fuera backend, base de datos, autenticación o sesiones reales, paneles privados, KYC/KYB, checkout, pagos y operaciones financieras. Los destinos privados se representarán como puntos de conexión futuros.
+- [Informe de entrega de integración](docs/entrega-integracion-2026-09-17.md).
+- [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
+- [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
+- [Figma final](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574).
+- [Revisión funcional de la integración](docs/revision-entrega-integracion-e08.md).
+- [Índice de documentos y versiones históricas](docs/README.md).
 
-## Referencias
-
-- `Brotar_Definicion_Stack_Tecnologico_y_Arquitectura.pdf`.
-- `Brotar_Tarea_Desarrollo_Frontend_Publico.pdf`.
-- Figma final: https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574
-
-El documento técnico define React + TypeScript + Bun y arquitectura por funcionalidades. El documento de tarea delimita la experiencia pública y el acceso; el Figma guía su presentación visual.
-
-## Repositorio y despliegue
-
-El código y los documentos están en [luisrocha159/CrowFunding-Brotar](https://github.com/luisrocha159/CrowFunding-Brotar), rama `main`. La publicación del repositorio no incluye un despliegue de la aplicación: cada integrante puede ejecutarla localmente siguiendo el inicio rápido.
-
-Para contribuir, el nombre y correo del autor de Git no conceden acceso: la cuenta autenticada debe ser propietaria o colaboradora autorizada. No es necesario cambiar la cuenta global para todos los proyectos ni reescribir commits anteriores.
-
-El repositorio de destino es público: solo deben incorporarse código y entregables aprobados para compartir, nunca tokens, contraseñas, documentos privados de identidad o datos reales de participantes. `node_modules`, `dist`, archivos `.env` reales y temporales están excluidos por `.gitignore`.
-
-Para alojarlo como SPA, el hosting debe redirigir las rutas de frontend a `index.html` conservando los archivos estáticos. Así funcionará también recargar una ruta profunda. Vite ya resuelve esto durante desarrollo y vista previa.
-
-No se necesitan variables de entorno en esta fase. No agregar credenciales ni archivos `.env` reales al repositorio.
+Las notas de fases anteriores y el PDF explicativo conservan sus fechas de corte. Para ejecutar esta entrega prevalece este README. GitHub comparte el código, **no publica automáticamente una aplicación web**. La aceptación de los líderes, las reglas definitivas y la validación en las computadoras del equipo no se sustituyen por las pruebas locales.
