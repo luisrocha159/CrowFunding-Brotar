@@ -2,13 +2,14 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { registerAccount, RegistrationError, validateRegistration, type RegistrationValues } from '../src/features/access/register/registration'
 
-const values: RegistrationValues = { firstName: ' María ', lastName: " D'Ávila ", email: ' PRUEBA@example.invalid ', password: 'una frase de prueba larga', confirmation: 'una frase de prueba larga', terms: true, phoneCountryCode: '', phoneNumber: '' }
-test('registro real valida límites, confirmación, consentimiento y teléfono opcional completo', () => {
+const values: RegistrationValues = { firstName: ' María ', lastName: " D'Ávila ", email: ' PRUEBA@example.invalid ', password: 'una frase de prueba larga', confirmation: 'una frase de prueba larga', terms: true, phoneCountryCode: '', phoneNumber: '', profile: 'creador' }
+test('registro real valida límites, perfil aprobado, confirmación, consentimiento y teléfono opcional completo', () => {
   assert.deepEqual(validateRegistration(values), {})
-  for (const changes of [{ firstName: ' ' }, { lastName: 'a'.repeat(121) }, { password: 'corta' }, { password: 'a'.repeat(129) }, { terms: false }, { confirmation: 'otra contraseña' }, { phoneCountryCode: '+591' }, { phoneNumber: '12345678' }]) assert.ok(Object.keys(validateRegistration({ ...values, ...changes })).length)
+  for (const profile of ['usuario', 'creador', 'organizacion'] as const) assert.deepEqual(validateRegistration({ ...values, profile }), {})
+  for (const changes of [{ firstName: ' ' }, { lastName: 'a'.repeat(121) }, { password: 'corta' }, { password: 'a'.repeat(129) }, { terms: false }, { confirmation: 'otra contraseña' }, { phoneCountryCode: '+591' }, { phoneNumber: '12345678' }, { profile: 'admin' }]) assert.ok(Object.keys(validateRegistration({ ...values, ...changes } as RegistrationValues)).length)
   assert.deepEqual(validateRegistration({ ...values, phoneCountryCode: '+591', phoneNumber: '12345678' }), {})
 })
-test('cliente envía solo contrato permitido, normaliza datos y no envía confirmación ni roles', async () => {
+test('cliente envía solo contrato permitido, normaliza datos y no envía confirmación, perfil ni roles', async () => {
   const result = await registerAccount(values, undefined, (async (url, init) => {
     assert.equal(url, '/api/auth/register')
     assert.equal(init?.credentials, 'omit')

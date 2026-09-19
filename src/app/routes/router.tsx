@@ -12,6 +12,7 @@ import { RegisterPage } from '../../features/access/register/RegisterPage'
 import { RecoverPasswordPage } from '../../features/access/recover-password/RecoverPasswordPage'
 import { AccountPage } from '../../features/access/session/AccountPage'
 import { OrganizationsPage } from '../../features/organizations/OrganizationsPage'
+import { CoverDraftPage } from '../../features/campaign-drafts/CoverDraftPage'
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       { path: 'iniciar-sesion', element: <LoginPage /> },
       { path: 'mi-cuenta', element: <AccountPage /> },
       { path: 'mis-organizaciones', element: <OrganizationsPage /> },
+      { path: 'mi-campana/portada', element: <CoverDraftPage /> },
       { path: 'registro', element: <RegisterPage /> },
       { path: 'recuperar-contrasena', element: <RecoverPasswordPage /> },
       { path: '*', element: <NotFoundPage /> }

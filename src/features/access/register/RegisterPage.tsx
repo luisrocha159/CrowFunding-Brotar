@@ -5,10 +5,15 @@ import { FormField } from '../../../shared/components/FormField'
 import { Message } from '../../../shared/components/Feedback'
 import { AccessShell, AccessSuccess, PasswordField, ValidationSummary } from '../AccessComponents'
 import { accessHref, publicContinuation } from '../navigation'
-import { REGISTRATION_PASSWORD_HELP, RegistrationError, registerAccount, validateRegistration, type RegistrationErrors, type RegistrationFailure, type RegistrationValues } from './registration'
+import { profileLabels, REGISTRATION_PASSWORD_HELP, RegistrationError, registerAccount, validateRegistration, type AccessProfile, type RegistrationErrors, type RegistrationFailure, type RegistrationValues } from './registration'
 import styles from '../access.module.css'
 
-const initialValues: RegistrationValues = { firstName: '', lastName: '', email: '', password: '', confirmation: '', phoneCountryCode: '', phoneNumber: '', terms: false }
+const initialValues: RegistrationValues = { firstName: '', lastName: '', email: '', password: '', confirmation: '', phoneCountryCode: '', phoneNumber: '', profile: 'usuario', terms: false }
+const profileHelp: Record<AccessProfile, string> = {
+  usuario: 'Cuenta básica para explorar proyectos, gestionar tus datos y acceder a funciones privadas habilitadas.',
+  creador: 'Punto de partida para preparar una propuesta; no publica campañas ni concede permisos de creador automáticamente.',
+  organizacion: 'Permite registrar una organización en borrador desde tu cuenta; no realiza verificación KYB ni activa a la empresa.'
+}
 const messages: Record<RegistrationFailure, string> = {
   invalid: 'Revisa los campos. El servidor no aceptó los datos enviados.',
   conflict: 'No se puede crear una cuenta con estos datos. El correo puede estar registrado; no se modificó la cuenta existente.',
@@ -18,7 +23,9 @@ const messages: Record<RegistrationFailure, string> = {
 }
 export function RegisterPage() {
   const [params] = useSearchParams()
-  const [values, setValues] = useState<RegistrationValues>({ ...initialValues })
+  const selectedProfile = params.get('perfil')
+  const initialProfile: AccessProfile = selectedProfile && Object.hasOwn(profileLabels, selectedProfile) ? selectedProfile as AccessProfile : 'usuario'
+  const [values, setValues] = useState<RegistrationValues>({ ...initialValues, profile: initialProfile })
   const [errors, setErrors] = useState<RegistrationErrors>({})
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | RegistrationFailure>('idle')
   const active = useRef<AbortController | null>(null)
@@ -37,7 +44,7 @@ export function RegisterPage() {
     {status === 'success' ? <AccessSuccess title="Cuenta guardada en Brotar">
       <p>El usuario y su perfil se guardaron correctamente. Estado: <strong>pendiente de verificación</strong>.</p>
       <p>Ya puedes iniciar sesión, completar tu perfil y registrar una organización en borrador. Tu cuenta conserva el rol básico Usuario registrado; esto no verifica tu correo o identidad ni concede permisos de creador, patrocinador o administrador. No se envió ningún correo ni se inició una sesión automáticamente.</p>
-      <div className={styles.actions}><ButtonLink to={accessHref('/iniciar-sesion', params)}>Iniciar sesión</ButtonLink><ButtonLink variant="secondary" to={publicContinuation(params.get('continuar'))}>Volver al recorrido público</ButtonLink><Button variant="secondary" onClick={() => { setValues({ ...initialValues }); setErrors({}); setStatus('idle') }}>Registrar otra cuenta de prueba</Button></div>
+      <div className={styles.actions}><ButtonLink to={accessHref('/iniciar-sesion', params)}>Iniciar sesión</ButtonLink><ButtonLink variant="secondary" to={publicContinuation(params.get('continuar'))}>Volver al recorrido público</ButtonLink><Button variant="secondary" onClick={() => { setValues({ ...initialValues, profile: initialProfile }); setErrors({}); setStatus('idle') }}>Registrar otra cuenta de prueba</Button></div>
     </AccessSuccess> : <>
       {status !== 'idle' && status !== 'loading' && <div id="register-response" tabIndex={-1} className={styles.response}><Message tone="error" title="No se completó la confirmación del registro">{messages[status]}</Message></div>}
       <form noValidate className={styles.form} aria-label="Formulario de registro" onSubmit={async event => {
@@ -52,7 +59,7 @@ export function RegisterPage() {
         setStatus('loading')
         try {
           await registerAccount(values, controller.signal)
-          if (!controller.signal.aborted) { setStatus('success'); setValues({ ...initialValues }) }
+          if (!controller.signal.aborted) { setStatus('success'); setValues({ ...initialValues, profile: initialProfile }) }
         } catch (error) {
           if (!controller.signal.aborted) {
             setStatus(error instanceof RegistrationError ? error.kind : 'unknown')
@@ -63,12 +70,23 @@ export function RegisterPage() {
         <ValidationSummary prefix="register" errors={errors} />
         <fieldset className={styles.fields} disabled={busy}>
           <p>Esta etapa crea una cuenta básica. Desde tu cuenta podrás completar tu perfil y registrar una organización en borrador, sin obtener permisos adicionales automáticamente.</p>
+          <fieldset id="register-profile" className={styles.fields} tabIndex={-1}>
+            <legend className={styles.legend}>Perfil de uso inicial</legend>
+            <div className={styles.profiles}>
+              {(Object.entries(profileLabels) as [AccessProfile, string][]).map(([profile, label]) => <label key={profile}>
+                <input type="radio" id={`register-profile-${profile}`} name="profile" value={profile} checked={values.profile === profile} aria-describedby="register-profile-help" onChange={() => change('profile', profile)} />
+                <span>{label}</span>
+              </label>)}
+            </div>
+            <p id="register-profile-help" className={styles.helperText}>{profileHelp[values.profile]}</p>
+            {errors.profile && <p className={styles.fieldError}>{errors.profile}</p>}
+          </fieldset>
           <div className={styles.row}><FormField id="register-firstName" label="Nombre" name="firstName" autoComplete="given-name" required value={values.firstName} error={errors.firstName} onChange={event => change('firstName', event.target.value)} /><FormField id="register-lastName" label="Apellido" name="lastName" autoComplete="family-name" required value={values.lastName} error={errors.lastName} onChange={event => change('lastName', event.target.value)} /></div>
           <FormField id="register-email" label="Correo electrónico" name="email" type="email" autoComplete="email" required value={values.email} error={errors.email} placeholder="nombre@example.com" onChange={event => change('email', event.target.value)} />
           <div className={styles.row}><FormField id="register-phoneCountryCode" label="Prefijo telefónico (opcional)" name="phoneCountryCode" autoComplete="tel-country-code" placeholder="+591" value={values.phoneCountryCode} error={errors.phoneCountryCode} onChange={event => change('phoneCountryCode', event.target.value)} /><FormField id="register-phoneNumber" label="Teléfono (opcional)" name="phoneNumber" autoComplete="tel-national" type="tel" value={values.phoneNumber} error={errors.phoneNumber} onChange={event => change('phoneNumber', event.target.value)} /></div>
           <PasswordField id="register-password" label="Contraseña" name="password" newPassword value={values.password} error={errors.password} help={REGISTRATION_PASSWORD_HELP} disabled={busy} onChange={value => change('password', value)} />
           <PasswordField id="register-confirmation" label="Confirmar contraseña" name="confirmation" newPassword value={values.confirmation} error={errors.confirmation} disabled={busy} onChange={value => change('confirmation', value)} />
-          <div><label className={styles.checkbox}><input id="register-terms" type="checkbox" name="terms" checked={values.terms} required aria-invalid={!!errors.terms} aria-describedby="terms-help" onChange={event => change('terms', event.target.checked)} /><span>Entiendo que estos datos se guardarán en la base de pruebas.</span></label>{errors.terms && <p className={styles.fieldError}>{errors.terms}</p>}<p id="terms-help">El texto legal definitivo sigue pendiente. Esta confirmación de prueba no se registra como aceptación de términos legales.</p></div>
+          <div><label className={styles.checkbox}><input id="register-terms" type="checkbox" name="terms" checked={values.terms} required aria-invalid={!!errors.terms} aria-describedby="terms-help" onChange={event => change('terms', event.target.checked)} /><span>Entiendo que mis datos básicos y el perfil de uso elegido se guardarán en la base de pruebas.</span></label>{errors.terms && <p className={styles.fieldError}>{errors.terms}</p>}<p id="terms-help">El texto legal definitivo sigue pendiente. Esta confirmación de prueba no se registra como aceptación de términos legales, verificación KYC/KYB ni autorización para publicar campañas o procesar pagos.</p></div>
           <Button type="submit" loading={busy} loadingLabel="Guardando cuenta…">Crear cuenta</Button>
         </fieldset>
       </form>
