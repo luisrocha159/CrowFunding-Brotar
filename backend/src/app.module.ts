@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module'
 import { ProfilesModule } from './profiles/profiles.module'
 import { OrganizationsModule } from './organizations/organizations.module'
 import { CatalogsModule } from './catalogs/catalogs.module'
+import { CampaignsModule } from './campaigns/campaigns.module'
 
-@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule] })
+@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule] })
 export class AppModule {}

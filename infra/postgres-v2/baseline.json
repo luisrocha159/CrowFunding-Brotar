@@ -22,7 +22,8 @@
   "permissionOverlays": [
     "grant-e07.sql",
     "grant-s1-13.sql",
-    "grant-s1-15.sql"
+    "grant-s1-15.sql",
+    "grant-s1-16.sql"
   ],
   "notes": "Restauración inicial aislada; no es una migración de la base anterior. El inventario no sustituye una comparación completa de definiciones SQL.",
   "migrationControl": {
