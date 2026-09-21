@@ -1,8 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  activeCategories, canMoveTo, createDraft, myDrafts, readDraft, saveDraft, validateDraft,
-  type DraftInput
+  activeCategories, canMoveTo, changeModality, createDraft, myDrafts, readDraft, readModality,
+  saveDraft, validateDraft, type DraftInput
 } from '../src/features/campaigns/campaignsClient'
 import { SessionError } from '../src/features/access/session/sessionClient'
 
@@ -79,5 +79,45 @@ test('los estados de error de la API se conservan para que la vista reaccione', 
         return true
       })
     }
+  } finally { globalThis.fetch = original }
+})
+
+test('modalidad: el cambio que deja recompensas sin aplicar exige reconocerlo', async () => {
+  const original = globalThis.fetch
+  const sent: unknown[] = []
+  try {
+    globalThis.fetch = (async (_url, init) => {
+      const body = init?.body ? JSON.parse(String(init.body)) : undefined
+      if (init?.method === 'PUT') {
+        sent.push(body)
+        // Sin reconocimiento la API responde conflicto y no cambia nada.
+        if (!body.acknowledgeRewards) return new Response('', { status: 409 })
+        return Response.json({ campaignType: 'DONATION', fundingModel: null, rewardsApply: false, rewardCount: 2 })
+      }
+      return Response.json({ campaignType: 'REWARD', fundingModel: 'ALL_OR_NOTHING', rewardsApply: true, rewardCount: 2 })
+    }) as typeof fetch
+
+    const current = await readModality('draft-id')
+    assert.equal(current.rewardsApply, true)
+    assert.equal(current.rewardCount, 2)
+
+    await assert.rejects(() => changeModality('draft-id', 'DONATION', null), (error: unknown) => {
+      assert.ok(error instanceof SessionError)
+      assert.equal(error.status, 409)
+      return true
+    })
+
+    const confirmed = await changeModality('draft-id', 'DONATION', null, true)
+    assert.equal(confirmed.rewardsApply, false, 'La donación omite las recompensas.')
+    assert.equal(confirmed.rewardCount, 2, 'Siguen ahí: no se descartaron.')
+    assert.deepEqual(sent, [{ campaignType: 'DONATION' }, { campaignType: 'DONATION', acknowledgeRewards: true }])
+  } finally { globalThis.fetch = original }
+})
+
+test('una modalidad inventada en la respuesta no se acepta', async () => {
+  const original = globalThis.fetch
+  try {
+    globalThis.fetch = (async () => Response.json({ campaignType: 'INVENTADA', fundingModel: null, rewardsApply: false, rewardCount: 0 })) as typeof fetch
+    await assert.rejects(() => readModality('draft-id'), SessionError)
   } finally { globalThis.fetch = original }
 })

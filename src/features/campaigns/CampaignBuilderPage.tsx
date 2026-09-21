@@ -6,8 +6,8 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import {
-  activeCategories, canMoveTo, createDraft, myDrafts, readDraft, saveDraft, validateDraft,
-  CAMPAIGN_TYPES, type Category, type Draft, type DraftInput
+  activeCategories, canMoveTo, changeModality, createDraft, myDrafts, readDraft, readModality,
+  saveDraft, validateDraft, CAMPAIGN_TYPES, type Category, type Draft, type DraftInput, type Modality
 } from './campaignsClient'
 import styles from '../access/access.module.css'
 
@@ -37,6 +37,9 @@ export function CampaignBuilderPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof DraftInput, string>>>({})
   const [saving, setSaving] = useState<Saving>('idle')
   const [conflict, setConflict] = useState<string | null>(null)
+  const [modality, setModality] = useState<Modality | null>(null)
+  // Modalidad que el creador pidió y que la API retuvo por afectar a recompensas cargadas.
+  const [pendingModality, setPendingModality] = useState<DraftInput['campaignType'] | null>(null)
   const [retry, setRetry] = useState(0)
   const active = useRef<AbortController | null>(null)
   // Lo último que se intentó guardar, para que Reintentar repita esa operación y no otra.
@@ -89,14 +92,44 @@ export function CampaignBuilderPage() {
     }
   }, [current, fail])
 
+  /**
+   * Cambiar de modalidad. La API retiene el cambio con 409 cuando dejaría recompensas
+   * sin aplicar; entonces se pide confirmación en vez de descartar nada en silencio.
+   */
+  async function applyModality(type: DraftInput['campaignType'], acknowledge: boolean) {
+    if (!current || active.current) return
+    const controller = new AbortController()
+    active.current = controller
+    setSaving('saving'); setConflict(null)
+    try {
+      const updated = await changeModality(current.id, type, null, acknowledge, controller.signal)
+      if (controller.signal.aborted) return
+      setModality(updated); setPendingModality(null); setSaving('saved')
+      setValues((previous) => ({ ...previous, campaignType: updated.campaignType }))
+      setCurrent((previous) => previous && { ...previous, campaignType: updated.campaignType })
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (error instanceof SessionError && error.status === 409) {
+        setPendingModality(type); setSaving('idle'); setConflict(null)
+        return
+      }
+      fail(error)
+    } finally {
+      if (active.current === controller) active.current = null
+    }
+  }
+
   async function open(id: string) {
     const controller = new AbortController()
     active.current = controller
     setSaving('idle'); setConflict(null)
     try {
-      const draft = await readDraft(id, controller.signal)
+      const [draft, currentModality] = await Promise.all([
+        readDraft(id, controller.signal), readModality(id, controller.signal)
+      ])
       if (controller.signal.aborted) return
       setCurrent(draft); setValues(toInput(draft)); setErrors({})
+      setModality(currentModality); setPendingModality(null)
     } catch (error) {
       if (!controller.signal.aborted) fail(error)
     } finally {
@@ -163,6 +196,7 @@ export function CampaignBuilderPage() {
           if (controller.signal.aborted) return
           setCurrent(created); setValues(toInput(created)); setSaving('saved')
           setDrafts((previous) => [created, ...previous])
+          setModality(await readModality(created.id, controller.signal))
         } catch (error) {
           if (!controller.signal.aborted) fail(error)
         } finally {
@@ -211,6 +245,34 @@ export function CampaignBuilderPage() {
             if (last) void persist(last.input, last.step)
           }}>Reintentar guardado</Button>
         </>}
+
+        {modality !== null && <section aria-label="Modalidad de campaña">
+          <h3>Modalidad</h3>
+          <p>
+            <strong>Donación:</strong> aportes sin contraprestación.{' '}
+            <strong>Recompensa:</strong> el aportante recibe algo a cambio.{' '}
+            <strong>Preventa:</strong> se compra por adelantado un producto en preparación.
+          </p>
+          <p role="status">
+            {modality.rewardsApply
+              ? `Esta modalidad usa recompensas. Cargadas: ${modality.rewardCount}.`
+              : 'La donación omite la etapa de recompensas.'}
+          </p>
+          {pendingModality !== null && <>
+            <Message tone="error" title="Confirma el cambio de modalidad">
+              Tienes {modality.rewardCount} recompensa(s) cargada(s) que dejarán de aplicar en donación.
+              No se borran: si vuelves a recompensa o preventa, seguirán ahí.
+            </Message>
+            <Button onClick={() => { void applyModality(pendingModality, true) }}>Cambiar de todos modos</Button>
+            <Button variant="secondary" onClick={() => { setPendingModality(null) }}>Mantener la modalidad actual</Button>
+          </>}
+          <FormField id="builder-modality" label="Modalidad de la campaña">
+            <select id="builder-modality" value={modality.campaignType} disabled={!editable || saving === 'saving'}
+              onChange={(event) => { void applyModality(event.target.value as DraftInput['campaignType'], false) }}>
+              {CAMPAIGN_TYPES.map((type) => <option key={type} value={type}>{typeNames[type]}</option>)}
+            </select>
+          </FormField>
+        </section>}
 
         <form className={styles.form} aria-label="Contenido del borrador" noValidate onSubmit={(event) => {
           event.preventDefault()

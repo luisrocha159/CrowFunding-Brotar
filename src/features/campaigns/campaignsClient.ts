@@ -118,3 +118,48 @@ export function validateDraft(input: DraftInput): Partial<Record<keyof DraftInpu
 export function canMoveTo(current: number, next: number, totalSteps: number): boolean {
   return Number.isInteger(next) && next >= 0 && next < totalSteps && next <= current + 1
 }
+
+export const FUNDING_MODELS = ['ALL_OR_NOTHING', 'FLEXIBLE'] as const
+export type FundingModel = typeof FUNDING_MODELS[number]
+
+export interface Modality {
+  campaignType: CampaignType
+  fundingModel: FundingModel | null
+  /** Si la etapa de recompensas aplica; en donación se omite (BG-15 CA 2). */
+  rewardsApply: boolean
+  rewardCount: number
+}
+
+function modality(value: unknown): Modality {
+  if (!object(value) || !isCampaignType(value.campaignType)
+    || typeof value.rewardsApply !== 'boolean' || typeof value.rewardCount !== 'number'
+    || !(value.fundingModel === null || (typeof value.fundingModel === 'string'
+      && FUNDING_MODELS.some((model) => model === value.fundingModel)))) {
+    throw new SessionError(0)
+  }
+  return {
+    campaignType: value.campaignType,
+    fundingModel: value.fundingModel as FundingModel | null,
+    rewardsApply: value.rewardsApply,
+    rewardCount: value.rewardCount
+  }
+}
+
+export async function readModality(id: string, signal?: AbortSignal): Promise<Modality> {
+  return modality(await request(`campaigns/drafts/${id}/modality`, 'GET', undefined, signal))
+}
+
+/**
+ * Cambiar de modalidad. Si hay recompensas cargadas que dejarían de aplicar, la API
+ * responde 409 hasta que el creador lo reconozca: nunca se descartan en silencio.
+ */
+export async function changeModality(
+  id: string, campaignType: CampaignType, fundingModel: FundingModel | null,
+  acknowledgeRewards = false, signal?: AbortSignal
+): Promise<Modality> {
+  return modality(await request(`campaigns/drafts/${id}/modality`, 'PUT', {
+    campaignType,
+    ...(fundingModel ? { fundingModel } : {}),
+    ...(acknowledgeRewards ? { acknowledgeRewards: true } : {})
+  }, signal))
+}
