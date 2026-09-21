@@ -27,6 +27,29 @@ const object = (value: unknown): value is Record<string, unknown> =>
 const isCampaignType = (value: unknown): value is CampaignType =>
   typeof value === 'string' && CAMPAIGN_TYPES.some((type) => type === value)
 
+/**
+ * Errores por campo devueltos por la API como `campo: mensaje` (BG-16 CA 2).
+ * Se reconstruye el mapa para poder mostrarlos junto a cada entrada del formulario.
+ */
+export function fieldErrorsFrom(message: unknown): Record<string, string> {
+  if (!Array.isArray(message)) return {}
+  const errors: Record<string, string> = {}
+  for (const entry of message) {
+    if (typeof entry !== 'string') continue
+    const separator = entry.indexOf(': ')
+    if (separator > 0) errors[entry.slice(0, separator)] = entry.slice(separator + 2)
+  }
+  return errors
+}
+
+/**
+ * Error de validación con los mensajes por campo que devuelve la API. Extiende
+ * SessionError para que las vistas que solo miran `status` sigan funcionando.
+ */
+export class DraftFieldError extends SessionError {
+  constructor(readonly fields: Record<string, string>) { super(400) }
+}
+
 async function request(path: string, method: 'GET' | 'POST' | 'PUT', body?: unknown, signal?: AbortSignal): Promise<unknown> {
   try {
     const response = await fetch(`/api/${path}`, {
@@ -35,7 +58,15 @@ async function request(path: string, method: 'GET' | 'POST' | 'PUT', body?: unkn
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
     })
-    if (!response.ok) throw new SessionError(response.status)
+    if (!response.ok) {
+      if (response.status === 400) {
+        // El contrato de errores devuelve message como lista de "campo: mensaje".
+        const detail: unknown = await response.json().catch(() => null)
+        const fields = fieldErrorsFrom(object(detail) ? detail.message : null)
+        if (Object.keys(fields).length > 0) throw new DraftFieldError(fields)
+      }
+      throw new SessionError(response.status)
+    }
     return await response.json()
   } catch (error) {
     throw error instanceof SessionError ? error : new SessionError(0)
@@ -162,4 +193,56 @@ export async function changeModality(
     ...(fundingModel ? { fundingModel } : {}),
     ...(acknowledgeRewards ? { acknowledgeRewards: true } : {})
   }, signal))
+}
+
+/** Límites del esquema oficial; la API los publica y el asistente los muestra. */
+export interface Limits { title: number; summary: number; locality: number; addressLine: number; reference: number }
+
+export interface LocationInput { countryCode: string | null; locality: string; addressLine: string; reference: string }
+export interface GeneralInput { title: string; summary: string; categoryId: string | null; location: LocationInput }
+export interface IndicatorInput {
+  name: string; description: string; unit: string
+  baselineValue: number | null
+  /** Meta esperada. El asistente nunca declara resultados ya conseguidos. */
+  targetValue: number | null
+}
+export interface StoryInput { problem: string; solution: string; beneficiaries: string; expectedResults: string }
+
+export async function readGeneral(id: string, signal?: AbortSignal): Promise<GeneralInput & { limits: Limits }> {
+  const data = await request(`campaigns/drafts/${id}/general`, 'GET', undefined, signal)
+  if (!object(data) || !object(data.location) || !object(data.limits)) throw new SessionError(0)
+  return data as unknown as GeneralInput & { limits: Limits }
+}
+
+export async function saveGeneral(id: string, input: GeneralInput, signal?: AbortSignal): Promise<void> {
+  await request(`campaigns/drafts/${id}/general`, 'PUT', {
+    title: input.title.trim(),
+    summary: input.summary.trim(),
+    ...(input.categoryId ? { categoryId: input.categoryId } : {}),
+    location: {
+      ...(input.location.countryCode ? { countryCode: input.location.countryCode } : {}),
+      locality: input.location.locality.trim(),
+      addressLine: input.location.addressLine.trim(),
+      reference: input.location.reference.trim()
+    }
+  }, signal)
+}
+
+export async function readStory(id: string, signal?: AbortSignal): Promise<{ story: StoryInput; indicators: IndicatorInput[] }> {
+  const data = await request(`campaigns/drafts/${id}/story`, 'GET', undefined, signal)
+  if (!object(data) || !object(data.story) || !Array.isArray(data.indicators)) throw new SessionError(0)
+  return data as unknown as { story: StoryInput; indicators: IndicatorInput[] }
+}
+
+export async function saveStory(id: string, story: StoryInput, indicators: IndicatorInput[], signal?: AbortSignal): Promise<void> {
+  await request(`campaigns/drafts/${id}/story`, 'PUT', {
+    problem: story.problem.trim(), solution: story.solution.trim(),
+    beneficiaries: story.beneficiaries.trim(), expectedResults: story.expectedResults.trim(),
+    // achievedValue no se envía nunca: el asistente declara metas, no resultados ejecutados.
+    indicators: indicators.map((indicator) => ({
+      name: indicator.name.trim(), description: indicator.description.trim(), unit: indicator.unit.trim(),
+      ...(indicator.baselineValue === null ? {} : { baselineValue: indicator.baselineValue }),
+      ...(indicator.targetValue === null ? {} : { targetValue: indicator.targetValue })
+    }))
+  }, signal)
 }

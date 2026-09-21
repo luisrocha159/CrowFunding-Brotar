@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   activeCategories, canMoveTo, changeModality, createDraft, myDrafts, readDraft, readModality,
-  saveDraft, validateDraft, type DraftInput
+  saveDraft, saveGeneral, saveStory, validateDraft, fieldErrorsFrom, DraftFieldError, type DraftInput
 } from '../src/features/campaigns/campaignsClient'
 import { SessionError } from '../src/features/access/session/sessionClient'
 
@@ -119,5 +119,54 @@ test('una modalidad inventada en la respuesta no se acepta', async () => {
   try {
     globalThis.fetch = (async () => Response.json({ campaignType: 'INVENTADA', fundingModel: null, rewardsApply: false, rewardCount: 0 })) as typeof fetch
     await assert.rejects(() => readModality('draft-id'), SessionError)
+  } finally { globalThis.fetch = original }
+})
+
+test('los errores por campo de la API se reconstruyen para mostrarlos junto a cada entrada', () => {
+  assert.deepEqual(fieldErrorsFrom([
+    'title: El nombre de la campaña es obligatorio.',
+    'indicators.1.unit: Indica la unidad de la meta.'
+  ]), {
+    title: 'El nombre de la campaña es obligatorio.',
+    'indicators.1.unit': 'Indica la unidad de la meta.'
+  })
+  assert.deepEqual(fieldErrorsFrom('un texto suelto'), {})
+  assert.deepEqual(fieldErrorsFrom(undefined), {})
+})
+
+test('la historia nunca envía un resultado ya conseguido', async () => {
+  const original = globalThis.fetch
+  let sent: Record<string, unknown> = {}
+  try {
+    globalThis.fetch = (async (_url, init) => {
+      sent = JSON.parse(String(init?.body))
+      return Response.json({ story: {}, indicators: [] })
+    }) as typeof fetch
+    await saveStory('draft-id',
+      { problem: ' P ', solution: 'S', beneficiaries: 'B', expectedResults: 'R' },
+      [{ name: ' Familias ', description: '', unit: 'familias', baselineValue: 0, targetValue: 120 }])
+    assert.equal(sent.problem, 'P', 'El texto se recorta antes de enviarlo.')
+    const indicators = sent.indicators as Record<string, unknown>[]
+    assert.equal(indicators[0]!.name, 'Familias')
+    assert.equal(indicators[0]!.targetValue, 120)
+    assert.equal('achievedValue' in indicators[0]!, false, 'No se envía ningún resultado ejecutado.')
+  } finally { globalThis.fetch = original }
+})
+
+test('un 400 con errores por campo llega como DraftFieldError utilizable por la vista', async () => {
+  const original = globalThis.fetch
+  try {
+    globalThis.fetch = (async () => Response.json(
+      { statusCode: 400, message: ['title: El nombre de la campaña es obligatorio.', 'countryCode: Elige el país de la campaña.'] },
+      { status: 400 })) as typeof fetch
+    await assert.rejects(
+      () => saveGeneral('draft-id', { title: '', summary: '', categoryId: null, location: { countryCode: null, locality: '', addressLine: '', reference: '' } }),
+      (error: unknown) => {
+        assert.ok(error instanceof DraftFieldError)
+        assert.equal(error.status, 400)
+        assert.equal(error.fields.title, 'El nombre de la campaña es obligatorio.')
+        assert.equal(error.fields.countryCode, 'Elige el país de la campaña.')
+        return true
+      })
   } finally { globalThis.fetch = original }
 })

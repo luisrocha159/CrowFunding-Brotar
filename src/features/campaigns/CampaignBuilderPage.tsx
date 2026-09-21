@@ -7,7 +7,9 @@ import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import {
   activeCategories, canMoveTo, changeModality, createDraft, myDrafts, readDraft, readModality,
-  saveDraft, validateDraft, CAMPAIGN_TYPES, type Category, type Draft, type DraftInput, type Modality
+  saveDraft, validateDraft, CAMPAIGN_TYPES, DraftFieldError, readGeneral, readStory, saveGeneral,
+  saveStory, type Category, type Draft, type DraftInput, type GeneralInput, type IndicatorInput,
+  type Limits, type Modality, type StoryInput
 } from './campaignsClient'
 import styles from '../access/access.module.css'
 
@@ -40,6 +42,12 @@ export function CampaignBuilderPage() {
   const [modality, setModality] = useState<Modality | null>(null)
   // Modalidad que el creador pidió y que la API retuvo por afectar a recompensas cargadas.
   const [pendingModality, setPendingModality] = useState<DraftInput['campaignType'] | null>(null)
+  const [general, setGeneral] = useState<GeneralInput | null>(null)
+  const [limits, setLimits] = useState<Limits | null>(null)
+  const [story, setStory] = useState<StoryInput | null>(null)
+  const [indicators, setIndicators] = useState<IndicatorInput[]>([])
+  // Errores devueltos por la API asociados a su campo, para mostrarlos junto a cada entrada.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [retry, setRetry] = useState(0)
   const active = useRef<AbortController | null>(null)
   // Lo último que se intentó guardar, para que Reintentar repita esa operación y no otra.
@@ -119,17 +127,45 @@ export function CampaignBuilderPage() {
     }
   }
 
+  /** Guarda una etapa del asistente y reparte los errores de la API por campo (BG-16 CA 2). */
+  async function persistStage(run: (signal: AbortSignal) => Promise<void>, reload: (id: string) => Promise<void>) {
+    if (!current || active.current) return
+    const controller = new AbortController()
+    active.current = controller
+    setSaving('saving'); setConflict(null); setFieldErrors({})
+    try {
+      await run(controller.signal)
+      if (controller.signal.aborted) return
+      await reload(current.id)
+      if (!controller.signal.aborted) setSaving('saved')
+    } catch (error) {
+      if (controller.signal.aborted) return
+      if (error instanceof DraftFieldError) {
+        setFieldErrors(error.fields)
+        setSaving('failed'); setConflict('Revisa los campos señalados.')
+        return
+      }
+      fail(error)
+    } finally {
+      if (active.current === controller) active.current = null
+    }
+  }
+
   async function open(id: string) {
     const controller = new AbortController()
     active.current = controller
     setSaving('idle'); setConflict(null)
     try {
-      const [draft, currentModality] = await Promise.all([
-        readDraft(id, controller.signal), readModality(id, controller.signal)
+      const [draft, currentModality, currentGeneral, currentStory] = await Promise.all([
+        readDraft(id, controller.signal), readModality(id, controller.signal),
+        readGeneral(id, controller.signal), readStory(id, controller.signal)
       ])
       if (controller.signal.aborted) return
-      setCurrent(draft); setValues(toInput(draft)); setErrors({})
+      setCurrent(draft); setValues(toInput(draft)); setErrors({}); setFieldErrors({})
       setModality(currentModality); setPendingModality(null)
+      const { limits: readLimits, ...rest } = currentGeneral
+      setGeneral(rest); setLimits(readLimits)
+      setStory(currentStory.story); setIndicators(currentStory.indicators)
     } catch (error) {
       if (!controller.signal.aborted) fail(error)
     } finally {
@@ -297,6 +333,97 @@ export function CampaignBuilderPage() {
             {saving === 'saving' ? 'Guardando…' : 'Guardar avance'}
           </Button>
         </form>
+
+        {general !== null && limits !== null && <section aria-label="Información general">
+          <h3>Información general</h3>
+          <form className={styles.form} noValidate onSubmit={(event) => {
+            event.preventDefault()
+            void persistStage(
+              (signal) => saveGeneral(current.id, general, signal),
+              async (id) => {
+                const { limits: next, ...rest } = await readGeneral(id)
+                setGeneral(rest); setLimits(next)
+              })
+          }}>
+            <FormField id="general-title" label={`Nombre de la campaña (máximo ${limits.title})`} error={fieldErrors.title}>
+              <input id="general-title" value={general.title} maxLength={limits.title} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, title: event.target.value })} />
+            </FormField>
+            <FormField id="general-summary" label={`Resumen corto (máximo ${limits.summary})`} error={fieldErrors.summary}>
+              <textarea id="general-summary" value={general.summary} maxLength={limits.summary} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, summary: event.target.value })} />
+            </FormField>
+            <FormField id="general-category" label="Categoría" error={fieldErrors.categoryId}>
+              <select id="general-category" value={general.categoryId ?? ''} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, categoryId: event.target.value || null })}>
+                <option value="">Elige una categoría</option>
+                {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+              </select>
+            </FormField>
+            <FormField id="general-country" label="País (código de dos letras)" error={fieldErrors.countryCode}>
+              <input id="general-country" value={general.location.countryCode ?? ''} maxLength={2} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, location: { ...general.location, countryCode: event.target.value.toUpperCase() || null } })} />
+            </FormField>
+            <FormField id="general-locality" label={`Localidad (máximo ${limits.locality})`} error={fieldErrors.locality}>
+              <input id="general-locality" value={general.location.locality} maxLength={limits.locality} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, location: { ...general.location, locality: event.target.value } })} />
+            </FormField>
+            <FormField id="general-address" label="Dirección" error={fieldErrors.addressLine}>
+              <input id="general-address" value={general.location.addressLine} maxLength={limits.addressLine} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, location: { ...general.location, addressLine: event.target.value } })} />
+            </FormField>
+            <FormField id="general-reference" label="Referencia" error={fieldErrors.reference}>
+              <input id="general-reference" value={general.location.reference} maxLength={limits.reference} disabled={!editable}
+                onChange={(event) => setGeneral({ ...general, location: { ...general.location, reference: event.target.value } })} />
+            </FormField>
+            <Button type="submit" disabled={!editable || saving === 'saving'}>Guardar información general</Button>
+          </form>
+        </section>}
+
+        {story !== null && <section aria-label="Historia e impacto">
+          <h3>Historia e impacto</h3>
+          <p>Describe metas esperadas. Los resultados conseguidos se registran más adelante, durante el seguimiento.</p>
+          <form className={styles.form} noValidate onSubmit={(event) => {
+            event.preventDefault()
+            void persistStage(
+              (signal) => saveStory(current.id, story, indicators, signal),
+              async (id) => {
+                const next = await readStory(id)
+                setStory(next.story); setIndicators(next.indicators)
+              })
+          }}>
+            {([['problem', 'Problema'], ['solution', 'Solución'], ['beneficiaries', 'Beneficiarios'], ['expectedResults', 'Resultados esperados']] as const)
+              .map(([field, label]) => <FormField key={field} id={`story-${field}`} label={label} error={fieldErrors[field]}>
+                <textarea id={`story-${field}`} value={story[field]} disabled={!editable}
+                  onChange={(event) => setStory({ ...story, [field]: event.target.value })} />
+              </FormField>)}
+
+            <h4>Indicadores</h4>
+            {indicators.map((indicator, index) => <fieldset key={index}>
+              <legend>Indicador {index + 1}</legend>
+              <FormField id={`indicator-name-${index}`} label="Nombre" error={fieldErrors[`indicators.${index}.name`]}>
+                <input id={`indicator-name-${index}`} value={indicator.name} disabled={!editable}
+                  onChange={(event) => setIndicators(indicators.map((item, position) => position === index ? { ...item, name: event.target.value } : item))} />
+              </FormField>
+              <FormField id={`indicator-unit-${index}`} label="Unidad" error={fieldErrors[`indicators.${index}.unit`]}>
+                <input id={`indicator-unit-${index}`} value={indicator.unit} disabled={!editable}
+                  onChange={(event) => setIndicators(indicators.map((item, position) => position === index ? { ...item, unit: event.target.value } : item))} />
+              </FormField>
+              <FormField id={`indicator-target-${index}`} label="Meta esperada" error={fieldErrors[`indicators.${index}.targetValue`]}>
+                <input id={`indicator-target-${index}`} type="number" value={indicator.targetValue ?? ''} disabled={!editable}
+                  onChange={(event) => setIndicators(indicators.map((item, position) => position === index
+                    ? { ...item, targetValue: event.target.value === '' ? null : Number(event.target.value) } : item))} />
+              </FormField>
+              <Button variant="secondary" disabled={!editable}
+                onClick={() => setIndicators(indicators.filter((_, position) => position !== index))}>Quitar indicador</Button>
+            </fieldset>)}
+            <Button variant="secondary" disabled={!editable}
+              onClick={() => setIndicators([...indicators, { name: '', description: '', unit: '', baselineValue: null, targetValue: null }])}>
+              Añadir indicador
+            </Button>
+            <Button type="submit" disabled={!editable || saving === 'saving'}>Guardar historia e impacto</Button>
+          </form>
+        </section>}
 
         <nav aria-label="Navegación del asistente">
           <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving'}
