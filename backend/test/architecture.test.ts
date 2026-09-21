@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 test('BG-58 mantiene dominio y aplicación independientes de HTTP, NestJS y ORM', () => {
   let checked = 0
-  for (const module of ['auth', 'users', 'profiles', 'roles', 'organizations']) {
+  for (const module of ['auth', 'users', 'profiles', 'roles', 'organizations', 'catalogs']) {
     for (const layer of ['domain', 'application']) {
       const directory = join(process.cwd(), 'src', module, layer)
       const files = readdirSync(directory).filter(file => file.endsWith('.ts'))
