@@ -4,8 +4,34 @@
   "sourceSha256": "5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88",
   "database": "brotar_db",
   "schema": "public",
-  "inventory": { "tables": 59, "views": 5, "enums": 31, "functions": 16, "triggers": 40, "sequences": 8, "foreignKeys": 134, "requiredTables": 10, "citext": true, "pgTrgm": true },
-  "schemaMigrationsAppliedByThisProject": [],
-  "permissionOverlays": ["grant-e07.sql"],
-  "notes": "Restauración inicial aislada; no es una migración de la base anterior. El inventario no sustituye una comparación completa de definiciones SQL."
+  "inventory": {
+    "tables": 59,
+    "views": 5,
+    "enums": 31,
+    "functions": 16,
+    "triggers": 40,
+    "sequences": 8,
+    "foreignKeys": 134,
+    "requiredTables": 10,
+    "citext": true,
+    "pgTrgm": true
+  },
+  "schemaMigrationsAppliedByThisProject": [
+    "BaselineProvisionalV21789948800000"
+  ],
+  "permissionOverlays": [
+    "grant-e07.sql",
+    "grant-s1-13.sql",
+    "grant-s1-15.sql",
+    "grant-s1-16.sql",
+    "grant-s1-17.sql",
+    "grant-s1-18.sql"
+  ],
+  "notes": "Restauración inicial aislada; no es una migración de la base anterior. El inventario no sustituye una comparación completa de definiciones SQL.",
+  "migrationControl": {
+    "schema": "brotar_migration",
+    "table": "schema_migration_brotar",
+    "role": "administrativo, no brotar_app (sin DDL por diseño)",
+    "note": "Fuera de public para no alterar el inventario de la línea base. El inventario sigue siendo el del SQL oficial."
+  }
 }

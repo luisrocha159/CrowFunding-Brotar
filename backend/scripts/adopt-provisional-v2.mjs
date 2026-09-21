@@ -42,6 +42,11 @@ if (mode === 'install') {
     await client.query('GRANT SELECT, INSERT, UPDATE ON public.user_token TO brotar_app')
     await client.query('COMMIT')
     await client.query(readFileSync(new URL('grant-e07.sql', infra), 'utf8'))
+    await client.query(readFileSync(new URL('grant-s1-13.sql', infra), 'utf8'))
+    await client.query(readFileSync(new URL('grant-s1-15.sql', infra), 'utf8'))
+    await client.query(readFileSync(new URL('grant-s1-16.sql', infra), 'utf8'))
+    await client.query(readFileSync(new URL('grant-s1-17.sql', infra), 'utf8'))
+    await client.query(readFileSync(new URL('grant-s1-18.sql', infra), 'utf8'))
     console.log('V2 instalada en 127.0.0.1:15433. La API todavía conserva su configuración anterior. Ejecuta las pruebas con infra/postgres-v2/.env.backend antes de activate.')
   } catch {
     await client.query('ROLLBACK').catch(() => {})
