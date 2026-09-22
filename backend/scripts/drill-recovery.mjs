@@ -21,10 +21,10 @@ const adminEnvFile = new URL('.env', infra)
 const baseline = JSON.parse(readFileSync(new URL('baseline.json', infra), 'utf8'))
 const verifySql = readFileSync(new URL('../../infra/postgres/verify.sql', import.meta.url), 'utf8')
 
-// Nombre fijo: nunca se construye desde argumentos, para que ningún parámetro pueda apuntar a brotar_db.
+// Nombre generado internamente: ningún argumento puede apuntar el ensayo a brotar_db.
 const DRILL_DATABASE = `brotar_db_drill_${randomBytes(6).toString('hex')}`
 const SOURCE_DATABASE = 'brotar_db'
-const CONTAINER_DUMP = '/tmp/brotar-drill.dump'
+const CONTAINER_DUMP = `/tmp/${DRILL_DATABASE}.dump`
 
 const keepCopy = process.argv.includes('--keep')
 // Los respaldos llevan datos: fuera del repositorio y con permisos restringidos.
@@ -41,7 +41,8 @@ const compose = [
 ]
 
 function inContainer(args, label) {
-  return execFileSync('docker', [...compose, 'exec', '-T', '-e', `PGPASSWORD=${admin.POSTGRES_PASSWORD}`, 'postgres', ...args], {
+  // Socket local del contenedor; no expone contraseñas en argumentos de procesos.
+  return execFileSync('docker', [...compose, 'exec', '-T', 'postgres', ...args], {
     timeout: 180000, encoding: 'utf8'
   }).trim() || label
 }

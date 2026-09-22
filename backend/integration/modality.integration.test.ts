@@ -84,7 +84,7 @@ test('modalidad real: se conserva, omite recompensas en donación y no descarta 
 
     const withRewards = await call(`campaigns/drafts/${draft.id}/modality`, creator.cookie)
     assert.deepEqual(await withRewards.json(), {
-      campaignType: 'REWARD', fundingModel: null, rewardsApply: true, rewardCount: 1
+      campaignType: 'REWARD', fundingModel: 'ALL_OR_NOTHING', rewardsApply: true, rewardCount: 1
     })
 
     // CA 3: ahora el cambio a donación se rechaza hasta reconocerlo.

@@ -158,14 +158,13 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
   } finally {
     await app.close()
     try {
-      admin(`DELETE FROM campaign WHERE title LIKE '%${suffix}%' OR title='Tras revisión';
-        DELETE FROM category WHERE slug='ret-${suffix}';`)
       for (const id of ids) {
         assert.match(id, /^[a-f0-9-]{36}$/)
         admin(`DELETE FROM campaign WHERE creator_user_id='${id}';
           DELETE FROM organization WHERE created_by='${id}';`)
         if (source.isInitialized) await source.getRepository(UserSchema).delete({ id })
       }
+      admin(`DELETE FROM category WHERE slug='ret-${suffix}';`)
     } finally { if (source.isInitialized) await source.destroy() }
   }
 })

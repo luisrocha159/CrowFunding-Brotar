@@ -56,8 +56,18 @@ Copiar solo los nombres de variables de `backend/.env.example` a la configuraci�
 - Ejecutar `bun run check` en la raíz y `pnpm run check` en backend.
 - Con V2 preparada, ejecutar las pruebas de integración con `ALLOW_DB_TEST_WRITES=true` y `DB_TEST_RESTART=false`. Usan fixtures; revisar los scripts antes de ejecutarlos en un entorno compartido.
 - Ejecutar `node scripts/drill-recovery.mjs` solo sobre la V2 local autorizada: crea un respaldo privado y una copia nueva con sufijo aleatorio. Nunca subir dumps.
-- En este corte Docker no pudo iniciar su motor; no se aplicaron concesiones ni migraciones ni se ejecutaron las pruebas contra PostgreSQL. El código de persistencia nuevo no tiene aún verificación integrada real en este equipo.
+- Actualización del 21/09/2026, 20:30 (Bolivia): Docker reparado y PostgreSQL V2 disponible. Se aplicaron las concesiones técnicas y la migración BaselineProvisionalV21789948800000. Las 13 pruebas de integración contra PostgreSQL pasaron, incluida la carga/sustitución de portada, su asociación a la campaña y recuperación después de otra sesión. También pasó la prueba de persistencia reiniciando el contenedor PostgreSQL.
 - Falta verificar SMTP con el remitente autorizado y obtener decisiones D02/D03/D06/D08/D10 aplicables. Ninguna documentación local aprueba reglas del cliente.
 - S1-11 no se cierra íntegramente sin términos/datos aprobados. S1-13 no equivale a matriz definitiva de permisos. S1-14 no define retención legal. Las historias BG transversales no se cierran por estos incrementos.
 
 **Conclusión: integración y correcciones locales, no declaración de Sprint 1 aceptado ni de MVP terminado.**
+
+## Evidencia de Docker y PostgreSQL
+
+- Docker fallaba al reutilizar sockets temporales inaccesibles en `Docker/run` y `docker-secrets-engine`. Con sus procesos detenidos, se renombraron esas carpetas locales como respaldos con fecha y se dejaron regenerar. No se usó reset de fábrica, no se eliminaron volúmenes y no se reinstaló Docker. El motor responde con versión 29.7.2.
+- Se inició el contenedor existente `brotar-provisional-v2-postgres-1`, conservando su volumen. PostgreSQL quedó healthy en `127.0.0.1:15433`; la base continúa siendo `brotar_db`.
+- Verificación real: registro, sesiones, perfiles, organizaciones, roles/permisos, catálogos, borradores, modalidad, información/historia, archivos/portadas, transacciones y migraciones. 13/13 pruebas de integración correctas; adicionalmente, repetición de la prueba de persistencia con reinicio real del contenedor, correcta. Las 86 pruebas de backend y sus controles de lint, tipos y build también se volvieron a ejecutar sin fallos.
+- Se corrigió una expectativa obsoleta de la prueba de modalidad: el modelo ALL_OR_NOTHING guardado debe recuperarse, no convertirse en null. Se restringió la limpieza del ensayo de borradores a los usuarios ficticios creados por su ejecución.
+- Ensayo de recuperación correcto sobre una copia aislada: 59 tablas, 5 vistas, 8 secuencias, 31 enums, 16 funciones, 40 triggers y 134 claves foráneas conservadas. La copia temporal fue retirada; el respaldo recuperable se conserva fuera de Git en `C:/Users/rnune/Documents/brotar-privado/ensayos/brotar-drill-2026-09-22T00-29-07-815Z.dump`. Contiene datos privados: no publicar.
+- Frontend en `http://127.0.0.1:5173` y API en `http://127.0.0.1:3000`. `/api/health/ready` responde `status: ok, database: connected` tanto directamente como a través del proxy del frontend. Las rutas principales sirven la aplicación. Esto confirma HTTP/proxy y persistencia; no sustituye una revisión visual completa en navegador.
+- Sin push ni cambios en Trello. Continúan pendientes SMTP autorizado y decisiones del cliente; estos resultados no los dan por aprobados.
