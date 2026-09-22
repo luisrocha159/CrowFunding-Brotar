@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Button } from '../../../shared/components/Button'
+import { Button, ButtonLink } from '../../../shared/components/Button'
 import { Message } from '../../../shared/components/Feedback'
 import { AccessShell } from '../AccessComponents'
 import { currentUser, logout, SessionError, type CurrentUser } from './sessionClient'
@@ -42,7 +42,7 @@ export function AccountPage() {
       <ProfileForm onExpired={() => { setUser(null); setStatus('anonymous') }} onSaved={profile => setUser(current => current ? { ...current, firstName: profile.firstName, lastName: profile.lastName } : null)} />
       <AccountRoles />
       {logoutError && <Message tone="error" title="No pudimos confirmar el cierre">Reintenta. No se considera cerrada la sesión hasta que el servidor la revoque.</Message>}
-      <div className={styles.actions}><Button loading={closing} loadingLabel="Cerrando sesión…" onClick={async () => {
+      <div className={styles.actions}><ButtonLink variant="secondary" to="/crear-campana">Mis borradores y portadas</ButtonLink><Button loading={closing} loadingLabel="Cerrando sesión…" onClick={async () => {
         if (closing) return
         setClosing(true); setLogoutError(false)
         try { await logout(); setUser(null); navigate('/iniciar-sesion', { replace: true }) }

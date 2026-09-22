@@ -59,7 +59,8 @@ test('normaliza y valida los datos del borrador', () => {
   assert.equal(isValidTitle('   '.trim()), false)
   assert.equal(isValidTitle('x'.repeat(201)), false)
   assert.equal(isValidSummary(''), true)
-  assert.equal(isValidSummary('x'.repeat(301)), false)
+  assert.equal(isValidSummary('x'.repeat(500)), true)
+  assert.equal(isValidSummary('x'.repeat(501)), false)
 })
 
 test('la propiedad y la posición se comprueban antes de guardar', async () => {

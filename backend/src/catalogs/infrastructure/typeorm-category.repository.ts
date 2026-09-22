@@ -32,7 +32,8 @@ export class TypeormCategoryRepository implements CategoryRepository {
   }
 
   private async returning(sql: string, parameters: unknown[]): Promise<Category> {
-    const rows: Category[] = await this.database.connection().query(sql, parameters)
+    const result: unknown = await this.database.connection().query(sql, parameters)
+    const rows = (Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result) as Category[]
     const category = rows[0]
     if (!category) throw new Error('No se pudo confirmar la operación sobre la categoría.')
     return category

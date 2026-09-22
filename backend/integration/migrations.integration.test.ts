@@ -3,6 +3,7 @@ import { strict as assert } from 'node:assert'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseEnv } from 'node:util'
+import { randomBytes } from 'node:crypto'
 import { test } from 'node:test'
 import { DataSource } from 'typeorm'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
@@ -12,7 +13,7 @@ import {
 } from '../src/shared/infrastructure/database/migration-data-source'
 
 // Base desechable con nombre propio: nunca se toca brotar_db ni la copia del ensayo.
-const GUARD_DATABASE = 'brotar_db_drill_guard'
+const GUARD_DATABASE = `brotar_db_drill_guard_${randomBytes(6).toString('hex')}`
 
 function adminConfig(): ReturnType<typeof readMigrationConfig> {
   const local = parseEnv(readFileSync(resolve(process.cwd(), '../infra/postgres-v2/.env'), 'utf8'))
@@ -68,7 +69,6 @@ test('migraciones: una base incompleta se rechaza en vez de marcarse migrada', {
     'Configura DATABASE_ENABLED=true y ALLOW_DB_TEST_WRITES=true para esta prueba explícita.')
   assert.ok(['127.0.0.1', 'localhost', '::1'].includes(config.host), 'Solo base LOCAL de desarrollo.')
 
-  await withAdmin('postgres', (source) => source.query(`DROP DATABASE IF EXISTS ${GUARD_DATABASE}`))
   await withAdmin('postgres', (source) => source.query(`CREATE DATABASE ${GUARD_DATABASE}`))
   context.after(async () => {
     await withAdmin('postgres', (source) => source.query(`DROP DATABASE IF EXISTS ${GUARD_DATABASE}`))

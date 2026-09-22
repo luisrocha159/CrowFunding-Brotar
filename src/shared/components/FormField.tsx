@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, type ReactNode } from 'react'
+import { cloneElement, isValidElement, useId, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, type ReactNode } from 'react'
 import styles from './ui.module.css'
 
 type FieldBase = { label: string; help?: string; error?: string }
@@ -14,7 +14,9 @@ export function FormField(props: FieldProps) {
   const description = [control['aria-describedby'], help && `${id}-help`, error && `${id}-error`].filter(Boolean).join(' ') || undefined
   const accessibility = { id, 'aria-invalid': error ? true : control['aria-invalid'], 'aria-describedby': description }
   let input: ReactNode
-  if (control.as === 'select') {
+  if (control.as === undefined && isValidElement<InputHTMLAttributes<HTMLInputElement>>(control.children)) {
+    input = cloneElement(control.children, { ...accessibility, className: `${styles.input} ${control.children.props.className ?? ''}` })
+  } else if (control.as === 'select') {
     const { as: kind, className = '', ...rest } = control
     input = <select {...rest} {...accessibility} data-control={kind} className={`${styles.input} ${className}`} />
   } else if (control.as === 'textarea') {

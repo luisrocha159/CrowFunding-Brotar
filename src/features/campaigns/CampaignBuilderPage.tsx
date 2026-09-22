@@ -5,8 +5,9 @@ import { SessionError } from '../access/session/sessionClient'
 import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
+import { CoverDraftEditor } from '../campaign-drafts/CoverDraftPage'
 import {
-  activeCategories, canMoveTo, changeModality, createDraft, myDrafts, readDraft, readModality,
+  activeCategories, changeModality, createDraft, myDrafts, readDraft, readModality,
   saveDraft, validateDraft, CAMPAIGN_TYPES, DraftFieldError, readGeneral, readStory, saveGeneral,
   saveStory, type Category, type Draft, type DraftInput, type GeneralInput, type IndicatorInput,
   type Limits, type Modality, type StoryInput
@@ -15,6 +16,7 @@ import styles from '../access/access.module.css'
 
 const empty: DraftInput = { title: '', summary: '', campaignType: 'DONATION', categoryId: null, organizationId: null }
 const typeNames: Record<string, string> = { DONATION: 'Donación', REWARD: 'Recompensa', PRESALE: 'Preventa' }
+const stepNames = ['Modalidad', 'Información general', 'Historia e impacto', 'Portada', 'Plan y presupuesto', 'Financiamiento', 'Recompensas', 'Revisión del borrador']
 const statusNames: Record<string, string> = {
   DRAFT: 'Borrador', PENDING_VERIFICATION: 'Pendiente de verificación', IN_REVIEW: 'En revisión',
   CHANGES_REQUESTED: 'Cambios solicitados', APPROVED: 'Aprobada', PUBLISHED: 'Publicada'
@@ -51,7 +53,7 @@ export function CampaignBuilderPage() {
   const [retry, setRetry] = useState(0)
   const active = useRef<AbortController | null>(null)
   // Lo último que se intentó guardar, para que Reintentar repita esa operación y no otra.
-  const pending = useRef<{ input: DraftInput; step: number } | null>(null)
+  const retrySave = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -78,28 +80,6 @@ export function CampaignBuilderPage() {
     setConflict(null); setSaving('failed')
   }, [])
 
-  /** Guardado del asistente: datos y posición juntos, con reintento explícito si falla. */
-  const persist = useCallback(async (input: DraftInput, step: number) => {
-    if (!current || active.current) return
-    const next = validateDraft(input)
-    setErrors(next)
-    if (Object.keys(next).length > 0) return
-    const controller = new AbortController()
-    active.current = controller
-    pending.current = { input, step }
-    setSaving('saving'); setConflict(null)
-    try {
-      const saved = await saveDraft(current.id, input, step, controller.signal)
-      if (controller.signal.aborted) return
-      setCurrent(saved); setValues(toInput(saved)); setSaving('saved'); pending.current = null
-      setDrafts((previous) => [saved, ...previous.filter((item) => item.id !== saved.id)])
-    } catch (error) {
-      if (!controller.signal.aborted) fail(error)
-    } finally {
-      if (active.current === controller) active.current = null
-    }
-  }, [current, fail])
-
   /**
    * Cambiar de modalidad. La API retiene el cambio con 409 cuando dejaría recompensas
    * sin aplicar; entonces se pide confirmación en vez de descartar nada en silencio.
@@ -108,6 +88,7 @@ export function CampaignBuilderPage() {
     if (!current || active.current) return
     const controller = new AbortController()
     active.current = controller
+    retrySave.current = () => { void applyModality(type, acknowledge) }
     setSaving('saving'); setConflict(null)
     try {
       const updated = await changeModality(current.id, type, null, acknowledge, controller.signal)
@@ -132,6 +113,7 @@ export function CampaignBuilderPage() {
     if (!current || active.current) return
     const controller = new AbortController()
     active.current = controller
+    retrySave.current = () => { void persistStage(run, reload) }
     setSaving('saving'); setConflict(null); setFieldErrors({})
     try {
       await run(controller.signal)
@@ -152,6 +134,7 @@ export function CampaignBuilderPage() {
   }
 
   async function open(id: string) {
+    if (active.current) return
     const controller = new AbortController()
     active.current = controller
     setSaving('idle'); setConflict(null)
@@ -166,6 +149,7 @@ export function CampaignBuilderPage() {
       const { limits: readLimits, ...rest } = currentGeneral
       setGeneral(rest); setLimits(readLimits)
       setStory(currentStory.story); setIndicators(currentStory.indicators)
+      retrySave.current = null
     } catch (error) {
       if (!controller.signal.aborted) fail(error)
     } finally {
@@ -177,6 +161,26 @@ export function CampaignBuilderPage() {
     setValues((previous) => ({ ...previous, [key]: value }))
     setErrors((previous) => ({ ...previous, [key]: undefined }))
     if (saving !== 'saving') setSaving('idle')
+  }
+
+  async function reloadGeneral(id: string) {
+    const [latest, info] = await Promise.all([readDraft(id), readGeneral(id)])
+    const { limits: nextLimits, ...rest } = info
+    setCurrent(latest); setValues(toInput(latest)); setGeneral(rest); setLimits(nextLimits)
+    setDrafts(previous => previous.map(item => item.id === id ? latest : item))
+  }
+
+  function move(next: number) {
+    if (!current) return
+    const id = current.id
+    void persistStage(async signal => {
+      // Guarda la etapa visible antes de avanzar. Nunca reenvía una copia antigua
+      // del título/resumen/categoría sobre lo que guardó otra etapa.
+      if (current.builderStep === 1 && general) await saveGeneral(id, general, signal)
+      if (current.builderStep === 2 && story) await saveStory(id, story, indicators, signal)
+      const latest = await readDraft(id, signal)
+      await saveDraft(id, toInput(latest), next, signal)
+    }, reloadGeneral)
   }
 
   if (screen === 'anonymous') return <Navigate to="/iniciar-sesion?continuar=%2Fcrear-campana" replace />
@@ -233,6 +237,9 @@ export function CampaignBuilderPage() {
           setCurrent(created); setValues(toInput(created)); setSaving('saved')
           setDrafts((previous) => [created, ...previous])
           setModality(await readModality(created.id, controller.signal))
+          const [info, content] = await Promise.all([readGeneral(created.id, controller.signal), readStory(created.id, controller.signal)])
+          const { limits: nextLimits, ...rest } = info
+          setGeneral(rest); setLimits(nextLimits); setStory(content.story); setIndicators(content.indicators)
         } catch (error) {
           if (!controller.signal.aborted) fail(error)
         } finally {
@@ -245,7 +252,7 @@ export function CampaignBuilderPage() {
             onChange={(event) => change('title', event.target.value)} />
         </FormField>
         <FormField id="draft-summary" label="Resumen corto" error={errors.summary}>
-          <textarea id="draft-summary" value={values.summary} maxLength={300}
+          <textarea id="draft-summary" value={values.summary} maxLength={500}
             onChange={(event) => change('summary', event.target.value)} />
         </FormField>
         <FormField id="draft-type" label="Modalidad" error={errors.campaignType}>
@@ -260,8 +267,9 @@ export function CampaignBuilderPage() {
       </form>}
 
       {current !== null && <section aria-label="Asistente de campaña">
+        <fieldset disabled={saving === 'saving'} style={{ border: 0, padding: 0, margin: 0 }}>
         <h2>{current.title}</h2>
-        <p role="status">Paso {step + 1} de {total} · {statusNames[current.status] ?? current.status}</p>
+        <p role="status">Paso {step + 1} de {total}: {stepNames[step]} · {statusNames[current.status] ?? current.status}</p>
         <progress value={step + 1} max={total} aria-label={`Progreso: paso ${step + 1} de ${total}`} />
 
         {!editable && <Message tone="error" title="Edición cerrada">
@@ -277,12 +285,11 @@ export function CampaignBuilderPage() {
             {conflict ?? 'No se confirmó el guardado. No se da por guardado lo que no confirmó la API.'}
           </Message>
           <Button onClick={() => {
-            const last = pending.current
-            if (last) void persist(last.input, last.step)
+            retrySave.current?.()
           }}>Reintentar guardado</Button>
         </>}
 
-        {modality !== null && <section aria-label="Modalidad de campaña">
+        {step === 0 && modality !== null && <section aria-label="Modalidad de campaña">
           <h3>Modalidad</h3>
           <p>
             <strong>Donación:</strong> aportes sin contraprestación.{' '}
@@ -310,40 +317,13 @@ export function CampaignBuilderPage() {
           </FormField>
         </section>}
 
-        <form className={styles.form} aria-label="Contenido del borrador" noValidate onSubmit={(event) => {
-          event.preventDefault()
-          void persist(values, step)
-        }}>
-          <FormField id="builder-title" label="Nombre de la campaña" error={errors.title}>
-            <input id="builder-title" value={values.title} maxLength={200} required disabled={!editable}
-              onChange={(event) => change('title', event.target.value)} />
-          </FormField>
-          <FormField id="builder-summary" label="Resumen corto" error={errors.summary}>
-            <textarea id="builder-summary" value={values.summary} maxLength={300} disabled={!editable}
-              onChange={(event) => change('summary', event.target.value)} />
-          </FormField>
-          <FormField id="builder-category" label="Categoría">
-            <select id="builder-category" value={values.categoryId ?? ''} disabled={!editable}
-              onChange={(event) => change('categoryId', event.target.value || null)}>
-              <option value="">Sin categoría</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
-            </select>
-          </FormField>
-          <Button type="submit" disabled={!editable || saving === 'saving'}>
-            {saving === 'saving' ? 'Guardando…' : 'Guardar avance'}
-          </Button>
-        </form>
-
-        {general !== null && limits !== null && <section aria-label="Información general">
+        {step === 1 && general !== null && limits !== null && <section aria-label="Información general">
           <h3>Información general</h3>
           <form className={styles.form} noValidate onSubmit={(event) => {
             event.preventDefault()
             void persistStage(
               (signal) => saveGeneral(current.id, general, signal),
-              async (id) => {
-                const { limits: next, ...rest } = await readGeneral(id)
-                setGeneral(rest); setLimits(next)
-              })
+              reloadGeneral)
           }}>
             <FormField id="general-title" label={`Nombre de la campaña (máximo ${limits.title})`} error={fieldErrors.title}>
               <input id="general-title" value={general.title} maxLength={limits.title} disabled={!editable}
@@ -380,7 +360,7 @@ export function CampaignBuilderPage() {
           </form>
         </section>}
 
-        {story !== null && <section aria-label="Historia e impacto">
+        {step === 2 && story !== null && <section aria-label="Historia e impacto">
           <h3>Historia e impacto</h3>
           <p>Describe metas esperadas. Los resultados conseguidos se registran más adelante, durante el seguimiento.</p>
           <form className={styles.form} noValidate onSubmit={(event) => {
@@ -425,12 +405,22 @@ export function CampaignBuilderPage() {
           </form>
         </section>}
 
+        {step === 3 && editable && <CoverDraftEditor key={current.id} campaignId={current.id} />}
+        {step >= 4 && step <= 6 && <Message tone="info" title="Etapa de un sprint posterior">Este bloque no forma parte del desarrollo del Sprint 1. No se da por completado ni habilita publicación.</Message>}
+        {step === 7 && <section aria-label="Revisión del borrador">
+          <h3>{general?.title}</h3><p>{general?.summary}</p>
+          <p>{general?.location.locality}</p><h4>Historia e impacto esperado</h4>
+          <p>{story?.problem}</p><p>{story?.solution}</p><p>{story?.beneficiaries}</p><p>{story?.expectedResults}</p>
+          <ul>{indicators.map((item, index) => <li key={index}>{item.name}: meta {item.targetValue ?? 'sin definir'} {item.unit}</li>)}</ul>
+          <p>Revisión de lo guardado. No publica ni envía a aprobación.</p>
+        </section>}
         <nav aria-label="Navegación del asistente">
           <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving'}
-            onClick={() => { void persist(values, step - 1) }}>Anterior</Button>
-          <Button disabled={!editable || !canMoveTo(step, step + 1, total) || saving === 'saving'}
-            onClick={() => { void persist(values, step + 1) }}>Siguiente</Button>
+            onClick={() => move(step === 7 && current.campaignType === 'DONATION' ? 5 : step - 1)}>Anterior</Button>
+          <Button disabled={!editable || step >= total - 1 || saving === 'saving'}
+            onClick={() => move(step === 5 && current.campaignType === 'DONATION' ? 7 : step + 1)}>Siguiente</Button>
         </nav>
+        </fieldset>
       </section>}
     </>}
   </AccessShell>

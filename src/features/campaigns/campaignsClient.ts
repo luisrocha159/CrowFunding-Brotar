@@ -136,7 +136,7 @@ export function validateDraft(input: DraftInput): Partial<Record<keyof DraftInpu
   const errors: Partial<Record<keyof DraftInput, string>> = {}
   const title = [...input.title.trim()].length
   if (!title || title > 200) errors.title = 'Escribe entre 1 y 200 caracteres.'
-  if ([...input.summary.trim()].length > 300) errors.summary = 'El resumen admite hasta 300 caracteres.'
+  if ([...input.summary.trim()].length > 500) errors.summary = 'El resumen admite hasta 500 caracteres.'
   if (!CAMPAIGN_TYPES.some((type) => type === input.campaignType)) errors.campaignType = 'Elige una modalidad disponible.'
   return errors
 }

@@ -41,7 +41,7 @@ export class Modalities {
     const draft = await this.own(creatorUserId, id)
     return {
       campaignType: draft.campaignType,
-      fundingModel: null,
+      fundingModel: draft.fundingModel ?? null,
       rewardsApply: requiresRewards(draft.campaignType),
       rewardCount: await this.repository.rewardCount(id)
     }
@@ -66,10 +66,11 @@ export class Modalities {
       throw new ModalityDiscardsRewards(rewardCount)
     }
 
-    await this.repository.setModality(creatorUserId, id, to, fundingModel as FundingModel | null)
+    const effectiveModel = fundingModel ?? draft.fundingModel ?? null
+    await this.repository.setModality(creatorUserId, id, to, effectiveModel as FundingModel | null)
     return {
       campaignType: to,
-      fundingModel: fundingModel as FundingModel | null,
+      fundingModel: effectiveModel as FundingModel | null,
       rewardsApply: requiresRewards(to),
       rewardCount
     }

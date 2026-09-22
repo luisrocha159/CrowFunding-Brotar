@@ -1,10 +1,11 @@
-import { normalizeEmail, validateEmail } from '../validation'
+import { normalizeEmail, profileLabels, validateEmail, type AccessProfile } from '../validation'
 
 export type RegistrationValues = {
   firstName: string; lastName: string; email: string; password: string; confirmation: string
-  phoneCountryCode: string; phoneNumber: string; terms: boolean
+  phoneCountryCode: string; phoneNumber: string; profile: AccessProfile; terms: boolean
 }
 export type RegistrationErrors = Partial<Record<keyof RegistrationValues, string>>
+export { profileLabels, type AccessProfile }
 export const REGISTRATION_PASSWORD_HELP = 'Usa entre 15 y 128 caracteres. Puedes usar una frase; no reutilices una contraseña personal en esta prueba.'
 export function validateRegistration(values: RegistrationValues): RegistrationErrors {
   const errors: RegistrationErrors = {}
@@ -20,6 +21,7 @@ export function validateRegistration(values: RegistrationValues): RegistrationEr
     if (!/^\+[1-9]\d{0,4}$/.test(values.phoneCountryCode.trim())) errors.phoneCountryCode = 'Ingresa el prefijo internacional, por ejemplo +591.'
     if (!/^\d{4,30}$/.test(values.phoneNumber.trim())) errors.phoneNumber = 'Ingresa de 4 a 30 dígitos, sin espacios.'
   }
+  if (!Object.hasOwn(profileLabels, values.profile)) errors.profile = 'Selecciona un perfil disponible.'
   if (!values.terms) errors.terms = 'Confirma que entiendes que estos datos se guardarán en la base de pruebas.'
   return errors
 }

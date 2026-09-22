@@ -71,7 +71,9 @@ export class Drafts {
     if (!isValidBuilderStep(builderStep)) throw new DraftInvalid()
     const current = await this.findOwn(creatorUserId, id)
     if (!allowsBuilderEditing(current.status)) throw new DraftNotEditable()
-    if (!allowsStepMove(current.builderStep, builderStep)) throw new DraftStepUnreachable()
+    if (!allowsStepMove(current.builderStep, builderStep, current.campaignType)) throw new DraftStepUnreachable()
+    // La modalidad tiene su propio caso de uso con confirmación de recompensas.
+    if (input.campaignType !== current.campaignType) throw new DraftInvalid()
     return this.repository.save(creatorUserId, id, await this.validate(creatorUserId, input), builderStep)
   }
 }

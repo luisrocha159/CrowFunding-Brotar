@@ -16,7 +16,7 @@ const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? valu
 
 export class DraftDto {
   @Transform(trim) @IsString() @Length(1, 200) title!: string
-  @Transform(trim) @IsString() @MaxLength(300) summary!: string
+  @Transform(trim) @IsString() @MaxLength(500) summary!: string
   @IsIn([...CAMPAIGN_TYPES]) campaignType!: CampaignType
   @IsOptional() @IsUUID() categoryId?: string
   @IsOptional() @IsUUID() organizationId?: string

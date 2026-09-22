@@ -2,7 +2,6 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { FormField } from '../../shared/components/FormField'
 import { Button } from '../../shared/components/Button'
 import type { AccessOutcome } from '../../mocks/access/accessService'
-import type { FieldErrors } from './validation'
 import styles from './access.module.css'
 
 export function AccessShell({ title, subtitle, intro, children, centered = false, notice }: { title: string; subtitle: string; intro?: string; children: ReactNode; centered?: boolean; notice?: ReactNode }) {
@@ -19,7 +18,7 @@ export function PasswordField({ id, label, name, value, onChange, error, help, d
   </div>
 }
 
-export function ValidationSummary({ errors, prefix }: { errors: FieldErrors; prefix: string }) {
+export function ValidationSummary({ errors, prefix }: { errors: Record<string, string | undefined>; prefix: string }) {
   const entries = Object.entries(errors).filter(([, error]) => error)
   if (!entries.length) return null
   return <div className={styles.summary} role="alert"><strong>Revisa los campos indicados.</strong><ul>{entries.map(([key, error]) => <li key={key}><button type="button" onClick={() => document.getElementById(`${prefix}-${key}`)?.focus()}>{error}</button></li>)}</ul></div>

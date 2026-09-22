@@ -1,5 +1,9 @@
 # Brotar · Base integrada del equipo
 
+> **Integración local del Sprint 1 — todavía no publicada:** esta rama unifica Ricardo, Alison y Santiago y corrige sus fallos. Consulta primero [preparación, pruebas y pendientes actuales](docs/integracion-local-sprint-1.md). El contenido inferior conserva el guion de la entrega anterior; no acredita pruebas nuevas contra PostgreSQL ni el cierre completo del Sprint 1.
+
+Acceso al constructor: iniciar sesión → **Mi cuenta → Mis borradores y portadas**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta primero `node scripts/prepare-sprint1.mjs` desde backend, con Docker disponible; no vuelvas a restaurar el backup.
+
 Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
 [Repositorio](https://github.com/luisrocha159/CrowFunding-Brotar) · [Trello](https://trello.com/b/37xCrdes/crowudfunding) · [Documentación](docs/README.md) · [Trabajo en equipo y ramas](CONTRIBUTING.md)
@@ -14,10 +18,12 @@ Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. E
 | Perfil propio | Consulta y edición real de nombre, apellido y teléfono |
 | Roles iniciales | Usuario registrado, consulta de roles y controles básicos; sin otorgar administrador desde el formulario |
 | Organización/empresa | Alta real en borrador, catálogo oficial y vínculo con el usuario |
+| Archivos públicos y privados | API autorizada con límites, separación de privacidad y almacenamiento local fuera del frontend público |
+| Portada de borrador | Selección, vista previa, reemplazo y persistencia de portada; no publica campañas |
 | Rutas privadas | Exigen sesión; la API también aplica controles |
 | Carga, éxito, error y validación | Implementados en los flujos de esta etapa |
 | Portada, catálogo, filtros y detalle de campañas | Datos simulados, identificados como demostración |
-| Recuperación de contraseña | Demostración: no envía correos ni restablece cuentas reales |
+| Recuperación de contraseña | Solicitud y restablecimiento reales con token de un solo uso; envío de correo pendiente de remitente autorizado |
 | Campañas completas, KYC/KYB, aportes, pagos y administración completa | Pendientes de etapas posteriores |
 
 Las cuentas nuevas conservan `PENDING_VERIFICATION`, pero pueden iniciar sesión básica y gestionar perfil/organizaciones en borrador. Esto **no** verifica correo/identidad, no publica campañas ni habilita pagos. Decisión local: [ADR-002](docs/decisiones/ADR-002-acceso-basico-sin-verificacion.md). Las reglas definitivas y la aceptación formal corresponden a los líderes.
@@ -149,17 +155,22 @@ docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.ya
 
 Usar datos ficticios, un correo de prueba único y una contraseña exclusiva de demostración. **No hay una cuenta demo compartida** ni se entregan contraseñas en este README.
 
-1. Abrir `/registro`. Enviar vacío y comprobar campos/errores. Completar nombre, apellido, correo y una contraseña de **15 a 128 caracteres**; confirmar contraseña y aceptar manualmente el consentimiento de demostración. Si se añade teléfono, completar código y número.
+1. Abrir `/registro`. Enviar vacío y comprobar campos/errores. Seleccionar perfil de uso inicial: Usuario, Creador u Organización. Completar nombre, apellido, correo y una contraseña de **15 a 128 caracteres**; confirmar contraseña y aceptar manualmente el consentimiento de demostración. Si se añade teléfono, completar código y número.
 2. Registrar. Debe aparecer confirmación y estado pendiente de verificación. No debe afirmar que envió un correo.
 3. Abrir `/iniciar-sesion`. Probar una contraseña incorrecta: debe mostrar error, no crear sesión. Entrar con la cuenta recién registrada: **no requiere activarla por SQL**.
-4. Abrir `/mi-cuenta`. Cambiar nombre/apellido y teléfono; guardar y recargar. Los datos deben persistir. Mostrar el rol Usuario registrado y aclarar que no es administrador ni verificación de identidad.
+4. Abrir `/mi-cuenta`. Cambiar nombre/apellido y teléfono; guardar y recargar. Los datos deben persistir. Mostrar el rol Usuario registrado y aclarar que el perfil elegido en el registro no es rol interno, permiso de creador, administración ni verificación de identidad.
 5. Abrir `/mis-organizaciones`. Registrar nombre legal, nombre comercial, tipo del catálogo oficial y contacto. Debe guardarse como **DRAFT/Borrador**, relacionada con el usuario. Recargar y comprobar que aparece.
 6. Cerrar sesión. Entrar de nuevo en `/mi-cuenta` o `/mis-organizaciones`: debe pedir acceso. Volver a iniciar sesión: perfil y organización siguen guardados.
 7. Para mostrar persistencia entre arranques, detener **solo la API** con `Ctrl+C`, volver a ejecutar `pnpm run dev` y comprobar los datos. No restaurar el SQL ni borrar el volumen.
 8. En otra ventana privada, sin sesión, comprobar que las rutas privadas exigen acceso. Las suites de integración comprueban también aislamiento entre usuarios, expiración y revocación.
-9. Mostrar los resultados de pruebas y explicar los límites de la entrega. La validación de líderes se registra aparte del cierre técnico.
+9. Probar `/recuperar-contrasena`: solicitar recuperación con un correo válido y comprobar que la respuesta no revela si la cuenta existe. En entorno local puede habilitarse `PASSWORD_RESET_LOCAL_LINK=true` para obtener un enlace de prueba; abrirlo, cambiar la contraseña y comprobar que el mismo enlace ya no sirve. No afirmar envío de correo si no hay remitente configurado.
+10. Probar la API de archivos con una sesión válida: `POST /api/files` requiere `X-Brotar-Request: 1`, rol básico y contenido base64. Las imágenes públicas admiten PNG/JPG/WebP hasta 2 MB; documentos privados admiten PDF/imagen hasta 5 MB. Comprobar que `/api/files/public/:id` no entrega documentos privados y que `/api/files/:id` exige sesión del titular.
+11. Abrir `/mi-campana/portada` con sesión. Seleccionar una imagen PNG/JPG/WebP hasta 2 MB, revisar la vista previa, completar texto alternativo y guardar. Reemplazar por otra imagen y comprobar que queda la última portada. Ante error de carga o guardado, el formulario debe conservar texto, selección y vista previa.
+12. Mostrar los resultados de pruebas y explicar los límites de la entrega. La validación de líderes se registra aparte del cierre técnico.
 
-No probar con pagos, correos reales ni documentos de identidad. Evita publicar capturas de cookies, contraseñas o credenciales. La recuperación de contraseña **sigue simulada**: para esta demostración conserva tus credenciales de prueba.
+No probar con pagos, correos reales ni documentos de identidad. Evita publicar capturas de cookies, contraseñas, enlaces de recuperación o credenciales. La recuperación cambia contraseñas reales de la base local; usa solo cuentas ficticias propias.
+Para archivos, usa imágenes o PDF ficticios sin datos personales. No subir documentos reales de identidad, respaldos legales reales ni archivos con secretos.
+La portada del borrador no publica campañas ni reemplaza la revisión del editor completo; solo guarda la imagen y su texto alternativo para integrarse con el borrador posterior.
 
 ### Experiencia pública que se conserva
 
@@ -167,7 +178,7 @@ No probar con pagos, correos reales ni documentos de identidad. Evita publicar c
 - `/explorar` y `/explorar/buscar`: búsqueda, filtros, orden y paginación simulados.
 - `/proyectos/reforestacion-chiquitana`: detalle de ejemplo; un slug inexistente muestra no disponible.
 - Los selectores **Probar estados de la muestra** permiten carga, vacío y error. También se puede utilizar `?estado=carga`, `?estado=vacio` o `?estado=error` donde corresponda.
-- Apoyar no procesa dinero. Registro/login son reales; campañas y recuperación no deben presentarse como integradas a PostgreSQL.
+- Apoyar no procesa dinero. Registro/login y recuperación de contraseña son reales; campañas no deben presentarse como integradas a PostgreSQL.
 
 Se puede abrir **solo la muestra pública** con `bun install --frozen-lockfile` y `bun run dev`, sin backend. En ese modo los flujos reales de registro, sesión, perfil y organizaciones **no funcionarán**.
 
@@ -205,6 +216,9 @@ Para ejecutar compilado: raíz `bun run build` y `bun run preview`; backend `pnp
 - `DB_HOST=127.0.0.1`, `DB_PORT=15433`, `DB_NAME=brotar_db` y `DB_USER=brotar_app` corresponden a V2. No conectar la aplicación como `postgres`.
 - La API escucha localmente en 3000 y Vite en 5173. `CORS_ORIGINS` admite orígenes concretos; no sustituirlo por `*`.
 - No incluir secretos en variables `VITE_*`, commits, Trello, capturas o comentarios. Cada integrante genera sus propias credenciales.
+- `PASSWORD_RESET_LOCAL_LINK=true` solo se usa en desarrollo/pruebas para mostrar el enlace de recuperación local mientras no exista remitente de correo autorizado. No habilitarlo en producción ni publicar esos enlaces.
+- `FILE_STORAGE_DIR` permite elegir la carpeta local de archivos. Por defecto se usa `backend/private/files`, excluida de Git. No apuntarla a `src/`, `public/`, `dist/` ni carpetas sincronizadas públicamente.
+- Las portadas se asocian a la campaña en PostgreSQL. `CAMPAIGN_DRAFT_STORAGE_FILE` ya no se utiliza; los JSON previos se conservan sin importar automáticamente.
 - El repositorio es público. No subir SQL con datos iniciales/privados, backups, `node_modules`, `dist` ni archivos `.env`.
 - No habilitar `synchronize`, `dropSchema` ni migraciones automáticas. La base sigue siendo provisional.
 
@@ -228,10 +242,11 @@ Lee [CONTRIBUTING.md](CONTRIBUTING.md) para comandos exactos, orden de trabajo, 
 src/                  React: app, features, shared y mocks
 tests/                Pruebas del frontend
 backend/
-  src/                NestJS: auth, users, profiles, roles, organizations
+  src/                NestJS: auth, users, profiles, roles, organizations, files, campaign-drafts
   test/               Pruebas sin base externa
   integration/        Pruebas con PostgreSQL local
   scripts/            Instalación y verificación V2
+  private/            Archivos locales generados; excluido de Git
 infra/postgres-v2/    Compose, permisos y baseline vigentes
 infra/postgres/       Entorno anterior; no usar para instalar V2
 docs/                 Requisitos, entregables, decisiones y evidencias
@@ -252,7 +267,7 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 | Cookie/sesión no persiste | Mantener hostname consistente, usar la URL de Vite y revisar CORS; no alternar localhost y 127.0.0.1. |
 | 401 al abrir perfil | Iniciar sesión; 401 sin cookie es esperado. |
 | 403 al modificar | Revisar origen, sesión y permisos; no desactivar guards para ocultarlo. |
-| No llega correo de recuperación | Es simulación; no está incluido el envío real en esta entrega. |
+| No llega correo de recuperación | El restablecimiento es real, pero el envío queda pendiente de un remitente autorizado; usar enlace local solo en desarrollo/pruebas. |
 | Base nueva no muestra cuentas anteriores | V2 usa volumen separado; no se migraron usuarios de la versión antigua. |
 | Credencial incorrecta o correo duplicado | Usar otra cuenta ficticia única y recordar su contraseña; no activar usuarios ni modificar datos ajenos. |
 | Cambios de otro compañero no aparecen | Integrar por DEV según CONTRIBUTING, reinstalar dependencias si cambian lockfiles y reiniciar procesos. |

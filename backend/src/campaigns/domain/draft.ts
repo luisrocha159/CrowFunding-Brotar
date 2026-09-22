@@ -15,6 +15,7 @@ export interface DraftInput {
   title: string
   summary: string
   campaignType: CampaignType
+  fundingModel?: 'ALL_OR_NOTHING' | 'FLEXIBLE' | null
   categoryId: string | null
   organizationId: string | null
 }
@@ -51,7 +52,7 @@ export function isValidTitle(title: string): boolean {
 }
 
 export function isValidSummary(summary: string): boolean {
-  return [...summary].length <= 300
+  return [...summary].length <= 500
 }
 
 /**
@@ -68,6 +69,6 @@ export function allowsBuilderEditing(status: string): boolean {
  * cualquier paso ya alcanzado; no se salta hacia adelante sin pasar por el medio,
  * porque cada etapa valida lo suyo.
  */
-export function allowsStepMove(current: number, next: number): boolean {
-  return isValidBuilderStep(next) && next <= current + 1
+export function allowsStepMove(current: number, next: number, campaignType?: CampaignType): boolean {
+  return isValidBuilderStep(next) && (next <= current + 1 || (campaignType === 'DONATION' && current === 5 && next === 7))
 }

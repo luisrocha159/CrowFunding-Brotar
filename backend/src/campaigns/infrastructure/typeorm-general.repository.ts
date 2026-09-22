@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import type { EntityManager } from 'typeorm'
 import type { GeneralInput, GeneralRepository, Indicator, IndicatorInput, StoryInput, StorySummary } from '../application/general'
+import { DraftNotEditable } from '../application/drafts'
 
 const EMPTY_STORY: StoryInput = { problem: '', solution: '', beneficiaries: '', expectedResults: '' }
 
@@ -46,8 +47,15 @@ export class TypeormGeneralRepository implements GeneralRepository {
     return manager.query('SELECT set_config($1, $2, true)', ['brotar.actor_id', creatorUserId])
   }
 
+  private async lockDraft(manager: EntityManager, campaignId: string, creatorUserId: string): Promise<void> {
+    const rows: unknown[] = await manager.query(`SELECT id FROM public.campaign
+      WHERE id=$1 AND creator_user_id=$2 AND status='DRAFT' AND deleted_at IS NULL FOR UPDATE`, [campaignId, creatorUserId])
+    if (!rows.length) throw new DraftNotEditable()
+  }
+
   async saveGeneral(creatorUserId: string, campaignId: string, input: GeneralInput): Promise<void> {
     await this.database.connection().transaction(async (manager) => {
+      await this.lockDraft(manager, campaignId, creatorUserId)
       await this.actor(manager, creatorUserId)
       // El estado se reafirma en el WHERE: no se edita una campaña que dejó de ser borrador.
       await manager.query(
@@ -92,6 +100,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
     creatorUserId: string, campaignId: string, story: StoryInput, indicators: IndicatorInput[]
   ): Promise<void> {
     await this.database.connection().transaction(async (manager) => {
+      await this.lockDraft(manager, campaignId, creatorUserId)
       await this.actor(manager, creatorUserId)
       await manager.query(
         `INSERT INTO public.campaign_story(campaign_id, problem, solution, beneficiaries, expected_results, updated_at)

@@ -14,7 +14,9 @@ El SQL provisional crea cuentas `PENDING_VERIFICATION` y contiene campos/tokens 
 - Cuentas suspendidas, cerradas, eliminadas o temporalmente bloqueadas no pueden iniciar ni mantener acceso. Estados desconocidos tampoco se admiten.
 - No se cambia el estado del usuario al iniciar sesión, editar su perfil o registrar una organización. No se rellenan fechas de verificación ni se modifican el SQL oficial o sus valores por defecto.
 - Acceso básico incluye perfil propio, roles vigentes y organizaciones propias en borrador con `REGISTERED_USER` vigente. La sesión no concede roles, verificaciones ni permisos adicionales.
+- El perfil de uso elegido en el registro público (Usuario, Creador u Organización) orienta el recorrido inicial y el texto mostrado. No se envía como rol interno ni sustituye requisitos futuros de revisión, KYC o KYB.
 - La pantalla de cuenta indica el estado pendiente; registro ofrece ir al login, sin iniciar sesión automáticamente ni afirmar que se envió un correo.
+- La recuperación de contraseña puede emitir y consumir tokens `PASSWORD_RESET` de un solo uso para cuentas con acceso básico. Mientras no exista remitente de correo autorizado, la interfaz no afirma envíos; el enlace local solo puede exponerse en desarrollo/pruebas con `PASSWORD_RESET_LOCAL_LINK=true`.
 - No se habilitan campañas, aportes ni pagos. Sus requisitos deben comprobarse por operación cuando se implementen. No debe reutilizarse esta política de acceso básico como permiso de publicación o pago. El requisito de verificación para donar sigue por confirmar.
 
 ## Verificación y límites

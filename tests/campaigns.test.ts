@@ -13,7 +13,8 @@ test('borrador: se validan nombre, resumen y modalidad sin inventar tipos', () =
   assert.deepEqual(validateDraft(input), {})
   assert.ok(validateDraft({ ...input, title: '   ' }).title)
   assert.ok(validateDraft({ ...input, title: 'x'.repeat(201) }).title)
-  assert.ok(validateDraft({ ...input, summary: 'x'.repeat(301) }).summary)
+  assert.ok(validateDraft({ ...input, summary: 'x'.repeat(501) }).summary)
+  assert.deepEqual(validateDraft({ ...input, summary: 'x'.repeat(500) }), {})
   assert.ok(validateDraft({ ...input, campaignType: 'INVENTADA' as DraftInput['campaignType'] }).campaignType)
   // Las tres modalidades del esquema oficial se aceptan; no hay una cuarta.
   for (const type of ['DONATION', 'REWARD', 'PRESALE'] as const) {

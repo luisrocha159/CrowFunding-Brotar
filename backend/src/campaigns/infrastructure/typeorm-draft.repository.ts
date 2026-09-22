@@ -4,7 +4,7 @@ import { DatabaseService } from '../../shared/infrastructure/database/database.s
 import type { Draft, DraftInput, DraftRepository } from '../application/drafts'
 
 const SELECT = `SELECT id, title, summary, campaign_type AS "campaignType", category_id AS "categoryId",
-  organization_id AS "organizationId", status, builder_step AS "builderStep", updated_at AS "updatedAt"
+  organization_id AS "organizationId", funding_model AS "fundingModel", status, builder_step AS "builderStep", updated_at AS "updatedAt"
   FROM public.campaign`
 
 // La propiedad va en el WHERE de cada consulta: un borrador ajeno no se llega a leer.
@@ -68,7 +68,7 @@ export class TypeormDraftRepository implements DraftRepository {
       `UPDATE public.campaign
           SET title = $3, summary = $4, campaign_type = $5::campaign_type, category_id = $6,
               organization_id = $7, builder_step = $8, updated_at = now()
-        WHERE id = $2 AND creator_user_id = $1 AND status = 'DRAFT' AND deleted_at IS NULL
+        WHERE id = $2 AND creator_user_id = $1 AND status = 'DRAFT' AND deleted_at IS NULL AND campaign_type=$5::campaign_type
        RETURNING id, title, summary, campaign_type AS "campaignType", category_id AS "categoryId",
                  organization_id AS "organizationId", status, builder_step AS "builderStep", updated_at AS "updatedAt"`,
       [creatorUserId, id, input.title, input.summary || null, input.campaignType,

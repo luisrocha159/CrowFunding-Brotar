@@ -18,3 +18,4 @@ backup_brotar*
 *.backup
 infra/postgres/private/
 Brotar_BD_Provisional*.sql
+backend/private/

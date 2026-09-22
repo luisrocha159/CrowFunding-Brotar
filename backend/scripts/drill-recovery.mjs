@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { parseEnv } from 'node:util'
+import { randomBytes } from 'node:crypto'
 import pg from 'pg'
 
 /**
@@ -21,7 +22,7 @@ const baseline = JSON.parse(readFileSync(new URL('baseline.json', infra), 'utf8'
 const verifySql = readFileSync(new URL('../../infra/postgres/verify.sql', import.meta.url), 'utf8')
 
 // Nombre fijo: nunca se construye desde argumentos, para que ningún parámetro pueda apuntar a brotar_db.
-const DRILL_DATABASE = 'brotar_db_drill'
+const DRILL_DATABASE = `brotar_db_drill_${randomBytes(6).toString('hex')}`
 const SOURCE_DATABASE = 'brotar_db'
 const CONTAINER_DUMP = '/tmp/brotar-drill.dump'
 
@@ -64,8 +65,6 @@ inContainer(['pg_dump', '-U', 'postgres', '-Fc', '-f', CONTAINER_DUMP, SOURCE_DA
 steps.push('respaldo creado')
 
 // 2. Copia aislada, siempre recreada desde cero.
-inContainer(['psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
-  `DROP DATABASE IF EXISTS ${DRILL_DATABASE}`], 'drop')
 inContainer(['psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
   `CREATE DATABASE ${DRILL_DATABASE}`], 'create')
 steps.push('copia aislada creada')
