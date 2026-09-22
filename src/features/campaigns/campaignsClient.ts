@@ -1,4 +1,5 @@
 import { SessionError } from '../access/session/sessionClient'
+import { readJson, requestApi } from '../../shared/api/request'
 
 export const CAMPAIGN_TYPES = ['DONATION', 'REWARD', 'PRESALE'] as const
 export type CampaignType = typeof CAMPAIGN_TYPES[number]
@@ -51,26 +52,19 @@ export class DraftFieldError extends SessionError {
 }
 
 async function request(path: string, method: 'GET' | 'POST' | 'PUT', body?: unknown, signal?: AbortSignal): Promise<unknown> {
-  try {
-    const response = await fetch(`/api/${path}`, {
-      method, credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      headers: { 'Content-Type': 'application/json', ...(method === 'GET' ? {} : { 'X-Brotar-Request': '1' }) },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
-    })
-    if (!response.ok) {
+  const response = await requestApi(`/api/${path}`, {
+    method, body, signal,
+    errorFromResponse: async response => {
       if (response.status === 400) {
         // El contrato de errores devuelve message como lista de "campo: mensaje".
         const detail: unknown = await response.json().catch(() => null)
         const fields = fieldErrorsFrom(object(detail) ? detail.message : null)
-        if (Object.keys(fields).length > 0) throw new DraftFieldError(fields)
+        if (Object.keys(fields).length > 0) return new DraftFieldError(fields)
       }
-      throw new SessionError(response.status)
+      return new SessionError(response.status)
     }
-    return await response.json()
-  } catch (error) {
-    throw error instanceof SessionError ? error : new SessionError(0)
-  }
+  })
+  return readJson(response)
 }
 
 /** Un borrador incompleto no se muestra como si estuviera bien: se trata como fallo. */
@@ -208,9 +202,40 @@ export interface IndicatorInput {
 }
 export interface StoryInput { problem: string; solution: string; beneficiaries: string; expectedResults: string }
 
+const nullableString = (value: unknown) => value === null || typeof value === 'string'
+const nullableNumber = (value: unknown) => value === null || (typeof value === 'number' && Number.isFinite(value))
+const stringFields = (value: Record<string, unknown>, keys: string[]) => keys.every(key => typeof value[key] === 'string')
+export const STORY_LIMITS = { text: 5000, indicatorName: 200, unit: 60, indicators: 20 } as const
+
+export function validateStoryInput(story: StoryInput, indicators: IndicatorInput[]): Record<string, string> {
+  const errors: Record<string, string> = {}
+  for (const key of ['problem', 'solution', 'beneficiaries', 'expectedResults'] as const) {
+    if ([...story[key].trim()].length > STORY_LIMITS.text) errors[key] = `Admite hasta ${STORY_LIMITS.text} caracteres.`
+  }
+  if (indicators.length > STORY_LIMITS.indicators) errors.indicators = `Máximo ${STORY_LIMITS.indicators} indicadores.`
+  indicators.forEach((item, index) => {
+    const prefix = `indicators.${index}.`
+    if (!item.name.trim() || [...item.name.trim()].length > STORY_LIMITS.indicatorName) errors[prefix + 'name'] = 'Usa entre 1 y 200 caracteres.'
+    if ([...item.description.trim()].length > STORY_LIMITS.text) errors[prefix + 'description'] = 'Usa hasta 5000 caracteres.'
+    if ([...item.unit.trim()].length > STORY_LIMITS.unit || (item.targetValue !== null && !item.unit.trim())) errors[prefix + 'unit'] = 'Indica la unidad con hasta 60 caracteres.'
+    for (const field of ['baselineValue', 'targetValue'] as const) {
+      const value = item[field]
+      if (value !== null && (!Number.isFinite(value) || Math.abs(value) > 999999999999.99 || value !== Number(value.toFixed(2)))) {
+        errors[prefix + field] = 'Usa un número entre -999999999999.99 y 999999999999.99 con hasta dos decimales.'
+      }
+    }
+  })
+  return errors
+}
+
 export async function readGeneral(id: string, signal?: AbortSignal): Promise<GeneralInput & { limits: Limits }> {
   const data = await request(`campaigns/drafts/${id}/general`, 'GET', undefined, signal)
-  if (!object(data) || !object(data.location) || !object(data.limits)) throw new SessionError(0)
+  if (!object(data) || !object(data.location) || !object(data.limits)
+    || !stringFields(data, ['title', 'summary']) || !nullableString(data.categoryId)
+    || !nullableString(data.location.countryCode) || !stringFields(data.location, ['locality', 'addressLine', 'reference'])) throw new SessionError(0)
+  const limits = data.limits
+  if (!['title', 'summary', 'locality', 'addressLine', 'reference'].every(key =>
+    typeof limits[key] === 'number' && Number.isInteger(limits[key]) && limits[key] > 0)) throw new SessionError(0)
   return data as unknown as GeneralInput & { limits: Limits }
 }
 
@@ -230,11 +255,16 @@ export async function saveGeneral(id: string, input: GeneralInput, signal?: Abor
 
 export async function readStory(id: string, signal?: AbortSignal): Promise<{ story: StoryInput; indicators: IndicatorInput[] }> {
   const data = await request(`campaigns/drafts/${id}/story`, 'GET', undefined, signal)
-  if (!object(data) || !object(data.story) || !Array.isArray(data.indicators)) throw new SessionError(0)
+  if (!object(data) || !object(data.story) || !Array.isArray(data.indicators)
+    || !stringFields(data.story, ['problem', 'solution', 'beneficiaries', 'expectedResults'])
+    || !data.indicators.every(item => object(item) && stringFields(item, ['name', 'description', 'unit'])
+      && nullableNumber(item.baselineValue) && nullableNumber(item.targetValue))) throw new SessionError(0)
   return data as unknown as { story: StoryInput; indicators: IndicatorInput[] }
 }
 
 export async function saveStory(id: string, story: StoryInput, indicators: IndicatorInput[], signal?: AbortSignal): Promise<void> {
+  const errors = validateStoryInput(story, indicators)
+  if (Object.keys(errors).length) throw new DraftFieldError(errors)
   await request(`campaigns/drafts/${id}/story`, 'PUT', {
     problem: story.problem.trim(), solution: story.solution.trim(),
     beneficiaries: story.beneficiaries.trim(), expectedResults: story.expectedResults.trim(),

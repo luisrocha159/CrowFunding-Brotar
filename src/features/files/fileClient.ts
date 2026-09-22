@@ -1,4 +1,5 @@
 import { SessionError } from '../access/session/sessionClient'
+import { readJson, requestApi } from '../../shared/api/request'
 
 export type FileVisibility = 'PUBLIC' | 'PRIVATE'
 export type FilePurpose = 'PROFILE_AVATAR' | 'ORGANIZATION_DOCUMENT' | 'CAMPAIGN_PUBLIC_IMAGE'
@@ -61,16 +62,10 @@ function parseStoredFile(value: unknown): StoredFile {
 export async function uploadFile(input: FileUploadInput, signal?: AbortSignal, send: typeof fetch = fetch): Promise<StoredFile> {
   const errors = validateFileUpload(input)
   if (Object.keys(errors).length) throw new SessionError(400)
-  try {
-    const response = await send('/api/files', {
-      method: 'POST', credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      headers: { 'Content-Type': 'application/json', 'X-Brotar-Request': '1' },
-      body: JSON.stringify({ ...input, originalName: input.originalName.trim() }),
-      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
-    })
-    if (!response.ok) throw new SessionError(response.status)
-    return parseStoredFile(await response.json())
-  } catch (error) { throw error instanceof SessionError ? error : new SessionError(0) }
+  const response = await requestApi('/api/files', {
+    method: 'POST', body: { ...input, originalName: input.originalName.trim() }, signal
+  }, send)
+  return parseStoredFile(await readJson(response))
 }
 
 export function fileUrl(file: Pick<StoredFile, 'id' | 'visibility'>): string {

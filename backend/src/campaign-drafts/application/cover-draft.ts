@@ -1,4 +1,4 @@
-import { FileAccessDenied, FileUnavailable, Files } from '../../files/application/files'
+import { FileAccessDenied, FileUnavailable, type AuthorizedFileReader } from '../../files/application/files'
 
 export interface CampaignCoverDraft {
   campaignId: string
@@ -18,7 +18,7 @@ export class InvalidCampaignCover extends Error {}
 export class CampaignCoverUnavailable extends Error {}
 
 export class CampaignCoverDrafts {
-  constructor(private readonly repository: CoverDraftRepository, private readonly files: Files) {}
+  constructor(private readonly repository: CoverDraftRepository, private readonly files: AuthorizedFileReader) {}
 
   read(ownerUserId: string, campaignId: string): Promise<CampaignCoverDraft | null> {
     return this.repository.read(ownerUserId, campaignId)

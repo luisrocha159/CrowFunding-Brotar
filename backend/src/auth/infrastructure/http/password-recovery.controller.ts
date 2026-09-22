@@ -21,6 +21,7 @@ class PasswordResetDto {
 
   @IsString()
   @Length(15, 128)
+  @Matches(/\S/u)
   password!: string
 }
 

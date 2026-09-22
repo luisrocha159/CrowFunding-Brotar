@@ -6,11 +6,12 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import { CoverDraftEditor } from '../campaign-drafts/CoverDraftPage'
+import { DraftReview } from './DraftReview'
 import {
   activeCategories, changeModality, createDraft, myDrafts, readDraft, readModality,
   saveDraft, validateDraft, CAMPAIGN_TYPES, DraftFieldError, readGeneral, readStory, saveGeneral,
   saveStory, type Category, type Draft, type DraftInput, type GeneralInput, type IndicatorInput,
-  type Limits, type Modality, type StoryInput
+  type Limits, type Modality, type StoryInput, STORY_LIMITS
 } from './campaignsClient'
 import styles from '../access/access.module.css'
 
@@ -209,6 +210,9 @@ export function CampaignBuilderPage() {
     </>}
 
     {screen === 'ready' && <>
+      {current === null && saving === 'failed' && <Message tone="error" title="No se pudo completar la operación">
+        {conflict ?? 'Comprueba la conexión e inténtalo otra vez. Tus campos se conservan; no se confirmó el guardado.'}
+      </Message>}
       <section aria-label="Borradores guardados">
         <h2>Borradores guardados</h2>
         {drafts.length === 0
@@ -267,7 +271,7 @@ export function CampaignBuilderPage() {
       </form>}
 
       {current !== null && <section aria-label="Asistente de campaña">
-        <fieldset disabled={saving === 'saving'} style={{ border: 0, padding: 0, margin: 0 }}>
+        <fieldset disabled={saving === 'saving'} onChange={() => { if (saving === 'saved') setSaving('idle') }} style={{ border: 0, padding: 0, margin: 0 }}>
         <h2>{current.title}</h2>
         <p role="status">Paso {step + 1} de {total}: {stepNames[step]} · {statusNames[current.status] ?? current.status}</p>
         <progress value={step + 1} max={total} aria-label={`Progreso: paso ${step + 1} de ${total}`} />
@@ -340,6 +344,10 @@ export function CampaignBuilderPage() {
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </select>
             </FormField>
+            {categories.length === 0 && <Message tone="info" title="Catálogo pendiente de configuración">
+              No hay categorías activas. El responsable debe configurar el catálogo aprobado para guardar esta etapa.
+              Tu borrador inicial sigue guardado; este bloqueo no significa que hayas escrito mal los datos.
+            </Message>}
             <FormField id="general-country" label="País (código de dos letras)" error={fieldErrors.countryCode}>
               <input id="general-country" value={general.location.countryCode ?? ''} maxLength={2} disabled={!editable}
                 onChange={(event) => setGeneral({ ...general, location: { ...general.location, countryCode: event.target.value.toUpperCase() || null } })} />
@@ -374,7 +382,7 @@ export function CampaignBuilderPage() {
           }}>
             {([['problem', 'Problema'], ['solution', 'Solución'], ['beneficiaries', 'Beneficiarios'], ['expectedResults', 'Resultados esperados']] as const)
               .map(([field, label]) => <FormField key={field} id={`story-${field}`} label={label} error={fieldErrors[field]}>
-                <textarea id={`story-${field}`} value={story[field]} disabled={!editable}
+                <textarea id={`story-${field}`} value={story[field]} maxLength={STORY_LIMITS.text} disabled={!editable}
                   onChange={(event) => setStory({ ...story, [field]: event.target.value })} />
               </FormField>)}
 
@@ -382,23 +390,25 @@ export function CampaignBuilderPage() {
             {indicators.map((indicator, index) => <fieldset key={index}>
               <legend>Indicador {index + 1}</legend>
               <FormField id={`indicator-name-${index}`} label="Nombre" error={fieldErrors[`indicators.${index}.name`]}>
-                <input id={`indicator-name-${index}`} value={indicator.name} disabled={!editable}
+                <input id={`indicator-name-${index}`} value={indicator.name} maxLength={STORY_LIMITS.indicatorName} disabled={!editable}
                   onChange={(event) => setIndicators(indicators.map((item, position) => position === index ? { ...item, name: event.target.value } : item))} />
               </FormField>
               <FormField id={`indicator-unit-${index}`} label="Unidad" error={fieldErrors[`indicators.${index}.unit`]}>
-                <input id={`indicator-unit-${index}`} value={indicator.unit} disabled={!editable}
+                <input id={`indicator-unit-${index}`} value={indicator.unit} maxLength={STORY_LIMITS.unit} disabled={!editable}
                   onChange={(event) => setIndicators(indicators.map((item, position) => position === index ? { ...item, unit: event.target.value } : item))} />
               </FormField>
               <FormField id={`indicator-target-${index}`} label="Meta esperada" error={fieldErrors[`indicators.${index}.targetValue`]}>
-                <input id={`indicator-target-${index}`} type="number" value={indicator.targetValue ?? ''} disabled={!editable}
+                <input id={`indicator-target-${index}`} type="number" step="0.01" min={-999999999999.99} max={999999999999.99} value={indicator.targetValue ?? ''} disabled={!editable}
                   onChange={(event) => setIndicators(indicators.map((item, position) => position === index
                     ? { ...item, targetValue: event.target.value === '' ? null : Number(event.target.value) } : item))} />
               </FormField>
               <Button variant="secondary" disabled={!editable}
-                onClick={() => setIndicators(indicators.filter((_, position) => position !== index))}>Quitar indicador</Button>
+                onClick={() => { setIndicators(indicators.filter((_, position) => position !== index)); setSaving('idle') }}>Quitar indicador</Button>
             </fieldset>)}
-            <Button variant="secondary" disabled={!editable}
-              onClick={() => setIndicators([...indicators, { name: '', description: '', unit: '', baselineValue: null, targetValue: null }])}>
+            {fieldErrors.indicators && <p role="alert">{fieldErrors.indicators}</p>}
+            <p>Hasta {STORY_LIMITS.indicators} indicadores. Las metas admiten dos decimales.</p>
+            <Button variant="secondary" disabled={!editable || indicators.length >= STORY_LIMITS.indicators}
+              onClick={() => { setIndicators([...indicators, { name: '', description: '', unit: '', baselineValue: null, targetValue: null }]); setSaving('idle') }}>
               Añadir indicador
             </Button>
             <Button type="submit" disabled={!editable || saving === 'saving'}>Guardar historia e impacto</Button>
@@ -407,13 +417,7 @@ export function CampaignBuilderPage() {
 
         {step === 3 && editable && <CoverDraftEditor key={current.id} campaignId={current.id} />}
         {step >= 4 && step <= 6 && <Message tone="info" title="Etapa de un sprint posterior">Este bloque no forma parte del desarrollo del Sprint 1. No se da por completado ni habilita publicación.</Message>}
-        {step === 7 && <section aria-label="Revisión del borrador">
-          <h3>{general?.title}</h3><p>{general?.summary}</p>
-          <p>{general?.location.locality}</p><h4>Historia e impacto esperado</h4>
-          <p>{story?.problem}</p><p>{story?.solution}</p><p>{story?.beneficiaries}</p><p>{story?.expectedResults}</p>
-          <ul>{indicators.map((item, index) => <li key={index}>{item.name}: meta {item.targetValue ?? 'sin definir'} {item.unit}</li>)}</ul>
-          <p>Revisión de lo guardado. No publica ni envía a aprobación.</p>
-        </section>}
+        {step === 7 && <DraftReview general={general} story={story} indicators={indicators} />}
         <nav aria-label="Navegación del asistente">
           <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving'}
             onClick={() => move(step === 7 && current.campaignType === 'DONATION' ? 5 : step - 1)}>Anterior</Button>

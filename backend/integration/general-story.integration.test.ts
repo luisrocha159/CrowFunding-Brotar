@@ -103,6 +103,11 @@ test('información, historia e impacto reales: límites, errores por campo y rev
     assert.equal(general.location.countryCode, 'BO')
     assert.equal(general.location.locality, 'La Paz')
 
+    // Errores ordinarios de formulario no llegan a persistencia ni producen un 500.
+    for (const location of [null, undefined, [], 'BO']) {
+      assert.equal((await call(`campaigns/drafts/${draft.id}/general`, creator.cookie, 'PUT', { ...valid, location })).status, 400)
+    }
+
     // BG-19: historia e indicadores con unidad y meta.
     const storyBody = {
       problem: 'Problema', solution: 'Solución', beneficiaries: '120 familias',
@@ -110,6 +115,11 @@ test('información, historia e impacto reales: límites, errores por campo y rev
       indicators: [{ name: 'Familias atendidas', description: '', unit: 'familias', baselineValue: 0, targetValue: 120 }]
     }
     assert.equal((await call(`campaigns/drafts/${draft.id}/story`, creator.cookie, 'PUT', storyBody)).status, 200)
+    for (const targetValue of [1e12, 1.234]) {
+      assert.equal((await call(`campaigns/drafts/${draft.id}/story`, creator.cookie, 'PUT', {
+        ...storyBody, indicators: [{ ...storyBody.indicators[0], targetValue }]
+      })).status, 400)
+    }
 
     // Una meta sin unidad se rechaza señalando el indicador concreto.
     const badIndicator = await call(`campaigns/drafts/${draft.id}/story`, creator.cookie, 'PUT', {

@@ -1,20 +1,9 @@
+import { SessionError } from '../../../shared/api/sessionError'
+import { requestApi } from '../../../shared/api/request'
+export { SessionError } from '../../../shared/api/sessionError'
 export interface CurrentUser { id: string; email: string; firstName: string; lastName: string; status: 'ACTIVE' | 'PENDING_VERIFICATION' }
-export class SessionError extends Error {
-  constructor(readonly status: number) { super('No se pudo completar la operación de sesión.') }
-}
 async function send(path: string, method: 'GET' | 'POST', body?: unknown, signal?: AbortSignal): Promise<Response> {
-  try {
-    const response = await fetch(`/api/auth/${path}`, {
-      method, credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      headers: { 'Content-Type': 'application/json', ...(method === 'POST' ? { 'X-Brotar-Request': '1' } : {}) },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
-    })
-    if (!response.ok) throw new SessionError(response.status)
-    return response
-  } catch (error) {
-    throw error instanceof SessionError ? error : new SessionError(0)
-  }
+  return requestApi(`/api/auth/${path}`, { method, body, signal })
 }
 export async function login(email: string, password: string, signal?: AbortSignal): Promise<void> {
   const response = await send('login', 'POST', { email: email.trim().toLowerCase(), password }, signal)

@@ -1,5 +1,6 @@
 import { SessionError } from '../access/session/sessionClient'
-import { fileUrl, uploadFile, validateFileUpload, type FileUploadInput, type StoredFile } from '../files/fileClient'
+import { fileUrl, uploadFile, FILE_LIMITS, type FileUploadInput, type StoredFile } from '../files/fileClient'
+import { readJson, requestApi } from '../../shared/api/request'
 
 export interface CoverDraft {
   campaignId: string
@@ -19,7 +20,7 @@ export function validateCover(values: CoverValues): CoverErrors {
   if (text.length < 10 || text.length > 180) errors.altText = 'Describe la portada entre 10 y 180 caracteres.'
   if (!values.file) errors.file = 'Selecciona una imagen para la portada.'
   else if (!['image/png', 'image/jpeg', 'image/webp'].includes(values.file.type)) errors.file = 'Selecciona una imagen PNG, JPG o WebP.'
-  else if (values.file.size > 2 * 1024 * 1024) errors.file = 'La portada debe pesar hasta 2 MB.'
+  else if (values.file.size > FILE_LIMITS.publicImageBytes) errors.file = 'La portada debe pesar hasta 2 MB.'
   return errors
 }
 
@@ -40,22 +41,9 @@ async function fileToBase64(file: File): Promise<string> {
   return btoa(binary)
 }
 
-async function request(path: string, init?: RequestInit, send: typeof fetch = fetch): Promise<Response> {
-  try {
-    const response = await send(path, {
-      credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      signal: AbortSignal.timeout(15000),
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) }
-    })
-    if (!response.ok) throw new SessionError(response.status)
-    return response
-  } catch (error) { throw error instanceof SessionError ? error : new SessionError(0) }
-}
-
 export async function readCoverDraft(campaignId: string, send?: typeof fetch): Promise<CoverDraft | null> {
-  const response = await request(`/api/campaigns/drafts/${encodeURIComponent(campaignId)}/cover`, undefined, send)
-  return parseCover(await response.json())
+  const response = await requestApi(`/api/campaigns/drafts/${encodeURIComponent(campaignId)}/cover`, {}, send)
+  return parseCover(await readJson(response, true))
 }
 
 export async function uploadCoverImage(file: File, signal?: AbortSignal): Promise<StoredFile> {
@@ -66,19 +54,15 @@ export async function uploadCoverImage(file: File, signal?: AbortSignal): Promis
     mimeType: file.type,
     contentBase64: await fileToBase64(file)
   }
-  const errors = validateFileUpload(input)
-  if (Object.keys(errors).length) throw new SessionError(400)
   return uploadFile(input, signal)
 }
 
 export async function saveCoverDraft(campaignId: string, fileId: string, altText: string, signal?: AbortSignal, send?: typeof fetch): Promise<CoverDraft> {
-  const response = await request(`/api/campaigns/drafts/${encodeURIComponent(campaignId)}/cover`, {
+  const response = await requestApi(`/api/campaigns/drafts/${encodeURIComponent(campaignId)}/cover`, {
     method: 'PATCH',
-    headers: { 'X-Brotar-Request': '1' },
-    body: JSON.stringify({ fileId, altText: altText.trim() }),
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
+    body: { fileId, altText: altText.trim() }, signal
   }, send)
-  const cover = parseCover(await response.json())
+  const cover = parseCover(await readJson(response))
   if (!cover) throw new SessionError(0)
   return cover
 }

@@ -26,6 +26,11 @@ export interface FileDownload {
   content: Buffer
 }
 
+/** Lectura autorizada que necesitan otros casos de uso, sin carga ni eliminación. */
+export interface AuthorizedFileReader {
+  privateDownload(id: string, userId: string): Promise<FileDownload>
+}
+
 export interface FileStorage {
   save(ownerUserId: string, input: FileUploadInput, content: Buffer): Promise<StoredFile>
   read(id: string): Promise<FileDownload | null>
@@ -47,16 +52,20 @@ function decodeBase64(value: string): Buffer {
   return Buffer.from(value, 'base64')
 }
 
+function matchesSignature(mimeType: string, content: Buffer): boolean {
+  if (mimeType === 'image/png') return content.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+  if (mimeType === 'image/jpeg') return content[0] === 255 && content[1] === 216 && content[2] === 255
+  if (mimeType === 'image/webp') return content.subarray(0, 4).toString() === 'RIFF' && content.subarray(8, 12).toString() === 'WEBP'
+  if (mimeType === 'application/pdf') return content.subarray(0, 5).toString() === '%PDF-'
+  return false
+}
+
 function assertUpload(input: FileUploadInput, content: Buffer): void {
   if (!input.originalName.trim() || input.originalName.length > 160 || /[\\/]/.test(input.originalName)) throw new InvalidFileUpload()
   if (content.length === 0) throw new InvalidFileUpload()
   // Comprobación básica de firma: no confiar solamente en el MIME declarado.
   // No sustituye análisis antivirus ni validación documental/KYB.
-  const signatureMatches = input.mimeType === 'image/png' ? content.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
-    : input.mimeType === 'image/jpeg' ? content[0] === 255 && content[1] === 216 && content[2] === 255
-    : input.mimeType === 'image/webp' ? content.subarray(0, 4).toString() === 'RIFF' && content.subarray(8, 12).toString() === 'WEBP'
-    : input.mimeType === 'application/pdf' && content.subarray(0, 5).toString() === '%PDF-'
-  if (!signatureMatches) throw new InvalidFileUpload()
+  if (!matchesSignature(input.mimeType, content)) throw new InvalidFileUpload()
   if (input.visibility === 'PUBLIC') {
     if (input.purpose !== 'PROFILE_AVATAR' && input.purpose !== 'CAMPAIGN_PUBLIC_IMAGE') throw new InvalidFileUpload()
     if (!imageTypes.has(input.mimeType) || content.length > MAX_PUBLIC_IMAGE_BYTES) throw new InvalidFileUpload()
@@ -66,7 +75,7 @@ function assertUpload(input: FileUploadInput, content: Buffer): void {
   }
 }
 
-export class Files {
+export class Files implements AuthorizedFileReader {
   constructor(private readonly storage: FileStorage) {}
 
   async upload(ownerUserId: string, input: FileUploadInput): Promise<StoredFile> {

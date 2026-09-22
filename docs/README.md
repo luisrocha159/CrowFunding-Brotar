@@ -2,6 +2,10 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Integración del Sprint 1 en DEV · 21/09/2026
+
+El [README principal](../README.md) contiene instalación, recorrido de prueba, catálogo provisional y recuperación mediante buzón local. Se aprobaron 200 casos automatizados y el ensayo local de los flujos implementados. Los textos legales, correo real y reglas finales siguen pendientes. Las guías personales de estudio no se incluyen en esta publicación. Los estados de las secciones históricas siguientes corresponden a sus fechas originales.
+
 ## Entrega de integración y trabajo en equipo · 17/09/2026
 
 La etapa vigente incluye acceso, perfil y organizaciones reales. Ver [informe de entrega](entrega-integracion-2026-09-17.md), [asignación del Sprint 1](asignacion-sprint-1.md) y [ramas/PR](../CONTRIBUTING.md). El reparto aprobado es Alison 4 tareas y Santiago 7; los documentos Word/PDF conservan sus cortes anteriores. Los registros fechados abajo son históricos; este informe complementa su estado.

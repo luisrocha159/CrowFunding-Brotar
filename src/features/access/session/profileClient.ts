@@ -1,4 +1,5 @@
 import { SessionError } from './sessionClient'
+import { PERSON_NAME, PERSON_NAME_HELP } from '../../../shared/validation/personName'
 export interface ProfileInput { firstName: string; lastName: string; phoneCountryCode: string; phoneNumber: string }
 export interface Profile extends ProfileInput { email: string }
 export function validateProfile(input: ProfileInput): Partial<Record<keyof ProfileInput, string>> {
@@ -6,6 +7,7 @@ export function validateProfile(input: ProfileInput): Partial<Record<keyof Profi
   for (const key of ['firstName', 'lastName'] as const) {
     const length = [...input[key].trim()].length
     if (length < 1 || length > 120) errors[key] = 'Escribe entre 1 y 120 caracteres.'
+    else if (!PERSON_NAME.test(input[key].trim())) errors[key] = PERSON_NAME_HELP
   }
   if (input.phoneCountryCode.trim() || input.phoneNumber.trim()) {
     if (!/^\+[1-9]\d{0,4}$/.test(input.phoneCountryCode.trim())) errors.phoneCountryCode = 'Usa un prefijo como +591 o deja ambos campos vacíos.'

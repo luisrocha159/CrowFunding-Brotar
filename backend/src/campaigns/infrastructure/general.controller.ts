@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common'
 import { Transform, Type } from 'class-transformer'
 import {
-  ArrayMaxSize, IsArray, IsNumber, IsOptional, IsString, IsUUID, Length, MaxLength, ValidateNested
+  ArrayMaxSize, IsArray, IsDefined, IsNumber, IsObject, IsOptional, IsString, IsUUID, Length, MaxLength, ValidateNested
 } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
@@ -26,7 +26,7 @@ export class GeneralDto {
   @Transform(trim) @IsString() @MaxLength(LIMITS.title) title!: string
   @Transform(trim) @IsString() @MaxLength(LIMITS.summary) summary!: string
   @IsOptional() @IsUUID() categoryId?: string
-  @ValidateNested() @Type(() => LocationDto) location!: LocationDto
+  @IsDefined() @IsObject() @ValidateNested() @Type(() => LocationDto) location!: LocationDto
 }
 
 export class IndicatorDto {

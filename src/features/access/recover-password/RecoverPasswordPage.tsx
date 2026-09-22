@@ -39,7 +39,8 @@ function RequestRecovery({ params }: { params: URLSearchParams }) {
   useEffect(() => {
     if (status !== 'idle' && status !== 'loading' && status !== 'success') document.getElementById('recover-response')?.focus()
   }, [status])
-  if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, se generó un enlace de recuperación.">
+  if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, se generó un enlace de recuperación."
+    notice={<><strong>Solicitud procesada.</strong> Consulta el canal configurado por el equipo: correo autorizado o buzón privado de pruebas locales. Un buzón local no envía correos externos.</>}>
     <AccessSuccess title="Revisa el canal autorizado">
       <p>Por seguridad, esta pantalla no revela si la cuenta existe. No se afirma ningún envío cuando no hay remitente de correo configurado.</p>
       {resetPath && <p>Entorno local: usa el enlace de recuperación generado para completar la prueba de caducidad y uso único.</p>}

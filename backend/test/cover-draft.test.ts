@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { CampaignCoverDrafts, CampaignCoverUnavailable, InvalidCampaignCover, type CampaignCoverDraft, type CoverDraftRepository } from '../src/campaign-drafts/application/cover-draft'
-import { FileUnavailable, type FileDownload, type Files, type StoredFile } from '../src/files/application/files'
+import { FileUnavailable, type FileDownload, type AuthorizedFileReader, type StoredFile } from '../src/files/application/files'
 
 function file(overrides: Partial<StoredFile> = {}): FileDownload {
   return {
@@ -27,7 +27,7 @@ function fixture(download: FileDownload | null = file()) {
     read: async ownerUserId => stored?.ownerUserId === ownerUserId ? stored : null,
     save: async input => { stored = input; return input }
   }
-  const files = { privateDownload: async () => { if (!download) throw new FileUnavailable(); return download } } as unknown as Files
+  const files: AuthorizedFileReader = { privateDownload: async () => { if (!download) throw new FileUnavailable(); return download } }
   return new CampaignCoverDrafts(repository, files)
 }
 

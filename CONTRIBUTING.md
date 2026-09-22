@@ -7,7 +7,7 @@
 - `RicardoDev`, `AlisonDev`, `SantiagoDev`: ramas personales existentes; no crear variantes que solo cambien mayúsculas.
 - Flujo: rama personal → Pull Request a `DEV` → revisión y pruebas → Pull Request de `DEV` a `main`.
 
-Las cuatro ramas reciben la misma base de esta entrega mediante avance directo cuando no hay commits divergentes. No se fuerza ni sobreescribe el trabajo remoto de nadie. Esta convención no configura protecciones de GitHub; el propietario deberá establecerlas si corresponde.
+La integración actual del Sprint 1 se publica en `DEV`. `main` y las ramas personales no se actualizan automáticamente: cada integrante debe incorporar `origin/DEV` en su propia rama, con su trabajo guardado, usando el procedimiento siguiente. No se fuerza ni sobreescribe el trabajo remoto de nadie. Esta convención no configura protecciones de GitHub; el propietario deberá establecerlas si corresponde.
 
 ## Primera vez: cada persona elige SOLO su rama
 

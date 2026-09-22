@@ -1,4 +1,5 @@
 import { normalizeEmail, profileLabels, validateEmail, type AccessProfile } from '../validation'
+import { PERSON_NAME, PERSON_NAME_HELP } from '../../../shared/validation/personName'
 
 export type RegistrationValues = {
   firstName: string; lastName: string; email: string; password: string; confirmation: string
@@ -11,11 +12,12 @@ export function validateRegistration(values: RegistrationValues): RegistrationEr
   const errors: RegistrationErrors = {}
   for (const key of ['firstName', 'lastName'] as const) {
     if (!values[key].trim() || Array.from(values[key].trim()).length > 120) errors[key] = 'Ingresa entre 1 y 120 caracteres.'
+    else if (!PERSON_NAME.test(values[key].trim())) errors[key] = PERSON_NAME_HELP
   }
   const email = validateEmail(values.email)
   if (email) errors.email = email
   const length = Array.from(values.password).length
-  if (length < 15 || length > 128) errors.password = 'Usa entre 15 y 128 caracteres.'
+  if (length < 15 || length > 128 || !values.password.trim()) errors.password = 'Usa entre 15 y 128 caracteres, no solo espacios.'
   if (values.confirmation !== values.password || !values.confirmation) errors.confirmation = 'Las contraseñas deben coincidir exactamente.'
   if (values.phoneCountryCode.trim() || values.phoneNumber.trim()) {
     if (!/^\+[1-9]\d{0,4}$/.test(values.phoneCountryCode.trim())) errors.phoneCountryCode = 'Ingresa el prefijo internacional, por ejemplo +591.'

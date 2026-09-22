@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module'
 import { ScryptPasswordHasher } from '../users/infrastructure/scrypt-password-hasher'
 import { PasswordRecovery } from './application/password-recovery'
 import { SmtpRecoveryDelivery } from './infrastructure/smtp-recovery-delivery'
+import { LocalRecoveryDelivery } from './infrastructure/local-recovery-delivery'
 import { Sessions } from './application/sessions'
 import { TypeormPasswordRecoveryRepository } from './infrastructure/typeorm-password-recovery.repository'
 import { TypeormSessionRepository } from './infrastructure/typeorm-session.repository'
@@ -24,7 +25,8 @@ const createToken = () => { const raw = randomBytes(32).toString('hex'); return 
   }, {
     provide: PasswordRecovery, inject: [TypeormPasswordRecoveryRepository, ScryptPasswordHasher, SmtpRecoveryDelivery],
     useFactory: (repository: TypeormPasswordRecoveryRepository, passwords: ScryptPasswordHasher, delivery: SmtpRecoveryDelivery) =>
-      new PasswordRecovery(repository, passwords, { hash, create: createToken }, process.env.PASSWORD_RESET_LOCAL_LINK === 'true' && process.env.NODE_ENV !== 'production', delivery)
+      new PasswordRecovery(repository, passwords, { hash, create: createToken }, false,
+        process.env.PASSWORD_RESET_LOCAL_FILE === 'true' ? new LocalRecoveryDelivery(process.env) : delivery)
   }], exports: [Sessions]
 })
 export class AuthModule {}

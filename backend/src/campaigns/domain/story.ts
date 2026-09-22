@@ -52,9 +52,12 @@ export function validateIndicator(input: IndicatorInput): Record<string, string>
   if (name === 0) errors.name = 'El indicador necesita un nombre.'
   else if (name > STORY_LIMITS.indicatorName) errors.name = `Admite hasta ${STORY_LIMITS.indicatorName} caracteres.`
   if ([...input.unit].length > STORY_LIMITS.unit) errors.unit = `La unidad admite hasta ${STORY_LIMITS.unit} caracteres.`
+  if ([...input.description].length > STORY_LIMITS.text) errors.description = `Admite hasta ${STORY_LIMITS.text} caracteres.`
   for (const field of ['baselineValue', 'targetValue'] as const) {
     const value = input[field]
-    if (value !== null && !Number.isFinite(value)) errors[field] = 'Escribe un número válido.'
+    // PostgreSQL numeric(14,2): doce enteros y dos decimales, sin redondeo silencioso.
+    if (value !== null && (!Number.isFinite(value) || Math.abs(value) > 999999999999.99
+      || value !== Number(value.toFixed(2)))) errors[field] = 'Usa un número entre -999999999999.99 y 999999999999.99 con hasta dos decimales.'
   }
   // La meta sin unidad no se interpreta: el criterio pide unidad y meta juntas cuando apliquen.
   if (input.targetValue !== null && input.unit.length === 0) errors.unit = 'Indica la unidad de la meta.'

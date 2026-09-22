@@ -57,7 +57,7 @@ export function LoginPage() {
           <PasswordField id="login-password" label="Contraseña" name="password" value={password} error={errors.password} disabled={busy} onChange={value => { setPassword(value); setErrors(current => ({ ...current, password: undefined })); setStatus('idle') }} />
           <Button type="submit" loading={busy} loadingLabel="Verificando…">Iniciar sesión</Button>
         </fieldset>
-        <Link className={styles.forgot} to={accessHref('/recuperar-contrasena', params)}>Ver recuperación de acceso (todavía simulada)</Link>
+        <Link className={styles.forgot} to={accessHref('/recuperar-contrasena', params)}>Recuperar acceso</Link>
       </form>
       <div className={styles.divider}>¿Todavía no tienes cuenta?</div><ButtonLink className={styles.wide} variant="secondary" to={accessHref('/registro', params)}>Crear una cuenta</ButtonLink>
       <p><Link to="/mi-cuenta">Comprobar mi sesión actual</Link></p>
