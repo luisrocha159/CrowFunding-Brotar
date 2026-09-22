@@ -37,7 +37,7 @@ La ampliación del Sprint 1 incluye constructor inicial, archivos, portada y rec
 - **Bun 1.4.2** para el frontend, en la raíz.
 - **pnpm 11.19.0** para el backend, dentro de `backend/`.
 - Docker Desktop iniciado, con motor Linux operativo, para PostgreSQL **18.6**.
-- SQL oficial **Brotar_BD_Provisional (3).sql**, recibido de coordinación por canal privado.
+- SQL oficial **Brotar_BD_Provisional (3).sql**, incluido sin modificar como [official-schema.sql](infra/postgres-v2/official-schema.sql).
 
 Comprueba en PowerShell:
 
@@ -73,17 +73,17 @@ Para demostrar el Sprint 1 utiliza `DEV`. Para desarrollar, sigue [CONTRIBUTING.
 
 ### B. Instalar PostgreSQL oficial V2, una sola vez
 
-Desde `backend/`, sustituye la ruta de ejemplo por la ubicación real del SQL:
+Desde `backend/`, utiliza el SQL incluido en el repositorio:
 
 ```powershell
-node scripts/adopt-provisional-v2.mjs install 'C:\ruta\Brotar_BD_Provisional (3).sql'
+node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 node scripts/verify-provisional-v2.mjs
 pnpm run check
 ```
 
 El instalador comprueba el hash de la versión oficial, levanta una instancia exclusiva en `127.0.0.1:15433`, instala solamente sobre una base vacía y genera credenciales locales distintas para administrador y aplicación. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente.
 
-El SQL **no se incluye en el repositorio público**. Pídelo a los líderes. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente.
+El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
 Antes de activar el candidato, prepara sus permisos técnicos. Con el candidato V2 instalado y desde `backend/`:
 

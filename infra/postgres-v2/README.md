@@ -5,7 +5,7 @@ Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinac
 - PostgreSQL 18.6, base `brotar_db`, proyecto Compose `brotar-provisional-v2`.
 - Puerto local **15433**, volumen exclusivo `brotar-provisional-v2_brotar_pgdata_v2`.
 - SHA-256 del original: `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`.
-- El SQL original se recibe por separado. No publicar backups, `.env` ni contraseñas.
+- El SQL original está incluido, sin modificar, como [official-schema.sql](official-schema.sql). Contiene estructura y catálogos, no datos de nuestras cuentas de ensayo. No publicar backups de bases pobladas, `.env` ni contraseñas.
 - El entorno anterior `brotar-local`, puerto 15432, volumen y credenciales se conservan. **No se migraron sus usuarios ni otros datos a V2.**
 
 ## Primera instalación (una sola vez)
@@ -15,9 +15,11 @@ Necesitas Docker Desktop con el motor operativo, Node.js 24, pnpm y el SQL ofici
 ```powershell
 cd backend
 pnpm install --frozen-lockfile
-node scripts/adopt-provisional-v2.mjs install 'C:\ruta\Brotar_BD_Provisional (3).sql'
+node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 node scripts/verify-provisional-v2.mjs
 pnpm run check
+node scripts/prepare-sprint1.mjs
+node scripts/migrate.mjs up
 $env:ALLOW_DB_TEST_WRITES='true'
 $env:DB_TEST_RESTART='true'
 try {
