@@ -1,4 +1,4 @@
-name: brotar-provisional-v2
+name: ${BROTAR_COMPOSE_PROJECT:-brotar-provisional-v2}
 services:
   postgres:
     image: postgres:18.6

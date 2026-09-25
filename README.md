@@ -1,8 +1,10 @@
 # Brotar · Base integrada del equipo
 
+**Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
+
 > **Sprint 1 integrado en DEV — corte 21/09/2026:** reúne el trabajo de Ricardo, Alison y Santiago, las correcciones y el ensayo local. Se aprobaron 93 pruebas frontend, 93 backend y 14 integraciones PostgreSQL (200 casos), además de lint, tipos y compilación. `main` conserva la entrega anterior. Los informes fechados anteriores son históricos; este README describe la versión actual. Esto no equivale a aceptación del cliente ni a certificación de ausencia de errores.
 
-Acceso al constructor: iniciar sesión → **Mi cuenta → Mis borradores y portadas**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta primero `node scripts/prepare-sprint1.mjs` desde backend, con Docker disponible; no vuelvas a restaurar el backup.
+Acceso al constructor: iniciar sesión → **Mi cuenta → Mis borradores y portadas**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
 
 Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
@@ -51,6 +53,16 @@ docker version
 
 `docker version` debe mostrar cliente y servidor. Si solo aparece el cliente o falla el motor, resuelve Docker antes de instalar la base. No uses Factory Reset ni borres volúmenes para corregirlo.
 
+Puertos y configuración de la instalación normal:
+
+| Componente | Dónde corre | Dirección |
+| --- | --- | --- |
+| PostgreSQL V2 | Contenedor Docker; publicado solo en el anfitrión | `127.0.0.1:15433` → puerto `5432` del contenedor |
+| API NestJS | Anfitrión, fuera de Docker | `127.0.0.1:3000` |
+| Frontend Vite | Anfitrión, fuera de Docker | `127.0.0.1:5173` |
+
+El instalador genera `infra/postgres-v2/.env` (administrador de Docker/PostgreSQL), `infra/postgres-v2/.env.backend` (rol limitado) y, al ejecutar `activate`, `backend/.env`. **No copies `backend/.env.example` como `.env` para esta instalación**: es una referencia sin contraseña y con la base desactivada. Si ya existe un `backend/.env` propio, `activate` lo respalda sin sobrescribir el respaldo. Los tres archivos de credenciales son locales, ignorados por Git y no se deben compartir.
+
 No usar npm/yarn para instalar este proyecto. No mezclar gestores: conservar `bun.lock` y `backend/pnpm-lock.yaml`. NestJS y TypeORM se instalan como dependencias del backend, no necesitan instalación global.
 
 ## 3. Primera instalación completa
@@ -77,22 +89,17 @@ Desde `backend/`, utiliza el SQL incluido en el repositorio:
 
 ```powershell
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
-node scripts/verify-provisional-v2.mjs
 pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia exclusiva en `127.0.0.1:15433`, instala solamente sobre una base vacía y genera credenciales locales distintas para administrador y aplicación. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila el backend antes de migrar. La migración registra la línea base; **no crea las tablas oficiales**, por eso siempre va después de `install`.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
-Antes de activar el candidato, prepara sus permisos técnicos. Con el candidato V2 instalado y desde `backend/`:
-
-```powershell
-node scripts/prepare-sprint1.mjs
-node scripts/migrate.mjs up
-```
-
-Después verifica las pruebas de integración contra el candidato:
+El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL. Después verifica las pruebas de integración contra el candidato:
 
 ```powershell
 $env:ALLOW_DB_TEST_WRITES='true'
@@ -112,7 +119,7 @@ node scripts/adopt-provisional-v2.mjs activate
 pnpm run dev
 ```
 
-No vuelvas a ejecutar `install` ni `activate` cada vez que abras el proyecto. Si ya hay configuración V2, el instalador se detiene para no sobreescribirla. Para una instalación anterior a los permisos de organizaciones, consulta [la guía V2](infra/postgres-v2/README.md); no reinstales el SQL.
+No necesitas ejecutar `install` ni `activate` cada vez que abras el proyecto. Ambos admiten repetición segura con la configuración vigente; `install` no vuelve a aplicar el SQL sobre una base poblada y `activate` no sobrescribe un respaldo previo. Para una instalación antigua con permisos faltantes, consulta [la guía V2](infra/postgres-v2/README.md).
 
 ### C. Abrir el frontend
 
@@ -131,6 +138,15 @@ Comprueba:
 - http://127.0.0.1:5173/api/health/ready — mismo resultado a través del frontend.
 
 Si `ready` devuelve 503, revisa PostgreSQL y la configuración; no continúes como si registro y login funcionaran.
+
+### Si la instalación se interrumpió
+
+1. Comprueba `docker version`: debe mostrar `Server`. Si Docker no funciona, no ejecutes migraciones ni borres volúmenes.
+2. Desde `backend/`, repite `node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql`. Reutiliza las credenciales existentes. Si falta uno de los dos archivos privados o el esquema no coincide con el oficial, detente y conserva ambos archivos y el volumen para diagnóstico.
+3. Cuando `install` termine, ejecuta `pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/verify-provisional-v2.mjs` y finalmente `activate` como arriba. Si aparece `app_user`/`user_profile` inexistente, **faltó la restauración inicial**; no ejecutes la migración primero.
+4. Si aparece autenticación fallida de `brotar_app`, verifica que `backend/.env` coincida con el candidato activado y que `DB_PORT` sea `15433` en la instalación normal. No utilices `5432` ni el PostgreSQL local para la API ejecutada en Windows. El instalador también puede realinear el rol con el candidato al repetir `install`.
+
+Para un ensayo aislado en el mismo equipo, antes de `install` puedes fijar `$env:BROTAR_COMPOSE_PROJECT='brotar-ensayo'` y `$env:BROTAR_DB_PORT='15434'`; el instalador los guarda en `infra/postgres-v2/.env` de esa copia. No uses esos valores al instalar la copia normal. No uses `down -v` para resolver errores de configuración.
 
 ## 4. Abrirlo otro día o actualizar una copia existente
 

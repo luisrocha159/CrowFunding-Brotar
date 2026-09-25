@@ -6,8 +6,9 @@ import pg from 'pg'
 // no elimina datos, no cambia contraseñas ni concede nuevos roles a usuarios.
 const infra = new URL('../../infra/postgres-v2/', import.meta.url)
 const env = parseEnv(readFileSync(new URL('.env', infra), 'utf8'))
-if (env.POSTGRES_PORT !== '15433') throw new Error('Se esperaba la instancia V2 local en 15433.')
-const client = new pg.Client({ host: '127.0.0.1', port: 15433, database: 'brotar_db', user: 'postgres', password: env.POSTGRES_PASSWORD, connectionTimeoutMillis: 5000 })
+const port = Number(env.POSTGRES_PORT)
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('POSTGRES_PORT V2 inválido.')
+const client = new pg.Client({ host: '127.0.0.1', port, database: 'brotar_db', user: 'postgres', password: env.POSTGRES_PASSWORD, connectionTimeoutMillis: 5000 })
 try {
   await client.connect()
   for (const file of ['grant-e07.sql', 'grant-s1-13.sql', 'grant-s1-15.sql', 'grant-s1-16.sql', 'grant-s1-17.sql', 'grant-s1-18.sql', 'grant-s1-files.sql']) {
