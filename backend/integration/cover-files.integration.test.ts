@@ -11,12 +11,13 @@ import { AppModule } from '../src/app.module'
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
 import { readEnvironment } from '../src/config/environment'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
+import { readTestDatabaseTarget } from './database-target'
 
 test('portada integrada: carga, persistencia PostgreSQL, nueva sesión y sustitución por campaña', { timeout: 90000 }, async () => {
   const config = readDatabaseConfig(process.env)
   assert.ok(config.enabled && process.env.ALLOW_DB_TEST_WRITES === 'true')
   assert.equal(config.host, '127.0.0.1')
-  assert.equal(config.port, 15433)
+  const { container } = readTestDatabaseTarget(config)
   assert.notEqual(process.env.NODE_ENV, 'production')
   const root = await mkdtemp(join(tmpdir(), 'brotar-cover-test-'))
   const originalRoot = process.env.FILE_STORAGE_DIR
@@ -25,7 +26,7 @@ test('portada integrada: carga, persistencia PostgreSQL, nueva sesión y sustitu
   const userIds: string[] = []
   const password = randomBytes(24).toString('hex')
   const email = `cover-${randomUUID()}@example.invalid`
-  const admin = (sql: string) => execFileSync('docker', ['exec', '-i', 'brotar-provisional-v2-postgres-1',
+  const admin = (sql: string) => execFileSync('docker', ['exec', '-i', container,
     'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],
   { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 10000 })
   const app = await NestFactory.create(AppModule, { logger: false })

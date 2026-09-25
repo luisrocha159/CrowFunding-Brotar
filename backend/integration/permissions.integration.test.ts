@@ -11,6 +11,7 @@ import { createDataSource } from '../src/shared/infrastructure/database/data-sou
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { UserSchema } from '../src/users/infrastructure/persistence/user.schemas'
 import { RESPONSIBILITY_ROLES } from '../src/roles/domain/responsibility'
+import { readTestDatabaseTarget } from './database-target'
 
 test('permisos y pertenencia reales: denegaciones en API, auditor en lectura y catálogo separado', { timeout: 90000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -18,7 +19,7 @@ test('permisos y pertenencia reales: denegaciones en API, auditor en lectura y c
     'Configura DATABASE_ENABLED=true y ALLOW_DB_TEST_WRITES=true para esta prueba explícita.')
   assert.equal(config.host, '127.0.0.1'); assert.notEqual(process.env.NODE_ENV, 'production')
 
-  const container = 'brotar-provisional-v2-postgres-1'
+  const { container } = readTestDatabaseTarget(config)
   // Administración limitada a los fixtures de ESTA prueba. La API nunca recibe estas facultades.
   const admin = (sql: string) => execFileSync('docker',
     ['exec', '-i', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],

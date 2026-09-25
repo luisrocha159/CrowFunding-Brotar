@@ -10,6 +10,7 @@ import { readEnvironment } from '../src/config/environment'
 import { createDataSource } from '../src/shared/infrastructure/database/data-source'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { UserSchema } from '../src/users/infrastructure/persistence/user.schemas'
+import { readTestDatabaseTarget } from './database-target'
 
 test('catálogos reales: edición autorizada, referencias protegidas y parámetros no acordados', { timeout: 90000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -17,7 +18,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     'Configura DATABASE_ENABLED=true y ALLOW_DB_TEST_WRITES=true para esta prueba explícita.')
   assert.equal(config.host, '127.0.0.1'); assert.notEqual(process.env.NODE_ENV, 'production')
 
-  const container = 'brotar-provisional-v2-postgres-1'
+  const { container } = readTestDatabaseTarget(config)
   const admin = (sql: string) => execFileSync('docker',
     ['exec', '-i', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],
     { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 10000 })

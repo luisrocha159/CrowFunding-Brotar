@@ -14,16 +14,17 @@ import type { Organization } from '../src/organizations/application/organization
 import type { EntityManager } from 'typeorm'
 import type { DatabaseService } from '../src/shared/infrastructure/database/database.service'
 import { TypeormOrganizationRepository } from '../src/organizations/infrastructure/typeorm-organization.repository'
+import { readTestDatabaseTarget } from './database-target'
 
 test('roles y organizaciones reales: registro básico, borrador, aislamiento, caducidad y revocación', { timeout:60000 }, async()=>{
   const config=readDatabaseConfig(process.env)
   assert.ok(config.enabled && process.env.ALLOW_DB_TEST_WRITES==='true')
-  assert.equal(config.host,'127.0.0.1'); assert.equal(config.port,15433); assert.notEqual(process.env.NODE_ENV,'production')
-  const container='brotar-provisional-v2-postgres-1'
+  assert.equal(config.host,'127.0.0.1'); assert.notEqual(process.env.NODE_ENV,'production')
+  const { container, project: expectedProject, port } = readTestDatabaseTarget(config)
   const project=execFileSync('docker',['inspect','--format','{{index .Config.Labels "com.docker.compose.project"}}',container],{encoding:'utf8',timeout:10000}).trim()
-  assert.equal(project,'brotar-provisional-v2')
+  assert.equal(project,expectedProject)
   const bindings=JSON.parse(execFileSync('docker',['inspect','--format','{{json .NetworkSettings.Ports}}',container],{encoding:'utf8'})) as Record<string, {HostIp:string;HostPort:string}[]>
-  assert.deepEqual(bindings['5432/tcp'],[{HostIp:'127.0.0.1',HostPort:'15433'}])
+  assert.deepEqual(bindings['5432/tcp'],[{HostIp:'127.0.0.1',HostPort:port}])
   // Administración solo de fixtures identificados por UUID de ESTA prueba. La API no recibe estas facultades.
   const admin=(sql:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:sql,stdio:['pipe','pipe','pipe'],timeout:10000})
   const source=createDataSource(config)
