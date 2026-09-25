@@ -118,9 +118,12 @@ if (mode === 'install') {
       console.log('backend/.env ya apunta a V2; no se cambió la configuración.')
     } else {
       if (existsSync(previousFile)) throw new Error('Ya existe .env.before-v2 pero backend/.env es distinto del candidato. Revisa los archivos manualmente; no se sobrescribió ninguno.')
-      if (existsSync(backendFile)) copyFileSync(backendFile, previousFile, constants.COPYFILE_EXCL)
+      const hadPrevious = existsSync(backendFile)
+      if (hadPrevious) copyFileSync(backendFile, previousFile, constants.COPYFILE_EXCL)
       copyFileSync(candidateFile, backendFile)
-      console.log('API configurada para V2. Configuración anterior conservada en infra/postgres-v2/.env.before-v2 (privada). Reinicia la API.')
+      console.log(hadPrevious
+        ? 'API configurada para V2. Configuración anterior conservada en infra/postgres-v2/.env.before-v2 (privada). Reinicia la API.'
+        : 'API configurada para V2. No había configuración anterior que respaldar. Inicia la API.')
     }
   } finally { await client.end() }
 }
