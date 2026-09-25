@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { readFileSync, writeFileSync, existsSync, copyFileSync, constants } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import { setTimeout } from 'node:timers/promises'
 import { parseEnv } from 'node:util'
 import pg from 'pg'
 
@@ -34,6 +35,21 @@ function readConfiguration() {
   return { admin, candidate, port }
 }
 
+async function connectWhenReady(options) {
+  const transient = new Set(['3D000', '57P03', 'ECONNREFUSED', 'ECONNRESET'])
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const client = new pg.Client({ ...options, connectionTimeoutMillis: 5000 })
+    try {
+      await client.connect()
+      return client
+    } catch (error) {
+      await client.end().catch(() => {})
+      if (!transient.has(error.code) || attempt === 29) throw error
+      await setTimeout(1000)
+    }
+  }
+}
+
 if (mode === 'install') {
   if (!inputPath) throw new Error('Indica el SQL oficial incluido en infra/postgres-v2/official-schema.sql.')
   const sqlBytes = readFileSync(inputPath)
@@ -61,9 +77,8 @@ if (mode === 'install') {
     throw new Error('Docker no levantó PostgreSQL V2. Revisa Docker Desktop, el puerto y los registros de Compose. Conservamos configuración y volumen; reintenta install cuando el motor funcione.')
   }
 
-  const client = new pg.Client({ host: '127.0.0.1', port: config.port, database: 'brotar_db', user: 'postgres', password: config.admin.POSTGRES_PASSWORD, connectionTimeoutMillis: 5000 })
+  const client = await connectWhenReady({ host: '127.0.0.1', port: config.port, database: 'brotar_db', user: 'postgres', password: config.admin.POSTGRES_PASSWORD })
   try {
-    await client.connect()
     const occupied = await client.query(`SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'`)
     if (occupied.rows[0].n === 0) {
       // El SQL oficial trae BEGIN/COMMIT. Un reintento solo lo aplica si public sigue vacío.
@@ -90,16 +105,14 @@ if (mode === 'install') {
     for (const file of grants) await client.query(readFileSync(new URL(file, infra), 'utf8'))
     console.log(`V2 preparada en 127.0.0.1:${config.port}. Instala dependencias, compila, ejecuta migraciones y pruebas; luego activa backend/.env.`)
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {})
     console.error(`Instalación no completada: ${error.message} Se conservaron configuración y datos; corrige la causa y reintenta install.`)
     process.exitCode = 1
-  } finally { await client.end() }
+  } finally { await client.end().catch(() => {}) }
 } else {
   const config = readConfiguration()
   if (!config) throw new Error('Falta la instalación V2. Ejecuta install primero.')
-  const client = new pg.Client({ host: '127.0.0.1', port: config.port, database: 'brotar_db', user: 'brotar_app', password: config.candidate.DB_PASSWORD, connectionTimeoutMillis: 5000 })
+  const client = await connectWhenReady({ host: '127.0.0.1', port: config.port, database: 'brotar_db', user: 'brotar_app', password: config.candidate.DB_PASSWORD })
   try {
-    await client.connect()
     await client.query('SELECT administrative_area_id FROM public.user_profile LIMIT 0')
     if (existsSync(backendFile) && readFileSync(backendFile, 'utf8') === readFileSync(candidateFile, 'utf8')) {
       console.log('backend/.env ya apunta a V2; no se cambió la configuración.')
