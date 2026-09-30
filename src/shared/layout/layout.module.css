@@ -7,6 +7,14 @@
 .desktopNav a, .login { font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; padding-block: 12px; }
 .desktopNav a[aria-current='page'] { font-weight: 700; box-shadow: 0 2px var(--color-action); }
 .desktopNav a:hover, .login:hover { color: var(--color-action); }
+.sessionLoading { color: var(--color-muted); font-size: 13px; white-space: nowrap; }
+.accountMenu { position: relative; }
+.accountMenu summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-brand); cursor: pointer; font-size: 13px; font-weight: 600; list-style: none; }
+.accountMenu summary::-webkit-details-marker { display: none; }
+.accountMenu summary svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.accountMenu nav { position: absolute; z-index: 20; right: 0; top: calc(100% + 8px); display: grid; min-width: 210px; padding: 7px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-hover); }
+.accountMenu nav a { padding: 10px 12px; border-radius: var(--radius-sm); color: var(--color-text); text-decoration: none; white-space: nowrap; font-size: 13px; }
+.accountMenu nav a:hover, .accountMenu nav a:focus-visible { background: var(--color-soft); color: var(--color-brand); }
 .search { display: flex; align-items: center; width: 180px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-page); }
 .search input { min-width: 0; width: 100%; padding: 11px 8px; background: transparent; border: none; font-size: 12px; }
 .search button { min-height: 44px; min-width: 44px; border: none; background: transparent; cursor: pointer; color: var(--color-brand); }

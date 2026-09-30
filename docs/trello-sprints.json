@@ -1,7 +1,7 @@
 {
   "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
-  "planVersion": "2.2",
-  "organizationDate": "2026-09-17",
+  "planVersion": "2.3",
+  "organizationDate": "2026-09-30",
   "lists": [
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d740cc2acfb00c5c7e8",
@@ -29,7 +29,7 @@
     },
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
-      "name": "06 · Sprint 3 · Planificado"
+      "name": "06 · Sprint 3 · Por refinar"
     },
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7864fa82427a63b257",
@@ -302,23 +302,24 @@
     },
     {
       "taskId": "S2-01",
-      "sprint": 2,
+      "sprint": 3,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-20"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6841013c8569861b8ddb",
       "url": "https://trello.com/c/aW8N2PsG",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693bd4be0d8ded9446c0"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab693bd4be0d8ded9446c0",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-02",
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-21"
       ],
@@ -331,7 +332,7 @@
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-22"
       ],
@@ -344,7 +345,7 @@
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-23"
       ],
@@ -357,7 +358,7 @@
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-24"
       ],
@@ -367,65 +368,69 @@
     },
     {
       "taskId": "S2-06",
-      "sprint": 2,
+      "sprint": 3,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-25",
         "BG-27"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6848cb315f5401187b36",
       "url": "https://trello.com/c/mXia80Q5",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69432c6e0ed2040f229e"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69432c6e0ed2040f229e",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-07",
-      "sprint": 2,
+      "sprint": 3,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-26",
         "BG-27"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684aa032a8d01f7f7d37",
       "url": "https://trello.com/c/QzpTCGZ6",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6945c40c63285a2bf000"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6945c40c63285a2bf000",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-08",
-      "sprint": 2,
+      "sprint": 3,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-43",
         "BG-44"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684c9d3313701af4a55a",
       "url": "https://trello.com/c/iN5WZPEd",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6947f1982482974b6ee5"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6947f1982482974b6ee5",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-09",
-      "sprint": 2,
+      "sprint": 3,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-28"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684d63d5d0ec4c7153ef",
       "url": "https://trello.com/c/f2wKElZK",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694862c767b23e0b0618"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab694862c767b23e0b0618",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-10",
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-29"
       ],
@@ -438,7 +443,7 @@
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-30"
       ],
@@ -451,7 +456,7 @@
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-42"
       ],
@@ -464,7 +469,7 @@
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Santiago",
       "stories": [
         "BG-31"
       ],
@@ -477,7 +482,7 @@
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-32"
       ],
@@ -490,7 +495,7 @@
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-13",
         "BG-14"
@@ -504,7 +509,7 @@
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-01",
         "BG-05",
@@ -522,7 +527,7 @@
       "sprint": 2,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-41"
       ],
@@ -532,49 +537,52 @@
     },
     {
       "taskId": "S2-18",
-      "sprint": 2,
+      "sprint": 3,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-35"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685b8141459ba8958cf6",
       "url": "https://trello.com/c/Fb0YQnbF",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6958a9597f6f787d503d"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab6958a9597f6f787d503d",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-19",
-      "sprint": 2,
+      "sprint": 3,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-36"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685d7ad79ee368df1195",
       "url": "https://trello.com/c/jn96M3kd",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69592896a2f056e246d5"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab69592896a2f056e246d5",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-20",
-      "sprint": 2,
+      "sprint": 3,
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Alison",
       "stories": [
         "BG-37"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685ee37f61507e32fc05",
       "url": "https://trello.com/c/UMGYVbmE",
-      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab695b9b12d09815fa7c90"
+      "checklistId": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6aab695b9b12d09815fa7c90",
+      "originalSprint": 2
     },
     {
       "taskId": "S2-21",
       "sprint": 2,
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar",
+      "owner": "Ricardo",
       "stories": [
         "BG-04",
         "BG-53",
@@ -1482,7 +1490,7 @@
       "url": "https://trello.com/c/NVYPbElu"
     }
   ],
-  "note": "Mapa de tarjetas; la verificación final se documenta por separado. M/L son tamaños preliminares, no puntos ni horas acordadas.",
+  "note": "IDs y miembros conservados. Sprint 2: 13 tareas de Fase 3. Sprint 3: 29 tareas como inventario por refinar, no compromiso de capacidad. Estados del Sprint 1 conservan el corte histórico; consultar Trello y evidencias actuales.",
   "assignmentDate": "2026-09-17",
   "assignmentReference": "asignacion-sprint-1.md",
   "delivery": {
@@ -1492,5 +1500,6 @@
     "publishedBranch": "main",
     "technicalTasksComplete": 9,
     "externalAcceptance": "Pendiente"
-  }
+  },
+  "scopeReference": "ajuste-sprint-2-fase-3-2026-09-30.md"
 }

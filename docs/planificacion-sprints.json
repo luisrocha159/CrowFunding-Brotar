@@ -1,12 +1,12 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "cutoff": "2026-09-16",
-  "status": "Reparto Sprint 1 aprobado; capacidad, estimaciones finales y fechas pendientes",
+  "status": "Sprint 2 ajustado a Fase 3; Sprint 3 es inventario futuro por refinar. Asignaciones conservadas; capacidad, fechas y reparto posterior pendientes.",
   "trelloSync": {
-    "date": "2026-09-17",
+    "date": "2026-09-30",
     "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
     "mapping": "trello-sprints.json",
-    "verification": "organizacion-trello-sprints-2026-09-17.md"
+    "verification": "ajuste-sprint-2-fase-3-2026-09-30.md"
   },
   "totalStories": 64,
   "totalTasks": 62,
@@ -275,7 +275,7 @@
       "owner": "Santiago"
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-01",
       "title": "Adjuntar multimedia de la campaña",
       "stories": [
@@ -285,7 +285,9 @@
       "dependencies": "S1-14 y S1-16; D03",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
       "sprint": 2,
@@ -294,11 +296,17 @@
       "stories": [
         "BG-21"
       ],
-      "result": "Registrar actividades, fechas y responsables, relacionar hitos y validar coherencia temporal; recuperar todo desde el borrador.",
-      "dependencies": "S1-16; reglas de planificación aprobadas",
+      "result": "Registrar actividades, responsables y cronograma; relacionar hitos cuando corresponda y validar fechas coherentes. Guardar y recuperar la planificación del borrador propio.",
+      "dependencies": "S1-16; reglas de planificación y campos contrastados con PostgreSQL.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Registrar actividades, responsables y cronograma; relacionar hitos cuando corresponda y validar fechas coherentes. Guardar y recuperar la planificación del borrador propio.",
+        "Validar fechas coherentes, responsabilidades, persistencia al salir y volver, campos obligatorios y rechazo de edición por otro usuario.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -307,11 +315,17 @@
       "stories": [
         "BG-22"
       ],
-      "result": "Persistir partidas y riesgos y comprobar totales y coherencia con la meta, sin inventar el tratamiento de diferencias.",
-      "dependencies": "S1-16 y S2-02; D02",
+      "result": "Persistir gastos, partidas de presupuesto y riesgos del proyecto. Validar montos mayores a cero y mostrar totales sin imponer reglas de igualdad con la meta no confirmadas.",
+      "dependencies": "S1-16 y S2-02; D02 para reglas adicionales de presupuesto.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Persistir gastos, partidas de presupuesto y riesgos del proyecto. Validar montos mayores a cero y mostrar totales sin imponer reglas de igualdad con la meta no confirmadas.",
+        "Validar montos, longitudes, riesgos y totales; conservar los datos ante errores y comprobar propiedad desde la API.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -320,11 +334,17 @@
       "stories": [
         "BG-23"
       ],
-      "result": "Guardar meta, plazo y condiciones permitidas, con validaciones y explicación visible del modelo aprobado.",
-      "dependencies": "S2-03; D02 y D04",
+      "result": "Guardar meta mayor a cero, moneda, duración y modelo de financiamiento admitidos por la base; validar fechas coherentes y explicar los datos requeridos.",
+      "dependencies": "S2-03; D02 y revisión del esquema para moneda, duración y modelo. Sin pagos, proveedor ni checkout en esta fase.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Guardar meta mayor a cero, moneda, duración y modelo de financiamiento admitidos por la base; validar fechas coherentes y explicar los datos requeridos.",
+        "Probar meta positiva, moneda y modelo válidos, duración y fechas coherentes, guardado progresivo y respuestas de error por campo.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -333,14 +353,20 @@
       "stories": [
         "BG-24"
       ],
-      "result": "Gestionar niveles, importes, cupos y condiciones según modalidad, con validación y reglas aprobadas; excluir logística no autorizada.",
-      "dependencies": "S1-17 y S2-04; D02 y D07",
+      "result": "Gestionar tipo, descripción, aporte mínimo, disponibilidad y fecha estimada de recompensas según la modalidad. Omitir el paso cuando no corresponda; conservar cambios sin activar aportes ni pagos.",
+      "dependencies": "S1-17 y S2-04; D02 y D07 para condiciones adicionales no confirmadas.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Gestionar tipo, descripción, aporte mínimo, disponibilidad y fecha estimada de recompensas según la modalidad. Omitir el paso cuando no corresponda; conservar cambios sin activar aportes ni pagos.",
+        "Probar importes positivos, disponibilidad y fechas, límites de texto y persistencia; omitir recompensas en donación y mantener coherencia al cambiar modalidad.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-06",
       "title": "Registrar identidad y respaldos de persona",
       "stories": [
@@ -351,10 +377,12 @@
       "dependencies": "S1-14; D03",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-07",
       "title": "Completar organización y respaldos KYB",
       "stories": [
@@ -365,10 +393,12 @@
       "dependencies": "E08 y S1-14; D03 y D06",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-08",
       "title": "Revisar casos KYC y KYB",
       "stories": [
@@ -379,10 +409,12 @@
       "dependencies": "S2-06, S2-07 y S1-13; D03, D06 y D09",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-09",
       "title": "Mostrar y corregir la verificación",
       "stories": [
@@ -392,7 +424,9 @@
       "dependencies": "S2-08; D03 y D09",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
       "sprint": 2,
@@ -401,11 +435,17 @@
       "stories": [
         "BG-29"
       ],
-      "result": "Resumen y vista previa con datos persistidos, faltantes y enlaces al paso correspondiente; impedir envío incompleto según requisitos aprobados.",
-      "dependencies": "S2-01 a S2-09; D03 y D05",
+      "result": "Mostrar resumen y vista previa de la campaña persistida, indicar campos faltantes y enlazar al paso correspondiente. Cubrir tipo, información general con portada, historia e impacto, plan y presupuesto, financiamiento y recompensas aplicables.",
+      "dependencies": "S1-17, S1-18, S1-19 y S1-20; S2-02 a S2-05. KYC/KYB, galería extra y checkout no son requisitos de envío de esta fase.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Mostrar resumen y vista previa de la campaña persistida, indicar campos faltantes y enlazar al paso correspondiente. Cubrir tipo, información general con portada, historia e impacto, plan y presupuesto, financiamiento y recompensas aplicables.",
+        "Comparar resumen con datos guardados; señalar exactamente los faltantes, volver al campo correspondiente y impedir envíos incompletos en frontend y backend. Revisar los siete pasos esperados por el PDF sin perder datos existentes.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -414,11 +454,17 @@
       "stories": [
         "BG-30"
       ],
-      "result": "Crear solicitud y transición válidas, confirmar recepción y evitar envíos duplicados con trazabilidad y comunicación acordada.",
-      "dependencies": "S2-10; D05, D08 y D09",
+      "result": "Permitir al creador propietario enviar una campaña completa a pendiente de revisión. Controlar la transición y registrar usuario y fecha en backend; confirmar recepción y evitar envíos duplicados.",
+      "dependencies": "S2-10; D05, D08 y D09 solo donde subsistan dudas sobre publicación o comunicaciones. Sin requisito KYC/KYB ni correo obligatorio para demostrar la fase.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Permitir al creador propietario enviar una campaña completa a pendiente de revisión. Controlar la transición y registrar usuario y fecha en backend; confirmar recepción y evitar envíos duplicados.",
+        "Probar campaña incompleta, envío válido, doble envío y acceso ajeno; comprobar el rol creador y la transición registrada en la API.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -427,11 +473,17 @@
       "stories": [
         "BG-42"
       ],
-      "result": "Listar y examinar contenido e historial; aprobar, rechazar o pedir cambios por sección, con motivos y notificación por canal acordado.",
-      "dependencies": "S2-11 y S1-13; D05, D06 y D08",
+      "result": "Permitir al administrador consultar campañas pendientes y toda la información enviada; aprobar, rechazar con motivo o solicitar cambios con comentarios al creador. Registrar la decisión y su responsable.",
+      "dependencies": "S2-11 y S1-13; D06 para provisión de roles y permisos. No depende de KYC/KYB ni de estadísticas administrativas completas.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "acceptance": [
+        "Permitir al administrador consultar campañas pendientes y toda la información enviada; aprobar, rechazar con motivo o solicitar cambios con comentarios al creador. Registrar la decisión y su responsable.",
+        "Probar las tres decisiones, motivos y comentarios requeridos, historial y denegación en la API a usuarios sin permiso administrativo; aprobación no implica publicación.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -440,11 +492,17 @@
       "stories": [
         "BG-31"
       ],
-      "result": "El creador recibe observaciones, modifica lo permitido y reenvía una versión trazable; conservar historial de revisiones.",
-      "dependencies": "S2-12; D05",
+      "result": "Mostrar al creador propietario los cambios solicitados; permitir corregir las secciones habilitadas y reenviar la campaña sin perder datos ni historial de decisiones.",
+      "dependencies": "S2-12; reglas de edición por estado de S2-14.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "acceptance": [
+        "Mostrar al creador propietario los cambios solicitados; permitir corregir las secciones habilitadas y reenviar la campaña sin perder datos ni historial de decisiones.",
+        "Probar lectura de observaciones, corrección persistente, reenvío y restricciones de estado y propiedad; no admitir modificaciones ajenas.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
@@ -453,30 +511,43 @@
       "stories": [
         "BG-32"
       ],
-      "result": "Separar aprobación y publicación; aplicar transiciones, restricciones de edición, cierre y cancelación acordadas sin activar operaciones financieras no implementadas.",
-      "dependencies": "S2-12 y S2-13; D02, D05 y D09",
+      "result": "Controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada. Separar aprobación de publicación y hacer visible solo lo publicado; conservar motivo de rechazo e historial.",
+      "dependencies": "S2-11 y S2-12; acordar el contrato de estados antes de integrar S2-13. D05 para quién ejecuta publicación y D09 para mapear los seis estados al esquema existente. Sin KYC/KYB, cierre financiero ni cancelaciones no definidas.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "acceptance": [
+        "Controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada. Separar aprobación de publicación y hacer visible solo lo publicado; conservar motivo de rechazo e historial.",
+        "Probar transiciones válidas y rechazadas, permisos de cada actor e historial; excluir de la API pública las campañas aprobadas pero no publicadas y las demás privadas.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
       "id": "S2-15",
-      "title": "Conectar panel y proyectos del creador",
+      "title": "Gestionar proyectos propios y descartar borradores",
       "stories": [
         "BG-13",
         "BG-14"
       ],
-      "result": "Mostrar indicadores y proyectos propios con acciones por estado, continuación de borrador, observaciones y lista vacía; rechazar accesos ajenos.",
-      "dependencies": "S1-16, S2-11 y S2-14",
+      "result": "Listar campañas propias con detalle y acciones según estado; continuar, consultar y actualizar el borrador. Permitir eliminar o descartar únicamente borradores propios con confirmación y control en backend.",
+      "dependencies": "S1-16, S2-11 y S2-14; consultar el esquema antes de implementar el descarte. Estadísticas avanzadas del creador se posponen.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "acceptance": [
+        "Listar campañas propias con detalle y acciones según estado; continuar, consultar y actualizar el borrador. Permitir eliminar o descartar únicamente borradores propios con confirmación y control en backend.",
+        "Probar lista vacía, detalle propio, continuación, acciones por estado y denegación a otro usuario. El descarte se verifica como criterio adicional de BG-14.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa.",
+        "Probar descarte confirmado de borrador propio, rechazo de otro propietario y rechazo de estados no borrador; recuperar la lista sin datos descartados."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
       "id": "S2-16",
-      "title": "Conectar experiencia pública y guardados",
+      "title": "Conectar catálogo y detalle público con campañas reales",
       "stories": [
         "BG-01",
         "BG-05",
@@ -485,27 +556,39 @@
         "BG-08",
         "BG-12"
       ],
-      "result": "Sustituir campañas simuladas por API pública: destacados, catálogo, búsqueda, filtros, paginación, detalle y estados; persistir guardados. Excluir borradores y datos privados.",
-      "dependencies": "S2-14; BG-51 añade novedades en S3-12",
+      "result": "Sustituir campañas simuladas por la API pública. Mostrar solo publicadas con imagen, nombre, categoría, avance, meta y creador; buscar por texto y filtrar por categoría, ubicación y tipo. Incluir historia, problema, solución, beneficiarios, impacto y recompensas en el detalle.",
+      "dependencies": "S2-14. Sin aportes, checkout ni KYC/KYB; guardados y favoritos se posponen sin eliminar su alcance del backlog general.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "acceptance": [
+        "Sustituir campañas simuladas por la API pública. Mostrar solo publicadas con imagen, nombre, categoría, avance, meta y creador; buscar por texto y filtrar por categoría, ubicación y tipo. Incluir historia, problema, solución, beneficiarios, impacto y recompensas en el detalle.",
+        "Probar filtros, resultados vacíos y errores; comprobar contenido real y exclusión de campañas privadas. El avance debe proceder de datos reales, sin recaudaciones ficticias.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 2,
       "id": "S2-17",
-      "title": "Crear el panel administrativo inicial",
+      "title": "Preparar acceso y cola administrativa de campañas",
       "stories": [
         "BG-41"
       ],
-      "result": "Mostrar pendientes e indicadores reales de revisión y cumplimiento, con accesos por permiso; finanzas y disputas se incorporan al existir sus módulos.",
-      "dependencies": "S2-08 y S2-12; D06",
+      "result": "Preparar navegación y acceso administrativo para listar campañas pendientes y abrir su detalle. Reutilizar la revisión de S2-12; no construir un panel completo con estadísticas ni colas KYC/KYB.",
+      "dependencies": "S1-13 y S2-12; D06 para roles administrativos. La cola de campañas puede prepararse antes con el contrato acordado.",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "acceptance": [
+        "Preparar navegación y acceso administrativo para listar campañas pendientes y abrir su detalle. Reutilizar la revisión de S2-12; no construir un panel completo con estadísticas ni colas KYC/KYB.",
+        "Probar acceso permitido y denegado, lista vacía, carga y error. Diferenciar esta tarea de S2-12: navegación y cola frente a decisiones y registro de revisión.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-18",
       "title": "Seleccionar el apoyo y su modalidad",
       "stories": [
@@ -515,10 +598,12 @@
       "dependencies": "S2-05 y S2-14; D02",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-19",
       "title": "Preparar el checkout",
       "stories": [
@@ -528,10 +613,12 @@
       "dependencies": "S2-18; D04 y D07",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
-      "sprint": 2,
+      "sprint": 3,
       "id": "S2-20",
       "title": "Representar pagos de prueba",
       "stories": [
@@ -541,7 +628,9 @@
       "dependencies": "S2-19; diseño y nomenclatura acordada",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "originalSprint": 2,
+      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
     },
     {
       "sprint": 2,
@@ -555,11 +644,17 @@
         "BG-62",
         "BG-63"
       ],
-      "result": "Versionar contratos y probar registro, borrador, revisión, publicación, consulta y checkout de prueba, con permisos, carga, errores, teclado y móvil; registrar evidencia y actualizar documentación.",
-      "dependencies": "Tareas S2 y revisión de los responsables",
+      "result": "Probar y documentar el recorrido real de creador, borrador por pasos, continuidad, descarte, revisión administrativa, correcciones, aprobación, publicación y exploración pública. Actualizar README, contratos y evidencias sin cambiar la arquitectura.",
+      "dependencies": "Las otras 12 tareas vigentes del Sprint 2 y la base del Sprint 1. Los ocho traslados a Sprint 3 no bloquean la entrega de campañas.",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "acceptance": [
+        "Probar y documentar el recorrido real de creador, borrador por pasos, continuidad, descarte, revisión administrativa, correcciones, aprobación, publicación y exploración pública. Actualizar README, contratos y evidencias sin cambiar la arquitectura.",
+        "Validar campos obligatorios, longitudes, montos positivos, fechas coherentes, carga/éxito/error y solicitudes duplicadas; comprobar autenticación existente, rol creador, propiedad, permiso administrativo, móvil y teclado. Checkout, pagos y KYC/KYB quedan fuera de estas pruebas de aceptación.",
+        "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
+      ],
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
     },
     {
       "sprint": 3,
@@ -1085,7 +1180,8 @@
         "CA 3. Permitir la participación como creador o patrocinador sin crear cuentas independientes; definir preferencias concretas antes de ampliar formularios."
       ],
       "dependencies": "Dependencias: BG-09, BG-53, BG-59.",
-      "source": "Fuente: G pp. 3, 5-6; F Detalle público y Panel Patrocinador."
+      "source": "Fuente: G pp. 3, 5-6; F Detalle público y Panel Patrocinador.",
+      "phase3Note": "La fase de campañas implementa solo el alcance aplicable. Estadísticas avanzadas y guardados conservan su alcance general y quedan pendientes de refinamiento futuro."
     },
     {
       "id": "BG-13",
@@ -1104,7 +1200,8 @@
         "CA 3. Si no hay campañas, mostrar un vacío con invitación a crear la primera."
       ],
       "dependencies": "Dependencias: BG-09, BG-53, BG-59.",
-      "source": "Fuente: C p. 2; F 01 Panel y variantes. Antecedente: PB-01, PB-02, PB-03."
+      "source": "Fuente: C p. 2; F 01 Panel y variantes. Antecedente: PB-01, PB-02, PB-03.",
+      "phase3Note": "La fase de campañas implementa solo el alcance aplicable. Estadísticas avanzadas y guardados conservan su alcance general y quedan pendientes de refinamiento futuro."
     },
     {
       "id": "BG-14",
@@ -1120,7 +1217,8 @@
       "criteria": [
         "CA 1. Listar nombre, categoría, meta, avance y estado de las campañas propias.",
         "CA 2. Mostrar acciones según estado y permisos; continuar una campaña incompleta en el punto guardado.",
-        "CA 3. Cubrir lista vacía y evitar consultar o modificar campañas ajenas mediante la API."
+        "CA 3. Cubrir lista vacía y evitar consultar o modificar campañas ajenas mediante la API.",
+        "CA 4. Fase 3: permitir eliminar o descartar únicamente campañas propias en estado borrador, con confirmación, persistencia y validación de propiedad y estado en backend; impedir el descarte de campañas ajenas o no borrador."
       ],
       "dependencies": "Dependencias: BG-13, BG-18, BG-53.",
       "source": "Fuente: C p. 3; F 02 Mis proyectos con proyectos. Antecedente: PB-04, PB-05, PB-06."
@@ -1230,7 +1328,7 @@
       "title": "Adjuntar apoyo multimedia",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-01"
@@ -1325,7 +1423,7 @@
       "title": "Recopilar identidad de la persona",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-06"
@@ -1345,7 +1443,7 @@
       "state": "Parcial",
       "sprints": [
         1,
-        2
+        3
       ],
       "tasks": [
         "E08",
@@ -1365,7 +1463,7 @@
       "title": "Registrar documentos y cuenta destino",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-06",
@@ -1385,7 +1483,7 @@
       "title": "Consultar y corregir la verificación",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-09"
@@ -1413,7 +1511,8 @@
       "criteria": [
         "CA 1. Mostrar tipo, datos, historia, plan, financiamiento, recompensas aplicables y verificación.",
         "CA 2. Identificar secciones incompletas y enlazar su edición sin perder información.",
-        "CA 3. Bloquear el envío incompleto en interfaz y API; una vista previa no constituye una campaña publicada."
+        "CA 3. Bloquear el envío incompleto en interfaz y API; una vista previa no constituye una campaña publicada.",
+        "CA 4. Fase 3: la revisión final comprueba los datos de campaña y recompensas aplicables y señala sus faltantes; KYC/KYB, galería adicional y checkout no son condiciones de envío de esta entrega."
       ],
       "dependencies": "Dependencias: BG-16 a BG-28.",
       "source": "Fuente: C pp. 5-6; F 10 Revision final y 10 Revisión - Error. Antecedente: PB-27, PB-28."
@@ -1470,7 +1569,8 @@
       "criteria": [
         "CA 1. Exigir revisión y verificaciones aplicables antes de publicar, también en la API.",
         "CA 2. Distinguir borrador, revisión, aprobación, publicación, fin de recaudación, ejecución, cierre y cancelación.",
-        "CA 3. Definir transiciones, permisos de edición y cierre con D02 y D05; retirar acciones de aporte cuando ya no correspondan."
+        "CA 3. Definir transiciones, permisos de edición y cierre con D02 y D05; retirar acciones de aporte cuando ya no correspondan.",
+        "CA 4. Fase 3: controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada; conservar motivos e historial y mostrar públicamente solo lo publicado."
       ],
       "dependencies": "Dependencias: BG-30, BG-42, BG-44, D02, D05.",
       "source": "Fuente: G pp. 6, 8-9; C p. 2; F 01 Panel - Aprobado. Antecedente: PB-01, PB-05."
@@ -1519,7 +1619,7 @@
       "title": "Elegir monto y modalidad de apoyo",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-18"
@@ -1538,7 +1638,7 @@
       "title": "Revisar y confirmar el checkout",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-19"
@@ -1557,7 +1657,7 @@
       "title": "Representar métodos y resultados de pago",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-20"
@@ -1647,7 +1747,8 @@
         "CA 3. Calcular datos desde registros reales; no convertir indicadores de ejemplo en cifras de producción."
       ],
       "dependencies": "Dependencias: BG-42, BG-43, BG-45, BG-50, BG-53.",
-      "source": "Fuente: A p. 6; F Panel admin 1."
+      "source": "Fuente: A p. 6; F Panel admin 1.",
+      "phase3Note": "La fase de campañas implementa solo el alcance aplicable. Estadísticas avanzadas y guardados conservan su alcance general y quedan pendientes de refinamiento futuro."
     },
     {
       "id": "BG-42",
@@ -1673,7 +1774,7 @@
       "title": "Gestionar colas y documentos KYC y KYB",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-08"
@@ -1692,7 +1793,7 @@
       "title": "Registrar decisiones de verificación",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        3
       ],
       "tasks": [
         "S2-08"
@@ -1877,7 +1978,8 @@
       "criteria": [
         "CA 1. Separar creador, patrocinador, revisor, cumplimiento, finanzas, soporte, administrador y auditor.",
         "CA 2. Validar permisos y pertenencia en la API, no solo ocultando botones.",
-        "CA 3. Mantener al auditor en lectura; permitir perfiles compatibles sin conceder privilegios por registro público."
+        "CA 3. Mantener al auditor en lectura; permitir perfiles compatibles sin conceder privilegios por registro público.",
+        "CA 4. Fase 3: exigir permisos de creador y propiedad en las operaciones de campaña y permisos administrativos en las decisiones de revisión. Reutilizar la autenticación existente; documentar la provisión de roles sin conceder privilegios por registro público."
       ],
       "dependencies": "Dependencias: BG-09, BG-58, D06.",
       "source": "Fuente: G pp. 3-4, 9; S p. 4; F navegación por rol.",
@@ -2144,5 +2246,43 @@
     "publishedBranch": "main",
     "technicalTasksComplete": 9,
     "externalAcceptance": "Pendiente"
+  },
+  "phase3": {
+    "date": "2026-09-30",
+    "source": "requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf",
+    "sourceSections": [
+      1,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13
+    ],
+    "sprint2Tasks": 13,
+    "sprint3InventoryTasks": 29,
+    "movedToSprint3": [
+      "S2-01",
+      "S2-06",
+      "S2-07",
+      "S2-08",
+      "S2-09",
+      "S2-18",
+      "S2-19",
+      "S2-20"
+    ],
+    "scope": "Creación, gestión, revisión administrativa, publicación y exploración pública de campañas reales.",
+    "excluded": "KYC/KYB, aportes, checkout, pagos, desembolsos, devoluciones, finanzas y rendición.",
+    "futureCapacity": "29 tareas constituyen inventario futuro, no capacidad ni compromiso de una única iteración. Refinar dependencias, esfuerzo y duración; dividir en más iteraciones si es necesario.",
+    "assignmentImpact": "Se conservan responsables: Sprint 2 queda Santiago 7, Alison 1, Ricardo 5. Reparto pendiente de equilibrar antes de iniciar, sin reasignación automática.",
+    "deferredExtras": [
+      "Galería multimedia adicional",
+      "Guardados y favoritos",
+      "Estadísticas avanzadas de creador y administración"
+    ],
+    "technicalStateNote": "El ajuste modifica planificación y criterios, no certifica avances nuevos ni actualiza el corte técnico histórico del Sprint 1."
   }
 }

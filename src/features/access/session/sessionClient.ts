@@ -2,6 +2,10 @@ import { SessionError } from '../../../shared/api/sessionError'
 import { requestApi } from '../../../shared/api/request'
 export { SessionError } from '../../../shared/api/sessionError'
 export interface CurrentUser { id: string; email: string; firstName: string; lastName: string; status: 'ACTIVE' | 'PENDING_VERIFICATION' }
+export const SESSION_CHANGED = 'brotar:session-changed'
+export function notifySessionChanged(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_CHANGED))
+}
 async function send(path: string, method: 'GET' | 'POST', body?: unknown, signal?: AbortSignal): Promise<Response> {
   return requestApi(`/api/auth/${path}`, { method, body, signal })
 }
@@ -11,6 +15,7 @@ export async function login(email: string, password: string, signal?: AbortSigna
     const result = await response.json() as { status?: string }
     if (result.status !== 'authenticated') throw new SessionError(0)
   } catch { throw new SessionError(0) }
+  notifySessionChanged()
 }
 export async function currentUser(signal?: AbortSignal): Promise<CurrentUser> {
   const response = await send('me', 'GET', undefined, signal)
@@ -22,4 +27,4 @@ export async function currentUser(signal?: AbortSignal): Promise<CurrentUser> {
     return { id: body.id, email: body.email, firstName: body.firstName, lastName: body.lastName, status: body.status }
   } catch { throw new SessionError(0) }
 }
-export async function logout(): Promise<void> { await send('logout', 'POST') }
+export async function logout(): Promise<void> { await send('logout', 'POST'); notifySessionChanged() }

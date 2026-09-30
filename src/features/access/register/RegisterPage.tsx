@@ -5,7 +5,7 @@ import { FormField } from '../../../shared/components/FormField'
 import { Message } from '../../../shared/components/Feedback'
 import { AccessShell, AccessSuccess, PasswordField, ValidationSummary } from '../AccessComponents'
 import { accessHref, publicContinuation } from '../navigation'
-import { profileLabels, REGISTRATION_PASSWORD_HELP, RegistrationError, registerAccount, validateRegistration, type AccessProfile, type RegistrationErrors, type RegistrationFailure, type RegistrationValues } from './registration'
+import { passwordLengthGuidance, profileLabels, REGISTRATION_PASSWORD_HELP, RegistrationError, registerAccount, validateRegistration, type AccessProfile, type RegistrationErrors, type RegistrationFailure, type RegistrationValues } from './registration'
 import styles from '../access.module.css'
 
 const initialValues: RegistrationValues = { firstName: '', lastName: '', email: '', password: '', confirmation: '', phoneCountryCode: '', phoneNumber: '', profile: 'usuario', terms: false }
@@ -30,14 +30,28 @@ export function RegisterPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | RegistrationFailure>('idle')
   const active = useRef<AbortController | null>(null)
   const busy = status === 'loading'
+  const passwordGuidance = passwordLengthGuidance(values.password)
+  const phoneAdvice = values.phoneNumber && /\D/.test(values.phoneNumber) ? 'Quita letras, espacios o signos; usa solo dígitos.'
+    : values.phoneNumber && values.phoneNumber.length < 4 ? 'Escribe al menos 4 dígitos.'
+      : 'Si indicas un teléfono, completa también el prefijo. Usa de 4 a 30 dígitos sin espacios.'
   useEffect(() => () => { active.current?.abort(); active.current = null }, [])
   useEffect(() => {
-    if (status !== 'idle' && status !== 'loading' && status !== 'success') document.getElementById('register-response')?.focus()
-  }, [status])
+    if (status === 'idle' || status === 'loading' || status === 'success') return
+    const first = (Object.keys(errors) as (keyof RegistrationValues)[]).find(key => errors[key])
+    document.getElementById(first ? `register-${first}` : 'register-response')?.focus()
+  }, [status, errors])
   function change<K extends keyof RegistrationValues>(key: K, value: RegistrationValues[K]) {
     setValues(current => ({ ...current, [key]: value }))
     setErrors(current => ({ ...current, [key]: undefined }))
     setStatus('idle')
+  }
+  function validateField(key: keyof RegistrationValues) {
+    const next = validateRegistration(values)
+    setErrors(current => ({ ...current, [key]: next[key] }))
+  }
+  function validatePhone() {
+    const next = validateRegistration(values)
+    setErrors(current => ({ ...current, phoneCountryCode: next.phoneCountryCode, phoneNumber: next.phoneNumber }))
   }
   return <AccessShell title="Crea tu cuenta" subtitle="Registra tus datos en la base de pruebas de Brotar." intro="Convierte una idea en el comienzo de algo mejor"
     notice={<><strong>Registro conectado.</strong> Estos datos sí se envían a la API y se guardan en PostgreSQL. Usa datos ficticios y una contraseña exclusiva de prueba. Puedes iniciar sesión después del registro, aunque tu cuenta siga pendiente de verificación.</>}>
@@ -63,6 +77,7 @@ export function RegisterPage() {
         } catch (error) {
           if (!controller.signal.aborted) {
             setStatus(error instanceof RegistrationError ? error.kind : 'unknown')
+            if (error instanceof RegistrationError) setErrors(current => ({ ...current, ...error.fields }))
             setValues(current => ({ ...current, password: '', confirmation: '' }))
           }
         } finally { if (active.current === controller) active.current = null }
@@ -81,11 +96,12 @@ export function RegisterPage() {
             <p id="register-profile-help" className={styles.helperText}>{profileHelp[values.profile]}</p>
             {errors.profile && <p className={styles.fieldError}>{errors.profile}</p>}
           </fieldset>
-          <div className={styles.row}><FormField id="register-firstName" label="Nombre" name="firstName" autoComplete="given-name" required value={values.firstName} error={errors.firstName} onChange={event => change('firstName', event.target.value)} /><FormField id="register-lastName" label="Apellido" name="lastName" autoComplete="family-name" required value={values.lastName} error={errors.lastName} onChange={event => change('lastName', event.target.value)} /></div>
-          <FormField id="register-email" label="Correo electrónico" name="email" type="email" autoComplete="email" required value={values.email} error={errors.email} placeholder="nombre@example.com" onChange={event => change('email', event.target.value)} />
-          <div className={styles.row}><FormField id="register-phoneCountryCode" label="Prefijo telefónico (opcional)" name="phoneCountryCode" autoComplete="tel-country-code" placeholder="+591" value={values.phoneCountryCode} error={errors.phoneCountryCode} onChange={event => change('phoneCountryCode', event.target.value)} /><FormField id="register-phoneNumber" label="Teléfono (opcional)" name="phoneNumber" autoComplete="tel-national" type="tel" value={values.phoneNumber} error={errors.phoneNumber} onChange={event => change('phoneNumber', event.target.value)} /></div>
-          <PasswordField id="register-password" label="Contraseña" name="password" newPassword value={values.password} error={errors.password} help={REGISTRATION_PASSWORD_HELP} disabled={busy} onChange={value => change('password', value)} />
-          <PasswordField id="register-confirmation" label="Confirmar contraseña" name="confirmation" newPassword value={values.confirmation} error={errors.confirmation} disabled={busy} onChange={value => change('confirmation', value)} />
+          <div className={styles.row}><FormField id="register-firstName" label="Nombre" name="firstName" autoComplete="given-name" required value={values.firstName} error={errors.firstName} onBlur={() => validateField('firstName')} onChange={event => change('firstName', event.target.value)} /><FormField id="register-lastName" label="Apellido" name="lastName" autoComplete="family-name" required value={values.lastName} error={errors.lastName} onBlur={() => validateField('lastName')} onChange={event => change('lastName', event.target.value)} /></div>
+          <FormField id="register-email" label="Correo electrónico" name="email" type="email" autoComplete="email" required value={values.email} error={errors.email} placeholder="nombre@example.com" onBlur={() => validateField('email')} onChange={event => change('email', event.target.value)} />
+          <div className={styles.row}><FormField id="register-phoneCountryCode" label="Prefijo telefónico (opcional)" name="phoneCountryCode" autoComplete="tel-country-code" placeholder="+591" value={values.phoneCountryCode} error={errors.phoneCountryCode} onBlur={validatePhone} onChange={event => change('phoneCountryCode', event.target.value)} /><FormField id="register-phoneNumber" label="Teléfono (opcional)" name="phoneNumber" autoComplete="tel-national" type="tel" inputMode="numeric" value={values.phoneNumber} error={errors.phoneNumber} onBlur={validatePhone} onChange={event => change('phoneNumber', event.target.value)} help={phoneAdvice} /></div>
+          <PasswordField id="register-password" label="Contraseña" name="password" newPassword value={values.password} error={errors.password} help={REGISTRATION_PASSWORD_HELP} disabled={busy} maxLength={128} onBlur={() => validateField('password')} onChange={value => change('password', value)} />
+          <div className={styles.passwordGuidance} role="status"><progress value={Math.min(passwordGuidance.count, 15)} max={15} aria-label="Avance hacia la longitud mínima de la contraseña" /><span>{passwordGuidance.message}</span></div>
+          <PasswordField id="register-confirmation" label="Confirmar contraseña" name="confirmation" newPassword value={values.confirmation} error={errors.confirmation} disabled={busy} maxLength={128} onBlur={() => validateField('confirmation')} onChange={value => change('confirmation', value)} />
           <div><label className={styles.checkbox}><input id="register-terms" type="checkbox" name="terms" checked={values.terms} required aria-invalid={!!errors.terms} aria-describedby="terms-help" onChange={event => change('terms', event.target.checked)} /><span>Entiendo que mis datos básicos se guardarán en la base de pruebas. La orientación elegida solo muestra ayuda y no se guarda.</span></label>{errors.terms && <p className={styles.fieldError}>{errors.terms}</p>}<p id="terms-help">El texto legal definitivo sigue pendiente. Esta confirmación de prueba no se registra como aceptación de términos legales, verificación KYC/KYB ni autorización para publicar campañas o procesar pagos.</p></div>
           <Button type="submit" loading={busy} loadingLabel="Guardando cuenta…">Crear cuenta</Button>
         </fieldset>

@@ -3,7 +3,7 @@ import { Button } from '../../../shared/components/Button'
 import { FormField } from '../../../shared/components/FormField'
 import { Message } from '../../../shared/components/Feedback'
 import { readProfile, saveProfile, validateProfile, type Profile, type ProfileInput } from './profileClient'
-import { SessionError } from './sessionClient'
+import { notifySessionChanged, SessionError } from './sessionClient'
 import styles from '../access.module.css'
 
 export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onSaved: (profile: Profile) => void }) {
@@ -45,7 +45,7 @@ export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onS
     setStatus('saving')
     try {
       const result = await saveProfile(values, controller.signal)
-      if (!controller.signal.aborted) { setProfile(result); setValues(result); setStatus('saved'); callbacks.current.onSaved(result) }
+      if (!controller.signal.aborted) { setProfile(result); setValues(result); setStatus('saved'); callbacks.current.onSaved(result); notifySessionChanged() }
     } catch (error) {
       if (!controller.signal.aborted) {
         if (error instanceof SessionError && error.status === 401) callbacks.current.onExpired()
@@ -54,7 +54,7 @@ export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onS
     } finally { if (saving.current === controller) saving.current = null }
   }}>
     <h3>Editar datos básicos</h3>
-    <p>El correo, la contraseña y los roles no se cambian desde este formulario.</p>
+    <p>Actualiza tu nombre o teléfono. Tu correo y tus permisos se gestionan por separado.</p>
     {status === 'saved' && <p role="status">Perfil guardado correctamente en Brotar.</p>}
     {status === 'save-error' && <Message tone="error" title="No se confirmó el guardado">Tus cambios siguen en el formulario. Revisa los datos y la conexión antes de reintentar.</Message>}
     <fieldset className={styles.fields} disabled={status === 'saving'}>

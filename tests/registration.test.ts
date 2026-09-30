@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { registerAccount, RegistrationError, validateRegistration, type RegistrationValues } from '../src/features/access/register/registration'
+import { passwordLengthGuidance, registerAccount, RegistrationError, registrationErrorsFrom, validateRegistration, type RegistrationValues } from '../src/features/access/register/registration'
 
 const values: RegistrationValues = { firstName: ' María ', lastName: " D'Ávila ", email: ' PRUEBA@example.invalid ', password: 'una frase de prueba larga', confirmation: 'una frase de prueba larga', terms: true, phoneCountryCode: '', phoneNumber: '', profile: 'creador' }
 test('registro real valida límites, perfil aprobado, confirmación, consentimiento y teléfono opcional completo', () => {
@@ -8,6 +8,20 @@ test('registro real valida límites, perfil aprobado, confirmación, consentimie
   for (const profile of ['usuario', 'creador', 'organizacion'] as const) assert.deepEqual(validateRegistration({ ...values, profile }), {})
   for (const changes of [{ firstName: ' ' }, { lastName: 'a'.repeat(121) }, { password: 'corta' }, { password: 'a'.repeat(129) }, { terms: false }, { confirmation: 'otra contraseña' }, { phoneCountryCode: '+591' }, { phoneNumber: '12345678' }, { profile: 'admin' }]) assert.ok(Object.keys(validateRegistration({ ...values, ...changes } as RegistrationValues)).length)
   assert.deepEqual(validateRegistration({ ...values, phoneCountryCode: '+591', phoneNumber: '12345678' }), {})
+})
+test('registro explica la longitud de contraseña sin afirmar que mide toda su seguridad', () => {
+  assert.equal(passwordLengthGuidance('frase corta').valid, false)
+  assert.match(passwordLengthGuidance('frase corta').message, /Faltan 4 caracteres/)
+  assert.equal(passwordLengthGuidance('una frase de prueba larga').valid, true)
+  assert.match(passwordLengthGuidance('una frase de prueba larga').message, /no mide toda la seguridad/)
+  assert.equal(passwordLengthGuidance(' '.repeat(15)).valid, false)
+})
+test('registro asocia errores de validación del servidor con campos conocidos sin mostrar detalles internos', async () => {
+  assert.deepEqual(registrationErrorsFrom(['phoneNumber must match /^\\d/', 'email must be an email']), {
+    phoneNumber: 'Usa de 4 a 30 dígitos, sin espacios.', email: 'Revisa el formato del correo electrónico.'
+  })
+  await assert.rejects(registerAccount(values, undefined, (async () => Response.json({ statusCode: 400, message: ['phoneNumber must match /^\\d/'] }, { status: 400 })) as typeof fetch),
+    (error: unknown) => error instanceof RegistrationError && error.kind === 'invalid' && !!error.fields.phoneNumber)
 })
 test('cliente envía solo contrato permitido, normaliza datos y no envía confirmación, perfil ni roles', async () => {
   const result = await registerAccount(values, undefined, (async (url, init) => {

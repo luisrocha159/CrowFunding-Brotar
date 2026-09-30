@@ -4,7 +4,11 @@
 
 > **Sprint 1 integrado en DEV — corte 21/09/2026:** reúne el trabajo de Ricardo, Alison y Santiago, las correcciones y el ensayo local. Se aprobaron 93 pruebas frontend, 93 backend y 14 integraciones PostgreSQL (200 casos), además de lint, tipos y compilación. `main` conserva la entrega anterior. Los informes fechados anteriores son históricos; este README describe la versión actual. Esto no equivale a aceptación del cliente ni a certificación de ausencia de errores.
 
-Acceso al constructor: iniciar sesión → **Mi cuenta → Mis borradores y portadas**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
+**Actualización de DEV · 30/09/2026:** incluye las mejoras de validación del registro, ayuda para recuperación local, menú de cuenta con sesión y documentos de estudio del Sprint 1. La planificación v2.3 conserva 62 tareas y 64 historias: Sprint 1 = 20; Sprint 2 = 13 tareas de campañas; Sprint 3 = inventario de 29 tareas por refinar, no compromiso de una sola iteración. Esto es planificación: el módulo completo del Sprint 2 todavía no se declara implementado. Su reparto se acordará con el equipo.
+
+Verificación de esta actualización: `bun run check` aprobó lint, tipos, 95 pruebas frontend y compilación; `bun x --package pnpm@11.19.0 pnpm run check` aprobó lint, tipos, 93 pruebas backend y compilación. No se repitieron las integraciones PostgreSQL en esta publicación porque el motor Docker local no estaba disponible. Los 200 casos citados arriba pertenecen al ensayo histórico del 21/09, no al conteo de esta revisión.
+
+Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores**; también desde **Mi cuenta → Opciones para iniciativas y permisos → Ver mis borradores**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
 
 Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
@@ -220,6 +224,8 @@ PASSWORD_RESET_LOCAL_FILE=true
 
 Reiniciar la API. Solicitar recuperación para una cuenta ficticia existente. En Windows abrir `%LOCALAPPDATA%\Brotar\recovery-mail`, ordenar por fecha y abrir el `.txt` correspondiente. Copiar su enlace al navegador local y completar nueva contraseña/confirmación. El enlace vence en una hora y solo se usa una vez; las sesiones anteriores se revocan. Una cuenta inexistente no genera archivo, pero recibe la misma respuesta pública.
 
+**Si la pantalla muestra «recuperación no disponible» (HTTP 503):** verifica que las cuatro claves anteriores estén en `backend/.env` (no en el `.env` de la raíz), que no haya definiciones duplicadas y que reiniciaste la API después de editarlas. La bandera está en `false` en `.env.example` por seguridad. Comprueba también que PostgreSQL y la API estén disponibles. El archivo se crea **solo** al solicitar recuperación para una cuenta ficticia existente; no esperes un correo ni un enlace en la respuesta HTTP. En otra computadora se debe configurar su propio `backend/.env` y consultar su propio `%LOCALAPPDATA%`; el buzón no se comparte por Git.
+
 El buzón está fuera del repositorio y de su carpeta OneDrive. Sin LOCALAPPDATA se utiliza `backend/private/recovery-mail`, excluido de Git. No compartir, proyectar ni versionar los enlaces: son credenciales temporales. Eliminar los mensajes de prueba al finalizar; no hay limpieza automática. Este modo solo acepta desarrollo y direcciones locales; no habilitarlo en una máquina compartida o despliegue. Para usar SMTP real, desactivar esta bandera y configurar un remitente autorizado según `backend/.env.example`. La bandera anterior `PASSWORD_RESET_LOCAL_LINK` ya no habilita enlaces en la respuesta HTTP.
 
 ### Qué se comprobó y qué sigue pendiente
@@ -282,6 +288,16 @@ Para ejecutar compilado: raíz `bun run build` y `bun run preview`; backend `pnp
 
 `DEV` contiene la integración actual del Sprint 1. `main` conserva la entrega anterior hasta aprobar su integración. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas. Esta publicación no actualiza automáticamente esas ramas: cada integrante incorpora `origin/DEV` en su rama con el árbol limpio siguiendo CONTRIBUTING.
 
+Para descargar esta actualización, primero guardar el trabajo propio mediante commit o stash; no descartar cambios. Con el árbol limpio, desde la raíz del repositorio:
+
+```powershell
+git fetch origin
+git switch DEV
+git pull --ff-only origin DEV
+```
+
+Después volver a la rama personal existente (`git switch AlisonDev`, `git switch SantiagoDev` o `git switch RicardoDev`, según corresponda) y ejecutar `git merge origin/DEV`. Resolver conflictos antes de continuar; no usar reset forzado. Si ya se trabaja en la rama personal, basta con `git fetch origin` y `git merge origin/DEV` sin cambiar de rama. Instalar dependencias y levantar servicios según las secciones 3–5. Los `.env`, buzones y archivos locales no se descargan por Git; cada computadora conserva o genera los suyos siguiendo la instalación, sin borrar volúmenes.
+
 Flujo: **rama personal → PR a DEV → pruebas/revisión → PR de DEV a main**. No trabajar directamente en `main` después de esta entrega. No dar por hecho que hay protección técnica de ramas: esta es la convención del equipo; los cambios de permisos/protección requieren al propietario.
 
 - Alison: S1-11, S1-12, S1-14 y S1-19.
@@ -333,6 +349,11 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Informe de entrega de integración](docs/entrega-integracion-2026-09-17.md).
 - [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
 - [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
+- [Ajuste de Sprint 2 a la tarea de campañas](docs/ajuste-sprint-2-fase-3-2026-09-30.md): 13 tareas actuales y 29 futuras por refinar.
+- [Informe detallado del Sprint 1 — Word](docs/entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
+- [Principios y patrones para el docente — Word](docs/entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
+- [Calidad y defensa técnica — guía](docs/calidad-sprint-1.md) y [Word](docs/entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).
+- [Guía de tareas y demostración](docs/verificacion-sprint-1.md), [Word](docs/entregables/sprint-1/Guia_Verificacion_y_Demostracion_Sprint_1_Brotar.docx) y [complemento del ensayo final](docs/ensayo-final-sprint-1.md). Conservan sus cortes históricos; para instalar o actualizar seguir este README.
 - [Figma final](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574).
 - [Revisión funcional de la integración](docs/revision-entrega-integracion-e08.md).
 - [Índice de documentos y versiones históricas](docs/README.md).

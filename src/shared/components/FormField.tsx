@@ -30,6 +30,6 @@ export function FormField(props: FieldProps) {
     <label className={styles.label} htmlFor={id}>{label}{control.required && ' *'}</label>
     {input}
     {help && <p className={styles.help} id={`${id}-help`}>{help}</p>}
-    {error && <p className={styles.fieldError} id={`${id}-error`}>{error}</p>}
+    {error && <p className={styles.fieldError} id={`${id}-error`} role="alert">{error}</p>}
   </div>
 }
