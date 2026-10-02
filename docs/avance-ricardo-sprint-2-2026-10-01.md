@@ -1,5 +1,7 @@
 # Avance de Ricardo en Sprint 2
 
+> Actualización posterior: el estado parcial de S2-15 y S2-17 descrito en este corte fue sustituido por su [cierre técnico del 02/10/2026](cierre-s2-15-s2-17-2026-10-02.md). Este informe conserva la evidencia histórica. S2-12, S2-14 y S2-21 siguen en curso.
+
 Registro para el equipo y la revisión técnica del avance de Ricardo al 1 de octubre de 2026, basado en DEV y entregado en la rama personal **RicardoDev**. Se implementaron la gestión de proyectos propios y la base de consulta administrativa. Docker se recuperó y pasaron las pruebas con PostgreSQL. No se completó el Sprint 2: las decisiones sobre campañas y su publicación siguen pendientes. Subir código a la rama personal no publica una campaña ni reemplaza la aceptación de los líderes.
 
 ## Estado de las cinco tareas

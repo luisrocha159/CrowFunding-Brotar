@@ -1,4 +1,4 @@
-  import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { AccessShell } from '../access/AccessComponents'
 import { SessionError } from '../access/session/sessionClient'
@@ -24,7 +24,7 @@ const statusNames: Record<string, string> = {
 }
 
 type Saving = 'idle' | 'saving' | 'saved' | 'failed'
-type Screen = 'loading' | 'ready' | 'error' | 'anonymous' | 'forbidden'
+type Screen = 'loading' | 'ready' | 'error' | 'anonymous' | 'forbidden' | 'missing'
 
 function toInput(draft: Draft): DraftInput {
   return {
@@ -36,6 +36,8 @@ function toInput(draft: Draft): DraftInput {
 export function CampaignBuilderPage() {
   const [searchParams] = useSearchParams()
   const requestedDraft = searchParams.get('borrador')
+  const requestKey = requestedDraft ?? ''
+  const [loadedRequest, setLoadedRequest] = useState<string | null>(null)
   const [screen, setScreen] = useState<Screen>('loading')
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -63,6 +65,10 @@ export function CampaignBuilderPage() {
     void Promise.all([myDrafts(controller.signal), activeCategories(controller.signal)])
       .then(async ([list, catalog]) => {
         if (controller.signal.aborted) return
+        // loadedRequest oculta la selección anterior hasta recibir la nueva.
+        setCurrent(null); setValues({ ...empty }); setModality(null); setGeneral(null)
+        setStory(null); setIndicators([]); setLimits(null); setSaving('idle')
+        setConflict(null); setFieldErrors({}); setErrors({}); retrySave.current = null
         if (requestedDraft) {
           const [draft, currentModality, currentGeneral, currentStory] = await Promise.all([
             readDraft(requestedDraft, controller.signal), readModality(requestedDraft, controller.signal),
@@ -73,15 +79,17 @@ export function CampaignBuilderPage() {
           setCurrent(draft); setValues(toInput(draft)); setModality(currentModality)
           setGeneral(info); setLimits(readLimits); setStory(currentStory.story); setIndicators(currentStory.indicators)
         }
-        setDrafts(list); setCategories(catalog); setScreen('ready')
+        setDrafts(list); setCategories(catalog); setLoadedRequest(requestKey); setScreen('ready')
       })
       .catch((error) => {
         if (controller.signal.aborted) return
+        setLoadedRequest(requestKey)
         setScreen(error instanceof SessionError && error.status === 401 ? 'anonymous'
-          : error instanceof SessionError && error.status === 403 ? 'forbidden' : 'error')
+          : error instanceof SessionError && error.status === 403 ? 'forbidden'
+          : requestedDraft && error instanceof SessionError && [400, 404].includes(error.status) ? 'missing' : 'error')
       })
     return () => { controller.abort(); active.current?.abort() }
-  }, [retry, requestedDraft])
+  }, [retry, requestedDraft, requestKey])
 
   const fail = useCallback((error: unknown) => {
     if (error instanceof SessionError && error.status === 401) { setScreen('anonymous'); return }
@@ -201,6 +209,7 @@ export function CampaignBuilderPage() {
   const step = current?.builderStep ?? 0
   const total = current?.totalSteps ?? 0
   const editable = current !== null && current.status === 'DRAFT'
+  const visibleScreen = loadedRequest === requestKey ? screen : 'loading'
 
   return <AccessShell
     centered
@@ -209,19 +218,21 @@ export function CampaignBuilderPage() {
     notice={<><strong>Borrador conectado.</strong> Se guarda el contenido y la posición del asistente vinculados a tu cuenta. No envía la campaña a revisión ni activa pagos.</>}
   >
     <ButtonLink to="/mi-cuenta" variant="secondary">Volver a mi cuenta</ButtonLink>
+    {requestedDraft && <ButtonLink to="/mis-proyectos" variant="secondary">Volver a mis proyectos</ButtonLink>}
 
-    {screen === 'loading' && <p role="status">Consultando tus borradores…</p>}
-    {screen === 'forbidden' && <Message tone="error" title="Rol no disponible">
+    {visibleScreen === 'loading' && <p role="status">Consultando tus borradores…</p>}
+    {visibleScreen === 'forbidden' && <Message tone="error" title="Rol no disponible">
       Necesitas el rol Usuario registrado vigente. Consulta al equipo responsable.
     </Message>}
-    {screen === 'error' && <>
+    {visibleScreen === 'missing' && <Message tone="warning" title="Borrador no disponible">No pertenece a tu cuenta, fue descartado o el enlace no es válido. Vuelve a tus proyectos para elegir uno disponible.</Message>}
+    {visibleScreen === 'error' && <>
       <Message tone="error" title="No se pudieron consultar tus borradores">
         Comprueba la API y la base de datos. No se mostrará una lista vacía como si fuera una respuesta correcta.
       </Message>
       <Button onClick={() => { setScreen('loading'); setRetry((value) => value + 1) }}>Reintentar</Button>
     </>}
 
-    {screen === 'ready' && <>
+    {visibleScreen === 'ready' && <>
       {current === null && saving === 'failed' && <Message tone="error" title="No se pudo completar la operación">
         {conflict ?? 'Comprueba la conexión e inténtalo otra vez. Tus campos se conservan; no se confirmó el guardado.'}
       </Message>}
@@ -233,7 +244,7 @@ export function CampaignBuilderPage() {
             <h3>{item.title}</h3>
             <p>{typeNames[item.campaignType] ?? item.campaignType} · {statusNames[item.status] ?? item.status}</p>
             <Button variant="secondary" onClick={() => { void open(item.id) }}>
-              {item.id === current?.id ? 'Abierto' : 'Continuar'}
+              {item.id === current?.id ? 'Abierto' : item.status === 'DRAFT' ? 'Continuar' : 'Consultar'}
             </Button>
           </li>)}</ul>}
       </section>

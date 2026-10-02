@@ -10,6 +10,11 @@ let discarded = false
 const parameters = new URLSearchParams(window.location.search)
 const mode = parameters.get('case') ?? 'normal'
 globalThis.fetch = async (url, options) => {
+  if (mode === 'loading') return new Promise<Response>((_resolve, reject) => {
+    const abort = () => reject(new DOMException('Aborted', 'AbortError'))
+    if (options?.signal?.aborted) abort()
+    else options?.signal?.addEventListener('abort', abort, { once: true })
+  })
   await new Promise(resolve => setTimeout(resolve, 200))
   if (options?.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   if (mode === 'error') return new Response('', { status: 503 })
@@ -23,7 +28,7 @@ globalThis.fetch = async (url, options) => {
   return Response.json(path.includes('/admin/') ? [inReview] : discarded ? own.filter(item => item.id !== draft.id) : own)
 }
 createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={[parameters.get('view') === 'admin' ? '/tests/visual-projects.html/admin' : '/tests/visual-projects.html']}>
-  <div className="page-container"><p role="status"><strong>ENSAYO VISUAL · Datos ficticios · No escribe en PostgreSQL</strong></p><nav aria-label="Escenarios de ensayo"><Link to="/tests/visual-projects.html">Mis proyectos</Link>{' · '}<Link to="/tests/visual-projects.html/admin">Revisión administrativa</Link>{' · '}{(['normal', 'empty', 'error', 'forbidden'] as const).map(value => <button key={value} onClick={() => { parameters.set('case', value); window.location.search = parameters.toString() }}>{value}</button>)}</nav>
+  <div className="page-container"><p role="status"><strong>ENSAYO VISUAL · Datos ficticios · No escribe en PostgreSQL</strong></p><nav aria-label="Escenarios de ensayo"><Link to="/tests/visual-projects.html">Mis proyectos</Link>{' · '}<Link to="/tests/visual-projects.html/admin">Revisión administrativa</Link>{' · '}{(['normal', 'empty', 'error', 'forbidden', 'loading'] as const).map(value => <button key={value} onClick={() => { parameters.set('case', value); window.location.search = parameters.toString() }}>{value}</button>)}</nav>
     <div style={{ marginTop: 80 }}><Routes><Route path="/tests/visual-projects.html" element={<ProjectsPage />} /><Route path="/tests/visual-projects.html/admin" element={<ProjectsPage admin />} /><Route path="/mis-proyectos" element={<ProjectsPage />} /><Route path="/administracion/campanas" element={<ProjectsPage admin />} /><Route path="/mis-proyectos/:id" element={<ProjectsPage />} /><Route path="/administracion/campanas/:id" element={<ProjectsPage admin />} /></Routes></div>
   </div>
 </MemoryRouter>)

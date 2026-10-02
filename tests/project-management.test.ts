@@ -4,7 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { ProjectsList } from '../src/features/campaigns/ProjectsPage'
-import { canContinueProject, campaignReviewQueue, discardProject, ownProjects, projectDetail, projectGoal, type ProjectSummary } from '../src/features/campaigns/projectsClient'
+import { canContinueProject, campaignReviewQueue, discardProject, ownProjects, projectDetail, projectGoal, projectStatusNames, type ProjectSummary } from '../src/features/campaigns/projectsClient'
 import { SessionError } from '../src/features/access/session/sessionClient'
 import { authenticatedContinuation } from '../src/features/access/navigation'
 
@@ -73,4 +73,16 @@ test('acciones por estado y meta sin datos: no se fingen aportes ni publicación
   assert.equal((html.match(/Ver detalle/g) ?? []).length, 2)
   assert.equal(canContinueProject('APPROVED'), false)
   assert.doesNotMatch(html, /Recaudado|Publicado automáticamente/)
+})
+
+test('todos los estados de consulta restringen continuar y descartar a DRAFT', () => {
+  for (const status of Object.keys(projectStatusNames)) {
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null,
+      createElement(ProjectsList, { projects: [{ ...project, status }], onDiscard: () => {} })))
+    assert.equal(canContinueProject(status), status === 'DRAFT')
+    assert.equal(html.includes('Continuar borrador'), status === 'DRAFT')
+    assert.equal(html.includes('>Descartar<'), status === 'DRAFT')
+    assert.match(html, /Ver detalle/)
+  }
+  assert.equal(canContinueProject('estado-desconocido'), false)
 })

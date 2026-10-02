@@ -20,12 +20,13 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
   const suffix = randomUUID().slice(0, 8)
   const password = randomBytes(24).toString('hex')
   const users: string[] = []
+  const categoryId = randomUUID()
   const app = await NestFactory.create(AppModule, { logger: false })
   configureHttp(app, readEnvironment({ NODE_ENV: 'test' }))
   await app.listen(0, '127.0.0.1')
   const base = await app.getUrl()
-  const call = (path: string, cookie = '', body?: unknown) => fetch(`${base}/api/${path}`, {
-    method: body === undefined ? 'GET' : 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json', 'X-Brotar-Request': '1', Origin: 'http://127.0.0.1:5173' },
+  const call = (path: string, cookie = '', body?: unknown, method = body === undefined ? 'GET' : 'POST') => fetch(`${base}/api/${path}`, {
+    method, headers: { Cookie: cookie, 'Content-Type': 'application/json', 'X-Brotar-Request': '1', Origin: 'http://127.0.0.1:5173' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) })
   })
   const register = async (label: string) => {
@@ -36,18 +37,22 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     assert.match(id, /^[a-f0-9-]{36}$/); users.push(id)
     const login = await call('auth/login', '', { email, password })
     assert.equal(login.status, 200)
-    return { id, cookie: login.headers.get('set-cookie')!.split(';')[0]! }
+    return { id, email, cookie: login.headers.get('set-cookie')!.split(';')[0]! }
   }
   try {
     const creator = await register('creator')
     const other = await register('other')
     const administrator = await register('admin')
     assert.equal((await call('campaigns/mine')).status, 401)
+    assert.equal((await call('admin/campaigns/review')).status, 401)
     assert.equal((await call('campaigns/mine', creator.cookie)).status, 403, 'El registro no concede CREATOR.')
+    assert.equal((await call('admin/campaigns/review', administrator.cookie)).status, 403)
     // Solo estas cuentas efímeras reciben roles de fixture. No resuelve la provisión D06.
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${creator.id}',id FROM role WHERE code='CREATOR';
       INSERT INTO user_role(user_id,role_id) SELECT '${other.id}',id FROM role WHERE code='CREATOR';
       INSERT INTO user_role(user_id,role_id) SELECT '${administrator.id}',id FROM role WHERE code='ADMIN';`)
+    sql(`INSERT INTO category(id,slug,name) VALUES('${categoryId}','projects-${suffix}','Categoría de ensayo ${suffix}');`)
+    assert.deepEqual(await (await call('campaigns/mine', creator.cookie)).json(), [])
     const create = async () => {
       const response = await call('campaigns/drafts', creator.cookie, { title: `Proyecto ${suffix}`, summary: '', campaignType: 'DONATION' })
       assert.equal(response.status, 201)
@@ -65,6 +70,21 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     for (const suffix of ['', '/modality', '/general', '/story']) {
       assert.equal((await call(`campaigns/drafts/${draftId}${suffix}`, creator.cookie)).status, 200)
     }
+    const general = { title: `Proyecto actualizado ${suffix}`, summary: 'Resumen guardado al continuar el proyecto', categoryId,
+      location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' } }
+    assert.equal((await call(`campaigns/drafts/${draftId}/general`, creator.cookie, general, 'PUT')).status, 200)
+    const story = { problem: 'Problema de ensayo', solution: 'Solución de ensayo', beneficiaries: 'Comunidad de ensayo', expectedResults: 'Resultados esperados de ensayo' }
+    assert.equal((await call(`campaigns/drafts/${draftId}/story`, creator.cookie, { ...story, indicators: [] }, 'PUT')).status, 200)
+    assert.equal((await call(`campaigns/drafts/${draftId}`, creator.cookie, { title: general.title, summary: general.summary, campaignType: 'DONATION', categoryId, builderStep: 1 }, 'PUT')).status, 200)
+    assert.equal((await call('auth/logout', creator.cookie, {})).status, 204)
+    const resumed = await call('auth/login', '', { email: creator.email, password })
+    assert.equal(resumed.status, 200)
+    creator.cookie = resumed.headers.get('set-cookie')!.split(';')[0]!
+    const continued = await (await call(`campaigns/drafts/${draftId}`, creator.cookie)).json() as { title: string; builderStep: number }
+    assert.equal(continued.title, general.title); assert.equal(continued.builderStep, 1)
+    const detail = await (await call(`campaigns/mine/${draftId}`, creator.cookie)).json() as { title: string; summary: string; story: typeof story; location: { locality: string } }
+    assert.equal(detail.title, general.title); assert.equal(detail.summary, general.summary)
+    assert.equal(detail.story.problem, story.problem); assert.equal(detail.location.locality, 'La Paz')
     assert.equal((await call(`campaigns/mine/${draftId}`, other.cookie)).status, 404)
     assert.equal((await call(`campaigns/mine/${draftId}/discard`, other.cookie, { confirmed: true })).status, 404)
     assert.equal((await call(`campaigns/mine/${draftId}/discard`, creator.cookie, { confirmed: false })).status, 400)
@@ -76,6 +96,8 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     assert.ok(!(await (await call('campaigns/mine', creator.cookie)).json() as { id: string }[]).some(item => item.id === draftId))
     assert.equal((await call(`campaigns/mine/${draftId}/discard`, creator.cookie, { confirmed: true })).status, 404)
     const reviewedId = await create()
+    const initialQueue = await (await call('admin/campaigns/review', administrator.cookie)).json() as { id: string }[]
+    assert.ok(!initialQueue.some(item => item.id === reviewedId), 'La cola no muestra borradores.')
     sql(`UPDATE campaign SET status='IN_REVIEW',goal_amount=1000,currency_code=(SELECT code FROM currency LIMIT 1),submitted_at=now() WHERE id='${reviewedId}';`)
     assert.equal((await call(`campaigns/mine/${reviewedId}/discard`, creator.cookie, { confirmed: true })).status, 409)
     assert.equal((await call('admin/campaigns/review', creator.cookie)).status, 403)
@@ -84,6 +106,15 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     assert.ok((await queue.json() as { id: string }[]).some(item => item.id === reviewedId))
     assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 200)
     assert.equal((await call(`admin/campaigns/review/${draftId}`, administrator.cookie)).status, 404)
+    for (const status of ['CHANGES_REQUESTED', 'APPROVED', 'PUBLISHED']) {
+      // Estado de fixture, no envío/decisión/publicación por un endpoint real de S2-11/12/14.
+      sql(`UPDATE campaign SET status='${status}' WHERE id='${reviewedId}';`)
+      assert.equal((await call(`campaigns/mine/${reviewedId}/discard`, creator.cookie, { confirmed: true })).status, 409)
+      assert.equal((await call(`campaigns/drafts/${reviewedId}`, creator.cookie, { title: 'No debe guardar', summary: '', campaignType: 'DONATION', builderStep: 0 }, 'PUT')).status, 409)
+      assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 404)
+      const filtered = await (await call('admin/campaigns/review', administrator.cookie)).json() as { id: string }[]
+      assert.ok(!filtered.some(item => item.id === reviewedId), 'Solo IN_REVIEW entra en la cola.')
+    }
   } finally {
     await app.close()
     // Limpieza limitada a UUID de las cuentas creadas por esta prueba, nunca a datos del equipo.
@@ -91,5 +122,6 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
       sql(`DELETE FROM status_history WHERE entity_type='CAMPAIGN' AND entity_id IN (SELECT id FROM campaign WHERE creator_user_id='${id}');
         DELETE FROM campaign WHERE creator_user_id='${id}'; DELETE FROM app_user WHERE id='${id}';`)
     }
+    sql(`DELETE FROM category WHERE id='${categoryId}';`)
   }
 })

@@ -29,6 +29,7 @@
 .tableScroll th { background: var(--color-soft); color: var(--color-muted); }
 .tableScroll td, .tableScroll th { padding: var(--space-4); border-top: 1px solid var(--color-border); vertical-align: top; overflow-wrap: anywhere; }
 .tableScroll td:first-child { min-width: 170px; }
+.tableScroll td a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); }
 .panel { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); margin: var(--space-5) 0; background: var(--color-surface); overflow-wrap: anywhere; }
 .panel dl { display: grid; grid-template-columns: auto 1fr; gap: var(--space-2) var(--space-5); }
 .panel dd { margin: 0; }

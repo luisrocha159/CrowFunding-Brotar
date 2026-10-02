@@ -327,7 +327,7 @@ Criterios de cierre de esta etapa:
 
 ### S2-15 Gestionar proyectos propios y descartar borradores
 
-Avance del 01/10/2026 en RicardoDev: **En revisión técnica parcial**. Interfaz y API implementadas; PostgreSQL comprueba propiedad, descarte lógico, auditoría y las lecturas para continuar el borrador. Integración completa del constructor/correcciones pendiente. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). No cierra BG-13 ni BG-14. El estado del corte histórico siguiente se conserva.
+Estado actual del 02/10/2026 en RicardoDev: **Cierre técnico**. Lista, detalle, continuación con cambios persistidos y descarte confirmado de borrador propio comprobados con API, PostgreSQL y navegador reales. Ver [criterios y evidencia](cierre-s2-15-s2-17-2026-10-02.md). No cierra BG-13 ni BG-14 ni sustituye la integración completa de S2-21. La aceptación externa sigue pendiente; el corte histórico siguiente se conserva.
 
 **Historias:** BG-13, BG-14. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** L. Responsable: Ricardo.
 
@@ -358,7 +358,7 @@ Criterios de cierre de esta etapa:
 
 ### S2-17 Preparar acceso y cola administrativa de campañas
 
-Avance del 01/10/2026 en RicardoDev: **En revisión técnica parcial**. Cola y detalle preparatorio probados con PostgreSQL y roles de fixture; envío real por S2-11 y detalle administrativo completo pendientes. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). No cierra BG-41. El estado del corte histórico siguiente se conserva.
+Estado actual del 02/10/2026 en RicardoDev: **Cierre técnico** de acceso, navegación, cola y entrada al detalle preparatorio; permisos, vacío, carga, error y reintento comprobados. Ver [criterios y evidencia](cierre-s2-15-s2-17-2026-10-02.md). Decisiones y detalle completo corresponden a S2-12; el envío real se integra con S2-11/S2-21. No cierra BG-41 ni aceptación externa. El corte histórico siguiente se conserva.
 
 **Historias:** BG-41. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** M. Responsable: Ricardo.
 

@@ -3,9 +3,9 @@
   "planVersion": "2.3",
   "organizationDate": "2026-09-30",
   "executionUpdate": {
-    "date": "2026-10-01",
-    "evidence": "avance-ricardo-sprint-2-2026-10-01.md",
-    "note": "Revisión técnica parcial sin cierre. Incremento en RicardoDev, con 15 pruebas de integración PostgreSQL correctas. Las tarjetas mantienen sus criterios completos pendientes; el tablero refleja el corte anterior a estas pruebas hasta sincronizar la evidencia.",
+    "date": "2026-10-02",
+    "evidence": "cierre-s2-15-s2-17-2026-10-02.md",
+    "note": "S2-15 y S2-17 cumplen sus criterios técnicos acotados: 101 pruebas frontend, 101 backend, 15 PostgreSQL y ensayo real. El estado técnico local está actualizado; la confirmación de sincronización Trello se registra después de publicar la evidencia. No cierra BG generales ni aceptación externa. S2-12, S2-14 y S2-21 siguen en curso.",
     "progressChecklists": {
       "S2-12": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b5f216bce5e75fdffbf",
       "S2-14": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b61bd8f3b3a9bce3f82",
@@ -506,7 +506,7 @@
       "taskId": "S2-15",
       "sprint": 2,
       "size": "L",
-      "state": "En revisión técnica parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo",
       "stories": [
         "BG-13",
@@ -538,7 +538,7 @@
       "taskId": "S2-17",
       "sprint": 2,
       "size": "M",
-      "state": "En revisión técnica parcial",
+      "state": "Cierre técnico",
       "owner": "Ricardo",
       "stories": [
         "BG-41"
