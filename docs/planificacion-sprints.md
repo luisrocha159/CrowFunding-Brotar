@@ -281,6 +281,8 @@ Criterios de cierre de esta etapa:
 
 ### S2-12 Decidir sobre campañas recibidas
 
+Avance local del 01/10/2026: **En curso**. Contrato preparatorio probado; decisiones persistidas pendientes. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). El estado del corte histórico siguiente se conserva.
+
 **Historias:** BG-42. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** L. Responsable: Ricardo.
 
 Permitir al administrador consultar campañas pendientes y toda la información enviada; aprobar, rechazar con motivo o solicitar cambios con comentarios al creador. Registrar la decisión y su responsable.
@@ -309,6 +311,8 @@ Criterios de cierre de esta etapa:
 
 ### S2-14 Publicar y controlar estados de campaña
 
+Avance local del 01/10/2026: **En curso**. Contrato preparatorio probado; migración y publicación pendientes. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). El estado del corte histórico siguiente se conserva.
+
 **Historias:** BG-32. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** L. Responsable: Ricardo.
 
 Controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada. Separar aprobación de publicación y hacer visible solo lo publicado; conservar motivo de rechazo e historial.
@@ -322,6 +326,8 @@ Criterios de cierre de esta etapa:
 3. Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa.
 
 ### S2-15 Gestionar proyectos propios y descartar borradores
+
+Avance del 01/10/2026 en RicardoDev: **En revisión técnica parcial**. Interfaz y API implementadas; PostgreSQL comprueba propiedad, descarte lógico, auditoría y las lecturas para continuar el borrador. Integración completa del constructor/correcciones pendiente. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). No cierra BG-13 ni BG-14. El estado del corte histórico siguiente se conserva.
 
 **Historias:** BG-13, BG-14. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** L. Responsable: Ricardo.
 
@@ -352,6 +358,8 @@ Criterios de cierre de esta etapa:
 
 ### S2-17 Preparar acceso y cola administrativa de campañas
 
+Avance del 01/10/2026 en RicardoDev: **En revisión técnica parcial**. Cola y detalle preparatorio probados con PostgreSQL y roles de fixture; envío real por S2-11 y detalle administrativo completo pendientes. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). No cierra BG-41. El estado del corte histórico siguiente se conserva.
+
 **Historias:** BG-41. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** M. Responsable: Ricardo.
 
 Preparar navegación y acceso administrativo para listar campañas pendientes y abrir su detalle. Reutilizar la revisión de S2-12; no construir un panel completo con estadísticas ni colas KYC/KYB.
@@ -365,6 +373,8 @@ Criterios de cierre de esta etapa:
 3. Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa.
 
 ### S2-21 Verificar y documentar el segundo incremento
+
+Avance local del 01/10/2026: **En curso**. Pruebas aisladas y ensayo visual documentados; aceptación integral pendiente. Ver [evidencia y límites](avance-ricardo-sprint-2-2026-10-01.md). El estado del corte histórico siguiente se conserva.
 
 **Historias:** BG-04, BG-53, BG-60, BG-61, BG-62, BG-63. **Estado al corte histórico:** Pendiente. **Tamaño orientativo:** L. Responsable: Ricardo.
 

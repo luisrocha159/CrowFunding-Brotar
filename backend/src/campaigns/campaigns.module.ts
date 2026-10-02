@@ -13,12 +13,17 @@ import { GeneralController } from './infrastructure/general.controller'
 import { TypeormDraftRepository } from './infrastructure/typeorm-draft.repository'
 import { TypeormModalityRepository } from './infrastructure/typeorm-modality.repository'
 import { TypeormGeneralRepository } from './infrastructure/typeorm-general.repository'
+import { Projects } from './application/projects'
+import { TypeormProjectRepository } from './infrastructure/typeorm-project.repository'
+import { ProjectsController, CampaignReviewQueueController } from './infrastructure/projects.controller'
 
 @Module({
   imports: [RolesModule, OrganizationsModule, DatabaseModule],
-  controllers: [DraftController, ModalityController, GeneralController],
+  controllers: [DraftController, ModalityController, GeneralController, ProjectsController, CampaignReviewQueueController],
   providers: [
     SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
+    TypeormProjectRepository,
+    { provide: Projects, inject: [TypeormProjectRepository], useFactory: (repository: TypeormProjectRepository) => new Projects(repository) },
     {
       provide: Drafts,
       inject: [TypeormDraftRepository, Memberships],

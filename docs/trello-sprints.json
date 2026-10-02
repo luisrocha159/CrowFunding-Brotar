@@ -2,6 +2,18 @@
   "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
   "planVersion": "2.3",
   "organizationDate": "2026-09-30",
+  "executionUpdate": {
+    "date": "2026-10-01",
+    "evidence": "avance-ricardo-sprint-2-2026-10-01.md",
+    "note": "Revisión técnica parcial sin cierre. Incremento en RicardoDev, con 15 pruebas de integración PostgreSQL correctas. Las tarjetas mantienen sus criterios completos pendientes; el tablero refleja el corte anterior a estas pruebas hasta sincronizar la evidencia.",
+    "progressChecklists": {
+      "S2-12": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b5f216bce5e75fdffbf",
+      "S2-14": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b61bd8f3b3a9bce3f82",
+      "S2-15": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b2ebc38e7ca1d1c99d8",
+      "S2-17": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b628836bdd3c67e8240",
+      "S2-21": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b6316f1157749fc238c"
+    }
+  },
   "lists": [
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d740cc2acfb00c5c7e8",
@@ -455,7 +467,7 @@
       "taskId": "S2-12",
       "sprint": 2,
       "size": "L",
-      "state": "Pendiente",
+      "state": "En curso",
       "owner": "Ricardo",
       "stories": [
         "BG-42"
@@ -481,7 +493,7 @@
       "taskId": "S2-14",
       "sprint": 2,
       "size": "L",
-      "state": "Pendiente",
+      "state": "En curso",
       "owner": "Ricardo",
       "stories": [
         "BG-32"
@@ -494,7 +506,7 @@
       "taskId": "S2-15",
       "sprint": 2,
       "size": "L",
-      "state": "Pendiente",
+      "state": "En revisión técnica parcial",
       "owner": "Ricardo",
       "stories": [
         "BG-13",
@@ -526,7 +538,7 @@
       "taskId": "S2-17",
       "sprint": 2,
       "size": "M",
-      "state": "Pendiente",
+      "state": "En revisión técnica parcial",
       "owner": "Ricardo",
       "stories": [
         "BG-41"
@@ -581,7 +593,7 @@
       "taskId": "S2-21",
       "sprint": 2,
       "size": "L",
-      "state": "Pendiente",
+      "state": "En curso",
       "owner": "Ricardo",
       "stories": [
         "BG-04",

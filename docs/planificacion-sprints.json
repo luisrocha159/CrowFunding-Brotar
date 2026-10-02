@@ -1,5 +1,13 @@
 {
   "version": "2.3",
+  "localProgress": {
+    "date": "2026-10-01",
+    "branch": "RicardoDev",
+    "published": true,
+    "evidence": "avance-ricardo-sprint-2-2026-10-01.md",
+    "tasks": { "S2-12": "En curso", "S2-14": "En curso", "S2-15": "En revisión técnica parcial", "S2-17": "En revisión técnica parcial", "S2-21": "En curso" },
+    "note": "No cierra historias generales. 15 pruebas de integración PostgreSQL correctas; integración del constructor/envío y decisiones/publicación pendientes. Se conserva el corte histórico de los estados del plan."
+  },
   "cutoff": "2026-09-16",
   "status": "Sprint 2 ajustado a Fase 3; Sprint 3 es inventario futuro por refinar. Asignaciones conservadas; capacidad, fechas y reparto posterior pendientes.",
   "trelloSync": {

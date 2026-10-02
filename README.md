@@ -350,6 +350,7 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
 - [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
 - [Ajuste de Sprint 2 a la tarea de campañas](docs/ajuste-sprint-2-fase-3-2026-09-30.md): 13 tareas actuales y 29 futuras por refinar.
+- [Avance local de Ricardo en Sprint 2](docs/avance-ricardo-sprint-2-2026-10-01.md): proyectos propios y cola administrativa en revisión técnica; decisiones, publicación y ensayo integral pendientes. No equivale a Sprint 2 terminado.
 - [Informe detallado del Sprint 1 — Word](docs/entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
 - [Principios y patrones para el docente — Word](docs/entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
 - [Calidad y defensa técnica — guía](docs/calidad-sprint-1.md) y [Word](docs/entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).
@@ -359,3 +360,39 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Índice de documentos y versiones históricas](docs/README.md).
 
 Las notas de fases anteriores y el PDF explicativo conservan sus fechas de corte. Para ejecutar esta entrega prevalece este README. GitHub comparte el código, **no publica automáticamente una aplicación web**. La aceptación de los líderes, las reglas definitivas y la validación en las computadoras del equipo no se sustituyen por las pruebas locales.
+
+## 12. Avance de Ricardo del Sprint 2
+
+Este incremento se entrega en **`RicardoDev`**, conservando como base el Sprint 1 de DEV. No sustituye la integración posterior del equipo en DEV ni declara completado el Sprint 2.
+
+Después de completar la instalación V2 de las secciones 3–5, con Docker operativo, aplicar desde `backend/`:
+
+```powershell
+pnpm install --frozen-lockfile
+node scripts/prepare-sprint2.mjs
+pnpm run check
+pnpm run dev
+```
+
+El comando de preparación concede únicamente permisos técnicos para consultar proyectos, leer historial y descartar borradores. No restaura SQL, elimina datos ni concede CREATOR/ADMIN a personas. No modifica `.env`; sigue utilizando la configuración V2 generada con puerto 15433.
+
+Las nuevas rutas son `/mis-proyectos` (CREATOR), su detalle `/mis-proyectos/:id`, `/administracion/campanas` (ADMIN) y su detalle `/administracion/campanas/:id`. Los accesos correspondientes aparecen en **Mi cuenta → Opciones para iniciativas y permisos**, según los roles vigentes. El formulario de registro no concede esos roles. El constructor básico del Sprint 1 mantiene su comportamiento.
+
+Este avance incluye lista y detalle propios, continuación del borrador concreto y descarte confirmado solo en DRAFT. La administración es una cola de consulta con detalle preparatorio: **no aprueba, rechaza ni publica todavía**. La base oficial requiere una migración para el estado de campaña REJECTED; no confundirlo con su enum de decisiones. Se verificaron 100 pruebas frontend, 101 backend y 15 de integración PostgreSQL, incluido el nuevo alcance. La asignación definitiva de roles, el envío del resto del constructor y el recorrido completo del Sprint 2 siguen pendientes.
+
+Para repetir la integración con datos temporales de prueba, desde `backend/`, después de `prepare-sprint2.mjs` y `pnpm run check`:
+
+```powershell
+$env:ALLOW_DB_TEST_WRITES='true'
+$env:DB_TEST_RESTART='false'
+try {
+  node --env-file=../infra/postgres-v2/.env.backend --test --test-concurrency=1 dist-test/integration/*.test.js
+} finally {
+  Remove-Item Env:\ALLOW_DB_TEST_WRITES
+  Remove-Item Env:\DB_TEST_RESTART
+}
+```
+
+Los tests exigen el contenedor/puerto V2 de esta copia, rechazan producción y crean cuentas temporales. Los roles CREATOR/ADMIN de sus fixtures **no** se otorgan a cuentas del equipo. Si Docker falla antes de iniciar por un socket Windows inaccesible, no reinstalar la base: ver [recuperación conservadora](infra/postgres-v2/README.md#recuperación-y-conservación).
+
+Para ensayar la interfaz sin tocar datos reales, con Vite abierto: `http://127.0.0.1:5173/tests/visual-projects.html`. La página indica **datos ficticios** y queda fuera de la compilación de producción. El detalle de lo probado y pendiente está en la [nota de avance](docs/avance-ricardo-sprint-2-2026-10-01.md).

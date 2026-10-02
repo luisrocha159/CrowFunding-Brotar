@@ -1,5 +1,5 @@
   import { useCallback, useEffect, useRef, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { AccessShell } from '../access/AccessComponents'
 import { SessionError } from '../access/session/sessionClient'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -34,6 +34,8 @@ function toInput(draft: Draft): DraftInput {
 }
 
 export function CampaignBuilderPage() {
+  const [searchParams] = useSearchParams()
+  const requestedDraft = searchParams.get('borrador')
   const [screen, setScreen] = useState<Screen>('loading')
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -59,8 +61,18 @@ export function CampaignBuilderPage() {
   useEffect(() => {
     const controller = new AbortController()
     void Promise.all([myDrafts(controller.signal), activeCategories(controller.signal)])
-      .then(([list, catalog]) => {
+      .then(async ([list, catalog]) => {
         if (controller.signal.aborted) return
+        if (requestedDraft) {
+          const [draft, currentModality, currentGeneral, currentStory] = await Promise.all([
+            readDraft(requestedDraft, controller.signal), readModality(requestedDraft, controller.signal),
+            readGeneral(requestedDraft, controller.signal), readStory(requestedDraft, controller.signal)
+          ])
+          if (controller.signal.aborted) return
+          const { limits: readLimits, ...info } = currentGeneral
+          setCurrent(draft); setValues(toInput(draft)); setModality(currentModality)
+          setGeneral(info); setLimits(readLimits); setStory(currentStory.story); setIndicators(currentStory.indicators)
+        }
         setDrafts(list); setCategories(catalog); setScreen('ready')
       })
       .catch((error) => {
@@ -69,7 +81,7 @@ export function CampaignBuilderPage() {
           : error instanceof SessionError && error.status === 403 ? 'forbidden' : 'error')
       })
     return () => { controller.abort(); active.current?.abort() }
-  }, [retry])
+  }, [retry, requestedDraft])
 
   const fail = useCallback((error: unknown) => {
     if (error instanceof SessionError && error.status === 401) { setScreen('anonymous'); return }
