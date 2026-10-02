@@ -5,7 +5,7 @@
   "executionUpdate": {
     "date": "2026-10-02",
     "evidence": "cierre-s2-15-s2-17-2026-10-02.md",
-    "note": "S2-15 y S2-17 cumplen sus criterios técnicos acotados: 101 pruebas frontend, 101 backend, 15 PostgreSQL y ensayo real. El estado técnico local está actualizado; la confirmación de sincronización Trello se registra después de publicar la evidencia. No cierra BG generales ni aceptación externa. S2-12, S2-14 y S2-21 siguen en curso.",
+    "note": "S2-15 y S2-17 cumplen sus criterios técnicos acotados: 101 pruebas frontend, 101 backend, 15 PostgreSQL y ensayo real. Trello confirmado el 02/10: ambas complete=true en 04 · Terminadas · cierre técnico, criterios 4/4 y 3/3, miembro Ricardo conservado. Evidencia publicada en 4dcd47a de RicardoDev. No cierra BG generales ni aceptación externa. S2-12, S2-14 y S2-21 siguen en curso.",
     "progressChecklists": {
       "S2-12": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b5f216bce5e75fdffbf",
       "S2-14": "ari:cloud:trello::checklist/workspace/69a518cbd4b16dc1b329ae7f/6abf1b61bd8f3b3a9bce3f82",
