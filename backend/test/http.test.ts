@@ -83,3 +83,17 @@ test('errores inesperados no exponen mensajes internos', async () => {
   assert.equal(response.status, 500)
   assert.deepEqual(await response.json(), { statusCode: 500, message: 'No se pudo completar la solicitud.' })
 })
+
+test('cargas mantienen un límite propio sin desactivar el parser JSON del resto de la API', async () => {
+  // Contenido de tamaño normal para una imagen, sin escribir ni autenticar usuarios.
+  // Alcanzar el control de sesión confirma que el parser de carga aceptó el tamaño.
+  const response = await fetch(`${base}/api/files`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Brotar-Request': '1' },
+    body: JSON.stringify({ contentBase64: Buffer.alloc(128 * 1024).toString('base64') })
+  })
+  assert.equal(response.status, 401)
+  const normal = await fetch(`${base}/api/test-only`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Sigue funcionando' })
+  })
+  assert.equal(normal.status, 201)
+})

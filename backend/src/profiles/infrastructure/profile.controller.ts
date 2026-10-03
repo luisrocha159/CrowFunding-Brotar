@@ -5,11 +5,12 @@ import type { Request } from 'express'
 import { SessionMissing, Sessions } from '../../auth/application/sessions'
 import { readSessionCookie, SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { InvalidProfile, ProfileUnavailable, Profiles } from '../application/profile'
+import { PERSON_NAME } from '../../shared/domain/person-name'
 
 const trim = ({ value }: { value: unknown }): unknown => typeof value === 'string' ? value.trim() : value
 export class ProfileDto {
-  @Transform(trim) @IsString() @Length(1, 120) firstName!: string
-  @Transform(trim) @IsString() @Length(1, 120) lastName!: string
+  @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) firstName!: string
+  @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) lastName!: string
   @Transform(trim) @IsString() @Matches(/^(?:\+[1-9]\d{0,4})?$/) phoneCountryCode!: string
   @Transform(trim) @IsString() @Matches(/^(?:\d{4,30})?$/) phoneNumber!: string
 }

@@ -2,7 +2,6 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { FormField } from '../../shared/components/FormField'
 import { Button } from '../../shared/components/Button'
 import type { AccessOutcome } from '../../mocks/access/accessService'
-import type { FieldErrors } from './validation'
 import styles from './access.module.css'
 
 export function AccessShell({ title, subtitle, intro, children, centered = false, notice }: { title: string; subtitle: string; intro?: string; children: ReactNode; centered?: boolean; notice?: ReactNode }) {
@@ -12,14 +11,14 @@ export function AccessShell({ title, subtitle, intro, children, centered = false
   </div>
 }
 
-export function PasswordField({ id, label, name, value, onChange, error, help, disabled, newPassword = false }: { id: string; label: string; name: string; value: string; onChange: (value: string) => void; error?: string; help?: string; disabled?: boolean; newPassword?: boolean }) {
+export function PasswordField({ id, label, name, value, onChange, onBlur, error, help, disabled, maxLength, newPassword = false }: { id: string; label: string; name: string; value: string; onChange: (value: string) => void; onBlur?: () => void; error?: string; help?: string; disabled?: boolean; maxLength?: number; newPassword?: boolean }) {
   const [visible, setVisible] = useState(false)
-  return <div className={styles.password}><FormField id={id} label={label} name={name} value={value} onChange={event => onChange(event.target.value)} type={visible ? 'text' : 'password'} autoComplete={newPassword ? 'new-password' : 'current-password'} required error={error} help={help} disabled={disabled} />
+  return <div className={styles.password}><FormField id={id} label={label} name={name} value={value} onChange={event => onChange(event.target.value)} onBlur={onBlur} type={visible ? 'text' : 'password'} autoComplete={newPassword ? 'new-password' : 'current-password'} required error={error} help={help} disabled={disabled} maxLength={maxLength} />
     <button type="button" disabled={disabled} aria-controls={id} aria-label={`${visible ? 'Ocultar' : 'Mostrar'} ${label.toLowerCase()}`} aria-pressed={visible} onClick={() => setVisible(current => !current)}>{visible ? 'Ocultar' : 'Mostrar'}</button>
   </div>
 }
 
-export function ValidationSummary({ errors, prefix }: { errors: FieldErrors; prefix: string }) {
+export function ValidationSummary({ errors, prefix }: { errors: Record<string, string | undefined>; prefix: string }) {
   const entries = Object.entries(errors).filter(([, error]) => error)
   if (!entries.length) return null
   return <div className={styles.summary} role="alert"><strong>Revisa los campos indicados.</strong><ul>{entries.map(([key, error]) => <li key={key}><button type="button" onClick={() => document.getElementById(`${prefix}-${key}`)?.focus()}>{error}</button></li>)}</ul></div>

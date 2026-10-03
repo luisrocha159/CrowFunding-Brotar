@@ -1,9 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Req, Res, StreamableFile, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, ConflictException, Controller, Delete, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Req, Res, StreamableFile, UseGuards } from '@nestjs/common'
 import { IsBase64, IsIn, IsMimeType, IsString, Length, MaxLength } from 'class-validator'
 import type { Response } from 'express'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { FileAccessDenied, FileUnavailable, Files, InvalidFileUpload, type FilePurpose, type FileVisibility } from '../application/files'
+import { FileAccessDenied, FileInUse, FileUnavailable, Files, InvalidFileUpload, type FilePurpose, type FileVisibility } from '../application/files'
 
 const visibility: FileVisibility[] = ['PUBLIC', 'PRIVATE']
 const purpose: FilePurpose[] = ['PROFILE_AVATAR', 'ORGANIZATION_DOCUMENT', 'CAMPAIGN_PUBLIC_IMAGE']
@@ -32,7 +32,7 @@ class FileUploadDto {
 function attachHeaders(response: Response, name: string, mimeType: string, size: number): void {
   response.setHeader('Content-Type', mimeType)
   response.setHeader('Content-Length', String(size))
-  response.setHeader('Content-Disposition', `inline; filename="${name.replace(/["\r\n]/g, '')}"`)
+  response.setHeader('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(name)}`)
   response.setHeader('Cache-Control', 'private, no-store')
 }
 
@@ -87,6 +87,7 @@ export class FileController {
   async delete(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     try { await this.files.delete(id, request.brotarUser.id) }
     catch (error) {
+      if (error instanceof FileInUse) throw new ConflictException('El archivo sigue vinculado a contenido guardado.')
       if (error instanceof FileUnavailable) throw new NotFoundException('Archivo no disponible.')
       throw error
     }

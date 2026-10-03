@@ -3,12 +3,13 @@ import { RolesModule } from '../roles/roles.module'
 import { SessionMutationGuard } from '../auth/infrastructure/http/session-http'
 import { Files } from './application/files'
 import { FileController } from './infrastructure/file.controller'
-import { LocalFileStorage } from './infrastructure/local-file-storage'
+import { TypeormFileStorage } from './infrastructure/typeorm-file-storage'
+import { DatabaseModule } from '../shared/infrastructure/database/database.module'
 
 @Module({
-  imports: [RolesModule],
+  imports: [RolesModule, DatabaseModule],
   controllers: [FileController],
-  providers: [SessionMutationGuard, LocalFileStorage, { provide: Files, inject: [LocalFileStorage], useFactory: (storage: LocalFileStorage) => new Files(storage) }],
+  providers: [SessionMutationGuard, TypeormFileStorage, { provide: Files, inject: [TypeormFileStorage], useFactory: (storage: TypeormFileStorage) => new Files(storage) }],
   exports: [Files]
 })
 export class FilesModule {}

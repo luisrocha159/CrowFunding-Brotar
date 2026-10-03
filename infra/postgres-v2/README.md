@@ -2,10 +2,12 @@
 
 Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinación. Es un esquema inicial, no una migración. Nunca ejecutarlo encima de la base anterior.
 
+**Esta es la infraestructura vigente.** `infra/postgres/` es legado y no debe levantarse junto con V2. Docker aloja solo PostgreSQL; API y frontend corren fuera del contenedor. La guía paso a paso principal está en el [README de la raíz](../../README.md#3-primera-instalación-completa).
+
 - PostgreSQL 18.6, base `brotar_db`, proyecto Compose `brotar-provisional-v2`.
 - Puerto local **15433**, volumen exclusivo `brotar-provisional-v2_brotar_pgdata_v2`.
 - SHA-256 del original: `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`.
-- El SQL original se recibe por separado. No publicar backups, `.env` ni contraseñas.
+- El SQL original está incluido, sin modificar, como [official-schema.sql](official-schema.sql). Contiene estructura y catálogos, no datos de nuestras cuentas de ensayo. No publicar backups de bases pobladas, `.env` ni contraseñas.
 - El entorno anterior `brotar-local`, puerto 15432, volumen y credenciales se conservan. **No se migraron sus usuarios ni otros datos a V2.**
 
 ## Primera instalación (una sola vez)
@@ -15,11 +17,13 @@ Necesitas Docker Desktop con el motor operativo, Node.js 24, pnpm y el SQL ofici
 ```powershell
 cd backend
 pnpm install --frozen-lockfile
-node scripts/adopt-provisional-v2.mjs install 'C:\ruta\Brotar_BD_Provisional (3).sql'
-node scripts/verify-provisional-v2.mjs
+node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
 $env:ALLOW_DB_TEST_WRITES='true'
-$env:DB_TEST_RESTART='true'
+$env:DB_TEST_RESTART='false'
 try {
   node --env-file=../infra/postgres-v2/.env.backend --test --test-concurrency=1 dist-test/integration/*.test.js
 } finally {
@@ -35,9 +39,9 @@ node scripts/adopt-provisional-v2.mjs activate
 pnpm run start
 ```
 
-El instalador comprueba el hash, crea secretos aleatorios distintos para administrador/aplicación, instala exclusivamente en una base vacía y concede permisos limitados. Rechaza configuraciones ya existentes. No elimina ni reinstala un volumen al fallar; diagnosticar el fallo antes de reintentar. El script oficial contiene su propia transacción. La creación del usuario de aplicación se hace en otra transacción.
+El instalador comprueba el hash, crea secretos aleatorios distintos para administrador/aplicación, instala el SQL solo en un esquema `public` vacío y concede permisos limitados. Si se interrumpe, repetir `install` reutiliza la configuración, verifica la línea base y termina rol/permisos pendientes; no restaura sobre datos existentes. Si detecta una base parcialmente distinta, se detiene sin borrar nada. El SQL oficial contiene su propia transacción. `pnpm run check` compila antes de `migrate`; la migración **requiere** las tablas oficiales, no las crea. El instalador ya aplica los permisos del Sprint 1: `prepare-sprint1.mjs` es solo para instalaciones antiguas.
 
-`activate` guarda el `.env` anterior como `infra/postgres-v2/.env.before-v2` y coloca el candidato en `backend/.env`. No usarlo repetidamente: el respaldo no se sobrescribe. En una instalación sin `.env` anterior no existe ese respaldo. No exponer ninguno de estos archivos.
+`activate` guarda el `.env` anterior como `infra/postgres-v2/.env.before-v2` y coloca el candidato en `backend/.env`. Repetirlo cuando ya está activo no cambia nada; si existe un respaldo pero el `.env` actual difiere, se detiene para no sobrescribirlo. En una instalación sin `.env` anterior no existe ese respaldo. No copiar `backend/.env.example` para conectar: no contiene contraseña y tiene la base desactivada. No exponer ninguno de estos archivos.
 
 ## Arranques posteriores
 

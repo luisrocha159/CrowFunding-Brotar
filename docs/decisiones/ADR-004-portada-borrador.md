@@ -1,5 +1,7 @@
 # ADR-004 · Portada del borrador de campaña
 
+Actualización local 21/09/2026: integrada con S1-16 mediante `/api/campaigns/drafts/:id/cover`, `campaign.cover_file_id` y `file_attachment.caption`. Ya no se guarda una única portada por usuario en JSON. El adaptador comprueba campaña DRAFT propia y archivo propio; la persistencia nueva todavía debe verificarse con PostgreSQL activo. Véase [integración vigente](../integracion-local-sprint-1.md). El resto describe el antecedente de la rama individual.
+
 ## Estado
 
 Decisión técnica local para S1-19. Depende de la integración posterior con el borrador completo de campaña de S1-16.

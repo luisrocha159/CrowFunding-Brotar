@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
@@ -22,10 +22,26 @@ const errorMessage: Record<number, string> = {
 }
 
 export function CoverDraftPage() {
+  const [params] = useSearchParams()
+  const campaignId = params.get('borrador') ?? ''
+  if (!/^[a-f0-9-]{36}$/i.test(campaignId)) return <AccessShell centered title="Selecciona un borrador" subtitle="La portada pertenece a una campaña concreta."><Link to="/crear-campana">Abrir mis borradores</Link></AccessShell>
+  return <CoverDraftEditor key={campaignId} campaignId={campaignId} />
+}
+
+function FilePreview({ file }: { file: File }) {
+  const image = useRef<HTMLImageElement>(null)
+  useEffect(() => {
+    const url = URL.createObjectURL(file)
+    if (image.current) image.current.src = url
+    return () => URL.revokeObjectURL(url)
+  }, [file])
+  return <img ref={image} alt="Vista previa local de la portada seleccionada" />
+}
+
+export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
   const [values, setValues] = useState<CoverValues>({ ...initialValues })
   const [errors, setErrors] = useState<CoverErrors>({})
   const [cover, setCover] = useState<CoverDraft | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'saving' | 'saved' | 'load-error' | 'save-error'>('loading')
   const [lastError, setLastError] = useState(0)
   const active = useRef<AbortController | null>(null)
@@ -33,7 +49,7 @@ export function CoverDraftPage() {
 
   useEffect(() => {
     let mounted = true
-    readCoverDraft().then(result => {
+    readCoverDraft(campaignId).then(result => {
       if (!mounted) return
       setCover(result)
       setValues({ altText: result?.altText ?? '', file: null })
@@ -44,14 +60,7 @@ export function CoverDraftPage() {
       setStatus('load-error')
     })
     return () => { mounted = false; active.current?.abort(); active.current = null }
-  }, [])
-
-  useEffect(() => {
-    if (!values.file) { setPreview(null); return }
-    const url = URL.createObjectURL(values.file)
-    setPreview(url)
-    return () => URL.revokeObjectURL(url)
-  }, [values.file])
+  }, [campaignId])
 
   useEffect(() => {
     if (status === 'save-error' || status === 'load-error') document.getElementById('cover-response')?.focus()
@@ -66,7 +75,7 @@ export function CoverDraftPage() {
   if (status === 'loading') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta."><p role="status">Cargando portada…</p></AccessShell>
   if (status === 'load-error') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta.">
     <div id="cover-response" tabIndex={-1}><Message tone="error" title="No se pudo cargar la portada">{errorMessage[lastError] ?? errorMessage[0]}</Message></div>
-    <div className={accessStyles.actions}><Button onClick={() => { setStatus('loading'); readCoverDraft().then(result => { setCover(result); setValues({ altText: result?.altText ?? '', file: null }); setStatus('ready') }).catch(() => setStatus('load-error')) }}>Reintentar</Button><Link to="/mi-cuenta">Volver a mi cuenta</Link></div>
+    <div className={accessStyles.actions}><Button onClick={() => { setStatus('loading'); readCoverDraft(campaignId).then(result => { setCover(result); setValues({ altText: result?.altText ?? '', file: null }); setStatus('ready') }).catch(() => setStatus('load-error')) }}>Reintentar</Button><Link to="/crear-campana">Volver a mis borradores</Link></div>
   </AccessShell>
 
   return <AccessShell centered title="Portada del borrador" subtitle="Selecciona, previsualiza y guarda la portada de tu propuesta."
@@ -86,7 +95,7 @@ export function CoverDraftPage() {
       setStatus('saving')
       try {
         const uploaded = await uploadCoverImage(values.file, controller.signal)
-        const saved = await saveCoverDraft(uploaded.id, values.altText, controller.signal)
+        const saved = await saveCoverDraft(campaignId, uploaded.id, values.altText, controller.signal)
         if (!controller.signal.aborted) { setCover(saved); setValues({ altText: saved.altText, file: null }); setErrors({}); setStatus('saved') }
       } catch (error) {
         if (!controller.signal.aborted) { setLastError(error instanceof SessionError ? error.status : 0); setStatus('save-error') }
@@ -95,7 +104,7 @@ export function CoverDraftPage() {
       <ValidationSummary prefix="cover" errors={errors} />
       <fieldset className={accessStyles.fields} disabled={busy}>
         <div className={styles.preview} aria-label="Vista previa de portada">
-          {preview ? <img src={preview} alt="Vista previa local de la portada seleccionada" /> : cover ? <img src={coverImageUrl(cover)} alt={cover.altText} /> : <div className={styles.emptyPreview}>Sin portada guardada</div>}
+          {values.file ? <FilePreview file={values.file} /> : cover ? <img src={coverImageUrl(cover)} alt={cover.altText} /> : <div className={styles.emptyPreview}>Sin portada guardada</div>}
         </div>
         <div>
           <label className={styles.filePicker} htmlFor="cover-file">

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer'
 import { Equals, IsEmail, IsString, Length, Matches, MaxLength, ValidateIf } from 'class-validator'
+import { PERSON_NAME } from '../../../shared/domain/person-name'
 
 const trim = ({ value }: { value: unknown }): unknown => typeof value === 'string' ? value.trim() : value
 
@@ -7,11 +8,13 @@ export class RegisterUserDto {
   @Transform(trim)
   @IsString()
   @Length(1, 120)
+  @Matches(PERSON_NAME)
   firstName!: string
 
   @Transform(trim)
   @IsString()
   @Length(1, 120)
+  @Matches(PERSON_NAME)
   lastName!: string
 
   @Transform(trim)
@@ -22,6 +25,7 @@ export class RegisterUserDto {
   // No se recorta, transforma ni registra la contraseña.
   @IsString()
   @Length(15, 128)
+  @Matches(/\S/u)
   password!: string
 
   @Equals(true)

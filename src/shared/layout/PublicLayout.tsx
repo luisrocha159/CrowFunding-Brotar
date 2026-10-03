@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { ButtonLink } from '../components/Button'
+import { useHeaderSession } from '../../features/access/session/useHeaderSession'
 import styles from './layout.module.css'
 
 const navigation = [
@@ -17,13 +18,16 @@ function PublicNavigation() {
 
 export function PublicLayout() {
   const menu = useRef<HTMLDetailsElement>(null)
+  const accountMenu = useRef<HTMLDetailsElement>(null)
   const main = useRef<HTMLElement>(null)
   const previousLocation = useRef('')
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, checking } = useHeaderSession()
 
   useEffect(() => {
     if (menu.current) menu.current.open = false
+    if (accountMenu.current) accountMenu.current.open = false
   }, [location.key])
 
   useEffect(() => {
@@ -52,8 +56,12 @@ export function PublicLayout() {
             <input key={location.search} id="header-search" name="q" type="search" placeholder="Buscar proyectos" defaultValue={new URLSearchParams(location.search).get('q') ?? ''} />
             <button type="submit" aria-label="Enviar búsqueda">→</button>
           </form>
-          <Link className={styles.login} to="/iniciar-sesion">Iniciar sesión</Link>
-          <ButtonLink to="/registro?perfil=creador">Crear proyecto</ButtonLink>
+          {user ? <details className={styles.accountMenu} ref={accountMenu}>
+            <summary aria-label={`Cuenta de ${user.firstName}`}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" /></svg><span>{user.firstName}</span></summary>
+            <nav aria-label="Opciones de mi cuenta"><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/explorar">Explorar proyectos</Link></nav>
+          </details> : checking ? <span className={styles.sessionLoading} role="status">Comprobando cuenta…</span>
+            : <Link className={styles.login} to="/iniciar-sesion">Iniciar sesión</Link>}
+          <ButtonLink to={user ? '/crear-campana' : '/registro?perfil=creador'}>Crear proyecto</ButtonLink>
         </div>
         <details className={styles.mobileMenu} ref={menu} onKeyDown={(event) => {
           if (event.key === 'Escape' && menu.current) {
@@ -62,7 +70,7 @@ export function PublicLayout() {
           }
         }}>
           <summary>Menú</summary>
-          <nav aria-label="Navegación móvil"><PublicNavigation /><Link to="/explorar/buscar">Buscar proyectos</Link><Link to="/iniciar-sesion">Iniciar sesión</Link><ButtonLink to="/registro?perfil=creador">Crear proyecto</ButtonLink></nav>
+          <nav aria-label="Navegación móvil"><PublicNavigation /><Link to="/explorar/buscar">Buscar proyectos</Link>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil · {user.firstName}</Link><Link to="/crear-campana">Mis borradores</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : <Link to="/iniciar-sesion">Iniciar sesión</Link>}<ButtonLink to={user ? '/crear-campana' : '/registro?perfil=creador'}>Crear proyecto</ButtonLink></nav>
         </details>
       </div>
     </header>
@@ -71,7 +79,7 @@ export function PublicLayout() {
       <div className={styles.footerGrid}>
         <div><Brand inverse /><p className={styles.footerIntro}>Plataforma boliviana de crowdfunding para proyectos con impacto social, ambiental y productivo.</p></div>
         <nav aria-label="Plataforma"><h2>Plataforma</h2><Link to="/explorar">Explorar proyectos</Link><Link to="/como-funciona">Cómo funciona</Link><Link to="/para-creadores">Para creadores</Link></nav>
-        <nav aria-label="Cuenta"><h2>Tu cuenta</h2><Link to="/iniciar-sesion">Iniciar sesión</Link><Link to="/registro">Crear una cuenta</Link><Link to="/recuperar-contrasena">Recuperar acceso</Link></nav>
+        <nav aria-label="Cuenta"><h2>Tu cuenta</h2>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link></> : <><Link to="/iniciar-sesion">Iniciar sesión</Link><Link to="/registro">Crear una cuenta</Link><Link to="/recuperar-contrasena">Recuperar acceso</Link></>}</nav>
         <div><h2>Crezcamos juntos</h2><p>Cada iniciativa es una oportunidad para transformar nuestro entorno.</p><Link to="/para-creadores">Conoce cómo empezar →</Link></div>
       </div>
       <div className={styles.footerBottom}>© {new Date().getFullYear()} Brotar. Todos los derechos reservados.</div>

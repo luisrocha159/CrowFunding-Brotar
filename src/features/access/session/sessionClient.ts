@@ -1,20 +1,13 @@
+import { SessionError } from '../../../shared/api/sessionError'
+import { requestApi } from '../../../shared/api/request'
+export { SessionError } from '../../../shared/api/sessionError'
 export interface CurrentUser { id: string; email: string; firstName: string; lastName: string; status: 'ACTIVE' | 'PENDING_VERIFICATION' }
-export class SessionError extends Error {
-  constructor(readonly status: number) { super('No se pudo completar la operación de sesión.') }
+export const SESSION_CHANGED = 'brotar:session-changed'
+export function notifySessionChanged(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_CHANGED))
 }
 async function send(path: string, method: 'GET' | 'POST', body?: unknown, signal?: AbortSignal): Promise<Response> {
-  try {
-    const response = await fetch(`/api/auth/${path}`, {
-      method, credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      headers: { 'Content-Type': 'application/json', ...(method === 'POST' ? { 'X-Brotar-Request': '1' } : {}) },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
-    })
-    if (!response.ok) throw new SessionError(response.status)
-    return response
-  } catch (error) {
-    throw error instanceof SessionError ? error : new SessionError(0)
-  }
+  return requestApi(`/api/auth/${path}`, { method, body, signal })
 }
 export async function login(email: string, password: string, signal?: AbortSignal): Promise<void> {
   const response = await send('login', 'POST', { email: email.trim().toLowerCase(), password }, signal)
@@ -22,6 +15,7 @@ export async function login(email: string, password: string, signal?: AbortSigna
     const result = await response.json() as { status?: string }
     if (result.status !== 'authenticated') throw new SessionError(0)
   } catch { throw new SessionError(0) }
+  notifySessionChanged()
 }
 export async function currentUser(signal?: AbortSignal): Promise<CurrentUser> {
   const response = await send('me', 'GET', undefined, signal)
@@ -33,4 +27,4 @@ export async function currentUser(signal?: AbortSignal): Promise<CurrentUser> {
     return { id: body.id, email: body.email, firstName: body.firstName, lastName: body.lastName, status: body.status }
   } catch { throw new SessionError(0) }
 }
-export async function logout(): Promise<void> { await send('logout', 'POST') }
+export async function logout(): Promise<void> { await send('logout', 'POST'); notifySessionChanged() }

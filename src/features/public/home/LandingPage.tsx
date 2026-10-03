@@ -2,7 +2,6 @@ import { Button, ButtonLink } from '../../../shared/components/Button'
 import { EmptyState, ErrorState, ProjectCardSkeleton } from '../../../shared/components/Feedback'
 import { ProjectCard } from '../../../shared/components/ProjectCard'
 import hero from '../../../shared/assets/proyecto-reforestacion.webp'
-import { DemoNotice, DemoStates } from '../PublicDemo'
 import { useProjectResource } from '../useProjectResource'
 import styles from '../public.module.css'
 
@@ -18,7 +17,6 @@ export function LandingPage() {
       <div className={styles.actions}><ButtonLink to="/explorar">Explorar proyectos →</ButtonLink><ButtonLink variant="secondary" to="/como-funciona">Cómo funciona</ButtonLink></div>
     </section>
     <div className={styles.stats} aria-label="Contenido de esta demostración"><div><strong>6</strong><span>campañas de ejemplo</span></div><div><strong>6</strong><span>ubicaciones en Bolivia</span></div><div><strong>3</strong><span>formas de impulsar ideas</span></div></div>
-    <DemoNotice />
     <section className={styles.section}>
       <div className={styles.centered}><p className="eyebrow">Qué es Brotar</p><h2>Financiamiento colectivo con impacto real</h2><p>Muchas personas pueden hacer posible una buena idea. Brotar reúne iniciativas que buscan recursos y comunidades que quieren contribuir a su desarrollo.</p></div>
       <div className={styles.grid}>{[
@@ -35,6 +33,5 @@ export function LandingPage() {
         : <div className={styles.grid}>{resource.projects.map(project => <ProjectCard key={project.id} project={project} />)}</div>}
     </section>
     <section className={styles.hero}><p className="eyebrow">Para quienes quieren transformar su entorno</p><h2>Tu idea puede ser el próximo comienzo</h2><p>Conoce cómo preparar una campaña, presentar su impacto y dar el primer paso con tu comunidad.</p><div className={styles.actions}><ButtonLink to="/para-creadores">Quiero crear un proyecto</ButtonLink><ButtonLink variant="secondary" to="/iniciar-sesion">Iniciar sesión</ButtonLink></div></section>
-    <DemoStates />
   </>
 }

@@ -5,7 +5,6 @@ import { FormField } from '../../../shared/components/FormField'
 import { EmptyState, ErrorState, Message, ProjectCardSkeleton } from '../../../shared/components/Feedback'
 import { ProjectCard } from '../../../shared/components/ProjectCard'
 import { campaignTypeLabels, type CampaignType } from '../../../shared/types/project'
-import { DemoNotice, DemoStates } from '../PublicDemo'
 import { useProjectResource } from '../useProjectResource'
 import { queryProjects } from './projectQuery'
 import { changeProjectParams, clearProjectFilters, filterParamKeys, readProjectParams } from './projectParams'
@@ -33,7 +32,6 @@ export function ProjectCatalog({ search = false }: { search?: boolean }) {
     <div className={shared.sectionHeading}><div><p className="eyebrow">Descubre iniciativas con propósito</p><h1>{search ? 'Encuentra el proyecto que te inspira' : 'Explorar proyectos'}</h1><p className="lead">Conoce sus historias, revisa sus metas y descubre cómo buscan transformar su entorno.</p></div>
       {!search && <ButtonLink to={`/explorar/buscar${params.size ? `?${params}` : ''}`}>Búsqueda y filtros</ButtonLink>}
     </div>
-    <DemoNotice />
     {search && <section className={styles.toolbar} aria-label="Búsqueda y filtros">
       <form className={styles.searchForm} onSubmit={event => {
         event.preventDefault()
@@ -65,6 +63,5 @@ export function ProjectCatalog({ search = false }: { search?: boolean }) {
             : <><div className={shared.grid}>{result.items.map(project => <ProjectCard key={project.id} project={project} />)}</div><nav className={styles.pagination} aria-label="Paginación de proyectos"><Button variant="secondary" disabled={result.page <= 1} onClick={() => page(result.page - 1)}>Anterior</Button><span>Página {result.page} de {result.totalPages}</span><Button variant="secondary" disabled={!result.hasMore} onClick={() => page(result.page + 1)}>Siguiente</Button></nav></>}
         </>}
     </section>
-    <DemoStates />
   </>
 }

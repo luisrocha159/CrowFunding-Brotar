@@ -15,13 +15,13 @@ test('portada valida selección, tipo, tamaño y texto alternativo', () => {
 })
 
 test('portada consulta y guarda contrato real sin publicar campaña', async () => {
-  const cover = { ownerUserId: 'owner', fileId: '00000000-0000-4000-8000-000000000001', altText: values.altText, imageUrl: '/api/files/public/00000000-0000-4000-8000-000000000001', updatedAt: '2026-09-18T00:00:00.000Z' }
-  assert.deepEqual(await readCoverDraft((async url => {
-    assert.equal(url, '/api/campaign-drafts/cover')
+  const cover = { campaignId: 'campaign', ownerUserId: 'owner', fileId: '00000000-0000-4000-8000-000000000001', altText: values.altText, imageUrl: '/api/files/public/00000000-0000-4000-8000-000000000001', updatedAt: '2026-09-18T00:00:00.000Z' }
+  assert.deepEqual(await readCoverDraft('campaign', (async url => {
+    assert.equal(url, '/api/campaigns/drafts/campaign/cover')
     return Response.json(cover)
   }) as typeof fetch), cover)
-  assert.deepEqual(await saveCoverDraft(cover.fileId, ` ${cover.altText} `, undefined, (async (url, init) => {
-    assert.equal(url, '/api/campaign-drafts/cover')
+  assert.deepEqual(await saveCoverDraft('campaign', cover.fileId, ` ${cover.altText} `, undefined, (async (url, init) => {
+    assert.equal(url, '/api/campaigns/drafts/campaign/cover')
     assert.equal(init?.method, 'PATCH')
     assert.equal((init?.headers as Record<string, string>)['X-Brotar-Request'], '1')
     assert.deepEqual(JSON.parse(String(init?.body)), { fileId: cover.fileId, altText: cover.altText })
@@ -31,5 +31,5 @@ test('portada consulta y guarda contrato real sin publicar campaña', async () =
 })
 
 test('portada conserva errores HTTP explícitos', async () => {
-  await assert.rejects(saveCoverDraft('00000000-0000-4000-8000-000000000001', values.altText, undefined, (async () => new Response('', { status: 404 })) as typeof fetch), (error: unknown) => error instanceof SessionError && error.status === 404)
+  await assert.rejects(saveCoverDraft('campaign', '00000000-0000-4000-8000-000000000001', values.altText, undefined, (async () => new Response('', { status: 404 })) as typeof fetch), (error: unknown) => error instanceof SessionError && error.status === 404)
 })

@@ -5,8 +5,9 @@ import pg from 'pg'
 
 const baseline = JSON.parse(readFileSync(new URL('../../infra/postgres-v2/baseline.json', import.meta.url), 'utf8'))
 const env = parseEnv(readFileSync(new URL('../../infra/postgres-v2/.env.backend', import.meta.url), 'utf8'))
+const admin = parseEnv(readFileSync(new URL('../../infra/postgres-v2/.env', import.meta.url), 'utf8'))
 assert.equal(env.DB_HOST, '127.0.0.1')
-assert.equal(env.DB_PORT, '15433')
+assert.equal(env.DB_PORT, admin.POSTGRES_PORT)
 assert.equal(env.DB_NAME, 'brotar_db')
 const client = new pg.Client({ host: env.DB_HOST, port: Number(env.DB_PORT), database: env.DB_NAME, user: env.DB_USER, password: env.DB_PASSWORD, connectionTimeoutMillis: 5000 })
 try {

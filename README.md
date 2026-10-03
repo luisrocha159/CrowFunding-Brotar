@@ -1,5 +1,15 @@
 # Brotar · Base integrada del equipo
 
+**Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
+
+> **Sprint 1 integrado en DEV — corte 21/09/2026:** reúne el trabajo de Ricardo, Alison y Santiago, las correcciones y el ensayo local. Se aprobaron 93 pruebas frontend, 93 backend y 14 integraciones PostgreSQL (200 casos), además de lint, tipos y compilación. `main` conserva la entrega anterior. Los informes fechados anteriores son históricos; este README describe la versión actual. Esto no equivale a aceptación del cliente ni a certificación de ausencia de errores.
+
+**Actualización de DEV · 30/09/2026:** incluye las mejoras de validación del registro, ayuda para recuperación local, menú de cuenta con sesión y documentos de estudio del Sprint 1. La planificación v2.3 conserva 62 tareas y 64 historias: Sprint 1 = 20; Sprint 2 = 13 tareas de campañas; Sprint 3 = inventario de 29 tareas por refinar, no compromiso de una sola iteración. Esto es planificación: el módulo completo del Sprint 2 todavía no se declara implementado. Su reparto se acordará con el equipo.
+
+Verificación de esta actualización: `bun run check` aprobó lint, tipos, 95 pruebas frontend y compilación; `bun x --package pnpm@11.19.0 pnpm run check` aprobó lint, tipos, 93 pruebas backend y compilación. No se repitieron las integraciones PostgreSQL en esta publicación porque el motor Docker local no estaba disponible. Los 200 casos citados arriba pertenecen al ensayo histórico del 21/09, no al conteo de esta revisión.
+
+Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores**; también desde **Mi cuenta → Opciones para iniciativas y permisos → Ver mis borradores**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
+
 Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
 [Repositorio](https://github.com/luisrocha159/CrowFunding-Brotar) · [Trello](https://trello.com/b/37xCrdes/crowudfunding) · [Documentación](docs/README.md) · [Trabajo en equipo y ramas](CONTRIBUTING.md)
@@ -24,7 +34,7 @@ Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. E
 
 Las cuentas nuevas conservan `PENDING_VERIFICATION`, pero pueden iniciar sesión básica y gestionar perfil/organizaciones en borrador. Esto **no** verifica correo/identidad, no publica campañas ni habilita pagos. Decisión local: [ADR-002](docs/decisiones/ADR-002-acceso-basico-sin-verificacion.md). Las reglas definitivas y la aceptación formal corresponden a los líderes.
 
-La ampliación planificada del Sprint 1 (constructor inicial, archivos, recuperación, etc.) **no forma parte del requisito original de esta entrega de integración**.
+La ampliación del Sprint 1 incluye constructor inicial, archivos, portada y recuperación local. No incluye el crowdfunding completo: las etapas de plan/presupuesto y financiamiento del asistente muestran un aviso de sprint posterior; revisión no publica ni envía a aprobación.
 
 ## 2. Requisitos y versiones utilizadas
 
@@ -33,7 +43,7 @@ La ampliación planificada del Sprint 1 (constructor inicial, archivos, recupera
 - **Bun 1.4.2** para el frontend, en la raíz.
 - **pnpm 11.19.0** para el backend, dentro de `backend/`.
 - Docker Desktop iniciado, con motor Linux operativo, para PostgreSQL **18.6**.
-- SQL oficial **Brotar_BD_Provisional (3).sql**, recibido de coordinación por canal privado.
+- SQL oficial **Brotar_BD_Provisional (3).sql**, incluido sin modificar como [official-schema.sql](infra/postgres-v2/official-schema.sql).
 
 Comprueba en PowerShell:
 
@@ -47,6 +57,16 @@ docker version
 
 `docker version` debe mostrar cliente y servidor. Si solo aparece el cliente o falla el motor, resuelve Docker antes de instalar la base. No uses Factory Reset ni borres volúmenes para corregirlo.
 
+Puertos y configuración de la instalación normal:
+
+| Componente | Dónde corre | Dirección |
+| --- | --- | --- |
+| PostgreSQL V2 | Contenedor Docker; publicado solo en el anfitrión | `127.0.0.1:15433` → puerto `5432` del contenedor |
+| API NestJS | Anfitrión, fuera de Docker | `127.0.0.1:3000` |
+| Frontend Vite | Anfitrión, fuera de Docker | `127.0.0.1:5173` |
+
+El instalador genera `infra/postgres-v2/.env` (administrador de Docker/PostgreSQL), `infra/postgres-v2/.env.backend` (rol limitado) y, al ejecutar `activate`, `backend/.env`. **No copies `backend/.env.example` como `.env` para esta instalación**: es una referencia sin contraseña y con la base desactivada. Si ya existe un `backend/.env` propio, `activate` lo respalda sin sobrescribir el respaldo. Los tres archivos de credenciales son locales, ignorados por Git y no se deben compartir.
+
 No usar npm/yarn para instalar este proyecto. No mezclar gestores: conservar `bun.lock` y `backend/pnpm-lock.yaml`. NestJS y TypeORM se instalan como dependencias del backend, no necesitan instalación global.
 
 ## 3. Primera instalación completa
@@ -58,30 +78,32 @@ Estas instrucciones son para PowerShell en Windows, desde una copia nueva. Ejecu
 ```powershell
 git clone https://github.com/luisrocha159/CrowFunding-Brotar.git
 cd CrowFunding-Brotar
-git switch main
-git pull --ff-only origin main
+git switch DEV
+git pull --ff-only origin DEV
 bun install --frozen-lockfile
 cd backend
 pnpm install --frozen-lockfile
 ```
 
-Para demostrar la entrega utiliza `main`. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) después de instalar la base.
+Para demostrar el Sprint 1 utiliza `DEV`. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) y trabaja en tu rama personal. Si tu pnpm global tiene otra versión, sustituye `pnpm` en estos comandos por `bun x --package pnpm@11.19.0 pnpm`; no cambies el lockfile por ello.
 
 ### B. Instalar PostgreSQL oficial V2, una sola vez
 
-Desde `backend/`, sustituye la ruta de ejemplo por la ubicación real del SQL:
+Desde `backend/`, utiliza el SQL incluido en el repositorio:
 
 ```powershell
-node scripts/adopt-provisional-v2.mjs install 'C:\ruta\Brotar_BD_Provisional (3).sql'
-node scripts/verify-provisional-v2.mjs
+node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia exclusiva en `127.0.0.1:15433`, instala solamente sobre una base vacía y genera credenciales locales distintas para administrador y aplicación. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila el backend antes de migrar. La migración registra la línea base; **no crea las tablas oficiales**, por eso siempre va después de `install`.
 
-El SQL **no se incluye en el repositorio público**. Pídelo a los líderes. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente.
+El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
-Antes de activar el candidato, verifica sus cinco pruebas de integración:
+El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL. Después verifica las pruebas de integración contra el candidato:
 
 ```powershell
 $env:ALLOW_DB_TEST_WRITES='true'
@@ -101,7 +123,7 @@ node scripts/adopt-provisional-v2.mjs activate
 pnpm run dev
 ```
 
-No vuelvas a ejecutar `install` ni `activate` cada vez que abras el proyecto. Si ya hay configuración V2, el instalador se detiene para no sobreescribirla. Para una instalación anterior a los permisos de organizaciones, consulta [la guía V2](infra/postgres-v2/README.md); no reinstales el SQL.
+No necesitas ejecutar `install` ni `activate` cada vez que abras el proyecto. Ambos admiten repetición segura con la configuración vigente; `install` no vuelve a aplicar el SQL sobre una base poblada y `activate` no sobrescribe un respaldo previo. Para una instalación antigua con permisos faltantes, consulta [la guía V2](infra/postgres-v2/README.md).
 
 ### C. Abrir el frontend
 
@@ -121,6 +143,15 @@ Comprueba:
 
 Si `ready` devuelve 503, revisa PostgreSQL y la configuración; no continúes como si registro y login funcionaran.
 
+### Si la instalación se interrumpió
+
+1. Comprueba `docker version`: debe mostrar `Server`. Si Docker no funciona, no ejecutes migraciones ni borres volúmenes.
+2. Desde `backend/`, repite `node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql`. Reutiliza las credenciales existentes. Si falta uno de los dos archivos privados o el esquema no coincide con el oficial, detente y conserva ambos archivos y el volumen para diagnóstico.
+3. Cuando `install` termine, ejecuta `pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/verify-provisional-v2.mjs` y finalmente `activate` como arriba. Si aparece `app_user`/`user_profile` inexistente, **faltó la restauración inicial**; no ejecutes la migración primero.
+4. Si aparece autenticación fallida de `brotar_app`, verifica que `backend/.env` coincida con el candidato activado y que `DB_PORT` sea `15433` en la instalación normal. No utilices `5432` ni el PostgreSQL local para la API ejecutada en Windows. El instalador también puede realinear el rol con el candidato al repetir `install`.
+
+Para un ensayo aislado en el mismo equipo, antes de `install` puedes fijar `$env:BROTAR_COMPOSE_PROJECT='brotar-ensayo'` y `$env:BROTAR_DB_PORT='15434'`; el instalador los guarda en `infra/postgres-v2/.env` de esa copia. No uses esos valores al instalar la copia normal. No uses `down -v` para resolver errores de configuración.
+
 ## 4. Abrirlo otro día o actualizar una copia existente
 
 Con cambios locales propios, revisa `git status` y consérvalos antes de cambiar de rama o actualizar. No utilices `reset --hard`, force-push ni borres trabajo para “sincronizar”.
@@ -128,12 +159,13 @@ Con cambios locales propios, revisa `git status` y consérvalos antes de cambiar
 Para revisar una copia limpia de la entrega:
 
 ```powershell
-git switch main
-git pull --ff-only origin main
+git switch DEV
+git pull --ff-only origin DEV
 bun install --frozen-lockfile
 docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.yaml up -d --wait
 cd backend
 pnpm install --frozen-lockfile
+node scripts/prepare-sprint1.mjs
 pnpm run dev
 ```
 
@@ -159,14 +191,48 @@ Usar datos ficticios, un correo de prueba único y una contraseña exclusiva de 
 6. Cerrar sesión. Entrar de nuevo en `/mi-cuenta` o `/mis-organizaciones`: debe pedir acceso. Volver a iniciar sesión: perfil y organización siguen guardados.
 7. Para mostrar persistencia entre arranques, detener **solo la API** con `Ctrl+C`, volver a ejecutar `pnpm run dev` y comprobar los datos. No restaurar el SQL ni borrar el volumen.
 8. En otra ventana privada, sin sesión, comprobar que las rutas privadas exigen acceso. Las suites de integración comprueban también aislamiento entre usuarios, expiración y revocación.
-9. Probar `/recuperar-contrasena`: solicitar recuperación con un correo válido y comprobar que la respuesta no revela si la cuenta existe. En entorno local puede habilitarse `PASSWORD_RESET_LOCAL_LINK=true` para obtener un enlace de prueba; abrirlo, cambiar la contraseña y comprobar que el mismo enlace ya no sirve. No afirmar envío de correo si no hay remitente configurado.
+9. Probar `/recuperar-contrasena` con el buzón local configurado como se explica abajo. La respuesta no revela si la cuenta existe ni devuelve el token. Abrir el enlace del `.txt`, cambiar la contraseña de prueba y comprobar que el mismo enlace ya no sirve. No hay envío de correo externo.
 10. Probar la API de archivos con una sesión válida: `POST /api/files` requiere `X-Brotar-Request: 1`, rol básico y contenido base64. Las imágenes públicas admiten PNG/JPG/WebP hasta 2 MB; documentos privados admiten PDF/imagen hasta 5 MB. Comprobar que `/api/files/public/:id` no entrega documentos privados y que `/api/files/:id` exige sesión del titular.
-11. Abrir `/mi-campana/portada` con sesión. Seleccionar una imagen PNG/JPG/WebP hasta 2 MB, revisar la vista previa, completar texto alternativo y guardar. Reemplazar por otra imagen y comprobar que queda la última portada. Ante error de carga o guardado, el formulario debe conservar texto, selección y vista previa.
+11. Desde **Mi cuenta → Mis borradores y portadas** (`/crear-campana`), crear un borrador. Elegir modalidad y avanzar a Información general: completar categoría y ubicación, guardar. En Historia e impacto completar problema, solución, beneficiarios, resultados esperados e indicadores; guardar. En Portada seleccionar PNG/JPG/WebP hasta 2 MB, completar texto alternativo y guardar. Revisar y recargar: **Continuar** debe recuperar contenido y paso. Donación omite recompensas. No se publica la campaña. Ante error, se deben conservar los campos para corregir o reintentar.
 12. Mostrar los resultados de pruebas y explicar los límites de la entrega. La validación de líderes se registra aparte del cierre técnico.
 
 No probar con pagos, correos reales ni documentos de identidad. Evita publicar capturas de cookies, contraseñas, enlaces de recuperación o credenciales. La recuperación cambia contraseñas reales de la base local; usa solo cuentas ficticias propias.
 Para archivos, usa imágenes o PDF ficticios sin datos personales. No subir documentos reales de identidad, respaldos legales reales ni archivos con secretos.
-La portada del borrador no publica campañas ni reemplaza la revisión del editor completo; solo guarda la imagen y su texto alternativo para integrarse con el borrador posterior.
+La portada ya queda asociada a su campaña en PostgreSQL. No publica campañas ni reemplaza las etapas futuras del editor.
+
+### Configuración del catálogo provisional
+
+Con PostgreSQL V2 saludable, desde la raíz en PowerShell:
+
+```powershell
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+Get-Content -Raw -Encoding UTF8 infra/postgres-v2/seed-categories-demo.sql | docker exec -i brotar-provisional-v2-postgres-1 psql -U postgres -d brotar_db -v ON_ERROR_STOP=1
+```
+
+Debe mostrar cinco categorías activas: Medio ambiente, Producción sostenible, Economía circular, Educación y Desarrollo comunitario. El script se puede repetir: inserta slugs faltantes, no sobrescribe ni reactiva registros existentes. Es un catálogo provisional autorizado por el equipo, no una aprobación definitiva del cliente. No restaura el SQL oficial.
+
+### Recuperación sin correo: solo para la entrega local
+
+En `backend/.env`, añadir o actualizar estas claves (una sola definición por clave), sin reemplazar las variables de base existentes:
+
+```dotenv
+NODE_ENV=development
+HOST=127.0.0.1
+PUBLIC_WEB_ORIGIN=http://127.0.0.1:5173
+PASSWORD_RESET_LOCAL_FILE=true
+```
+
+Reiniciar la API. Solicitar recuperación para una cuenta ficticia existente. En Windows abrir `%LOCALAPPDATA%\Brotar\recovery-mail`, ordenar por fecha y abrir el `.txt` correspondiente. Copiar su enlace al navegador local y completar nueva contraseña/confirmación. El enlace vence en una hora y solo se usa una vez; las sesiones anteriores se revocan. Una cuenta inexistente no genera archivo, pero recibe la misma respuesta pública.
+
+**Si la pantalla muestra «recuperación no disponible» (HTTP 503):** verifica que las cuatro claves anteriores estén en `backend/.env` (no en el `.env` de la raíz), que no haya definiciones duplicadas y que reiniciaste la API después de editarlas. La bandera está en `false` en `.env.example` por seguridad. Comprueba también que PostgreSQL y la API estén disponibles. El archivo se crea **solo** al solicitar recuperación para una cuenta ficticia existente; no esperes un correo ni un enlace en la respuesta HTTP. En otra computadora se debe configurar su propio `backend/.env` y consultar su propio `%LOCALAPPDATA%`; el buzón no se comparte por Git.
+
+El buzón está fuera del repositorio y de su carpeta OneDrive. Sin LOCALAPPDATA se utiliza `backend/private/recovery-mail`, excluido de Git. No compartir, proyectar ni versionar los enlaces: son credenciales temporales. Eliminar los mensajes de prueba al finalizar; no hay limpieza automática. Este modo solo acepta desarrollo y direcciones locales; no habilitarlo en una máquina compartida o despliegue. Para usar SMTP real, desactivar esta bandera y configurar un remitente autorizado según `backend/.env.example`. La bandera anterior `PASSWORD_RESET_LOCAL_LINK` ya no habilita enlaces en la respuesta HTTP.
+
+### Qué se comprobó y qué sigue pendiente
+
+Ensayo en navegador: registro, login, rechazo de nombre numérico, guardado de perfil, organización, información de campaña, historia e indicador, portada, revisión, recarga, logout y redirección sin sesión. Recuperación: solicitud y archivo comprobados visualmente; restablecimiento, caducidad, uso único y revocación comprobados con integración automatizada.
+
+Pendientes de decisión: correo real, textos legales, reglas KYC/KYB, matriz definitiva de permisos y aprobación final del catálogo. No bloquean la muestra local, pero sus criterios no deben marcarse aprobados. No se requiere hosting para esta entrega. Las guías personales de estudio de historias y principios de programación no forman parte de esta publicación.
 
 ### Experiencia pública que se conserva
 
@@ -199,7 +265,7 @@ finally {
 }
 ```
 
-Verificación local repetida el **17/09/2026**: **64 pruebas frontend + 45 backend + 5 de integración = 114**, además de lint, TypeScript y build. Las pruebas de integración escriben fixtures ficticios propios en la base local y los limpian al finalizar; nunca ejecutarlas en producción. Si se interrumpen abruptamente, revisar solamente sus fixtures, no limpiar tablas completas.
+Verificación local del **21/09/2026**: **93 pruebas frontend + 93 backend + 14 de integración = 200**, además de lint, TypeScript y build. Las pruebas de integración escriben fixtures ficticios propios en la base local y los limpian al finalizar; nunca ejecutarlas en producción. Si se interrumpen abruptamente, revisar solamente sus fixtures, no limpiar tablas completas.
 
 Esta ejecución no reinicia el contenedor; comprueba reconexión y reinicios de APIs temporales. El ensayo opcional de reinicio de PostgreSQL se describe en [backend/README.md](backend/README.md).
 
@@ -212,15 +278,25 @@ Para ejecutar compilado: raíz `bun run build` y `bun run preview`; backend `pnp
 - `DB_HOST=127.0.0.1`, `DB_PORT=15433`, `DB_NAME=brotar_db` y `DB_USER=brotar_app` corresponden a V2. No conectar la aplicación como `postgres`.
 - La API escucha localmente en 3000 y Vite en 5173. `CORS_ORIGINS` admite orígenes concretos; no sustituirlo por `*`.
 - No incluir secretos en variables `VITE_*`, commits, Trello, capturas o comentarios. Cada integrante genera sus propias credenciales.
-- `PASSWORD_RESET_LOCAL_LINK=true` solo se usa en desarrollo/pruebas para mostrar el enlace de recuperación local mientras no exista remitente de correo autorizado. No habilitarlo en producción ni publicar esos enlaces.
+- `PASSWORD_RESET_LOCAL_FILE=true` habilita el buzón de archivos solo en desarrollo local. No devuelve enlaces por HTTP. Mantenerlo desactivado fuera del ensayo y no publicar los mensajes.
 - `FILE_STORAGE_DIR` permite elegir la carpeta local de archivos. Por defecto se usa `backend/private/files`, excluida de Git. No apuntarla a `src/`, `public/`, `dist/` ni carpetas sincronizadas públicamente.
-- `CAMPAIGN_DRAFT_STORAGE_FILE` permite elegir el manifiesto local de portadas de borrador. Por defecto queda bajo `backend/private/campaign-drafts/`, excluido de Git.
+- Las portadas se asocian a la campaña en PostgreSQL. `CAMPAIGN_DRAFT_STORAGE_FILE` ya no se utiliza; los JSON previos se conservan sin importar automáticamente.
 - El repositorio es público. No subir SQL con datos iniciales/privados, backups, `node_modules`, `dist` ni archivos `.env`.
 - No habilitar `synchronize`, `dropSchema` ni migraciones automáticas. La base sigue siendo provisional.
 
 ## 8. Ramas, asignaciones y forma de trabajar
 
-`main` es la entrega revisable. `DEV` integra el trabajo. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas.
+`DEV` contiene la integración actual del Sprint 1. `main` conserva la entrega anterior hasta aprobar su integración. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas. Esta publicación no actualiza automáticamente esas ramas: cada integrante incorpora `origin/DEV` en su rama con el árbol limpio siguiendo CONTRIBUTING.
+
+Para descargar esta actualización, primero guardar el trabajo propio mediante commit o stash; no descartar cambios. Con el árbol limpio, desde la raíz del repositorio:
+
+```powershell
+git fetch origin
+git switch DEV
+git pull --ff-only origin DEV
+```
+
+Después volver a la rama personal existente (`git switch AlisonDev`, `git switch SantiagoDev` o `git switch RicardoDev`, según corresponda) y ejecutar `git merge origin/DEV`. Resolver conflictos antes de continuar; no usar reset forzado. Si ya se trabaja en la rama personal, basta con `git fetch origin` y `git merge origin/DEV` sin cambiar de rama. Instalar dependencias y levantar servicios según las secciones 3–5. Los `.env`, buzones y archivos locales no se descargan por Git; cada computadora conserva o genera los suyos siguiendo la instalación, sin borrar volúmenes.
 
 Flujo: **rama personal → PR a DEV → pruebas/revisión → PR de DEV a main**. No trabajar directamente en `main` después de esta entrega. No dar por hecho que hay protección técnica de ramas: esta es la convención del equipo; los cambios de permisos/protección requieren al propietario.
 
@@ -273,6 +349,11 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Informe de entrega de integración](docs/entrega-integracion-2026-09-17.md).
 - [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
 - [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
+- [Ajuste de Sprint 2 a la tarea de campañas](docs/ajuste-sprint-2-fase-3-2026-09-30.md): 13 tareas actuales y 29 futuras por refinar.
+- [Informe detallado del Sprint 1 — Word](docs/entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
+- [Principios y patrones para el docente — Word](docs/entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
+- [Calidad y defensa técnica — guía](docs/calidad-sprint-1.md) y [Word](docs/entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).
+- [Guía de tareas y demostración](docs/verificacion-sprint-1.md), [Word](docs/entregables/sprint-1/Guia_Verificacion_y_Demostracion_Sprint_1_Brotar.docx) y [complemento del ensayo final](docs/ensayo-final-sprint-1.md). Conservan sus cortes históricos; para instalar o actualizar seguir este README.
 - [Figma final](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574).
 - [Revisión funcional de la integración](docs/revision-entrega-integracion-e08.md).
 - [Índice de documentos y versiones históricas](docs/README.md).

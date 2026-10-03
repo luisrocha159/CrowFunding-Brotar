@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { FileAccessDenied, FileUnavailable, Files, InvalidFileUpload, type FileDownload, type FileStorage, type FileUploadInput, type StoredFile } from '../src/files/application/files'
 
-const png = Buffer.from('ok').toString('base64')
+const png = Buffer.from([137,80,78,71,13,10,26,10]).toString('base64')
 const input: FileUploadInput = { visibility: 'PUBLIC', purpose: 'PROFILE_AVATAR', originalName: 'avatar.png', mimeType: 'image/png', contentBase64: png }
 
 function storage(): { files: Files; saved: StoredFile[]; reads: Map<string, FileDownload> } {
@@ -38,7 +38,7 @@ test('archivos separa acceso público y privado por dueño', async () => {
   const f = storage()
   const publicFile = await f.files.upload('owner', input)
   assert.equal((await f.files.publicDownload(publicFile.id)).file.id, publicFile.id)
-  const privateFile = await f.files.upload('owner', { ...input, visibility: 'PRIVATE', purpose: 'ORGANIZATION_DOCUMENT', mimeType: 'application/pdf', originalName: 'registro.pdf' })
+  const privateFile = await f.files.upload('owner', { ...input, visibility: 'PRIVATE', purpose: 'ORGANIZATION_DOCUMENT', mimeType: 'application/pdf', originalName: 'registro.pdf', contentBase64: Buffer.from('%PDF-1.7\n').toString('base64') })
   await assert.rejects(f.files.publicDownload(privateFile.id), FileUnavailable)
   assert.equal((await f.files.privateDownload(privateFile.id, 'owner')).file.id, privateFile.id)
   await assert.rejects(f.files.privateDownload(privateFile.id, 'other'), FileAccessDenied)

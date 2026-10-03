@@ -1,5 +1,7 @@
 # ADR-003 · Archivos públicos y privados
 
+Actualización local 21/09/2026: los binarios siguen en disco privado, pero el adaptador activo registra metadatos y propiedad en `file_asset` (PostgreSQL). El manifiesto JSON original ya no es el almacenamiento activo. La baja es lógica y se rechaza mientras el archivo esté vinculado. Véase [integración vigente](../integracion-local-sprint-1.md); retención definitiva pendiente.
+
 ## Estado
 
 Decisión técnica local para S1-14. Requiere revisión de líderes antes de considerarse política definitiva de privacidad, retención o cumplimiento.

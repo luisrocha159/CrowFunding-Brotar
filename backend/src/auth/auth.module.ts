@@ -4,6 +4,8 @@ import { DatabaseModule } from '../shared/infrastructure/database/database.modul
 import { UsersModule } from '../users/users.module'
 import { ScryptPasswordHasher } from '../users/infrastructure/scrypt-password-hasher'
 import { PasswordRecovery } from './application/password-recovery'
+import { SmtpRecoveryDelivery } from './infrastructure/smtp-recovery-delivery'
+import { LocalRecoveryDelivery } from './infrastructure/local-recovery-delivery'
 import { Sessions } from './application/sessions'
 import { TypeormPasswordRecoveryRepository } from './infrastructure/typeorm-password-recovery.repository'
 import { TypeormSessionRepository } from './infrastructure/typeorm-session.repository'
@@ -15,15 +17,16 @@ const hash = (raw: string): string => createHash('sha256').update(raw).digest('h
 const createToken = () => { const raw = randomBytes(32).toString('hex'); return { raw, hash: hash(raw), expiresAt: new Date(Date.now() + 3600000) } }
 @Module({
   imports: [DatabaseModule, UsersModule], controllers: [SessionController, PasswordRecoveryController],
-  providers: [TypeormSessionRepository, TypeormPasswordRecoveryRepository, LoginLimitGuard, SessionMutationGuard, {
+  providers: [TypeormSessionRepository, TypeormPasswordRecoveryRepository, SmtpRecoveryDelivery, LoginLimitGuard, SessionMutationGuard, {
     provide: Sessions, inject: [TypeormSessionRepository, ScryptPasswordHasher],
     useFactory: (repository: TypeormSessionRepository, passwords: ScryptPasswordHasher) => new Sessions(repository, passwords, {
       hash, create: createToken
     })
   }, {
-    provide: PasswordRecovery, inject: [TypeormPasswordRecoveryRepository, ScryptPasswordHasher],
-    useFactory: (repository: TypeormPasswordRecoveryRepository, passwords: ScryptPasswordHasher) =>
-      new PasswordRecovery(repository, passwords, { hash, create: createToken }, process.env.PASSWORD_RESET_LOCAL_LINK === 'true' && process.env.NODE_ENV !== 'production')
+    provide: PasswordRecovery, inject: [TypeormPasswordRecoveryRepository, ScryptPasswordHasher, SmtpRecoveryDelivery],
+    useFactory: (repository: TypeormPasswordRecoveryRepository, passwords: ScryptPasswordHasher, delivery: SmtpRecoveryDelivery) =>
+      new PasswordRecovery(repository, passwords, { hash, create: createToken }, false,
+        process.env.PASSWORD_RESET_LOCAL_FILE === 'true' ? new LocalRecoveryDelivery(process.env) : delivery)
   }], exports: [Sessions]
 })
 export class AuthModule {}

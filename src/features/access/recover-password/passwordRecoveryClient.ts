@@ -35,7 +35,7 @@ export function validateReset(values: ResetValues): ResetErrors {
   const errors: ResetErrors = {}
   if (!/^[a-f0-9]{64}$/i.test(values.token)) errors.token = 'El enlace de recuperación no es válido.'
   const length = Array.from(values.password).length
-  if (length < 15 || length > 128) errors.password = 'Usa entre 15 y 128 caracteres.'
+  if (length < 15 || length > 128 || !values.password.trim()) errors.password = 'Usa entre 15 y 128 caracteres, no solo espacios.'
   if (values.confirmation !== values.password || !values.confirmation) errors.confirmation = 'Las contraseñas deben coincidir exactamente.'
   return errors
 }

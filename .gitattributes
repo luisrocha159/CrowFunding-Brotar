@@ -5,3 +5,5 @@
 *.woff2 binary
 *.pdf binary
 *.docx binary
+# Conservar bytes exactos: el instalador valida SHA-256 del SQL oficial.
+infra/postgres-v2/official-schema.sql -text

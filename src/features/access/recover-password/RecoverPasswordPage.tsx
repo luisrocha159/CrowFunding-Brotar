@@ -12,7 +12,7 @@ const requestMessages: Record<RecoveryFailure, string> = {
   invalid: 'Revisa el correo ingresado.',
   busy: 'Se alcanzó el límite de solicitudes. Espera un minuto antes de volver a intentar.',
   expired: 'El enlace de recuperación no está disponible o ya venció.',
-  unavailable: 'El servicio no está disponible. Comprueba que la API y PostgreSQL estén iniciados.',
+  unavailable: 'La recuperación no está disponible: comprueba la API y PostgreSQL. En esta entrega local también debes habilitar el buzón de prueba en backend/.env y reiniciar la API; no se envía un correo real.',
   unknown: 'No pudimos confirmar la solicitud. Intenta nuevamente sin asumir que se envió un correo.'
 }
 const resetMessages: Record<RecoveryFailure, string> = {
@@ -25,7 +25,7 @@ const initialReset = (token: string): ResetValues => ({ token, password: '', con
 export function RecoverPasswordPage() {
   const [params] = useSearchParams()
   const token = params.get('token') ?? ''
-  return token ? <ResetPassword token={token} params={params} /> : <RequestRecovery params={params} />
+  return token ? <ResetPassword key={token} token={token} params={params} /> : <RequestRecovery params={params} />
 }
 
 function RequestRecovery({ params }: { params: URLSearchParams }) {
@@ -39,15 +39,17 @@ function RequestRecovery({ params }: { params: URLSearchParams }) {
   useEffect(() => {
     if (status !== 'idle' && status !== 'loading' && status !== 'success') document.getElementById('recover-response')?.focus()
   }, [status])
-  if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, se generó un enlace de recuperación.">
+  if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, se generó un enlace de recuperación."
+    notice={<><strong>Solicitud procesada.</strong> Consulta el canal configurado por el equipo: correo autorizado o buzón privado de pruebas locales. Un buzón local no envía correos externos.</>}>
     <AccessSuccess title="Revisa el canal autorizado">
       <p>Por seguridad, esta pantalla no revela si la cuenta existe. No se afirma ningún envío cuando no hay remitente de correo configurado.</p>
+      {import.meta.env.DEV && <details className={styles.recoveryHelp}><summary>¿Dónde está el enlace en la prueba local?</summary><p>Si el equipo activó <code>PASSWORD_RESET_LOCAL_FILE=true</code> en <code>backend/.env</code> y reinició la API, abre <code>%LOCALAPPDATA%\Brotar\recovery-mail</code> en Windows. Usa el archivo más reciente de tu cuenta ficticia. Si el correo no existe, no se genera archivo. No compartas el enlace: da acceso temporal a la cuenta.</p></details>}
       {resetPath && <p>Entorno local: usa el enlace de recuperación generado para completar la prueba de caducidad y uso único.</p>}
       <div className={styles.actions}>{resetPath && <ButtonLink to={resetPath}>Abrir enlace local</ButtonLink>}<ButtonLink variant="secondary" to={accessHref('/iniciar-sesion', params)}>Volver a iniciar sesión</ButtonLink><Button variant="secondary" onClick={() => { setEmail(''); setErrors({}); setResetPath(undefined); setStatus('idle') }}>Solicitar otro enlace</Button></div>
     </AccessSuccess>
   </AccessShell>
   return <AccessShell centered title="Recuperar contraseña" subtitle="Solicita un enlace de recuperación con caducidad y uso único."
-    notice={<><strong>Recuperación conectada.</strong> La solicitud se registra con token seguro. La respuesta no confirma si el correo existe ni simula envíos.</>}>
+    notice={<><strong>Recuperación real, entrega local provisional.</strong> El cambio de contraseña sí se guarda en la base. En esta entrega no se envían correos: el equipo debe habilitar y consultar el buzón privado descrito en el README. La respuesta no revela si una cuenta existe.</>}>
     {status !== 'idle' && status !== 'loading' && <div id="recover-response" tabIndex={-1} className={styles.response}><Message tone="error" title="No pudimos procesar la solicitud">{requestMessages[status]}</Message></div>}
     <form className={styles.form} noValidate aria-label="Formulario de recuperación" onSubmit={async event => {
       event.preventDefault()
@@ -82,7 +84,6 @@ function ResetPassword({ token, params }: { token: string; params: URLSearchPara
   const active = useRef<AbortController | null>(null)
   const busy = status === 'loading'
   useEffect(() => () => { active.current?.abort(); active.current = null }, [])
-  useEffect(() => setValues(initialReset(token)), [token])
   useEffect(() => {
     if (status !== 'idle' && status !== 'loading' && status !== 'success') document.getElementById('reset-response')?.focus()
   }, [status])

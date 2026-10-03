@@ -1,8 +1,8 @@
-import { Body, Controller, HttpCode, Post, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpCode, Post, ServiceUnavailableException, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { Transform } from 'class-transformer'
 import { IsEmail, IsString, Length, Matches, MaxLength } from 'class-validator'
 import { RegistrationLimitGuard } from '../../../users/infrastructure/http/registration-limit.guard'
-import { PasswordRecovery, PasswordResetUnavailable } from '../../application/password-recovery'
+import { PasswordRecovery, PasswordResetUnavailable, RecoveryDeliveryUnavailable } from '../../application/password-recovery'
 import { SessionMutationGuard } from './session-http'
 
 const trim = ({ value }: { value: unknown }): unknown => typeof value === 'string' ? value.trim() : value
@@ -21,6 +21,7 @@ class PasswordResetDto {
 
   @IsString()
   @Length(15, 128)
+  @Matches(/\S/u)
   password!: string
 }
 
@@ -31,8 +32,12 @@ export class PasswordRecoveryController {
   @Post('recovery')
   @HttpCode(202)
   @UseGuards(SessionMutationGuard, RegistrationLimitGuard)
-  request(@Body() input: PasswordRecoveryRequestDto): Promise<{ accepted: true; resetPath?: string }> {
-    return this.recovery.request(input.email)
+  async request(@Body() input: PasswordRecoveryRequestDto): Promise<{ accepted: true; resetPath?: string }> {
+    try { return await this.recovery.request(input.email) }
+    catch (error) {
+      if (error instanceof RecoveryDeliveryUnavailable) throw new ServiceUnavailableException('Recuperación no disponible. Comprueba el canal de correo autorizado.')
+      throw error
+    }
   }
 
   @Post('reset')

@@ -2,16 +2,33 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Actualización de DEV · 30/09/2026
+
+La planificación vigente es v2.3: **20 tareas de Sprint 1, 13 de Sprint 2 y 29 en el inventario futuro de Sprint 3 por refinar**. Se conservan 62 tareas y 64 historias; no se suman ambos conteos. La cantidad futura no equivale a un compromiso de capacidad. Las asignaciones del Sprint 2 se revisarán con el equipo; esta publicación no implementa todavía el módulo completo de campañas.
+
+- [Planificación vigente](planificacion-sprints.md), [datos](planificacion-sprints.json), [mapa Trello](trello-sprints.json) y [registro del ajuste](ajuste-sprint-2-fase-3-2026-09-30.md).
+- [Tarea oficial de campañas · Fase 3](requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf).
+- [Informe detallado del Sprint 1 — Word](entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
+- [Principios y patrones para el docente — Word](entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
+- [Guía de calidad y defensa](calidad-sprint-1.md) y [Word](entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).
+- [Guía de tareas y demostración](verificacion-sprint-1.md), [Word](entregables/sprint-1/Guia_Verificacion_y_Demostracion_Sprint_1_Brotar.docx) y [ensayo final](ensayo-final-sprint-1.md).
+
+Los informes y guías mantienen sus fechas originales, conteos y referencias del código de ese momento. Para instalación, ramas, nombres de botones y configuración prevalece el README principal. Los generadores de dos guías están en `scripts/`; requieren Python y `python-docx` solo si se desea regenerar documentos, no para ejecutar la aplicación.
+
+## Integración del Sprint 1 en DEV · 21/09/2026
+
+El [README principal](../README.md) contiene instalación, recorrido de prueba, catálogo provisional y recuperación mediante buzón local. Se aprobaron 200 casos automatizados y el ensayo local de los flujos implementados. Los textos legales, correo real y reglas finales siguen pendientes. En aquella publicación no se incluyeron las guías personales; se incorporan en la actualización del 30/09. Los estados de las secciones históricas siguientes corresponden a sus fechas originales.
+
 ## Entrega de integración y trabajo en equipo · 17/09/2026
 
 La etapa vigente incluye acceso, perfil y organizaciones reales. Ver [informe de entrega](entrega-integracion-2026-09-17.md), [asignación del Sprint 1](asignacion-sprint-1.md) y [ramas/PR](../CONTRIBUTING.md). El reparto aprobado es Alison 4 tareas y Santiago 7; los documentos Word/PDF conservan sus cortes anteriores. Los registros fechados abajo son históricos; este informe complementa su estado.
 
 ## 1. Proyecto general y Figma final
 
-El backlog se actualiza a la versión 2.2, con planificación propuesta y corte técnico del 16 de septiembre de 2026. El PDF explicativo conserva su versión 2.0, con corte del 10 de septiembre. Son una planificación del MVP completo, no una declaración de que todo el software esté desarrollado.
+El Word del backlog conserva la versión 2.2 y el corte técnico del 16 de septiembre de 2026; la distribución actualizada de sprints está en el plan v2.3 enlazado arriba. El PDF explicativo conserva su versión 2.0, con corte del 10 de septiembre. Son una planificación del MVP completo, no una declaración de que todo el software esté desarrollado.
 
 - [Product Backlog General — Word](entregables/general/03_Product_Backlog_General_Brotar.docx): 64 historias, 192 criterios de aceptación y continuidad de las 33 historias anteriores. Actualiza el estado técnico y distribuye 62 tareas en tres sprints propuestos de 20, 21 y 21 tareas. Mantiene las decisiones pendientes separadas del desarrollo.
-- [Planificación por sprints](planificacion-sprints.md): catálogo de tareas y trazabilidad completa de historias. El Sprint 1 tiene 9 cierres técnicos (E01–E09) y 11 tareas pendientes asignadas (Alison 4, Santiago 7), por lo que sigue abierto. Estado posterior a la publicación del 17/09: [entrega](entrega-integracion-2026-09-17.md), [organización histórica](organizacion-trello-sprints-2026-09-17.md), [mapa de tarjetas](trello-sprints.json).
+- [Planificación por sprints](planificacion-sprints.md): catálogo vigente v2.3 y trazabilidad completa. Sus estados técnicos conservan el corte histórico del 16–17/09 y no son una auditoría del avance actual del Sprint 1. Para el trabajo posterior consultar informes y ensayo enlazados arriba. Referencias históricas del 17/09: [entrega](entrega-integracion-2026-09-17.md) y [organización](organizacion-trello-sprints-2026-09-17.md).
 - [Documento Explicativo General — PDF](entregables/general/04_Documento_Explicativo_General_Brotar.pdf): 9 páginas sobre alcance, recorridos, arquitectura, avance, fases y decisiones pendientes.
 - [Enlace al Figma final — texto](entregables/general/01_Enlace_Figma_Final.txt).
 - [Abrir CrownFundingV3 en Figma](https://www.figma.com/design/uHGCxK6bJk3JKba65HzDFu/CrownFundingV3?node-id=12-2574).
