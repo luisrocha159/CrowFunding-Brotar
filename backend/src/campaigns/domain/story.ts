@@ -29,6 +29,7 @@ export function validateStory(input: StoryInput): Record<string, string> {
   for (const field of ['problem', 'solution', 'beneficiaries', 'expectedResults'] as const) {
     const length = [...input[field]].length
     if (length > STORY_LIMITS.text) errors[field] = `Admite hasta ${STORY_LIMITS.text} caracteres.`
+    if (input[field].includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
   }
   return errors
 }
@@ -61,5 +62,8 @@ export function validateIndicator(input: IndicatorInput): Record<string, string>
   }
   // La meta sin unidad no se interpreta: el criterio pide unidad y meta juntas cuando apliquen.
   if (input.targetValue !== null && input.unit.length === 0) errors.unit = 'Indica la unidad de la meta.'
+  for (const field of ['name', 'description', 'unit'] as const) {
+    if (input[field].includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+  }
   return errors
 }

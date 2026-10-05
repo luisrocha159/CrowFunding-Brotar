@@ -107,13 +107,13 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 200)
     assert.equal((await call(`admin/campaigns/review/${draftId}`, administrator.cookie)).status, 404)
     for (const status of ['CHANGES_REQUESTED', 'APPROVED', 'PUBLISHED']) {
-      // Estado de fixture, no envío/decisión/publicación por un endpoint real de S2-11/12/14.
+      // Fixtures de decisiones: S2-13 admite correcciones; el descarte sigue limitado a DRAFT.
       sql(`UPDATE campaign SET status='${status}' WHERE id='${reviewedId}';`)
       assert.equal((await call(`campaigns/mine/${reviewedId}/discard`, creator.cookie, { confirmed: true })).status, 409)
-      assert.equal((await call(`campaigns/drafts/${reviewedId}`, creator.cookie, { title: 'No debe guardar', summary: '', campaignType: 'DONATION', builderStep: 0 }, 'PUT')).status, 409)
-      assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 404)
+      assert.equal((await call(`campaigns/drafts/${reviewedId}`, creator.cookie, { title: 'Corrección de ensayo', summary: '', campaignType: 'DONATION', builderStep: 0 }, 'PUT')).status, status === 'CHANGES_REQUESTED' ? 200 : 409)
+      assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 200, 'El administrador conserva consulta de decisiones y publicaciones.')
       const filtered = await (await call('admin/campaigns/review', administrator.cookie)).json() as { id: string }[]
-      assert.ok(!filtered.some(item => item.id === reviewedId), 'Solo IN_REVIEW entra en la cola.')
+      assert.equal(filtered.some(item => item.id === reviewedId), status === 'APPROVED', 'La cola incluye revisión y aprobación pendiente de publicar, no campañas ya decididas/publicadas.')
     }
   } finally {
     await app.close()

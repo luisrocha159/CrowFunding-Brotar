@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { parseEnv } from 'node:util'
 import pg from 'pg'
 
-// Solo permisos técnicos de lectura/descarte. No migra REJECTED ni asigna ADMIN/CREATOR.
+// Permisos técnicos S2. Migrar antes con migrate.mjs; nunca asigna ADMIN/CREATOR.
 const infra = new URL('../../infra/postgres-v2/', import.meta.url)
 const env = parseEnv(readFileSync(new URL('.env', infra), 'utf8'))
 const port = Number(env.POSTGRES_PORT)
@@ -11,7 +11,10 @@ const client = new pg.Client({ host: '127.0.0.1', port, database: 'brotar_db', u
 try {
   await client.connect()
   await client.query(readFileSync(new URL('grant-s2-projects.sql', infra), 'utf8'))
-  console.log('Permisos S2-15/S2-17 aplicados. Datos, roles y estados conservados.')
+  await client.query(readFileSync(new URL('grant-s2-public.sql', infra), 'utf8'))
+  await client.query(readFileSync(new URL('grant-s2-santiago.sql', infra), 'utf8'))
+  await client.query(readFileSync(new URL('grant-s2-review.sql', infra), 'utf8'))
+  console.log('Permisos S2 de proyectos, catálogo, secciones, envío y revisión aplicados. Datos y roles conservados.')
 } catch {
   console.error('Preparación S2 no completada. Revisa Docker/V2 y su configuración; no se borraron datos.')
   process.exitCode = 1

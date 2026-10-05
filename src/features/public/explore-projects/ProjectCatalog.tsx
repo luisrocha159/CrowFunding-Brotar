@@ -5,7 +5,6 @@ import { FormField } from '../../../shared/components/FormField'
 import { EmptyState, ErrorState, Message, ProjectCardSkeleton } from '../../../shared/components/Feedback'
 import { ProjectCard } from '../../../shared/components/ProjectCard'
 import { campaignTypeLabels, type CampaignType } from '../../../shared/types/project'
-import { DemoNotice, DemoStates } from '../PublicDemo'
 import { useProjectResource } from '../useProjectResource'
 import { queryProjects } from './projectQuery'
 import { changeProjectParams, clearProjectFilters, filterParamKeys, readProjectParams } from './projectParams'
@@ -19,6 +18,10 @@ export function ProjectCatalog({ search = false }: { search?: boolean }) {
   const { query, issues, options } = readProjectParams(params, resource.projects)
   const result = queryProjects(issues.length ? [] : resource.projects, query)
   const active = filterParamKeys.filter(key => params.get(key))
+  function filterLabel(key: string) {
+    const value = params.get(key) ?? ''
+    return key === 'tipo' && Object.hasOwn(campaignTypeLabels, value) ? campaignTypeLabels[value as CampaignType] : value
+  }
   const loading = resource.status === 'loading'
   function change(key: string, value: string) {
     setParams(changeProjectParams(params, key, value), { preventScrollReset: true })
@@ -33,7 +36,6 @@ export function ProjectCatalog({ search = false }: { search?: boolean }) {
     <div className={shared.sectionHeading}><div><p className="eyebrow">Descubre iniciativas con propósito</p><h1>{search ? 'Encuentra el proyecto que te inspira' : 'Explorar proyectos'}</h1><p className="lead">Conoce sus historias, revisa sus metas y descubre cómo buscan transformar su entorno.</p></div>
       {!search && <ButtonLink to={`/explorar/buscar${params.size ? `?${params}` : ''}`}>Búsqueda y filtros</ButtonLink>}
     </div>
-    <DemoNotice />
     {search && <section className={styles.toolbar} aria-label="Búsqueda y filtros">
       <form className={styles.searchForm} onSubmit={event => {
         event.preventDefault()
@@ -50,21 +52,19 @@ export function ProjectCatalog({ search = false }: { search?: boolean }) {
       </div>
     </section>}
     {active.length > 0 && <div className={styles.chips} aria-label="Filtros aplicados"><strong>Filtros aplicados:</strong>{active.map(key => {
-      const value = params.get(key)!
-      const label = key === 'tipo' && Object.hasOwn(campaignTypeLabels, value) ? campaignTypeLabels[value as CampaignType] : value
+      const label = filterLabel(key)
       return <button key={key} type="button" aria-label={`Quitar filtro ${label}`} onClick={() => change(key, '')}>{label} <span aria-hidden="true">×</span></button>
     })}<button type="button" onClick={clear}>Limpiar filtros</button></div>}
     <section ref={resultsRef} tabIndex={-1} className={styles.results} aria-label="Resultados de proyectos">
       <div className={styles.resultsBar}><div><h2>Proyectos para descubrir</h2><p role="status">{loading ? 'Cargando proyectos…' : resource.status === 'error' ? 'Listado no disponible' : `${result.total} ${result.total === 1 ? 'proyecto encontrado' : 'proyectos encontrados'}`}</p></div>
-        <FormField as="select" label="Ordenar por" value={query.sort} onChange={event => change('orden', event.target.value)}><option value="featured">Destacados primero</option><option value="newest">Más recientes</option><option value="progress">Mayor avance</option><option value="ending-soon">Próximos a finalizar</option></FormField>
+        <FormField as="select" label="Ordenar por" value={query.sort} onChange={event => change('orden', event.target.value)}><option value="featured">Orden del catálogo</option><option value="newest">Más recientes</option><option value="progress">Mayor avance</option><option value="ending-soon">Próximos a finalizar</option></FormField>
       </div>
       {loading ? <div className={shared.grid}>{[1,2,3].map(id => <ProjectCardSkeleton key={id} />)}</div>
         : resource.status === 'error' ? <ErrorState action={<Button onClick={resource.retry}>Reintentar</Button>} />
         : <>{issues.length > 0 && <Message tone="warning" title="Revisa los filtros">{issues.join(' ')}</Message>}
-          {result.total === 0 ? <EmptyState title={active.length ? 'No se encontraron proyectos' : 'Todavía no hay campañas disponibles'} description={active.length ? `No hay coincidencias para ${active.map(key => params.get(key)).join(', ')}. Prueba otros criterios.` : 'Puedes volver al inicio o restablecer la muestra para seguir explorando.'} action={active.length ? <Button onClick={clear}>Limpiar filtros</Button> : <div className={shared.actions}><Button onClick={resource.retry}>Restablecer muestra</Button><ButtonLink variant="secondary" to="/">Volver al inicio</ButtonLink></div>} />
+          {result.total === 0 ? <EmptyState title={active.length ? 'No se encontraron proyectos' : 'Todavía no hay campañas disponibles'} description={active.length ? `No hay coincidencias para ${active.map(filterLabel).join(', ')}. Prueba otros criterios.` : 'Aquí aparecerán las campañas que se publiquen. Puedes actualizar el listado o volver al inicio.'} action={active.length ? <Button onClick={clear}>Limpiar filtros</Button> : <div className={shared.actions}><Button onClick={resource.retry}>Actualizar listado</Button><ButtonLink variant="secondary" to="/">Volver al inicio</ButtonLink></div>} />
             : <><div className={shared.grid}>{result.items.map(project => <ProjectCard key={project.id} project={project} />)}</div><nav className={styles.pagination} aria-label="Paginación de proyectos"><Button variant="secondary" disabled={result.page <= 1} onClick={() => page(result.page - 1)}>Anterior</Button><span>Página {result.page} de {result.totalPages}</span><Button variant="secondary" disabled={!result.hasMore} onClick={() => page(result.page + 1)}>Siguiente</Button></nav></>}
         </>}
     </section>
-    <DemoStates />
   </>
 }

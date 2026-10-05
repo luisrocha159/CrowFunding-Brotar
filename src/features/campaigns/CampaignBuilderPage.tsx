@@ -6,7 +6,8 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import { CoverDraftEditor } from '../campaign-drafts/CoverDraftPage'
-import { DraftReview } from './DraftReview'
+import { CampaignSectionsEditor } from './CampaignSectionsEditor'
+import { CampaignSubmissionPanel } from './CampaignSubmissionPanel'
 import {
   activeCategories, changeModality, createDraft, myDrafts, readDraft, readModality,
   saveDraft, validateDraft, CAMPAIGN_TYPES, DraftFieldError, readGeneral, readStory, saveGeneral,
@@ -17,10 +18,10 @@ import styles from '../access/access.module.css'
 
 const empty: DraftInput = { title: '', summary: '', campaignType: 'DONATION', categoryId: null, organizationId: null }
 const typeNames: Record<string, string> = { DONATION: 'Donación', REWARD: 'Recompensa', PRESALE: 'Preventa' }
-const stepNames = ['Modalidad', 'Información general', 'Historia e impacto', 'Portada', 'Plan y presupuesto', 'Financiamiento', 'Recompensas', 'Revisión del borrador']
+const stepNames = ['Modalidad', 'Información general', 'Historia e impacto', 'Portada', 'Plan y presupuesto', 'Financiamiento', 'Recompensas', 'Revisión y envío']
 const statusNames: Record<string, string> = {
   DRAFT: 'Borrador', PENDING_VERIFICATION: 'Pendiente de verificación', IN_REVIEW: 'En revisión',
-  CHANGES_REQUESTED: 'Cambios solicitados', APPROVED: 'Aprobada', PUBLISHED: 'Publicada'
+  CHANGES_REQUESTED: 'Cambios solicitados', APPROVED: 'Aprobada', PUBLISHED: 'Publicada', REJECTED: 'Rechazada'
 }
 
 type Saving = 'idle' | 'saving' | 'saved' | 'failed'
@@ -45,6 +46,8 @@ export function CampaignBuilderPage() {
   const [values, setValues] = useState<DraftInput>({ ...empty })
   const [errors, setErrors] = useState<Partial<Record<keyof DraftInput, string>>>({})
   const [saving, setSaving] = useState<Saving>('idle')
+  const [sectionBusy, setSectionBusy] = useState(false)
+  const [sectionDirty, setSectionDirty] = useState(false)
   const [conflict, setConflict] = useState<string | null>(null)
   const [modality, setModality] = useState<Modality | null>(null)
   // Modalidad que el creador pidió y que la API retuvo por afectar a recompensas cargadas.
@@ -155,7 +158,7 @@ export function CampaignBuilderPage() {
   }
 
   async function open(id: string) {
-    if (active.current) return
+    if (active.current || sectionBusy || sectionDirty) return
     const controller = new AbortController()
     active.current = controller
     setSaving('idle'); setConflict(null)
@@ -192,7 +195,7 @@ export function CampaignBuilderPage() {
   }
 
   function move(next: number) {
-    if (!current) return
+    if (!current || sectionBusy || sectionDirty) return
     const id = current.id
     void persistStage(async signal => {
       // Guarda la etapa visible antes de avanzar. Nunca reenvía una copia antigua
@@ -208,14 +211,14 @@ export function CampaignBuilderPage() {
 
   const step = current?.builderStep ?? 0
   const total = current?.totalSteps ?? 0
-  const editable = current !== null && current.status === 'DRAFT'
+  const editable = current !== null && ['DRAFT', 'CHANGES_REQUESTED'].includes(current.status)
   const visibleScreen = loadedRequest === requestKey ? screen : 'loading'
 
   return <AccessShell
     centered
     title="Crear campaña"
     subtitle="El asistente guarda tu avance y lo recupera cuando vuelvas."
-    notice={<><strong>Borrador conectado.</strong> Se guarda el contenido y la posición del asistente vinculados a tu cuenta. No envía la campaña a revisión ni activa pagos.</>}
+    notice={<><strong>Campaña conectada.</strong> Guarda cada sección antes de avanzar. Solo se envía cuando confirmas «Enviar a revisión» en el último paso. No activa pagos.</>}
   >
     <ButtonLink to="/mi-cuenta" variant="secondary">Volver a mi cuenta</ButtonLink>
     {requestedDraft && <ButtonLink to="/mis-proyectos" variant="secondary">Volver a mis proyectos</ButtonLink>}
@@ -243,8 +246,8 @@ export function CampaignBuilderPage() {
           : <ul>{drafts.map((item) => <li key={item.id}>
             <h3>{item.title}</h3>
             <p>{typeNames[item.campaignType] ?? item.campaignType} · {statusNames[item.status] ?? item.status}</p>
-            <Button variant="secondary" onClick={() => { void open(item.id) }}>
-              {item.id === current?.id ? 'Abierto' : item.status === 'DRAFT' ? 'Continuar' : 'Consultar'}
+            <Button variant="secondary" disabled={sectionBusy || sectionDirty} onClick={() => { void open(item.id) }}>
+              {item.id === current?.id ? 'Abierto' : item.status === 'CHANGES_REQUESTED' ? 'Corregir' : item.status === 'DRAFT' ? 'Continuar' : 'Consultar'}
             </Button>
           </li>)}</ul>}
       </section>
@@ -299,8 +302,8 @@ export function CampaignBuilderPage() {
         <p role="status">Paso {step + 1} de {total}: {stepNames[step]} · {statusNames[current.status] ?? current.status}</p>
         <progress value={step + 1} max={total} aria-label={`Progreso: paso ${step + 1} de ${total}`} />
 
-        {!editable && <Message tone="error" title="Edición cerrada">
-          Esta campaña ya no es un borrador: su edición sigue el flujo de revisión, no el asistente.
+        {!editable && <Message tone="info" title="Campaña en consulta">
+          Su estado actual no admite edición. Podrás corregirla aquí si el revisor solicita cambios.
         </Message>}
 
         {/* Confirmación de guardado (CA 1) y error con reintento (CA 2). */}
@@ -439,12 +442,16 @@ export function CampaignBuilderPage() {
         </section>}
 
         {step === 3 && editable && <CoverDraftEditor key={current.id} campaignId={current.id} />}
-        {step >= 4 && step <= 6 && <Message tone="info" title="Etapa de un sprint posterior">Este bloque no forma parte del desarrollo del Sprint 1. No se da por completado ni habilita publicación.</Message>}
-        {step === 7 && <DraftReview general={general} story={story} indicators={indicators} />}
+        {step >= 4 && step <= 6 && <CampaignSectionsEditor key={current.id} id={current.id} step={step} editable={editable} campaignType={current.campaignType} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} />}
+        {step === 7 && <CampaignSubmissionPanel key={current.id} id={current.id} categories={categories} onGoTo={move} onBusyChange={setSectionBusy} onStatusChange={status => {
+          setCurrent(previous => previous ? { ...previous, status } : previous)
+          setDrafts(previous => previous.map(item => item.id === current.id ? { ...item, status } : item))
+        }} />}
+        {sectionDirty && <Message tone="warning" title="Cambios sin guardar">Guarda las secciones modificadas antes de cambiar de paso o de borrador.</Message>}
         <nav aria-label="Navegación del asistente">
-          <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving'}
+          <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving' || sectionBusy || sectionDirty}
             onClick={() => move(step === 7 && current.campaignType === 'DONATION' ? 5 : step - 1)}>Anterior</Button>
-          <Button disabled={!editable || step >= total - 1 || saving === 'saving'}
+          <Button disabled={!editable || step >= total - 1 || saving === 'saving' || sectionBusy || sectionDirty}
             onClick={() => move(step === 5 && current.campaignType === 'DONATION' ? 7 : step + 1)}>Siguiente</Button>
         </nav>
         </fieldset>

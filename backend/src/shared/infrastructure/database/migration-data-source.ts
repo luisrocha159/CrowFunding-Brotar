@@ -2,9 +2,10 @@ import 'reflect-metadata'
 import { DataSource, type DataSourceOptions } from 'typeorm'
 import type { MigrationConfig } from './migration.config'
 import { BaselineProvisionalV21789948800000 } from './migrations/1789948800000-BaselineProvisionalV2'
+import { CampaignRejected1791244800000 } from './migrations/1791244800000-CampaignRejected'
 
 // Orden explícito: no se descubren por glob para que el contenido aplicado sea revisable en el repositorio.
-export const MIGRATIONS = [BaselineProvisionalV21789948800000]
+export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000]
 
 // Nombre propio: el esquema oficial trae sus propias tablas y no se invade con el genérico "migrations".
 export const MIGRATIONS_TABLE = 'schema_migration_brotar'

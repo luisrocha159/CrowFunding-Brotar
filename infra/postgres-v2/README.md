@@ -4,6 +4,8 @@ Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinac
 
 **Esta es la infraestructura vigente.** `infra/postgres/` es legado y no debe levantarse junto con V2. Docker aloja solo PostgreSQL; API y frontend corren fuera del contenedor. La guía paso a paso principal está en el [README de la raíz](../../README.md#3-primera-instalación-completa).
 
+**Incremento local del 05/10/2026:** después de instalar la línea base se aplica la migración separada de REJECTED y los permisos S2 de revisión. No restaurar de nuevo una base existente. Para actualizar y habilitar la publicación administrativa provisional, seguir [la sección 15 del README](../../README.md#15-revisión-y-publicación-del-sprint-2); consultar [migraciones y recuperación](MIGRACIONES.md). El SQL oficial se conserva sin modificar.
+
 - PostgreSQL 18.6, base `brotar_db`, proyecto Compose `brotar-provisional-v2`.
 - Puerto local **15433**, volumen exclusivo `brotar-provisional-v2_brotar_pgdata_v2`.
 - SHA-256 del original: `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`.
@@ -20,6 +22,7 @@ pnpm install --frozen-lockfile
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
 node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
 node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 $env:ALLOW_DB_TEST_WRITES='true'

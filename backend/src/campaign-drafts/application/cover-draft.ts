@@ -26,7 +26,7 @@ export class CampaignCoverDrafts {
 
   async save(ownerUserId: string, campaignId: string, fileId: string, altText: string): Promise<CampaignCoverDraft> {
     const text = altText.trim()
-    if (text.length < 10 || text.length > 180) throw new InvalidCampaignCover()
+    if ([...text].length < 10 || [...text].length > 180 || text.includes('\u0000')) throw new InvalidCampaignCover()
     try {
       const uploaded = await this.files.privateDownload(fileId, ownerUserId)
       if (uploaded.file.ownerUserId !== ownerUserId) throw new FileAccessDenied()

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { ProjectConflict, ProjectMissing, type ProjectDetail, type ProjectRepository, type ProjectSummary } from '../application/projects'
 
@@ -20,17 +21,20 @@ export class TypeormProjectRepository implements ProjectRepository {
   reviewQueue(): Promise<ProjectSummary[]> {
     // PENDING_VERIFICATION no se equipara a revisión: KYC queda fuera de esta cola.
     return this.database.connection().query(`${SUMMARY}
-      WHERE c.status='IN_REVIEW' AND c.deleted_at IS NULL ORDER BY c.submitted_at ASC NULLS LAST, c.id`)
+      WHERE c.status IN ('IN_REVIEW','APPROVED') AND c.deleted_at IS NULL ORDER BY c.submitted_at ASC NULLS LAST, c.id`)
   }
   findOwn(userId: string, id: string) {
     return this.detail(`${SUMMARY} WHERE c.id=$1 AND c.creator_user_id=$2 AND c.deleted_at IS NULL`, [id, userId])
   }
   findForReview(id: string) {
-    return this.detail(`${SUMMARY} WHERE c.id=$1 AND c.status='IN_REVIEW' AND c.deleted_at IS NULL`, [id])
+    return this.detail(`${SUMMARY} WHERE c.id=$1 AND c.status IN ('IN_REVIEW','CHANGES_REQUESTED','APPROVED','PUBLISHED','REJECTED') AND c.deleted_at IS NULL`, [id])
   }
-  private async detail(sql: string, parameters: string[]): Promise<ProjectDetail | null> {
+  findAdministrative(id: string, manager: EntityManager) {
+    return this.detail(`${SUMMARY} WHERE c.id=$1 AND c.status IN ('IN_REVIEW','CHANGES_REQUESTED','APPROVED','PUBLISHED','REJECTED') AND c.deleted_at IS NULL`, [id], manager)
+  }
+  private async detail(sql: string, parameters: string[], manager?: EntityManager): Promise<ProjectDetail | null> {
     // Una transacción de lectura conserva un único corte entre cabecera, historia e historial.
-    return this.database.connection().transaction('REPEATABLE READ', async manager => {
+    const read = async (manager: EntityManager): Promise<ProjectDetail | null> => {
       const summaries: ProjectSummary[] = await manager.query(sql, parameters)
       if (!summaries[0]) return null
       const id = parameters[0]
@@ -42,7 +46,8 @@ export class TypeormProjectRepository implements ProjectRepository {
         `SELECT from_status AS "fromStatus", to_status AS "toStatus", changed_at AS "changedAt", reason
          FROM public.status_history WHERE entity_type='CAMPAIGN' AND entity_id=$1 ORDER BY changed_at, id`, [id])
       return { ...summaries[0], location: locations[0] ?? null, story: stories[0] ?? null, history }
-    })
+    }
+    return manager ? read(manager) : this.database.connection().transaction('REPEATABLE READ', read)
   }
   async discardOwn(userId: string, id: string): Promise<void> {
     await this.database.connection().transaction(async manager => {

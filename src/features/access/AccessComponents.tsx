@@ -13,7 +13,10 @@ export function AccessShell({ title, subtitle, intro, children, centered = false
 
 export function PasswordField({ id, label, name, value, onChange, onBlur, error, help, disabled, maxLength, newPassword = false }: { id: string; label: string; name: string; value: string; onChange: (value: string) => void; onBlur?: () => void; error?: string; help?: string; disabled?: boolean; maxLength?: number; newPassword?: boolean }) {
   const [visible, setVisible] = useState(false)
-  return <div className={styles.password}><FormField id={id} label={label} name={name} value={value} onChange={event => onChange(event.target.value)} onBlur={onBlur} type={visible ? 'text' : 'password'} autoComplete={newPassword ? 'new-password' : 'current-password'} required error={error} help={help} disabled={disabled} maxLength={maxLength} />
+  // HTML cuenta unidades UTF-16; la política cuenta puntos de código. No truncar
+  // una contraseña válida con caracteres que ocupan dos unidades (p. ej. emoji).
+  const htmlLimit = maxLength === undefined ? undefined : maxLength * 2
+  return <div className={styles.password}><FormField id={id} label={label} name={name} value={value} onChange={event => onChange(event.target.value)} onBlur={onBlur} type={visible ? 'text' : 'password'} autoComplete={newPassword ? 'new-password' : 'current-password'} required error={error} help={help} disabled={disabled} maxLength={htmlLimit} />
     <button type="button" disabled={disabled} aria-controls={id} aria-label={`${visible ? 'Ocultar' : 'Mostrar'} ${label.toLowerCase()}`} aria-pressed={visible} onClick={() => setVisible(current => !current)}>{visible ? 'Ocultar' : 'Mostrar'}</button>
   </div>
 }

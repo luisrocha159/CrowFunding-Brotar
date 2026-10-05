@@ -23,7 +23,7 @@ export class TypeormModalityRepository implements ModalityRepository {
       const result: [unknown[], number] = await manager.query(
         `UPDATE public.campaign
             SET campaign_type = $3::campaign_type, funding_model = $4::funding_model, updated_at = now()
-          WHERE id = $2 AND creator_user_id = $1 AND status = 'DRAFT' AND deleted_at IS NULL RETURNING id`,
+          WHERE id = $2 AND creator_user_id = $1 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL RETURNING id`,
         [creatorUserId, id, campaignType, fundingModel])
       if (result[1] !== 1) throw new DraftNotEditable()
     })

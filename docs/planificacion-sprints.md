@@ -2,6 +2,8 @@
 
 Plan v2.3, actualizado el 30/09/2026 según [tarea oficial de campañas](requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf). El PDF define el alcance de esta entrega; el Figma orienta las pantallas. No se modifica la arquitectura ni se agregan historias duplicadas.
 
+**Actualización técnica local del 05/10/2026:** las 13 tareas actuales del Sprint 2 están implementadas y comprobadas en RicardoDev: Santiago 7, Alison 1 y Ricardo 5. Pasaron 263 casos; consultar [evidencias por tarea](cierre-tecnico-sprint-2-2026-10-05.md). Se conserva el inventario histórico de abajo y los 64 BG: no se cierran automáticamente historias del MVP ni se actualiza Trello. S2-21 queda con verificación/documentación técnicas completas y publicación/revisión externa pendientes. D05 tiene autorización provisional de publicación por ADMIN; D06 y reglas definitivas siguen abiertas.
+
 Se conservan **64 historias y 62 tareas**. Las tareas desglosan las historias: no sumar ambos conteos. Los estados técnicos que aparecen más abajo conservan el corte del 16–17/09/2026 y **no representan una auditoría actual del Sprint 1**; consultar sus evidencias posteriores y el estado actual en Trello.
 
 | Agrupación | Tareas | M | L | Compromiso |

@@ -28,7 +28,7 @@ function summary(value: unknown): ProjectSummary {
     || (value.currencyCode !== null && (typeof value.currencyCode !== 'string' || !/^[A-Z]{3}$/.test(value.currencyCode)))) throw new SessionError(0)
   return value as unknown as ProjectSummary
 }
-function detail(value: unknown): ProjectDetail {
+export function projectDetailFrom(value: unknown): ProjectDetail {
   const project = summary(value)
   const data = value as Record<string, unknown>
   if (!(data.location === null || nullableFields(data.location, ['locality', 'countryCode']))
@@ -45,7 +45,7 @@ async function list(path: string, signal?: AbortSignal) {
 export function ownProjects(signal?: AbortSignal) { return list('/api/campaigns/mine', signal) }
 export function campaignReviewQueue(signal?: AbortSignal) { return list('/api/admin/campaigns/review', signal) }
 export async function projectDetail(id: string, admin: boolean, signal?: AbortSignal) {
-  return detail(await readJson(await requestApi(`${admin ? '/api/admin/campaigns/review' : '/api/campaigns/mine'}/${encodeURIComponent(id)}`, { signal })))
+  return projectDetailFrom(await readJson(await requestApi(`${admin ? '/api/admin/campaigns/review' : '/api/campaigns/mine'}/${encodeURIComponent(id)}`, { signal })))
 }
 export async function discardProject(id: string, signal?: AbortSignal): Promise<void> {
   await requestApi(`/api/campaigns/mine/${encodeURIComponent(id)}/discard`, { method: 'POST', body: { confirmed: true }, signal })

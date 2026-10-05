@@ -7,6 +7,7 @@ export function reviewTarget(current: string, decision: ReviewDecision, comment:
   if (current !== 'IN_REVIEW') throw new Error('Solo se decide sobre campañas en revisión.')
   if (!['APPROVED', 'CHANGES_REQUESTED', 'REJECTED'].includes(decision)) throw new Error('Decisión no disponible.')
   if (decision !== 'APPROVED' && !comment.trim()) throw new Error('Indica el motivo o los cambios solicitados.')
+  if (comment.includes('\u0000')) throw new Error('El comentario contiene un carácter de control no admitido.')
   if ([...comment.trim()].length > 5000) throw new Error('El comentario admite hasta 5000 caracteres.')
   return decision
 }

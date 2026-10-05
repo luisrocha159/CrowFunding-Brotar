@@ -12,7 +12,7 @@ const candidateFile = new URL('.env.backend', infra)
 const backendFile = new URL('../.env', import.meta.url)
 const previousFile = new URL('.env.before-v2', infra)
 const expectedHash = '5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88'
-const grants = ['grant-e07.sql', 'grant-s1-13.sql', 'grant-s1-15.sql', 'grant-s1-16.sql', 'grant-s1-17.sql', 'grant-s1-18.sql', 'grant-s1-files.sql']
+const grants = ['grant-e07.sql', 'grant-s1-13.sql', 'grant-s1-15.sql', 'grant-s1-16.sql', 'grant-s1-17.sql', 'grant-s1-18.sql', 'grant-s1-files.sql', 'grant-s2-projects.sql', 'grant-s2-public.sql', 'grant-s2-santiago.sql', 'grant-s2-review.sql']
 const [mode, inputPath] = process.argv.slice(2)
 
 if (!['install', 'activate'].includes(mode)) throw new Error('Uso: node scripts/adopt-provisional-v2.mjs install <SQL oficial> | activate')
@@ -66,7 +66,7 @@ if (mode === 'install') {
     const appPassword = randomBytes(32).toString('hex')
     const base = existsSync(backendFile) ? parseEnv(readFileSync(backendFile, 'utf8')) : {}
     writeFileSync(envFile, `BROTAR_COMPOSE_PROJECT=${project}\nPOSTGRES_PORT=${port}\nPOSTGRES_PASSWORD=${adminPassword}\n`, { flag: 'wx', mode: 0o600 })
-    writeFileSync(candidateFile, `NODE_ENV=development\nHOST=127.0.0.1\nPORT=${base.PORT ?? '3000'}\nCORS_ORIGINS=${base.CORS_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173'}\nDATABASE_ENABLED=true\nDB_HOST=127.0.0.1\nDB_PORT=${port}\nDB_NAME=brotar_db\nDB_USER=brotar_app\nDB_PASSWORD=${appPassword}\nDB_SSL=false\n`, { flag: 'wx', mode: 0o600 })
+    writeFileSync(candidateFile, `NODE_ENV=development\nHOST=127.0.0.1\nPORT=${base.PORT ?? '3000'}\nCORS_ORIGINS=${base.CORS_ORIGINS ?? 'http://127.0.0.1:5173,http://localhost:5173'}\nDATABASE_ENABLED=true\nDB_HOST=127.0.0.1\nDB_PORT=${port}\nDB_NAME=brotar_db\nDB_USER=brotar_app\nDB_PASSWORD=${appPassword}\nDB_SSL=false\nCAMPAIGN_ADMIN_PUBLICATION_ENABLED=${base.CAMPAIGN_ADMIN_PUBLICATION_ENABLED ?? 'true'}\n`, { flag: 'wx', mode: 0o600 })
     config = readConfiguration()
   }
 

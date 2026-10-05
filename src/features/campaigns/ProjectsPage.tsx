@@ -5,6 +5,7 @@ import { EmptyState, Message } from '../../shared/components/Feedback'
 import projectTree from '../../assets/figma/project-tree.svg'
 import { canContinueProject, projectGoal, projectStatusNames, type ProjectSummary } from './projectsClient'
 import { useProjects } from './useProjects'
+import { AdministrativeCampaignPanel } from './AdministrativeCampaignPanel'
 import styles from './projects.module.css'
 
 export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary[]; onDiscard: (project: ProjectSummary) => void }) {
@@ -15,6 +16,7 @@ export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary
     </div>
     <div className={styles.actions}>
       {canContinueProject(project.status) && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Continuar borrador</ButtonLink>}
+      {project.status === 'CHANGES_REQUESTED' && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Corregir campaña</ButtonLink>}
       <ButtonLink variant="secondary" to={`/mis-proyectos/${encodeURIComponent(project.id)}`}>Ver detalle</ButtonLink>
       {canContinueProject(project.status) && <Button variant="tertiary" onClick={() => onDiscard(project)}>Descartar</Button>}
     </div>
@@ -38,7 +40,7 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
   return <div className={admin ? styles.adminLayout : styles.creatorLayout}>
     {admin && <aside className={styles.sidebar}><h2>Administración</h2><Link aria-current="page" to="/administracion/campanas">Panel de revisión</Link><Link to="/mi-cuenta">Mi cuenta y perfil</Link><p>Esta etapa incluye la cola de campañas. No incluye KYC ni operaciones financieras.</p></aside>}
     <section className={styles.content}>
-      <header className={styles.heading}><div><h1>{id ? (admin ? 'Detalle para revisión' : 'Detalle de mi proyecto') : admin ? 'Revisión de campañas' : 'Mis proyectos'}</h1><p>{admin ? 'Campañas enviadas a revisión. La aprobación y la publicación son operaciones distintas.' : 'Lista completa de tus campañas y su estado actual.'}</p></div>
+      <header className={styles.heading}><div><h1>{id ? (admin ? 'Detalle para revisión' : 'Detalle de mi proyecto') : admin ? 'Revisión de campañas' : 'Mis proyectos'}</h1><p>{admin ? 'Campañas en revisión y aprobadas pendientes de publicación. Aprobar y publicar son operaciones distintas.' : 'Lista completa de tus campañas y su estado actual.'}</p></div>
         {!admin && !id && data.state === 'ready' && <ButtonLink to="/crear-campana">+ Crear nueva campaña</ButtonLink>}
       </header>
       <p><ButtonLink to={id ? back : '/mi-cuenta'} variant="tertiary">{id ? 'Volver a la lista' : 'Volver a mi cuenta'}</ButtonLink></p>
@@ -54,14 +56,15 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
             <tbody>{visible.map(project => <tr key={project.id}><td>{project.title}</td><td>{project.creatorName || 'Nombre no disponible'}</td><td>{project.submittedAt ? new Date(project.submittedAt).toLocaleDateString('es-BO') : 'Sin fecha de envío'}</td><td>{projectGoal(project)}</td><td><span className={styles.badge}>{projectStatusNames[project.status]}</span></td><td><Link to={`${back}/${encodeURIComponent(project.id)}`}>Revisar campaña</Link></td></tr>)}</tbody></table></div>
           {visible.length === 0 && <p role="status">No hay coincidencias con esa búsqueda.</p>}</>
           : <ProjectsList projects={data.projects} onDiscard={setConfirmation} />)}
-      {data.state === 'ready' && id && data.detail && <>
+      {data.state === 'ready' && id && admin && <AdministrativeCampaignPanel key={id} id={id} />}
+      {data.state === 'ready' && id && !admin && data.detail && <>
+        {!admin && data.detail.status === 'CHANGES_REQUESTED' && <ButtonLink to={`/crear-campana?borrador=${encodeURIComponent(id)}`}>Corregir y reenviar campaña</ButtonLink>}
         <section className={styles.panel}><div className={styles.titleRow}><h2>{data.detail.title}</h2><span className={styles.badge}>{projectStatusNames[data.detail.status]}</span></div><p>{data.detail.summary || 'Resumen todavía no registrado.'}</p>
           <dl><dt>Categoría</dt><dd>{data.detail.categoryName ?? 'Por definir'}</dd><dt>Meta</dt><dd>{projectGoal(data.detail)}</dd><dt>Creador</dt><dd>{data.detail.creatorName || 'Nombre no disponible'}</dd><dt>Ubicación</dt><dd>{[data.detail.location?.locality, data.detail.location?.countryCode].filter(Boolean).join(', ') || 'Por definir'}</dd></dl>
           {!admin && canContinueProject(data.detail.status) && <ButtonLink to={`/crear-campana?borrador=${encodeURIComponent(data.detail.id)}`}>Continuar borrador</ButtonLink>}
         </section>
         <section className={styles.panel}><h2>Historia e impacto</h2>{(['problem', 'solution', 'beneficiaries', 'expectedResults'] as const).map((key, index) => <div key={key}><h3>{['Problema', 'Solución', 'Beneficiarios', 'Resultados esperados'][index]}</h3><p className={styles.prose}>{data.detail!.story?.[key] || 'Información todavía no registrada.'}</p></div>)}</section>
         <section className={styles.panel}><h2>Historial registrado</h2>{data.detail.history.length === 0 ? <p>No hay movimientos registrados.</p> : <ol>{data.detail.history.map((event, index) => <li key={index}>{new Date(event.changedAt).toLocaleString('es-BO')} · {projectStatusNames[event.toStatus] ?? event.toStatus}{event.reason && <p>{event.reason}</p>}</li>)}</ol>}</section>
-        {admin && <Message tone="info" title="Vista preparatoria de revisión">El detalle de plan, presupuesto, financiamiento y recompensas se integrará con los módulos del equipo. Las decisiones todavía no están habilitadas en esta pantalla.</Message>}
       </>}
       <dialog ref={dialog} className={styles.dialog} aria-labelledby="discard-title" onCancel={event => { event.preventDefault(); if (!data.discarding) setConfirmation(null) }}>
         <h2 id="discard-title">¿Descartar este borrador?</h2><p>«{confirmation?.title}» dejará de aparecer en tus proyectos. Solo se admite esta acción mientras sea un borrador propio.</p>
