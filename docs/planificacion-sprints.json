@@ -1,5 +1,12 @@
 {
   "version": "2.3",
+  "delivery": {
+    "date": "2026-10-05",
+    "branch": "DEV",
+    "evidence": "entrega-dev-sprint-2-2026-10-05.md",
+    "verification": "Copia Git limpia: dependencias congeladas, V2 nueva aislada, dos migraciones, permisos, activación/arranque/repetición y 276 pruebas aprobadas.",
+    "acceptance": "Revisión formal de líderes pendiente; sin cambios en Trello. localProgress conserva el corte histórico anterior a esta entrega; no determina la disponibilidad de estos archivos en DEV."
+  },
   "localProgress": {
     "date": "2026-10-05",
     "branch": "RicardoDev",
