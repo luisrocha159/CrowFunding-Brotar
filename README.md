@@ -95,6 +95,17 @@ pnpm install --frozen-lockfile
 
 Desde `backend/`, utiliza el SQL incluido en el repositorio:
 
+**Antes del primer `install`: elige si esta es la única copia de Brotar en esta PC.** Una carpeta diferente no aísla Docker: por defecto todas las copias usan el proyecto `brotar-provisional-v2`, el mismo volumen y el puerto `15433`. Si ya tienes otra instalación en este equipo y quieres probar desde cero, ejecuta primero **en la terminal PowerShell**, desde `backend/`:
+
+```powershell
+$env:BROTAR_COMPOSE_PROJECT='brotar-ensayo'
+$env:BROTAR_DB_PORT='15434'
+```
+
+Usa un nombre y un puerto libres para cada copia adicional. En otra PC, o si esta es la única instalación, no necesitas este bloque: se usan los valores normales. Si ya ejecutaste `install` con la configuración equivocada, estas dos variables no sustituyen los archivos ya generados: conserva la configuración y pide diagnóstico antes de repetir la instalación o cambiar contraseñas. No borres el volumen original.
+
+**Todos los bloques `powershell` de esta guía se ejecutan en la terminal; no se pegan dentro de `.env`.** No crees `backend/.env` manualmente: `install` prepara el candidato y `activate` lo copia automáticamente después de verificar la conexión.
+
 ```powershell
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
@@ -108,7 +119,9 @@ El instalador comprueba el hash de la versión oficial, levanta una instancia en
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
-El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL. Después verifica las pruebas de integración contra el candidato:
+El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL.
+
+**Pruebas de integración opcionales para comprobar la entrega:** el siguiente bloque se ejecuta completo en PowerShell. Las líneas `$env:...` son variables temporales de la terminal, no el contenido de `backend/.env`. Las pruebas crean datos temporales y los limpian; no las ejecutes sobre una base de producción.
 
 ```powershell
 $env:ALLOW_DB_TEST_WRITES='true'
@@ -121,12 +134,27 @@ try {
 }
 ```
 
-Solo si todo pasó, y con la API detenida:
+Con la instalación, migraciones y verificación aprobadas (y las pruebas aprobadas si las ejecutaste), y con la API detenida:
 
 ```powershell
 node scripts/adopt-provisional-v2.mjs activate
 pnpm run dev
 ```
+
+**Cómo debe quedar `backend/.env`:** lo genera `activate` desde `infra/postgres-v2/.env.backend`. Es texto de configuración `CLAVE=valor`, no comandos de PowerShell, `try/finally` ni instrucciones de pruebas. Comprueba estas claves sin publicar ni compartir la contraseña:
+
+| Clave | Instalación normal | Copia aislada del ejemplo |
+| --- | --- | --- |
+| `DATABASE_ENABLED` | `true` | `true` |
+| `DB_HOST` | `127.0.0.1` | `127.0.0.1` |
+| `DB_PORT` | `15433` | `15434` |
+| `DB_NAME` | `brotar_db` | `brotar_db` |
+| `DB_USER` | `brotar_app` | `brotar_app` |
+| `DB_PASSWORD` | Generada localmente por `install` | Generada para esta copia; no reutilizar la de otra |
+| `DB_SSL` | `false`, conexión local | `false`, conexión local |
+| `HOST` / `PORT` | `127.0.0.1` / `3000` | Igual; detén la otra API si ocupa `3000` |
+
+No necesitas copiar esta tabla a ningún archivo. Tras activar, reinicia la API si estaba abierta: el proceso carga `.env` al arrancar. Solo una API y un frontend pueden usar los puertos `3000` y `5173` a la vez.
 
 No necesitas ejecutar `install` ni `activate` cada vez que abras el proyecto. Ambos admiten repetición segura con la configuración vigente; `install` no vuelve a aplicar el SQL sobre una base poblada y `activate` no sobrescribe un respaldo previo. Para una instalación antigua con permisos faltantes, consulta [la guía V2](infra/postgres-v2/README.md).
 
@@ -476,6 +504,24 @@ Después ejecutar `pnpm run dev` y, en otra terminal desde la raíz, `bun run de
 La nueva migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). `migrate status` debe mostrar ambas migraciones aplicadas y `pending: false`.
 
 ### Demostrar el flujo con cuentas autorizadas
+
+#### Crear un administrador de ensayo en cada computadora
+
+Las cuentas de la base local **no viajan con Git**. DEV incluye el procedimiento, no una cuenta compartida, una contraseña predeterminada ni un backup poblado. Cada responsable prepara su propia cuenta y contraseña; nunca las añade al SQL oficial, README, scripts o archivos versionados.
+
+1. Inicia PostgreSQL, backend y frontend siguiendo la sección 3. Registra la cuenta de ensayo desde **Crear una cuenta**, usando una contraseña exclusiva de prueba. Seleccionar un perfil no concede ADMIN.
+2. El responsable de esta instalación, con acceso al archivo privado de PostgreSQL, ejecuta desde `backend/` el comando siguiente. Sustituye el correo de ejemplo por el de la cuenta que **ya registró** y que autoriza como administradora:
+
+```powershell
+node scripts/grant-local-admin.mjs --email=admin@example.invalid --confirm-local-admin
+```
+
+3. Inicia sesión normalmente con esa cuenta y su contraseña. Si ya había sesión abierta, ciérrala y vuelve a entrar. Abre **Mi cuenta → Opciones para iniciativas y permisos → Administración de campañas**, o `http://127.0.0.1:5173/administracion/campanas`.
+4. Comprueba consulta, detalle y decisiones sobre una campaña enviada. Aprobar no publica; publicar requiere la configuración provisional de esta sección. ADMIN no implica CREATOR ni sustituye la cuenta del creador para demostrar ambos lados.
+
+Este comando exige configuración **V2 local de desarrollo**, verifica el proyecto Docker, el contenedor y su puerto loopback, y utiliza las credenciales privadas del operador. Concede solo ADMIN a la cuenta indicada. No crea usuarios, restablece contraseñas, verifica correo/identidad ni cambia el estado de la cuenta. Repetirlo para una concesión vigente no duplica roles; una concesión vencida/futura requiere revisión manual. No habilita cuentas suspendidas, cerradas, eliminadas o bloqueadas. No es un endpoint ni un seed que se ejecute al instalar o arrancar. La provisión definitiva en despliegue continúa pendiente de D06.
+
+Las pruebas de este procedimiento están incluidas en `pnpm run check`; también se pueden ejecutar por separado con `pnpm run test:local-admin`. No necesitan una base para los casos simulados de protección e idempotencia.
 
 El registro básico **no concede CREATOR ni ADMIN**, aunque se seleccione un perfil de uso. No hay contraseña administrativa compartida en el repositorio. Se necesitan cuentas de ensayo a las que el responsable haya concedido esos roles; su provisión definitiva sigue pendiente en D06. Las integraciones preparan y limpian sus propias cuentas temporales sin modificar personas existentes.
 
