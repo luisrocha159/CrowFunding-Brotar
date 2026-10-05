@@ -5,7 +5,7 @@ import { SessionMutationGuard } from '../../auth/infrastructure/http/session-htt
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { DraftNotEditable, DraftNotFound } from '../application/drafts'
 import { CampaignSections, SectionInvalid } from '../application/sections'
-import type { BudgetInput, FundingInput, PlanInput, RewardInput } from '../domain/sections'
+import { SECTION_TEXT_LIMIT, type BudgetInput, type FundingInput, type PlanInput, type RewardInput } from '../domain/sections'
 
 class ActivityDto {
   @IsString() @MaxLength(200) name!: string
@@ -24,14 +24,14 @@ class BudgetItemDto {
   @IsNumber() quantity!: number
   @IsNumber() unitPrice!: number
   @IsNumber() plannedAmount!: number
-  @IsString() notes!: string
+  @IsString() @MaxLength(SECTION_TEXT_LIMIT) notes!: string
 }
 class RiskDto {
   @IsString() @MaxLength(200) title!: string
-  @IsString() description!: string
+  @IsString() @MaxLength(SECTION_TEXT_LIMIT) description!: string
   @IsString() @MaxLength(40) likelihood!: string
   @IsString() @MaxLength(40) impact!: string
-  @IsString() mitigation!: string
+  @IsString() @MaxLength(SECTION_TEXT_LIMIT) mitigation!: string
 }
 export class BudgetDto {
   @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => BudgetItemDto) items!: BudgetItemDto[]
@@ -47,7 +47,7 @@ export class FundingDto {
 }
 class RewardDto {
   @IsString() @MaxLength(200) title!: string
-  @IsString() description!: string
+  @IsString() @MaxLength(SECTION_TEXT_LIMIT) description!: string
   @IsString() @MaxLength(60) rewardKind!: string
   @IsNumber() minAmount!: number
   @IsOptional() @IsInt() quantityTotal!: number | null

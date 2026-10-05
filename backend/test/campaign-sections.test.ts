@@ -35,7 +35,7 @@ test('S2-04: meta, moneda, modelo y duración tienen límites reales', () => {
   assert.ok(validateFunding({ ...funding, goalAmount: 0 }).goalAmount)
   assert.ok(validateFunding({ ...funding, fundingModel: 'INVALID' }).fundingModel)
   assert.ok(validateFunding({ ...funding, endsAt: funding.startsAt }).endsAt)
-  assert.ok(validateFunding({ ...funding, endsAt: '2026-11-20T00:00:00.000Z' }).endsAt)
+  assert.deepEqual(validateFunding({ ...funding, endsAt: '2026-11-20T00:00:00.000Z' }), {}, 'No se impone una equivalencia exacta entre duración y fechas que todavía no está confirmada.')
   assert.ok(validateFunding({ ...funding, endsAt: null }).endsAt)
 })
 

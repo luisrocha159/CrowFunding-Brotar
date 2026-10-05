@@ -1,5 +1,7 @@
 # Sprint 2 · tareas de Santiago · implementación local
 
+> **Nota del autor conservada como registro histórico.** La implementación se publicó después en `origin/SantiagoDev`, commit `2603426` del 04/10/2026. Los conteos, falta de Docker y referencias a Trello/commit de abajo corresponden al ensayo original, no a la copia integrada vigente. Para resultados actuales y correcciones ver la [revisión del 05/10/2026](revision-integracion-santiago-sprint-2-2026-10-05.md). En esta revisión no se consultó Trello ni se modificaron tarjetas.
+
 La implementación parte de `SantiagoDev` actualizado al commit `9571bd4` de `DEV`. Este documento registra el alcance técnico local; no equivale a aceptación del equipo ni a cierre de tarjetas Trello.
 
 | Tarea | Implementación |

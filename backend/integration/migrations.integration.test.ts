@@ -14,6 +14,7 @@ import {
 
 // Base desechable con nombre propio: nunca se toca brotar_db ni la copia del ensayo.
 const GUARD_DATABASE = `brotar_db_drill_guard_${randomBytes(6).toString('hex')}`
+const REJECTED_DATABASE = `brotar_db_drill_rejected_${randomBytes(6).toString('hex')}`
 
 function adminConfig(): ReturnType<typeof readMigrationConfig> {
   const local = parseEnv(readFileSync(resolve(process.cwd(), '../infra/postgres-v2/.env'), 'utf8'))
@@ -91,4 +92,44 @@ test('migraciones: una base incompleta se rechaza en vez de marcarse migrada', {
     .then((rows: { n: number }[]) => rows[0]?.n ?? 0)
     .catch(() => 0))
   assert.equal(recorded, 0)
+})
+
+test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos y admite repetir up', { timeout: 90000 }, async (context) => {
+  const config = readDatabaseConfig(process.env)
+  assert.ok(config.enabled && process.env.ALLOW_DB_TEST_WRITES === 'true', 'Solo ensayo explícito local.')
+  assert.ok(['127.0.0.1', 'localhost', '::1'].includes(config.host), 'Solo base LOCAL.')
+  await withAdmin('postgres', (source) => source.query(`CREATE DATABASE ${REJECTED_DATABASE}`))
+  context.after(async () => {
+    await withAdmin('postgres', (source) => source.query(`DROP DATABASE IF EXISTS ${REJECTED_DATABASE}`))
+  })
+  const official = readFileSync(resolve(process.cwd(), '../infra/postgres-v2/official-schema.sql'), 'utf8')
+  const enumValues = (source: DataSource) => source.query(
+    `SELECT enumlabel FROM pg_enum WHERE enumtypid='public.campaign_status'::regtype ORDER BY enumsortorder`)
+  const snapshot = (source: DataSource) => source.query(
+    `SELECT code, name FROM public.role ORDER BY code`)
+  let originalValues: { enumlabel: string }[] = []
+  let originalRoles: unknown = []
+  await withAdmin(REJECTED_DATABASE, async (source) => {
+    await source.query(official)
+    originalValues = await enumValues(source)
+    originalRoles = await snapshot(source)
+    assert.ok(!originalValues.some((row) => row.enumlabel === 'REJECTED'))
+    await source.query(`CREATE SCHEMA ${MIGRATIONS_SCHEMA}`)
+  })
+  const source = createMigrationDataSource({ ...adminConfig(), database: REJECTED_DATABASE })
+  await source.initialize()
+  try {
+    const applied = await source.runMigrations({ transaction: 'each' })
+    assert.deepEqual(applied.map((row) => row.name), MIGRATIONS.map((migration) => migration.name))
+    assert.deepEqual(await enumValues(source), [...originalValues, { enumlabel: 'REJECTED' }])
+    assert.deepEqual(await snapshot(source), originalRoles, 'Los catálogos iniciales se conservan.')
+    assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
+    assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
+    await assert.rejects(() => source.undoLastMigration({ transaction: 'each' }), /no elimina valores ENUM/)
+    assert.equal(await source.showMigrations(), false)
+    const tables: { n: number }[] = await source.query(
+      `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+       WHERE n.nspname='public' AND c.relkind='r'`)
+    assert.equal(tables[0]?.n, 59)
+  } finally { await source.destroy() }
 })

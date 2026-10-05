@@ -34,6 +34,7 @@ function fixture(download: FileDownload | null = file()) {
 test('portada de borrador valida archivo público de campaña, texto alternativo y persistencia', async () => {
   const drafts = fixture()
   await assert.rejects(drafts.save('owner', 'campaign', '00000000-0000-4000-8000-000000000001', 'muy corto'), InvalidCampaignCover)
+  await assert.rejects(drafts.save('owner', 'campaign', '00000000-0000-4000-8000-000000000001', 'Portada con nulo\u0000'), InvalidCampaignCover)
   const saved = await drafts.save('owner', 'campaign', '00000000-0000-4000-8000-000000000001', 'Portada de prueba para el borrador')
   assert.equal(saved.imageUrl, '/api/files/public/00000000-0000-4000-8000-000000000001')
   assert.equal((await drafts.read('owner', 'campaign'))?.altText, 'Portada de prueba para el borrador')

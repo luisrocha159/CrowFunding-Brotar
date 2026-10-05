@@ -1,6 +1,7 @@
 import { SessionError } from '../access/session/sessionClient'
 import { readJson, requestApi } from '../../shared/api/request'
 import { DraftFieldError, fieldErrorsFrom } from './campaignsClient'
+import { validatePlan, validateBudget, validateFunding, validateRewards } from './sectionValidation'
 
 export interface ActivityInput { name: string; responsibleName: string; plannedStartOn: string; plannedEndOn: string }
 export interface MilestoneInput extends ActivityInput { activityIndex: number | null }
@@ -31,42 +32,70 @@ async function request(path: string, method: 'GET' | 'PUT', body?: unknown, sign
   return readJson(response)
 }
 
-function section<T>(value: unknown, keys: string[], arrays: string[] = []): T {
-  if (!object(value) || !keys.every(key => value[key] !== undefined) || !arrays.every(key => Array.isArray(value[key]))) throw new SessionError(0)
+const text = (value: unknown): value is string => typeof value === 'string'
+const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value)
+const optionalText = (value: unknown) => value === null || text(value)
+const optionalNumber = (value: unknown) => value === null || finite(value)
+const arrayOf = (value: unknown, check: (item: unknown) => boolean) => Array.isArray(value) && value.length <= 50 && value.every(check)
+const activity = (value: unknown) => object(value) && ['name', 'responsibleName', 'plannedStartOn', 'plannedEndOn'].every(key => text(value[key]))
+const milestone = (value: unknown) => activity(value) && object(value) && (value.activityIndex === null || (Number.isInteger(value.activityIndex) && Number(value.activityIndex) >= 0))
+const item = (value: unknown) => object(value) && ['categoryId', 'description', 'notes'].every(key => text(value[key])) && ['quantity', 'unitPrice', 'plannedAmount'].every(key => finite(value[key]))
+const risk = (value: unknown) => object(value) && ['title', 'description', 'likelihood', 'impact', 'mitigation'].every(key => text(value[key]))
+const reward = (value: unknown) => object(value) && ['title', 'description', 'rewardKind'].every(key => text(value[key])) && finite(value.minAmount) && optionalNumber(value.quantityTotal) && optionalText(value.estimatedDeliveryOn)
+function checked<T>(value: unknown, valid: boolean): T {
+  if (!valid) throw new SessionError(0)
   return value as T
+}
+export function planFrom(value: unknown): PlanInput {
+  return checked(value, object(value) && arrayOf(value.activities, activity) && arrayOf(value.milestones, milestone))
+}
+export function budgetFrom(value: unknown): BudgetInput {
+  return checked(value, object(value) && arrayOf(value.items, item) && arrayOf(value.risks, risk))
+}
+export function fundingFrom(value: unknown): FundingInput {
+  return checked(value, object(value) && optionalNumber(value.goalAmount) && optionalNumber(value.durationDays) && text(value.currencyCode) && text(value.fundingModel) && optionalText(value.startsAt) && optionalText(value.endsAt))
+}
+export function rewardsFrom(value: unknown): RewardInput[] {
+  if (!object(value)) throw new SessionError(0)
+  return checked(value.rewards, arrayOf(value.rewards, reward))
+}
+function requireValid(errors: Record<string, string>) {
+  if (Object.keys(errors).length) throw new DraftFieldError(errors)
 }
 
 export async function readPlan(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<PlanInput> {
-  return section<PlanInput>(await request(`${id}/plan`, 'GET', undefined, signal, send), ['activities', 'milestones'], ['activities', 'milestones'])
+  return planFrom(await request(`${encodeURIComponent(id)}/plan`, 'GET', undefined, signal, send))
 }
 export async function savePlan(id: string, plan: PlanInput, signal?: AbortSignal, send?: typeof fetch): Promise<PlanInput> {
-  return section<PlanInput>(await request(`${id}/plan`, 'PUT', plan, signal, send), ['activities', 'milestones'], ['activities', 'milestones'])
+  requireValid(validatePlan(plan))
+  return planFrom(await request(`${encodeURIComponent(id)}/plan`, 'PUT', plan, signal, send))
 }
 export async function readBudget(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<BudgetInput> {
-  return section<BudgetInput>(await request(`${id}/budget`, 'GET', undefined, signal, send), ['items', 'risks'], ['items', 'risks'])
+  return budgetFrom(await request(`${encodeURIComponent(id)}/budget`, 'GET', undefined, signal, send))
 }
 export async function saveBudget(id: string, budget: BudgetInput, signal?: AbortSignal, send?: typeof fetch): Promise<BudgetInput> {
-  return section<BudgetInput>(await request(`${id}/budget`, 'PUT', budget, signal, send), ['items', 'risks'], ['items', 'risks'])
+  requireValid(validateBudget(budget))
+  return budgetFrom(await request(`${encodeURIComponent(id)}/budget`, 'PUT', budget, signal, send))
 }
 export async function readFunding(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<FundingInput> {
-  return section<FundingInput>(await request(`${id}/funding`, 'GET', undefined, signal, send), ['goalAmount', 'currencyCode', 'durationDays', 'fundingModel'])
+  return fundingFrom(await request(`${encodeURIComponent(id)}/funding`, 'GET', undefined, signal, send))
 }
 export async function saveFunding(id: string, funding: FundingInput, signal?: AbortSignal, send?: typeof fetch): Promise<FundingInput> {
-  return section<FundingInput>(await request(`${id}/funding`, 'PUT', funding, signal, send), ['goalAmount', 'currencyCode', 'durationDays', 'fundingModel'])
+  requireValid(validateFunding(funding))
+  return fundingFrom(await request(`${encodeURIComponent(id)}/funding`, 'PUT', funding, signal, send))
 }
 export async function readRewards(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<RewardInput[]> {
-  const data = await request(`${id}/rewards`, 'GET', undefined, signal, send)
-  if (!object(data) || !Array.isArray(data.rewards)) throw new SessionError(0)
-  return data.rewards as RewardInput[]
+  return rewardsFrom(await request(`${encodeURIComponent(id)}/rewards`, 'GET', undefined, signal, send))
 }
 export async function saveRewards(id: string, rewards: RewardInput[], signal?: AbortSignal, send?: typeof fetch): Promise<RewardInput[]> {
-  const data = await request(`${id}/rewards`, 'PUT', { rewards }, signal, send)
-  if (!object(data) || !Array.isArray(data.rewards)) throw new SessionError(0)
-  return data.rewards as RewardInput[]
+  requireValid(validateRewards('REWARD', rewards)) // La API decide la modalidad real bajo bloqueo.
+  return rewardsFrom(await request(`${encodeURIComponent(id)}/rewards`, 'PUT', { rewards }, signal, send))
 }
 export async function readSectionCatalogs(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<SectionCatalogs> {
-  return section<SectionCatalogs>(await request(`${id}/section-catalogs`, 'GET', undefined, signal, send), ['expenseCategories', 'currencies'], ['expenseCategories', 'currencies'])
+  const value = await request(`${encodeURIComponent(id)}/section-catalogs`, 'GET', undefined, signal, send)
+  return checked(value, object(value) && Array.isArray(value.expenseCategories) && value.expenseCategories.every(row => object(row) && text(row.id) && text(row.name)) && Array.isArray(value.currencies) && value.currencies.every(row => object(row) && text(row.code) && /^[A-Z]{3}$/.test(row.code) && text(row.name)))
 }
 export function budgetTotal(budget: BudgetInput): number {
-  return budget.items.reduce((sum, item) => sum + item.plannedAmount, 0)
+  // Hasta 50 partidas numeric(14,2): los centavos acumulados caben en un entero seguro.
+  return budget.items.reduce((cents, item) => cents + Math.round(item.plannedAmount * 100), 0) / 100
 }

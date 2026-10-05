@@ -2,15 +2,15 @@
 
 **Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
 
-> **Sprint 1 integrado en DEV — corte 21/09/2026:** reúne el trabajo de Ricardo, Alison y Santiago, las correcciones y el ensayo local. Se aprobaron 93 pruebas frontend, 93 backend y 14 integraciones PostgreSQL (200 casos), además de lint, tipos y compilación. `main` conserva la entrega anterior. Los informes fechados anteriores son históricos; este README describe la versión actual. Esto no equivale a aceptación del cliente ni a certificación de ausencia de errores.
+> **Entrega vigente en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1. `main` no se modifica. La revisión de calidad aprobó 130 pruebas frontend, 128 backend y 18 integraciones PostgreSQL (276 casos); la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue el ensayo de esta publicación. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
 
-**Actualización de DEV · 30/09/2026:** incluye las mejoras de validación del registro, ayuda para recuperación local, menú de cuenta con sesión y documentos de estudio del Sprint 1. La planificación v2.3 conserva 62 tareas y 64 historias: Sprint 1 = 20; Sprint 2 = 13 tareas de campañas; Sprint 3 = inventario de 29 tareas por refinar, no compromiso de una sola iteración. Esto es planificación: el módulo completo del Sprint 2 todavía no se declara implementado. Su reparto se acordará con el equipo.
+**Por dónde empezar:** instalación nueva → sección 3; copia V2 ya instalada → sección 15; abrir otro día → sección 4; probar todos los flujos → [tutorial PDF](output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf). No hace falta copiar cuentas, contraseñas, `.env` ni archivos de esta computadora. Cada integrante genera su configuración local.
 
-**Trabajo local en SantiagoDev · Sprint 2:** las siete tareas de Santiago tienen código de frontend y backend para planificación, presupuesto, financiamiento, recompensas, revisión, envío y corrección. La [evidencia y los límites de verificación](docs/implementacion-sprint-2-santiago.md) explican qué se probó y qué requiere PostgreSQL y revisión del equipo. El módulo completo del Sprint 2 aún depende de las tareas de Alison y Ricardo.
-
-Verificación de esta actualización: `bun run check` aprobó lint, tipos, 95 pruebas frontend y compilación; `bun x --package pnpm@11.19.0 pnpm run check` aprobó lint, tipos, 93 pruebas backend y compilación. No se repitieron las integraciones PostgreSQL en esta publicación porque el motor Docker local no estaba disponible. Los 200 casos citados arriba pertenecen al ensayo histórico del 21/09, no al conteo de esta revisión.
+**Antecedentes:** los documentos fechados de septiembre y las secciones 13–14 conservan los cortes previos de integración. Sus conteos y frases sobre trabajo local describen esas fechas, no el estado de esta entrega. La planificación conserva 62 tareas y 64 historias: Sprint 1 = 20, Sprint 2 = 13, Sprint 3 = 29 por refinar. No se declara terminado todo el MVP.
 
 Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores**; también desde **Mi cuenta → Opciones para iniciativas y permisos → Ver mis borradores**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
+
+**Recorrido vigente:** borrador → revisión → corrección → aprobación privada → publicación administrativa → consulta anónima. El [cierre técnico local](docs/cierre-tecnico-sprint-2-2026-10-05.md) conserva el ensayo anterior y la revisión de calidad; la nota de entrega registra su incorporación a DEV. No se modificó Trello ni se reemplazó el trabajo de las ramas personales.
 
 Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
 
@@ -30,13 +30,15 @@ Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. E
 | Portada de borrador | Selección, vista previa, reemplazo y persistencia de portada; no publica campañas |
 | Rutas privadas | Exigen sesión; la API también aplica controles |
 | Carga, éxito, error y validación | Implementados en los flujos de esta etapa |
-| Portada, catálogo, filtros y detalle de campañas | Datos simulados, identificados como demostración |
+| Catálogo, filtros y detalle de campañas | API pública real de campañas PUBLISHED; S2-16 integrado |
 | Recuperación de contraseña | Solicitud y restablecimiento reales con token de un solo uso; envío de correo pendiente de remitente autorizado |
-| Campañas completas, KYC/KYB, aportes, pagos y administración completa | Pendientes de etapas posteriores |
+| Constructor y envío de campañas | Secciones persistidas, revisión de faltantes, envío a IN_REVIEW y reenvío |
+| Decisiones administrativas y publicación | Aprobar, rechazar con motivo o solicitar cambios; publicación manual por ADMIN separada de aprobar, habilitada provisionalmente |
+| KYC/KYB, aportes, pagos y administración completa | Pendientes de etapas posteriores |
 
 Las cuentas nuevas conservan `PENDING_VERIFICATION`, pero pueden iniciar sesión básica y gestionar perfil/organizaciones en borrador. Esto **no** verifica correo/identidad, no publica campañas ni habilita pagos. Decisión local: [ADR-002](docs/decisiones/ADR-002-acceso-basico-sin-verificacion.md). Las reglas definitivas y la aceptación formal corresponden a los líderes.
 
-La ampliación del Sprint 1 incluye constructor inicial, archivos, portada y recuperación local. No incluye el crowdfunding completo: las etapas de plan/presupuesto y financiamiento del asistente muestran un aviso de sprint posterior; revisión no publica ni envía a aprobación.
+La ampliación del Sprint 1 incluyó constructor inicial, archivos, portada y recuperación local. El Sprint 2 añade secciones reales, decisiones administrativas y publicación. No incluye aportes, checkout, pagos, KYC/KYB ni administración completa. La publicación por ADMIN es la decisión provisional [ADR-005](docs/decisiones/ADR-005-publicacion-administrativa-provisional.md), no una regla definitiva del cliente.
 
 ## 2. Requisitos y versiones utilizadas
 
@@ -87,7 +89,7 @@ cd backend
 pnpm install --frozen-lockfile
 ```
 
-Para demostrar el Sprint 1 utiliza `DEV`. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) y trabaja en tu rama personal. Si tu pnpm global tiene otra versión, sustituye `pnpm` en estos comandos por `bun x --package pnpm@11.19.0 pnpm`; no cambies el lockfile por ello.
+`DEV` contiene esta entrega integrada de Sprint 1 y Sprint 2. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) y trabaja en tu rama personal. Si tu pnpm global tiene otra versión, sustituye **cada** invocación de `pnpm` por `bun x --package pnpm@11.19.0 pnpm`, también `run check` y `run dev`; no cambies el lockfile por ello. Desde `backend/`, `corepack pnpm install --frozen-lockfile` también resuelve la versión declarada, pero no ejecutes Corepack desde la raíz, cuyo gestor es Bun.
 
 ### B. Instalar PostgreSQL oficial V2, una sola vez
 
@@ -97,11 +99,12 @@ Desde `backend/`, utiliza el SQL incluido en el repositorio:
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
 node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
 node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila el backend antes de migrar. La migración registra la línea base; **no crea las tablas oficiales**, por eso siempre va después de `install`.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar. Las migraciones registran la línea base y añaden el valor REJECTED al enum de campaña; **no crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
@@ -149,7 +152,7 @@ Si `ready` devuelve 503, revisa PostgreSQL y la configuración; no continúes co
 
 1. Comprueba `docker version`: debe mostrar `Server`. Si Docker no funciona, no ejecutes migraciones ni borres volúmenes.
 2. Desde `backend/`, repite `node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql`. Reutiliza las credenciales existentes. Si falta uno de los dos archivos privados o el esquema no coincide con el oficial, detente y conserva ambos archivos y el volumen para diagnóstico.
-3. Cuando `install` termine, ejecuta `pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/verify-provisional-v2.mjs` y finalmente `activate` como arriba. Si aparece `app_user`/`user_profile` inexistente, **faltó la restauración inicial**; no ejecutes la migración primero.
+3. Cuando `install` termine, ejecuta `pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/prepare-sprint2.mjs`, `node scripts/verify-provisional-v2.mjs` y finalmente `activate` como arriba. Si aparece `app_user`/`user_profile` inexistente, **faltó la restauración inicial**; no ejecutes la migración primero.
 4. Si aparece autenticación fallida de `brotar_app`, verifica que `backend/.env` coincida con el candidato activado y que `DB_PORT` sea `15433` en la instalación normal. No utilices `5432` ni el PostgreSQL local para la API ejecutada en Windows. El instalador también puede realinear el rol con el candidato al repetir `install`.
 
 Para un ensayo aislado en el mismo equipo, antes de `install` puedes fijar `$env:BROTAR_COMPOSE_PROJECT='brotar-ensayo'` y `$env:BROTAR_DB_PORT='15434'`; el instalador los guarda en `infra/postgres-v2/.env` de esa copia. No uses esos valores al instalar la copia normal. No uses `down -v` para resolver errores de configuración.
@@ -168,10 +171,13 @@ docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.ya
 cd backend
 pnpm install --frozen-lockfile
 node scripts/prepare-sprint1.mjs
+pnpm run build
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
 pnpm run dev
 ```
 
-En otra terminal, raíz: `bun run dev`. Actualizar código **no** exige restaurar nuevamente la base. Si cambia el esquema, leer el procedimiento acordado antes de aplicar cambios.
+En otra terminal, raíz: `bun run dev`. Actualizar código **no** exige restaurar nuevamente la base. Configura la publicación provisional según la sección 15. Los `.env` y archivos privados no se descargan: una computadora nueva sigue la sección 3 y una copia existente conserva su configuración.
 
 Para cerrar, usa `Ctrl+C` en ambas terminales. Opcionalmente, desde la raíz:
 
@@ -288,7 +294,7 @@ Para ejecutar compilado: raíz `bun run build` y `bun run preview`; backend `pnp
 
 ## 8. Ramas, asignaciones y forma de trabajar
 
-`DEV` contiene la integración actual del Sprint 1. `main` conserva la entrega anterior hasta aprobar su integración. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas. Esta publicación no actualiza automáticamente esas ramas: cada integrante incorpora `origin/DEV` en su rama con el árbol limpio siguiendo CONTRIBUTING.
+`DEV` contiene la integración actual del Sprint 1 y las 13 tareas del Sprint 2. `main` conserva la entrega anterior hasta aprobar su integración. Las ramas personales existentes son **`RicardoDev`, `AlisonDev` y `SantiagoDev`**; respetar exactamente mayúsculas/minúsculas. Esta publicación no actualiza automáticamente esas ramas: cada integrante incorpora `origin/DEV` en su rama con el árbol limpio siguiendo CONTRIBUTING.
 
 Para descargar esta actualización, primero guardar el trabajo propio mediante commit o stash; no descartar cambios. Con el árbol limpio, desde la raíz del repositorio:
 
@@ -352,7 +358,7 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
 - [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
 - [Ajuste de Sprint 2 a la tarea de campañas](docs/ajuste-sprint-2-fase-3-2026-09-30.md): 13 tareas actuales y 29 futuras por refinar.
-- [Implementación local de las tareas de Santiago en Sprint 2](docs/implementacion-sprint-2-santiago.md): contratos, pruebas y límites pendientes.
+- [Avance local de Ricardo en Sprint 2](docs/avance-ricardo-sprint-2-2026-10-01.md): proyectos propios y cola administrativa en revisión técnica; decisiones, publicación y ensayo integral pendientes. No equivale a Sprint 2 terminado.
 - [Informe detallado del Sprint 1 — Word](docs/entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
 - [Principios y patrones para el docente — Word](docs/entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
 - [Calidad y defensa técnica — guía](docs/calidad-sprint-1.md) y [Word](docs/entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).
@@ -362,3 +368,143 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Índice de documentos y versiones históricas](docs/README.md).
 
 Las notas de fases anteriores y el PDF explicativo conservan sus fechas de corte. Para ejecutar esta entrega prevalece este README. GitHub comparte el código, **no publica automáticamente una aplicación web**. La aceptación de los líderes, las reglas definitivas y la validación en las computadoras del equipo no se sustituyen por las pruebas locales.
+
+## 12. Antecedente de Ricardo del Sprint 2
+
+Esta sección conserva el corte del 02/10; para decisiones y publicación actuales prevalece la sección 15.
+
+Este incremento se entrega en **`RicardoDev`**, conservando como base el Sprint 1 de DEV. No sustituye la integración posterior del equipo en DEV ni declara completado el Sprint 2.
+
+Después de completar la instalación V2 de las secciones 3–5, con Docker operativo, aplicar desde `backend/`:
+
+```powershell
+pnpm install --frozen-lockfile
+node scripts/prepare-sprint2.mjs
+pnpm run check
+pnpm run dev
+```
+
+El comando de preparación concede únicamente permisos técnicos del incremento: proyectos, historial, descarte, vista financiera pública, secciones/envíos, revisiones y observaciones. No restaura SQL, elimina datos ni concede CREATOR/ADMIN a personas. No modifica `.env`; sigue utilizando V2 en puerto 15433. Desde el 05/10 este único comando prepara el trabajo de los tres integrantes; la primera instalación también aplica estos permisos. Para la migración y publicación vigentes seguir la sección 15.
+
+Las nuevas rutas son `/mis-proyectos` (CREATOR), su detalle `/mis-proyectos/:id`, `/administracion/campanas` (ADMIN) y su detalle `/administracion/campanas/:id`. Los accesos correspondientes aparecen en **Mi cuenta → Opciones para iniciativas y permisos**, según los roles vigentes. El registro no concede esos roles. El constructor conserva los borradores y posiciones del Sprint 1; su ampliación vigente se describe en la sección 14.
+
+**Cierre técnico del 02/10/2026:** S2-15 y S2-17 cumplen sus criterios acotados. Se comprobaron lista y detalle propios, continuación del borrador concreto, actualización persistida y descarte confirmado solo en DRAFT; también acceso administrativo, cola, búsqueda, entrada al detalle y estados vacío/carga/error/reintento. La administración sigue siendo una cola de consulta con detalle preparatorio: **no aprueba, rechaza ni publica todavía**; eso pertenece a S2-12/S2-14. La base oficial requiere una migración para el estado de campaña REJECTED; no confundirlo con su enum de decisiones. Pasaron 101 pruebas frontend, 101 backend y 15 de integración PostgreSQL. La asignación definitiva de roles, el envío del resto del constructor y el recorrido completo del Sprint 2 siguen pendientes. Ver [criterios, evidencia y tutorial de comprobación](docs/cierre-s2-15-s2-17-2026-10-02.md). No significa aceptación externa ni cierre de las historias generales.
+
+Para repetir la integración con datos temporales de prueba, desde `backend/`, después de `prepare-sprint2.mjs` y `pnpm run check`:
+
+```powershell
+$env:ALLOW_DB_TEST_WRITES='true'
+$env:DB_TEST_RESTART='false'
+try {
+  node --env-file=../infra/postgres-v2/.env.backend --test --test-concurrency=1 dist-test/integration/*.test.js
+} finally {
+  Remove-Item Env:\ALLOW_DB_TEST_WRITES
+  Remove-Item Env:\DB_TEST_RESTART
+}
+```
+
+Los tests exigen el contenedor/puerto V2 de esta copia, rechazan producción y crean cuentas temporales. Los roles CREATOR/ADMIN de sus fixtures **no** se otorgan a cuentas del equipo. Si Docker falla antes de iniciar por un socket Windows inaccesible, no reinstalar la base: ver [recuperación conservadora](infra/postgres-v2/README.md#recuperación-y-conservación).
+
+Para ensayar la interfaz sin tocar datos reales, con Vite abierto: `http://127.0.0.1:5173/tests/visual-projects.html`. La página indica **datos ficticios** y queda fuera de la compilación de producción. Permite reproducir `normal`, `empty`, `error`, `forbidden` y `loading`; para administración usar `?view=admin&case=loading` y cambiar el escenario. El detalle vigente está en la [evidencia de cierre](docs/cierre-s2-15-s2-17-2026-10-02.md); la [nota del 01/10](docs/avance-ricardo-sprint-2-2026-10-01.md) conserva el avance histórico.
+
+## 13. Integración local del catálogo público de Alison
+
+Se revisó `origin/AlisonDev` en `f84f017` y se adaptó su módulo S2-16 sobre la base actual de `RicardoDev`. No se sustituyeron el constructor, sesiones, infraestructura V2, proyectos propios ni la cola administrativa. La integración permanece local, sin commit/push y sin cambios en Trello. La [revisión detallada](docs/revision-integracion-alison-s2-16-2026-10-04.md) distingue el trabajo original de las correcciones y pruebas añadidas.
+
+Para utilizar esta copia, después de instalar V2, arrancar PostgreSQL y ejecutar nuevamente `node scripts/prepare-sprint2.mjs` desde `backend/`. Este paso incorpora SELECT sobre `v_campaign_funding`; no exige restaurar la base ni cambiar credenciales. Después arrancar la API y Vite como se indica en las secciones anteriores.
+
+- `/` muestra las campañas publicadas más recientes; no inventa estadísticas ni campañas destacadas.
+- `/explorar` y `/explorar/buscar` leen `GET /api/campaigns/public`, con búsqueda, filtros combinados y paginación en el cliente.
+- `/proyectos/:slug` lee `GET /api/campaigns/public/:slug`, con historia, impacto esperado, creador, recompensas activas, moneda, meta y recaudación confirmada neta.
+- La imagen debe ser pública, pertenecer al almacenamiento de imágenes de campaña y no estar eliminada. No se exponen borradores, campañas aprobadas pero no publicadas ni información privada.
+- Una base sin campañas PUBLISHED muestra un vacío explicado; un fallo de API muestra error y Reintentar. No se reemplazan esos estados con datos simulados.
+
+La suite de integración sigue los comandos de la sección 12: tuvo 16 pruebas al integrar Alison el 04/10 y tiene 17 tras integrar Santiago el 05/10. La prueba pública prepara y limpia fixtures locales propios; sus registros financieros solo comprueban la vista y **no implementan pagos**.
+
+Santiago ya fue revisado e integrado localmente; ver la sección 14. S2-12, S2-14 y la verificación técnica de S2-21 se completaron después, según la sección 15. La aplicación publica mediante una acción administrativa real; no se debe alterar el estado con SQL para simular el recorrido.
+
+## 14. Integración local de las campañas de Santiago
+
+Se incorporaron **S2-02, S2-03, S2-04, S2-05, S2-10, S2-11 y S2-13**, conservando el catálogo de Alison y proyectos/cola de Ricardo. La [nota original de Santiago](docs/implementacion-sprint-2-santiago.md) conserva su ensayo sin PostgreSQL; la [revisión del 05/10](docs/revision-integracion-santiago-sprint-2-2026-10-05.md) contiene la comprobación vigente.
+
+Con V2 ya instalado, no restaurar SQL ni borrar el volumen. Seguir la actualización de la sección 15: migrar antes de preparar permisos. `prepare-sprint2-santiago.mjs` es un alias de `prepare-sprint2.mjs`. La preparación solo concede permisos; la migración separada añade REJECTED sin reescribir el SQL oficial ni cambiar credenciales.
+
+Recorrido con una **cuenta de ensayo**:
+
+1. Iniciar sesión y abrir **Mis borradores**. Crear o continuar una campaña propia. Desde **Mis proyectos**, `?borrador=` conserva la campaña seleccionada.
+2. Completar modalidad, información, historia/indicadores y portada. Se conservan ocho posiciones porque Portada está separada: cubren las siete áreas funcionales de la tarea sin invalidar avances anteriores.
+3. En **Plan y presupuesto**, añadir actividades con responsables/fechas, hitos si corresponden, partidas y riesgos si corresponden. Guardar planificación y presupuesto por separado. Si ambos cambiaron, guardar uno no confirma el otro; se bloquea la navegación hasta guardar los cambios.
+4. Guardar meta positiva, moneda activa, duración y modelo. Las fechas son opcionales y coherentes. No se impone presupuesto igual a meta ni una duración comercial no confirmada. No se activan pagos.
+5. Guardar recompensas/preventas: tipo, descripción, aporte mínimo, disponibilidad y entrega. Donación omite el paso; cambiar de modalidad conserva los datos anteriores sin mostrarlos como recompensas aplicables a donación.
+6. En **Revisión y envío**, comprobar los datos guardados. Los faltantes enlazan su paso y el servidor vuelve a validar al enviar.
+7. Con **REGISTERED_USER y CREATOR vigentes**, una campaña completa queda **IN_REVIEW**, con fecha, actor y nueva ronda; aparece en la cola y se bloquea la edición. El registro no concede CREATOR automáticamente; su provisión sigue pendiente de acuerdo del equipo.
+8. Si se solicitan cambios, **Mis proyectos → Corregir campaña** abre el asistente. El último paso muestra las observaciones de la última ronda. Corregir, guardar y reenviar conserva el historial y crea otra ronda. La sección 15 añade la acción administrativa real de solicitud de cambios; el ensayo integral ya usa esa API, no cambios de estado por SQL.
+
+Comprobación: `bun run check` en raíz, comprobaciones backend con pnpm **11.19.0** y suite PostgreSQL de la sección 12. La nueva prueba `backend/integration/campaign-sections-submission.integration.test.ts` cubre propiedad, roles, entradas inválidas, persistencia tras reiniciar la API, envíos concurrentes, bloqueo de edición, observaciones, reenvío y conexión con S2-15/S2-16/S2-17. Limpia sus cuentas/campañas temporales y no asigna roles a compañeros.
+
+El cierre técnico vigente está en la sección siguiente. La aceptación externa, el acuerdo definitivo de provisión de roles y las reglas futuras permanecen separados; no hay nuevos pagos ni KYC/KYB.
+
+## 15. Revisión y publicación del Sprint 2
+
+**Entrega del 05/10/2026 en DEV:** incluye S2-12, S2-14 y la verificación/documentación de S2-21 junto con las otras diez tareas. Las 13 tareas están verificadas en su alcance técnico, no las 64 historias generales del MVP. [Evidencia por tarea](docs/cierre-tecnico-sprint-2-2026-10-05.md) y [ensayo de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md). La revisión formal de los líderes sigue pendiente.
+
+### Actualizar una base V2 existente
+
+Conservar `.env`, datos y volumen. Desde la raíz, con Node/Bun/pnpm en las versiones de la sección 2:
+
+```powershell
+bun install --frozen-lockfile
+docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.yaml up -d --wait
+cd backend
+pnpm install --frozen-lockfile
+pnpm run build
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+pnpm run check
+```
+
+Con la API detenida, añadir o ajustar **solo esta variable** en `backend/.env`, sin duplicarla ni copiar el ejemplo encima de las credenciales:
+
+```dotenv
+CAMPAIGN_ADMIN_PUBLICATION_ENABLED=true
+```
+
+Después ejecutar `pnpm run dev` y, en otra terminal desde la raíz, `bun run dev`. Una instalación nueva sigue la sección 3 y genera esa variable en el candidato; si ya tenía un valor explícito, se conserva. Un candidato antiguo no se reescribe automáticamente. La API exige un booleano válido; sin la variable, o con `false`, la publicación queda bloqueada. **Aprobar sigue sin publicar**. No registrar ni subir `.env` a Git.
+
+La nueva migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). `migrate status` debe mostrar ambas migraciones aplicadas y `pending: false`.
+
+### Demostrar el flujo con cuentas autorizadas
+
+El registro básico **no concede CREATOR ni ADMIN**, aunque se seleccione un perfil de uso. No hay contraseña administrativa compartida en el repositorio. Se necesitan cuentas de ensayo a las que el responsable haya concedido esos roles; su provisión definitiva sigue pendiente en D06. Las integraciones preparan y limpian sus propias cuentas temporales sin modificar personas existentes.
+
+1. **Creador:** iniciar sesión, abrir Mis borradores/Mis proyectos y completar una campaña propia con información, modalidad, historia/impacto, portada, plan, presupuesto, financiamiento y recompensas aplicables. Guardar cada sección y revisar los faltantes. Donación no exige recompensas.
+2. En Revisión y envío, enviar la campaña completa. Debe quedar IN_REVIEW, no pública y sin edición. Un segundo envío no crea una ronda duplicada.
+3. **Administrador:** desde Mi cuenta → Opciones para iniciativas y permisos, abrir la cola administrativa y el detalle. Comprobar todas las secciones, portada, rondas e historial; no solo nombre/meta.
+4. Elegir Solicitar cambios. Introducir motivo y, si se necesita, observaciones por sección. Confirmar la operación. Sin motivo se señala el campo y no se guarda. La campaña queda CHANGES_REQUESTED.
+5. **Creador:** abrir Corregir campaña, consultar observaciones, guardar correcciones y reenviar. Se conserva la ronda anterior y se crea una nueva pendiente.
+6. **Administrador:** actualizar el detalle; aprobar la nueva ronda y confirmar. Debe quedar APPROVED con aviso de que **todavía es privada**, sin aparecer en Explorar.
+7. Pulsar Publicar campaña y confirmar la publicación pública. Solo ADMIN con configuración habilitada y aprobación vigente puede hacerlo. El estado pasa a PUBLISHED y se registra actor/fecha; repetir o usar una ronda antigua devuelve conflicto, sin duplicar historial.
+8. **Visitante sin sesión:** abrir Explorar, combinar filtros y abrir el detalle publicado. Deben aparecer los datos reales guardados y el enlace de imagen pública. Una base sin publicaciones muestra un vacío explicado, no proyectos ficticios de respaldo.
+9. Con otra campaña completa enviada, probar Rechazar con motivo. Queda REJECTED, conserva la decisión y el historial, no se publica ni permite edición/reenvío en esta entrega. No confundir rechazo con solicitud de corrección.
+
+Las operaciones están protegidas también en backend: sesión, rol, propiedad, origen de la solicitud, ronda vigente, completitud y transición bajo transacción. La interfaz muestra carga/confirmación/resultado y exige actualizar cuando una respuesta es incierta; un botón oculto no sustituye estos controles.
+
+### Pruebas y límites de entrega
+
+Después de la revisión de calidad del 05/10, `bun run check` aprobó **130** casos frontend, lint/tipos/compilación. El backend aprobó **128** casos sin base y lint/tipos/compilación. La suite real de la sección 12 aprobó **18** integraciones PostgreSQL, sin fallos ni omisiones: **276** en total, incluyendo regresiones de Sprint 1. El corte previo de 263 casos y su ensayo real de escritorio/móvil/teclado se conservan como antecedentes. El ensayo interactivo adicional de esta revisión quedó bloqueado por el acceso de la herramienta; no se declara repetido.
+
+La autorización del equipo para que ADMIN publique es **provisional** ([ADR-005](docs/decisiones/ADR-005-publicacion-administrativa-provisional.md)). No resuelve reglas definitivas del cliente, KYC/KYB, correo, textos legales ni pagos. Esta entrega de DEV no sincroniza Trello ni implica aceptación externa: obtener la revisión de los líderes sigue siendo necesario.
+
+### Guías PDF de estudio y defensa del Sprint 2
+
+- [Demostración de las 13 tareas y flujos nuevos](output/pdf/Guia_Demostracion_y_Estudio_Sprint_2_Brotar.pdf): 19 páginas, checklists con estado real, implementación, pasos, ensayos negativos, anclajes de código y pruebas. El recorrido integral está en la página 4; las fichas individuales comienzan en la 5.
+- [Principios, patrones y defensa técnica](output/pdf/Informe_Principios_y_Patrones_Sprint_2_Brotar.pdf): 15 páginas, ejemplos agrupados por KISS, DRY, YAGNI, SOLID, IoC/DI, composición y Boy Scout; Repository/Adapter, transacciones, validación y límites de las afirmaciones.
+- [Tutorial de los siete flujos de inicio a fin](output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf): 19 páginas; preparación, cuentas/roles necesarios, botones reales, datos ficticios, guardados, faltantes, correcciones, aprobación/publicación, visitante, rechazo, descarte y resultados esperados.
+
+Los PDF conservan el corte local con el que se redactaron antes de la entrega; están incluidos en esta versión de DEV. Su texto sobre publicación pendiente no equivale a que falten sus archivos en el repositorio. No incluyen contraseñas de cuentas: CREATOR/ADMIN para un ensayo manual requieren provisión autorizada, como se explica arriba. Las pruebas automáticas crean y limpian sus propias cuentas efímeras.
+
+La revisión extrajo `useCampaignSections`, corrigió falsos rechazos decimales y suma de céntimos, fechas imposibles, NUL en textos persistidos, límites técnicos y el campo HTML de contraseñas Unicode. El hash y la política de sesión se conservaron: Ñ, acentos y espacios de contraseña siguen siendo exactos, sin recorte ni normalización. No constituye una certificación absoluta de seguridad ni introduce reglas comerciales pendientes.
+
+Fuente reproducible: `scripts/build-sprint2-pdfs.py` (Python con reportlab/pypdf y fuentes Arial/Consolas de Windows). El generador valida las trece tareas, los anclajes y la cantidad de páginas; la revisión visual con Poppler es un paso separado. Usar los PDF incluidos para estudiar: no es necesario ejecutar el generador para arrancar Brotar.

@@ -4,7 +4,7 @@ import { Button, ButtonLink } from '../../../shared/components/Button'
 import { FormField } from '../../../shared/components/FormField'
 import { Message } from '../../../shared/components/Feedback'
 import { AccessShell, AccessSuccess, PasswordField, ValidationSummary } from '../AccessComponents'
-import { accessHref, publicContinuation } from '../navigation'
+import { accessHref, authenticatedContinuation } from '../navigation'
 import { validateLogin, type FieldErrors } from '../validation'
 import { currentUser, login, SessionError } from '../session/sessionClient'
 import styles from '../access.module.css'
@@ -24,7 +24,7 @@ export function LoginPage() {
     notice={<><strong>Acceso conectado.</strong> Puedes entrar con tu cuenta recién registrada para gestionar tu perfil y organizaciones en borrador. Iniciar sesión no verifica tu correo ni tu identidad. Usa únicamente cuentas y contraseñas de prueba.</>}>
     {status === 'success' ? <AccessSuccess title="Sesión iniciada">
       <p>La sesión fue confirmada por el servidor. Puedes consultar tus datos y cerrar sesión desde Mi cuenta.</p>
-      <div className={styles.actions}><ButtonLink to="/mi-cuenta">Ir a mi cuenta</ButtonLink><ButtonLink variant="secondary" to={publicContinuation(params.get('continuar'))}>Continuar recorrido público</ButtonLink></div>
+      <div className={styles.actions}><ButtonLink to="/mi-cuenta">Ir a mi cuenta</ButtonLink><ButtonLink variant="secondary" to={authenticatedContinuation(params.get('continuar'))}>Continuar recorrido</ButtonLink></div>
     </AccessSuccess> : <>
       {status === 'error' && <div id="login-response" tabIndex={-1} className={styles.response}><Message tone="error" title="No pudimos confirmar el acceso">{message}</Message></div>}
       <form className={styles.form} noValidate aria-label="Formulario de inicio de sesión" onSubmit={async event => {

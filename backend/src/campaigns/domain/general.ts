@@ -64,5 +64,8 @@ export function validateGeneral(input: GeneralInput): Record<string, string> {
   if ([...locality].length > LIMITS.locality) errors.locality = `La localidad admite hasta ${LIMITS.locality} caracteres.`
   if ([...addressLine].length > LIMITS.addressLine) errors.addressLine = `La dirección admite hasta ${LIMITS.addressLine} caracteres.`
   if ([...reference].length > LIMITS.reference) errors.reference = `La referencia admite hasta ${LIMITS.reference} caracteres.`
+  for (const [field, value] of Object.entries({ title: input.title, summary: input.summary, locality, addressLine, reference })) {
+    if (value.includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+  }
   return errors
 }

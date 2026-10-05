@@ -17,7 +17,7 @@ export const COVER_HELP = 'Usa PNG, JPG o WebP hasta 2 MB. La portada se guarda 
 export function validateCover(values: CoverValues): CoverErrors {
   const errors: CoverErrors = {}
   const text = values.altText.trim()
-  if (text.length < 10 || text.length > 180) errors.altText = 'Describe la portada entre 10 y 180 caracteres.'
+  if ([...text].length < 10 || [...text].length > 180 || text.includes('\u0000')) errors.altText = 'Describe la portada entre 10 y 180 caracteres de texto.'
   if (!values.file) errors.file = 'Selecciona una imagen para la portada.'
   else if (!['image/png', 'image/jpeg', 'image/webp'].includes(values.file.type)) errors.file = 'Selecciona una imagen PNG, JPG o WebP.'
   else if (values.file.size > FILE_LIMITS.publicImageBytes) errors.file = 'La portada debe pesar hasta 2 MB.'

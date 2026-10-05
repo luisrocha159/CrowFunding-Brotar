@@ -16,11 +16,14 @@ const date = (value: string) => {
   const parsed = new Date(`${value}T00:00:00Z`)
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
 }
-const money = (value: number) => Number.isFinite(value) && value > 0 && value <= 999999999999.99 && Math.abs(value * 100 - Math.round(value * 100)) < 1e-7
+const money = (value: number) => Number.isFinite(value) && value > 0 && value <= 999999999999.99 && value === Number(value.toFixed(2))
+const instant = (value: string) => date(value.slice(0, 10)) && !Number.isNaN(Date.parse(value))
+export const SECTION_TEXT_LIMIT = 5000 // Límite técnico de entrada, no regla comercial del cliente.
+const validText = (value: string, max: number) => !value.includes('\u0000') && length(value) <= max
 
 function validateSchedule(value: ActivityInput, prefix: string, errors: SectionErrors) {
-  if (!length(value.name) || length(value.name) > 200) errors[`${prefix}.name`] = 'Indica un nombre de hasta 200 caracteres.'
-  if (!length(value.responsibleName) || length(value.responsibleName) > 160) errors[`${prefix}.responsibleName`] = 'Indica un responsable de hasta 160 caracteres.'
+  if (!length(value.name) || !validText(value.name, 200)) errors[`${prefix}.name`] = 'Indica un nombre de hasta 200 caracteres de texto.'
+  if (!length(value.responsibleName) || !validText(value.responsibleName, 160)) errors[`${prefix}.responsibleName`] = 'Indica un responsable de hasta 160 caracteres de texto.'
   if (!date(value.plannedStartOn)) errors[`${prefix}.plannedStartOn`] = 'Indica una fecha válida.'
   if (!date(value.plannedEndOn) || value.plannedEndOn < value.plannedStartOn) errors[`${prefix}.plannedEndOn`] = 'La fecha final debe ser igual o posterior al inicio.'
 }
@@ -46,16 +49,18 @@ export function validateBudget(input: BudgetInput): SectionErrors {
   input.items.forEach((item, index) => {
     const prefix = `items.${index}`
     if (!item.categoryId) errors[`${prefix}.categoryId`] = 'Selecciona una categoría de gasto.'
-    if (!length(item.description) || length(item.description) > 300) errors[`${prefix}.description`] = 'Describe la partida en hasta 300 caracteres.'
+    if (!length(item.description) || !validText(item.description, 300)) errors[`${prefix}.description`] = 'Describe la partida en hasta 300 caracteres de texto.'
+    if (!validText(item.notes, SECTION_TEXT_LIMIT)) errors[`${prefix}.notes`] = 'Las notas admiten hasta 5000 caracteres de texto.'
     if (!money(item.quantity) || item.quantity > 9999999999.99) errors[`${prefix}.quantity`] = 'La cantidad debe ser positiva y tener hasta dos decimales.'
     if (!money(item.unitPrice)) errors[`${prefix}.unitPrice`] = 'El precio unitario debe ser positivo.'
     if (!money(item.plannedAmount)) errors[`${prefix}.plannedAmount`] = 'El importe planificado debe ser positivo.'
   })
   input.risks.forEach((risk, index) => {
-    if (!length(risk.title) || length(risk.title) > 200) errors[`risks.${index}.title`] = 'Indica un riesgo de hasta 200 caracteres.'
-    if (!length(risk.mitigation)) errors[`risks.${index}.mitigation`] = 'Indica cómo mitigar el riesgo.'
-    if (length(risk.likelihood) > 40) errors[`risks.${index}.likelihood`] = 'Usa hasta 40 caracteres.'
-    if (length(risk.impact) > 40) errors[`risks.${index}.impact`] = 'Usa hasta 40 caracteres.'
+    if (!length(risk.title) || !validText(risk.title, 200)) errors[`risks.${index}.title`] = 'Indica un riesgo de hasta 200 caracteres de texto.'
+    if (!validText(risk.description, SECTION_TEXT_LIMIT)) errors[`risks.${index}.description`] = 'Usa hasta 5000 caracteres de texto.'
+    if (!length(risk.mitigation) || !validText(risk.mitigation, SECTION_TEXT_LIMIT)) errors[`risks.${index}.mitigation`] = 'Indica cómo mitigar el riesgo en hasta 5000 caracteres de texto.'
+    if (!validText(risk.likelihood, 40)) errors[`risks.${index}.likelihood`] = 'Usa hasta 40 caracteres de texto.'
+    if (!validText(risk.impact, 40)) errors[`risks.${index}.impact`] = 'Usa hasta 40 caracteres de texto.'
   })
   return errors
 }
@@ -66,12 +71,11 @@ export function validateFunding(input: FundingInput): SectionErrors {
   if (!/^[A-Z]{3}$/.test(input.currencyCode)) errors.currencyCode = 'Selecciona una moneda válida.'
   if (!['ALL_OR_NOTHING', 'FLEXIBLE'].includes(input.fundingModel)) errors.fundingModel = 'Selecciona un modelo válido.'
   if (input.durationDays === null || !Number.isInteger(input.durationDays) || input.durationDays <= 0 || input.durationDays > 2147483647) errors.durationDays = 'La duración debe ser un número positivo de días.'
-  if (input.startsAt !== null && Number.isNaN(Date.parse(input.startsAt))) errors.startsAt = 'Indica una fecha válida.'
+  if (input.startsAt !== null && !instant(input.startsAt)) errors.startsAt = 'Indica una fecha válida.'
   if ((input.startsAt === null) !== (input.endsAt === null)) errors.endsAt = 'Indica inicio y fin juntos, o deja ambas fechas vacías.'
   else if (input.endsAt !== null && input.startsAt !== null &&
-    (Number.isNaN(Date.parse(input.endsAt)) || Date.parse(input.endsAt) <= Date.parse(input.startsAt)
-      || (input.durationDays !== null && (Date.parse(input.endsAt) - Date.parse(input.startsAt)) / 86400000 !== input.durationDays))) {
-    errors.endsAt = 'El fin debe ser posterior al inicio y coincidir con la duración.'
+    (!instant(input.endsAt) || Date.parse(input.endsAt) <= Date.parse(input.startsAt))) {
+    errors.endsAt = 'El fin debe ser posterior al inicio.'
   }
   return errors
 }
@@ -85,9 +89,9 @@ export function validateRewards(type: CampaignType, rewards: RewardInput[]): Sec
   if (rewards.length > 50) errors.rewards = 'Máximo 50 recompensas.'
   rewards.forEach((reward, index) => {
     const prefix = `rewards.${index}`
-    if (!length(reward.title) || length(reward.title) > 200) errors[`${prefix}.title`] = 'Indica un título de hasta 200 caracteres.'
-    if (!length(reward.description)) errors[`${prefix}.description`] = 'Describe la recompensa.'
-    if (!length(reward.rewardKind) || length(reward.rewardKind) > 60) errors[`${prefix}.rewardKind`] = 'Indica el tipo de recompensa.'
+    if (!length(reward.title) || !validText(reward.title, 200)) errors[`${prefix}.title`] = 'Indica un título de hasta 200 caracteres de texto.'
+    if (!length(reward.description) || !validText(reward.description, SECTION_TEXT_LIMIT)) errors[`${prefix}.description`] = 'Describe la recompensa en hasta 5000 caracteres de texto.'
+    if (!length(reward.rewardKind) || !validText(reward.rewardKind, 60)) errors[`${prefix}.rewardKind`] = 'Indica el tipo de recompensa en hasta 60 caracteres de texto.'
     if (!money(reward.minAmount)) errors[`${prefix}.minAmount`] = 'El aporte mínimo debe ser positivo.'
     if (reward.quantityTotal !== null && (!Number.isInteger(reward.quantityTotal) || reward.quantityTotal < 0 || reward.quantityTotal > 2147483647)) errors[`${prefix}.quantityTotal`] = 'La disponibilidad debe ser un entero no negativo.'
     if (reward.estimatedDeliveryOn === null || !date(reward.estimatedDeliveryOn)) errors[`${prefix}.estimatedDeliveryOn`] = 'Indica una fecha estimada válida.'

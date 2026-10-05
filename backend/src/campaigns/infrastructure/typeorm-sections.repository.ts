@@ -3,7 +3,8 @@ import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { DraftNotEditable } from '../application/drafts'
 import { SectionInvalid, type SectionsRepository } from '../application/sections'
-import type { BudgetInput, FundingInput, PlanInput, RewardInput } from '../domain/sections'
+import { validateRewards, type BudgetInput, type FundingInput, type PlanInput, type RewardInput } from '../domain/sections'
+import type { CampaignType } from '../domain/draft'
 
 @Injectable()
 export class TypeormSectionsRepository implements SectionsRepository {
@@ -20,12 +21,12 @@ export class TypeormSectionsRepository implements SectionsRepository {
     })
   }
 
-  async readPlan(id: string): Promise<PlanInput> {
-    const activities: (PlanInput['activities'][number] & { id: string })[] = await this.database.connection().query(
+  async readPlan(id: string, manager = this.database.connection().manager): Promise<PlanInput> {
+    const activities: (PlanInput['activities'][number] & { id: string })[] = await manager.query(
       `SELECT id, name, COALESCE(responsible_name,'') AS "responsibleName",
         planned_start_on::text AS "plannedStartOn", planned_end_on::text AS "plannedEndOn"
        FROM public.campaign_activity WHERE campaign_id=$1 ORDER BY display_order,id`, [id])
-    const milestones: (Omit<PlanInput['milestones'][number], 'activityIndex'> & { activityId: string | null })[] = await this.database.connection().query(
+    const milestones: (Omit<PlanInput['milestones'][number], 'activityIndex'> & { activityId: string | null })[] = await manager.query(
       `SELECT name, COALESCE(responsible_name,'') AS "responsibleName", activity_id AS "activityId",
         planned_start_on::text AS "plannedStartOn", planned_end_on::text AS "plannedEndOn"
        FROM public.milestone WHERE campaign_id=$1 ORDER BY display_order,id`, [id])
@@ -54,15 +55,13 @@ export class TypeormSectionsRepository implements SectionsRepository {
     })
   }
 
-  async readBudget(id: string): Promise<BudgetInput> {
-    const [items, risks] = await Promise.all([
-      this.database.connection().query(`SELECT expense_category_id AS "categoryId", description,
+  async readBudget(id: string, manager = this.database.connection().manager): Promise<BudgetInput> {
+    const items = await manager.query(`SELECT expense_category_id AS "categoryId", description,
         quantity::float8 AS quantity, unit_price::float8 AS "unitPrice", planned_amount::float8 AS "plannedAmount",
-        COALESCE(notes,'') AS notes FROM public.budget_item WHERE campaign_id=$1 ORDER BY display_order,id`, [id]) as Promise<BudgetInput['items']>,
-      this.database.connection().query(`SELECT title, COALESCE(description,'') AS description,
+        COALESCE(notes,'') AS notes FROM public.budget_item WHERE campaign_id=$1 ORDER BY display_order,id`, [id]) as BudgetInput['items']
+    const risks = await manager.query(`SELECT title, COALESCE(description,'') AS description,
         COALESCE(likelihood,'') AS likelihood, COALESCE(impact,'') AS impact,
-        COALESCE(mitigation,'') AS mitigation FROM public.campaign_risk WHERE campaign_id=$1 ORDER BY display_order,id`, [id]) as Promise<BudgetInput['risks']>
-    ])
+        COALESCE(mitigation,'') AS mitigation FROM public.campaign_risk WHERE campaign_id=$1 ORDER BY display_order,id`, [id]) as BudgetInput['risks']
     return { items, risks }
   }
 
@@ -83,8 +82,8 @@ export class TypeormSectionsRepository implements SectionsRepository {
     })
   }
 
-  async readFunding(id: string): Promise<FundingInput> {
-    const rows: { goalAmount: number | null; currencyCode: string | null; durationDays: number | null; fundingModel: string | null; startsAt: Date | null; endsAt: Date | null }[] = await this.database.connection().query(
+  async readFunding(id: string, manager = this.database.connection().manager): Promise<FundingInput> {
+    const rows: { goalAmount: number | null; currencyCode: string | null; durationDays: number | null; fundingModel: string | null; startsAt: Date | null; endsAt: Date | null }[] = await manager.query(
       `SELECT goal_amount::float8 AS "goalAmount", currency_code AS "currencyCode", duration_days AS "durationDays",
         funding_model AS "fundingModel", starts_at AS "startsAt", ends_at AS "endsAt" FROM public.campaign WHERE id=$1`, [id])
     const row = rows[0]!
@@ -106,8 +105,8 @@ export class TypeormSectionsRepository implements SectionsRepository {
     })
   }
 
-  async readRewards(id: string): Promise<RewardInput[]> {
-    return this.database.connection().query(`SELECT title,description,COALESCE(reward_kind,'') AS "rewardKind",
+  async readRewards(id: string, manager = this.database.connection().manager): Promise<RewardInput[]> {
+    return manager.query(`SELECT title,description,COALESCE(reward_kind,'') AS "rewardKind",
       min_amount::float8 AS "minAmount",quantity_total AS "quantityTotal",
       estimated_delivery_on::text AS "estimatedDeliveryOn" FROM public.reward
       WHERE campaign_id=$1 AND is_active=true ORDER BY display_order,id`, [id])
@@ -115,10 +114,14 @@ export class TypeormSectionsRepository implements SectionsRepository {
 
   async saveRewards(userId: string, id: string, rewards: RewardInput[]) {
     await this.write(userId, id, async manager => {
-      const rows: { currencyCode: string | null }[] = await manager.query('SELECT currency_code AS "currencyCode" FROM public.campaign WHERE id=$1', [id])
+      const rows: { currencyCode: string | null; campaignType: CampaignType }[] = await manager.query('SELECT currency_code AS "currencyCode",campaign_type AS "campaignType" FROM public.campaign WHERE id=$1', [id])
+      // La modalidad puede cambiar entre la validación inicial y la adquisición del bloqueo.
+      const errors = validateRewards(rows[0]!.campaignType, rewards)
+      if (Object.keys(errors).length) throw new SectionInvalid(errors)
+      if (rows[0]!.campaignType === 'DONATION') return // Conserva las recompensas anteriores.
       const currency = rows[0]?.currencyCode?.trim()
       if (!currency) throw new DraftNotEditable()
-      await manager.query('DELETE FROM public.reward WHERE campaign_id=$1', [id])
+      await manager.query('DELETE FROM public.reward WHERE campaign_id=$1 AND is_active=true', [id])
       for (const [index, item] of rewards.entries()) {
         await manager.query(`INSERT INTO public.reward
           (campaign_id,title,description,reward_kind,min_amount,currency_code,quantity_total,estimated_delivery_on,display_order)

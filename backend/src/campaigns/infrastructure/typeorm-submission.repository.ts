@@ -11,20 +11,24 @@ export class TypeormSubmissionRepository implements SubmissionRepository {
 
   private async load(manager: EntityManager, id: string): Promise<SubmissionSnapshot> {
     const rows: SubmissionSnapshot[] = await manager.query(`SELECT c.campaign_type AS "campaignType", c.title,c.summary,
-      c.category_id AS "categoryId",c.cover_file_id AS "coverFileId",l.country_code AS "countryCode",l.locality,
+      category.id AS "categoryId",f.id AS "coverFileId",l.country_code AS "countryCode",l.locality,
       s.problem,s.solution,s.beneficiaries,s.expected_results AS "expectedResults",
       (SELECT count(*)::int FROM public.campaign_impact_indicator WHERE campaign_id=c.id) AS "indicatorCount",
       (SELECT count(*)::int FROM public.campaign_activity WHERE campaign_id=c.id) AS "activityCount",
       (SELECT count(*)::int FROM public.budget_item WHERE campaign_id=c.id) AS "budgetCount",
-      c.goal_amount::float8 AS "goalAmount",c.currency_code AS "currencyCode",c.duration_days AS "durationDays",
+      c.goal_amount::float8 AS "goalAmount",trim(currency.code) AS "currencyCode",c.duration_days AS "durationDays",
       c.funding_model AS "fundingModel",
       (SELECT count(*)::int FROM public.reward WHERE campaign_id=c.id AND is_active=true) AS "rewardCount"
       FROM public.campaign c LEFT JOIN public.campaign_location l ON l.campaign_id=c.id
+      LEFT JOIN public.category category ON category.id=c.category_id AND category.is_active=true
+      LEFT JOIN public.currency currency ON currency.code=c.currency_code AND currency.is_active=true
+      LEFT JOIN public.file_asset f ON f.id=c.cover_file_id AND f.scope='PUBLIC'
+        AND f.storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%' AND f.deleted_at IS NULL
       LEFT JOIN public.campaign_story s ON s.campaign_id=c.id WHERE c.id=$1`, [id])
     return rows[0]!
   }
 
-  snapshot(id: string) { return this.load(this.database.connection().manager, id) }
+  snapshot(id: string, manager = this.database.connection().manager) { return this.load(manager, id) }
 
   async observations(id: string): Promise<ReviewObservation[]> {
     return this.database.connection().query(`SELECT o.section,o.field_path AS "fieldPath",o.message

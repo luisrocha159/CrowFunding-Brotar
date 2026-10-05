@@ -9,11 +9,33 @@ export class SubmissionIncompleteError extends SessionError {
   constructor(readonly missing: MissingField[]) { super(422) }
 }
 
+export function observationStep(section: string): number {
+  const key = section.toLowerCase()
+  if (key.includes('modality') || key.includes('modalidad') || key.includes('campaigntype')) return 0
+  if (key.includes('reward') || key.includes('recomp') || key.includes('presale') || key.includes('preventa')) return 6
+  if (key.includes('fund') || key.includes('financ')) return 5
+  if (['plan', 'budget', 'risk', 'presupuesto', 'activity', 'activit', 'actividad', 'milestone', 'hito', 'riesgo'].some(term => key.includes(term))) return 4
+  if (key.includes('cover') || key.includes('portada')) return 3
+  if (key.includes('story') || key.includes('impact') || key.includes('historia')) return 2
+  return 1
+}
+
 function parse(value: unknown): SubmissionReport {
   if (!value || typeof value !== 'object') throw new SessionError(0)
   const data = value as Record<string, unknown>
-  if (typeof data.id !== 'string' || typeof data.status !== 'string' || !Array.isArray(data.missing) || !Array.isArray(data.observations)) throw new SessionError(0)
+  if (typeof data.id !== 'string' || !data.id || typeof data.status !== 'string' || !data.status || !validMissing(data.missing) || !Array.isArray(data.observations) || !data.observations.every(observation)) throw new SessionError(0)
   return data as unknown as SubmissionReport
+}
+
+function validMissing(value: unknown): value is MissingField[] {
+  return Array.isArray(value) && value.length <= 30 && value.every(item => item && typeof item === 'object' &&
+    typeof item.field === 'string' && /^[a-zA-Z][a-zA-Z0-9.]*$/.test(item.field) &&
+    typeof item.label === 'string' && item.label.length > 0 && item.label.length <= 100 && Number.isInteger(item.step) && item.step >= 0 && item.step <= 7)
+}
+function observation(value: unknown): value is ReviewObservation {
+  if (!value || typeof value !== 'object') return false
+  const item = value as Record<string, unknown>
+  return typeof item.section === 'string' && typeof item.message === 'string' && (item.fieldPath === null || typeof item.fieldPath === 'string')
 }
 
 async function request(id: string, method: 'GET' | 'POST', signal?: AbortSignal, send?: typeof fetch) {
@@ -22,7 +44,7 @@ async function request(id: string, method: 'GET' | 'POST', signal?: AbortSignal,
     errorFromResponse: async response => {
       if (response.status === 422) {
         const detail: unknown = await response.json().catch(() => null)
-        if (detail && typeof detail === 'object' && Array.isArray((detail as Record<string, unknown>).missing)) {
+        if (detail && typeof detail === 'object' && validMissing((detail as Record<string, unknown>).missing)) {
           return new SubmissionIncompleteError((detail as { missing: MissingField[] }).missing)
         }
       }

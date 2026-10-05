@@ -2,6 +2,16 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Avance local del Sprint 2
+
+El [cierre técnico local del 5 de octubre](cierre-tecnico-sprint-2-2026-10-05.md) completa S2-12/S2-14 y la verificación/documentación de S2-21: **13 tareas implementadas**, **263 casos aprobados** (122 frontend, 123 backend, 18 PostgreSQL), más ensayo de interfaz escritorio/móvil y teclado. La revisión, corrección, aprobación privada y publicación administrativa funcionan con datos reales. La copia sigue local en `RicardoDev`, sin commit/push ni Trello; publicación del incremento y aceptación externa pendientes. [ADR-005](decisiones/ADR-005-publicacion-administrativa-provisional.md) registra la autorización provisional de publicación por ADMIN, no una decisión definitiva del cliente.
+
+La [revisión de Santiago e integración local del 5 de octubre](revision-integracion-santiago-sprint-2-2026-10-05.md) conserva el corte previo al cierre de Ricardo: siete tareas de secciones, revisión, envío y correcciones sobre lo de Alison/Ricardo; 116 pruebas frontend, 115 backend y 17 PostgreSQL. La [nota original de Santiago](implementacion-sprint-2-santiago.md) mantiene su antecedente.
+
+La [revisión de Alison e integración local del 4 de octubre](revision-integracion-alison-s2-16-2026-10-04.md) documenta S2-16 adaptada sobre `RicardoDev`, 106 pruebas frontend, 104 backend y 16 PostgreSQL aprobadas. El catálogo público ya consulta datos publicados reales en esta copia. Los cambios de esa integración no se han publicado ni trasladado a DEV/Trello; publicación y recorrido integral siguen pendientes.
+
+La [nota de Ricardo del 1 de octubre](avance-ricardo-sprint-2-2026-10-01.md) documenta S2-15 y S2-17 en revisión técnica parcial, S2-12/S2-14/S2-21 en curso, el contraste de sus pantallas con Figma y las pruebas con PostgreSQL tras recuperar Docker. El incremento se entrega en `RicardoDev`, no en DEV/main, y no declara cerrado el Sprint 2. Los cortes históricos siguientes se conservan.
+
 ## Actualización de DEV · 30/09/2026
 
 La planificación vigente es v2.3: **20 tareas de Sprint 1, 13 de Sprint 2 y 29 en el inventario futuro de Sprint 3 por refinar**. Se conservan 62 tareas y 64 historias; no se suman ambos conteos. La cantidad futura no equivale a un compromiso de capacidad. Las asignaciones del Sprint 2 se revisarán con el equipo; esta publicación no implementa todavía el módulo completo de campañas.
@@ -74,6 +84,8 @@ Estos archivos corresponden al prototipo histórico de la experiencia del creado
 - [Explicativo del Equipo 2 — PDF histórico](entregables/historico-equipo-2/04_Documento_Explicativo_Equipo_2_Brotar.pdf).
 
 ## Cómo abrir los archivos
+
+Para el Sprint 2 vigente: [guía de demostración y tareas](../output/pdf/Guia_Demostracion_y_Estudio_Sprint_2_Brotar.pdf), [principios/patrones para defensa](../output/pdf/Informe_Principios_y_Patrones_Sprint_2_Brotar.pdf) y [tutorial de siete flujos paso a paso](../output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf). Los PDF conservan el corte local del 05/10/2026; se incluyen en la [entrega integrada de DEV](entrega-dev-sprint-2-2026-10-05.md). La aceptación externa sigue pendiente. No reemplazan las guías históricas del Sprint 1.
 
 En GitHub, entra al archivo PDF para previsualizarlo o descargarlo. Los documentos Word se descargan con **Download raw file / Descargar** y se abren con un editor compatible. También puedes clonar el repositorio o descargar su ZIP para tener todos los archivos localmente.
 

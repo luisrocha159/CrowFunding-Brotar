@@ -4,6 +4,8 @@ Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinac
 
 **Esta es la infraestructura vigente.** `infra/postgres/` es legado y no debe levantarse junto con V2. Docker aloja solo PostgreSQL; API y frontend corren fuera del contenedor. La guía paso a paso principal está en el [README de la raíz](../../README.md#3-primera-instalación-completa).
 
+**Incremento local del 05/10/2026:** después de instalar la línea base se aplica la migración separada de REJECTED y los permisos S2 de revisión. No restaurar de nuevo una base existente. Para actualizar y habilitar la publicación administrativa provisional, seguir [la sección 15 del README](../../README.md#15-revisión-y-publicación-del-sprint-2); consultar [migraciones y recuperación](MIGRACIONES.md). El SQL oficial se conserva sin modificar.
+
 - PostgreSQL 18.6, base `brotar_db`, proyecto Compose `brotar-provisional-v2`.
 - Puerto local **15433**, volumen exclusivo `brotar-provisional-v2_brotar_pgdata_v2`.
 - SHA-256 del original: `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`.
@@ -20,6 +22,7 @@ pnpm install --frozen-lockfile
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
 node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
 node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 $env:ALLOW_DB_TEST_WRITES='true'
@@ -68,3 +71,7 @@ La [línea base](baseline.json) y el [procedimiento de migraciones](MIGRACIONES.
 No usar `down -v`, `docker volume rm` ni Factory Reset. Para volver a la versión anterior hace falta **tanto la configuración `.env.before-v2` como el código anterior a V2**, porque el mapeo actual espera `administrative_area_id`. Detener la API, preservar la configuración nueva y recuperar ambos de forma coordinada. El entorno antiguo puede arrancarse con su propio Compose en `infra/postgres`; no comparte volumen con V2. Copiar datos entre versiones requiere una migración revisada y respaldos, no ejecutar este instalador.
 
 Si vuelve el error de sockets de Docker Desktop, no reinstalar la base ni borrar sus volúmenes. El 16/09 se recuperó el motor conservando las carpetas temporales afectadas con sufijo `.stale-20260916-v2*`. Eso no es una solución definitiva al origen de la recurrencia; requiere diagnóstico de Docker/Windows si reaparece.
+
+El 01/10 volvió a ocurrir con `docker-secrets-engine/engine.sock` y `Docker/run/sailor-ingest.sock` bajo AppData local de Windows. Ambos eran archivos temporales de tipo reparse point inaccesibles; el fallo ocurría antes de iniciar PostgreSQL. Con los procesos de Docker detenidos y tras comprobar que las carpetas contenían solo esos sockets y `dockerInference`, se conservaron mediante renombrado con sufijo `.stale-20261001-s2` y Docker regeneró sus rutas. El motor volvió a responder como 29.7.2; V2 arrancó saludable en 15433, pasaron 15 pruebas de integración y las filas de usuarios/campañas se conservaron tras reiniciar el contenedor.
+
+Esta reparación es específica del equipo diagnosticado, no un paso normal de instalación ni un script para ejecutar a ciegas. No elimina volúmenes, archivos de la base, secretos de aplicación ni distribuciones WSL; tampoco garantiza que el problema de sockets no reaparezca. Ante otro fallo, identificar primero la ruta exacta en los logs locales de Docker y conservar los datos. No usar Factory Reset para resolverlo.

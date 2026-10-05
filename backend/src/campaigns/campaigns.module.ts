@@ -13,28 +13,37 @@ import { GeneralController } from './infrastructure/general.controller'
 import { TypeormDraftRepository } from './infrastructure/typeorm-draft.repository'
 import { TypeormModalityRepository } from './infrastructure/typeorm-modality.repository'
 import { TypeormGeneralRepository } from './infrastructure/typeorm-general.repository'
+import { Projects } from './application/projects'
+import { TypeormProjectRepository } from './infrastructure/typeorm-project.repository'
+import { ProjectsController, CampaignReviewQueueController } from './infrastructure/projects.controller'
+import { PublicCampaigns } from './application/public-campaigns'
+import { TypeormPublicCampaignRepository } from './infrastructure/typeorm-public-campaign.repository'
+import { PublicCampaignController } from './infrastructure/public-campaign.controller'
 import { CampaignSections } from './application/sections'
-import { SectionsController } from './infrastructure/sections.controller'
-import { TypeormSectionsRepository } from './infrastructure/typeorm-sections.repository'
 import { CampaignSubmission } from './application/submission'
+import { SectionsController } from './infrastructure/sections.controller'
 import { SubmissionController } from './infrastructure/submission.controller'
+import { TypeormSectionsRepository } from './infrastructure/typeorm-sections.repository'
 import { TypeormSubmissionRepository } from './infrastructure/typeorm-submission.repository'
+import { AdministrativeReview } from './application/administrative-review'
+import { TypeormAdministrativeRepository } from './infrastructure/typeorm-administrative.repository'
+import { AdministrativeReviewController } from './infrastructure/administrative-review.controller'
+import { publicationEnabled } from './domain/administrative-review'
 
 @Module({
   imports: [RolesModule, OrganizationsModule, DatabaseModule],
-  controllers: [DraftController, ModalityController, GeneralController, SectionsController, SubmissionController],
+  controllers: [DraftController, ModalityController, GeneralController, ProjectsController, CampaignReviewQueueController, PublicCampaignController, SectionsController, SubmissionController, AdministrativeReviewController],
   providers: [
-    SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository, TypeormSectionsRepository, TypeormSubmissionRepository,
-    {
-      provide: CampaignSubmission,
-      inject: [TypeormDraftRepository, TypeormSubmissionRepository],
-      useFactory: (drafts: TypeormDraftRepository, submission: TypeormSubmissionRepository) => new CampaignSubmission(drafts, submission)
-    },
-    {
-      provide: CampaignSections,
-      inject: [TypeormDraftRepository, TypeormSectionsRepository],
-      useFactory: (drafts: TypeormDraftRepository, sections: TypeormSectionsRepository) => new CampaignSections(drafts, sections)
-    },
+    SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
+    TypeormSectionsRepository, TypeormSubmissionRepository,
+    { provide: CampaignSections, inject: [TypeormDraftRepository, TypeormSectionsRepository], useFactory: (drafts: TypeormDraftRepository, sections: TypeormSectionsRepository) => new CampaignSections(drafts, sections) },
+    { provide: CampaignSubmission, inject: [TypeormDraftRepository, TypeormSubmissionRepository], useFactory: (drafts: TypeormDraftRepository, submission: TypeormSubmissionRepository) => new CampaignSubmission(drafts, submission) },
+    TypeormProjectRepository,
+    TypeormAdministrativeRepository,
+    { provide: AdministrativeReview, inject: [TypeormAdministrativeRepository], useFactory: (repository: TypeormAdministrativeRepository) => new AdministrativeReview(repository, publicationEnabled(process.env)) },
+    { provide: Projects, inject: [TypeormProjectRepository], useFactory: (repository: TypeormProjectRepository) => new Projects(repository) },
+    TypeormPublicCampaignRepository,
+    { provide: PublicCampaigns, inject: [TypeormPublicCampaignRepository], useFactory: (repository: TypeormPublicCampaignRepository) => new PublicCampaigns(repository) },
     {
       provide: Drafts,
       inject: [TypeormDraftRepository, Memberships],

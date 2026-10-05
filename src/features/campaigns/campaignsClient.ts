@@ -129,8 +129,8 @@ export async function activeCategories(signal?: AbortSignal): Promise<Category[]
 export function validateDraft(input: DraftInput): Partial<Record<keyof DraftInput, string>> {
   const errors: Partial<Record<keyof DraftInput, string>> = {}
   const title = [...input.title.trim()].length
-  if (!title || title > 200) errors.title = 'Escribe entre 1 y 200 caracteres.'
-  if ([...input.summary.trim()].length > 500) errors.summary = 'El resumen admite hasta 500 caracteres.'
+  if (!title || title > 200 || input.title.includes('\u0000')) errors.title = 'Escribe entre 1 y 200 caracteres de texto.'
+  if ([...input.summary.trim()].length > 500 || input.summary.includes('\u0000')) errors.summary = 'El resumen admite hasta 500 caracteres de texto.'
   if (!CAMPAIGN_TYPES.some((type) => type === input.campaignType)) errors.campaignType = 'Elige una modalidad disponible.'
   return errors
 }
@@ -211,6 +211,7 @@ export function validateStoryInput(story: StoryInput, indicators: IndicatorInput
   const errors: Record<string, string> = {}
   for (const key of ['problem', 'solution', 'beneficiaries', 'expectedResults'] as const) {
     if ([...story[key].trim()].length > STORY_LIMITS.text) errors[key] = `Admite hasta ${STORY_LIMITS.text} caracteres.`
+    if (story[key].includes('\u0000')) errors[key] = 'El campo contiene un carácter de control no admitido.'
   }
   if (indicators.length > STORY_LIMITS.indicators) errors.indicators = `Máximo ${STORY_LIMITS.indicators} indicadores.`
   indicators.forEach((item, index) => {
@@ -218,6 +219,9 @@ export function validateStoryInput(story: StoryInput, indicators: IndicatorInput
     if (!item.name.trim() || [...item.name.trim()].length > STORY_LIMITS.indicatorName) errors[prefix + 'name'] = 'Usa entre 1 y 200 caracteres.'
     if ([...item.description.trim()].length > STORY_LIMITS.text) errors[prefix + 'description'] = 'Usa hasta 5000 caracteres.'
     if ([...item.unit.trim()].length > STORY_LIMITS.unit || (item.targetValue !== null && !item.unit.trim())) errors[prefix + 'unit'] = 'Indica la unidad con hasta 60 caracteres.'
+    for (const field of ['name', 'description', 'unit'] as const) {
+      if (item[field].includes('\u0000')) errors[prefix + field] = 'El campo contiene un carácter de control no admitido.'
+    }
     for (const field of ['baselineValue', 'targetValue'] as const) {
       const value = item[field]
       if (value !== null && (!Number.isFinite(value) || Math.abs(value) > 999999999999.99 || value !== Number(value.toFixed(2)))) {
@@ -239,7 +243,28 @@ export async function readGeneral(id: string, signal?: AbortSignal): Promise<Gen
   return data as unknown as GeneralInput & { limits: Limits }
 }
 
+export function validateGeneralInput(input: GeneralInput): Record<string, string> {
+  const errors: Record<string, string> = {}
+  const title = [...input.title.trim()].length, summary = [...input.summary.trim()].length
+  if (!title) errors.title = 'El nombre de la campaña es obligatorio.'
+  else if (title > 200) errors.title = 'El nombre admite hasta 200 caracteres.'
+  if (!summary) errors.summary = 'El resumen corto es obligatorio.'
+  else if (summary > 500) errors.summary = 'El resumen admite hasta 500 caracteres.'
+  if (input.categoryId === null) errors.categoryId = 'Elige una categoría del catálogo.'
+  const country = input.location.countryCode?.trim().toUpperCase()
+  if (!country) errors.countryCode = 'Elige el país de la campaña.'
+  else if (!/^[A-Z]{2}$/.test(country)) errors.countryCode = 'El país debe ser un código de dos letras.'
+  const texts = { title: input.title, summary: input.summary, locality: input.location.locality, addressLine: input.location.addressLine, reference: input.location.reference }
+  for (const [field, max, label] of [['locality', 160, 'La localidad'], ['addressLine', 500, 'La dirección'], ['reference', 500, 'La referencia']] as const) {
+    if ([...texts[field].trim()].length > max) errors[field] = `${label} admite hasta ${max} caracteres.`
+  }
+  for (const [field, value] of Object.entries(texts)) if (value.includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+  return errors
+}
+
 export async function saveGeneral(id: string, input: GeneralInput, signal?: AbortSignal): Promise<void> {
+  const errors = validateGeneralInput(input)
+  if (Object.keys(errors).length) throw new DraftFieldError(errors)
   await request(`campaigns/drafts/${id}/general`, 'PUT', {
     title: input.title.trim(),
     summary: input.summary.trim(),

@@ -46,7 +46,7 @@ test('BG-18 CA 3: se avanza de uno en uno y se retrocede libremente', () => {
   assert.equal(allowsStepMove(7, 8), false, 'No se pasa del último.')
 })
 
-test('solo el borrador admite edición por el asistente', () => {
+test('borrador y cambios solicitados admiten edición; el resto permanece bloqueado', () => {
   assert.equal(allowsBuilderEditing('DRAFT'), true)
   assert.equal(allowsBuilderEditing('CHANGES_REQUESTED'), true)
   for (const status of ['IN_REVIEW', 'APPROVED', 'PUBLISHED', 'CLOSED', 'CANCELLED']) {
