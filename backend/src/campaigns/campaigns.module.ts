@@ -13,12 +13,28 @@ import { GeneralController } from './infrastructure/general.controller'
 import { TypeormDraftRepository } from './infrastructure/typeorm-draft.repository'
 import { TypeormModalityRepository } from './infrastructure/typeorm-modality.repository'
 import { TypeormGeneralRepository } from './infrastructure/typeorm-general.repository'
+import { CampaignSections } from './application/sections'
+import { SectionsController } from './infrastructure/sections.controller'
+import { TypeormSectionsRepository } from './infrastructure/typeorm-sections.repository'
+import { CampaignSubmission } from './application/submission'
+import { SubmissionController } from './infrastructure/submission.controller'
+import { TypeormSubmissionRepository } from './infrastructure/typeorm-submission.repository'
 
 @Module({
   imports: [RolesModule, OrganizationsModule, DatabaseModule],
-  controllers: [DraftController, ModalityController, GeneralController],
+  controllers: [DraftController, ModalityController, GeneralController, SectionsController, SubmissionController],
   providers: [
-    SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
+    SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository, TypeormSectionsRepository, TypeormSubmissionRepository,
+    {
+      provide: CampaignSubmission,
+      inject: [TypeormDraftRepository, TypeormSubmissionRepository],
+      useFactory: (drafts: TypeormDraftRepository, submission: TypeormSubmissionRepository) => new CampaignSubmission(drafts, submission)
+    },
+    {
+      provide: CampaignSections,
+      inject: [TypeormDraftRepository, TypeormSectionsRepository],
+      useFactory: (drafts: TypeormDraftRepository, sections: TypeormSectionsRepository) => new CampaignSections(drafts, sections)
+    },
     {
       provide: Drafts,
       inject: [TypeormDraftRepository, Memberships],

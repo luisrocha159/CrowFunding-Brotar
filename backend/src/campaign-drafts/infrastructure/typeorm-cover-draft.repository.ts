@@ -20,7 +20,7 @@ export class TypeormCoverDraftRepository implements CoverDraftRepository {
   async save(input: CampaignCoverDraft): Promise<CampaignCoverDraft> {
     await this.database.connection().transaction(async manager => {
       const owned: unknown[] = await manager.query(`SELECT id FROM public.campaign
-        WHERE id=$1 AND creator_user_id=$2 AND status='DRAFT' AND deleted_at IS NULL FOR UPDATE`, [input.campaignId, input.ownerUserId])
+        WHERE id=$1 AND creator_user_id=$2 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL FOR UPDATE`, [input.campaignId, input.ownerUserId])
       if (!owned.length) throw new CampaignCoverUnavailable()
       const files: unknown[] = await manager.query(`SELECT id FROM public.file_asset WHERE id=$1 AND uploaded_by=$2
         AND scope='PUBLIC' AND storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%' AND deleted_at IS NULL FOR UPDATE`, [input.fileId, input.ownerUserId])

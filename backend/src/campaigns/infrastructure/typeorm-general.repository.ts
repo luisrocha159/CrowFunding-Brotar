@@ -49,7 +49,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
 
   private async lockDraft(manager: EntityManager, campaignId: string, creatorUserId: string): Promise<void> {
     const rows: unknown[] = await manager.query(`SELECT id FROM public.campaign
-      WHERE id=$1 AND creator_user_id=$2 AND status='DRAFT' AND deleted_at IS NULL FOR UPDATE`, [campaignId, creatorUserId])
+      WHERE id=$1 AND creator_user_id=$2 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL FOR UPDATE`, [campaignId, creatorUserId])
     if (!rows.length) throw new DraftNotEditable()
   }
 
@@ -60,7 +60,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
       // El estado se reafirma en el WHERE: no se edita una campaña que dejó de ser borrador.
       await manager.query(
         `UPDATE public.campaign SET title = $2, summary = $3, category_id = $4, updated_at = now()
-          WHERE id = $1 AND creator_user_id = $5 AND status = 'DRAFT' AND deleted_at IS NULL`,
+          WHERE id = $1 AND creator_user_id = $5 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL`,
         [campaignId, input.title, input.summary || null, input.categoryId, creatorUserId])
       // campaign_location tiene campaign_id como clave primaria: una fila por campaña.
       await manager.query(

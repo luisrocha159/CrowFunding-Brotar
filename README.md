@@ -6,6 +6,8 @@
 
 **Actualización de DEV · 30/09/2026:** incluye las mejoras de validación del registro, ayuda para recuperación local, menú de cuenta con sesión y documentos de estudio del Sprint 1. La planificación v2.3 conserva 62 tareas y 64 historias: Sprint 1 = 20; Sprint 2 = 13 tareas de campañas; Sprint 3 = inventario de 29 tareas por refinar, no compromiso de una sola iteración. Esto es planificación: el módulo completo del Sprint 2 todavía no se declara implementado. Su reparto se acordará con el equipo.
 
+**Trabajo local en SantiagoDev · Sprint 2:** las siete tareas de Santiago tienen código de frontend y backend para planificación, presupuesto, financiamiento, recompensas, revisión, envío y corrección. La [evidencia y los límites de verificación](docs/implementacion-sprint-2-santiago.md) explican qué se probó y qué requiere PostgreSQL y revisión del equipo. El módulo completo del Sprint 2 aún depende de las tareas de Alison y Ricardo.
+
 Verificación de esta actualización: `bun run check` aprobó lint, tipos, 95 pruebas frontend y compilación; `bun x --package pnpm@11.19.0 pnpm run check` aprobó lint, tipos, 93 pruebas backend y compilación. No se repitieron las integraciones PostgreSQL en esta publicación porque el motor Docker local no estaba disponible. Los 200 casos citados arriba pertenecen al ensayo histórico del 21/09, no al conteo de esta revisión.
 
 Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores**; también desde **Mi cuenta → Opciones para iniciativas y permisos → Ver mis borradores**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
@@ -350,6 +352,7 @@ Frontend por funcionalidades. Backend separado en dominio, aplicación e infraes
 - [Backlog general Word: 64 historias](docs/entregables/general/03_Product_Backlog_General_Brotar.docx).
 - [Plan de 62 tareas por sprints](docs/planificacion-sprints.md). Historias y tareas no se suman como funcionalidades diferentes.
 - [Ajuste de Sprint 2 a la tarea de campañas](docs/ajuste-sprint-2-fase-3-2026-09-30.md): 13 tareas actuales y 29 futuras por refinar.
+- [Implementación local de las tareas de Santiago en Sprint 2](docs/implementacion-sprint-2-santiago.md): contratos, pruebas y límites pendientes.
 - [Informe detallado del Sprint 1 — Word](docs/entregables/sprint-1/Informe_Detallado_Sprint_1_Brotar.docx).
 - [Principios y patrones para el docente — Word](docs/entregables/sprint-1/Principios_y_Patrones_Sprint_1_Brotar.docx).
 - [Calidad y defensa técnica — guía](docs/calidad-sprint-1.md) y [Word](docs/entregables/sprint-1/Informe_Calidad_y_Defensa_Sprint_1_Brotar.docx).

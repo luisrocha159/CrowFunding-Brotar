@@ -96,6 +96,11 @@ test('propiedad, estado y referencias se comprueban antes de escribir', async ()
   await assert.rejects(() => closed.info.saveStory('own', stored.id, story, []), DraftNotEditable)
   assert.equal(closed.saved.general.length, 0)
 
+  const correction = build({ status: 'CHANGES_REQUESTED' })
+  await correction.info.saveGeneral('own', stored.id, complete)
+  await correction.info.saveStory('own', stored.id, story, [])
+  assert.equal(correction.saved.general.length, 1)
+
   await assert.rejects(
     () => info.saveGeneral('own', stored.id, { ...complete, title: '' }),
     (error: unknown) => {

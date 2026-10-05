@@ -6,7 +6,8 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import { CoverDraftEditor } from '../campaign-drafts/CoverDraftPage'
-import { DraftReview } from './DraftReview'
+import { CampaignSectionsEditor } from './CampaignSectionsEditor'
+import { CampaignSubmissionPanel } from './CampaignSubmissionPanel'
 import {
   activeCategories, changeModality, createDraft, myDrafts, readDraft, readModality,
   saveDraft, validateDraft, CAMPAIGN_TYPES, DraftFieldError, readGeneral, readStory, saveGeneral,
@@ -41,6 +42,7 @@ export function CampaignBuilderPage() {
   const [values, setValues] = useState<DraftInput>({ ...empty })
   const [errors, setErrors] = useState<Partial<Record<keyof DraftInput, string>>>({})
   const [saving, setSaving] = useState<Saving>('idle')
+  const [sectionBusy, setSectionBusy] = useState(false)
   const [conflict, setConflict] = useState<string | null>(null)
   const [modality, setModality] = useState<Modality | null>(null)
   // Modalidad que el creador pidió y que la API retuvo por afectar a recompensas cargadas.
@@ -188,13 +190,13 @@ export function CampaignBuilderPage() {
 
   const step = current?.builderStep ?? 0
   const total = current?.totalSteps ?? 0
-  const editable = current !== null && current.status === 'DRAFT'
+  const editable = current !== null && ['DRAFT', 'CHANGES_REQUESTED'].includes(current.status)
 
   return <AccessShell
     centered
     title="Crear campaña"
     subtitle="El asistente guarda tu avance y lo recupera cuando vuelvas."
-    notice={<><strong>Borrador conectado.</strong> Se guarda el contenido y la posición del asistente vinculados a tu cuenta. No envía la campaña a revisión ni activa pagos.</>}
+    notice={<><strong>Campaña conectada.</strong> Guarda cada sección antes de avanzar. La campaña solo se envía cuando confirmas «Enviar a revisión» en el último paso; este flujo no activa pagos.</>}
   >
     <ButtonLink to="/mi-cuenta" variant="secondary">Volver a mi cuenta</ButtonLink>
 
@@ -416,12 +418,15 @@ export function CampaignBuilderPage() {
         </section>}
 
         {step === 3 && editable && <CoverDraftEditor key={current.id} campaignId={current.id} />}
-        {step >= 4 && step <= 6 && <Message tone="info" title="Etapa de un sprint posterior">Este bloque no forma parte del desarrollo del Sprint 1. No se da por completado ni habilita publicación.</Message>}
-        {step === 7 && <DraftReview general={general} story={story} indicators={indicators} />}
+        {step >= 4 && step <= 6 && <CampaignSectionsEditor key={current.id} id={current.id} step={step} editable={editable} campaignType={current.campaignType} onBusyChange={setSectionBusy} />}
+        {step === 7 && <CampaignSubmissionPanel key={current.id} id={current.id} onGoTo={move} onStatusChange={status => {
+          setCurrent(previous => previous ? { ...previous, status } : previous)
+          setDrafts(previous => previous.map(item => item.id === current.id ? { ...item, status } : item))
+        }} />}
         <nav aria-label="Navegación del asistente">
-          <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving'}
+          <Button variant="secondary" disabled={!editable || step === 0 || saving === 'saving' || sectionBusy}
             onClick={() => move(step === 7 && current.campaignType === 'DONATION' ? 5 : step - 1)}>Anterior</Button>
-          <Button disabled={!editable || step >= total - 1 || saving === 'saving'}
+          <Button disabled={!editable || step >= total - 1 || saving === 'saving' || sectionBusy}
             onClick={() => move(step === 5 && current.campaignType === 'DONATION' ? 7 : step + 1)}>Siguiente</Button>
         </nav>
         </fieldset>

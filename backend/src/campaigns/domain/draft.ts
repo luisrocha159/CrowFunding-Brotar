@@ -61,7 +61,7 @@ export function isValidSummary(summary: string): boolean {
  * revisión, que no es parte de S1-16.
  */
 export function allowsBuilderEditing(status: string): boolean {
-  return status === 'DRAFT'
+  return status === 'DRAFT' || status === 'CHANGES_REQUESTED'
 }
 
 /**

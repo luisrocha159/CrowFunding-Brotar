@@ -4,6 +4,8 @@ Backend independiente: **NestJS 12 + TypeScript + pnpm 11.19.0**, ejecutado en N
 
 ## Estado de este incremento
 
+El trabajo local de Sprint 2 añade rutas propias del creador en `/api/campaigns/drafts/:id`: `plan`, `budget`, `funding`, `rewards` y `submission`. Las primeras cuatro admiten `GET` y `PUT`; `submission` admite `GET` para revisar faltantes y observaciones, y `POST` para enviar o reenviar con rol `CREATOR`. `section-catalogs` entrega monedas y categorías de gasto activas. En una V2 ya instalada, iniciar PostgreSQL y ejecutar `node scripts/prepare-sprint2-santiago.mjs` desde `backend/` para conceder los permisos técnicos nuevos. Ver [implementación y límites de verificación](../docs/implementacion-sprint-2-santiago.md). Estas rutas aún no se probaron contra PostgreSQL en este equipo.
+
 - E01: servidor, configuración, separación del frontend, validación HTTP, pruebas y documentación.
 - E02: TypeORM 0.3.31 y `pg` 8.23.0 conectados a PostgreSQL 18.6 real. Restauración, mapeo de usuarios/perfiles, permisos limitados, lectura/escritura, rollback y persistencia después de reiniciar el contenedor verificados el 16/09/2026.
 - E03/E04: `POST /api/auth/register` implementado y conectado a `/registro`. Persiste usuario y perfil juntos, con hash de contraseña, validaciones, duplicados y límite inicial de solicitudes. La cuenta conserva estado pendiente de verificación. Ver [contrato y evidencias](../docs/integracion-e03-e04.md).

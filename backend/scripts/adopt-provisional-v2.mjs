@@ -12,7 +12,7 @@ const candidateFile = new URL('.env.backend', infra)
 const backendFile = new URL('../.env', import.meta.url)
 const previousFile = new URL('.env.before-v2', infra)
 const expectedHash = '5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88'
-const grants = ['grant-e07.sql', 'grant-s1-13.sql', 'grant-s1-15.sql', 'grant-s1-16.sql', 'grant-s1-17.sql', 'grant-s1-18.sql', 'grant-s1-files.sql']
+const grants = ['grant-e07.sql', 'grant-s1-13.sql', 'grant-s1-15.sql', 'grant-s1-16.sql', 'grant-s1-17.sql', 'grant-s1-18.sql', 'grant-s1-files.sql', 'grant-s2-santiago.sql']
 const [mode, inputPath] = process.argv.slice(2)
 
 if (!['install', 'activate'].includes(mode)) throw new Error('Uso: node scripts/adopt-provisional-v2.mjs install <SQL oficial> | activate')
