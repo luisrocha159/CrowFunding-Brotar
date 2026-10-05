@@ -11,7 +11,7 @@ export function publicContinuation(raw: string | null): string {
  * No concede acceso: la API continúa exigiendo sesión, rol y propiedad.
  */
 export function authenticatedContinuation(raw: string | null): string {
-  if (raw && (['/mis-proyectos', '/administracion/campanas'].includes(raw)
+  if (raw && (['/mis-proyectos', '/administracion/campanas', '/administracion/usuarios'].includes(raw)
     || /^\/(mis-proyectos|administracion\/campanas)\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw))) return raw
   return publicContinuation(raw)
 }

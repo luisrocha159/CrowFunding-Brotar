@@ -35,7 +35,7 @@ function toInput(draft: Draft): DraftInput {
 }
 
 export function CampaignBuilderPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const requestedDraft = searchParams.get('borrador')
   const requestKey = requestedDraft ?? ''
   const [loadedRequest, setLoadedRequest] = useState<string | null>(null)
@@ -159,6 +159,11 @@ export function CampaignBuilderPage() {
 
   async function open(id: string) {
     if (active.current || sectionBusy || sectionDirty) return
+    if (requestedDraft !== id) {
+      // URL explícita: recargar/volver no selecciona el borrador anterior.
+      setSearchParams({ borrador: id })
+      return
+    }
     const controller = new AbortController()
     active.current = controller
     setSaving('idle'); setConflict(null)
@@ -185,6 +190,15 @@ export function CampaignBuilderPage() {
     setValues((previous) => ({ ...previous, [key]: value }))
     setErrors((previous) => ({ ...previous, [key]: undefined }))
     if (saving !== 'saving') setSaving('idle')
+  }
+
+  function startAnother() {
+    if (active.current || sectionBusy || sectionDirty) return
+    setCurrent(null); setValues({ ...empty }); setModality(null); setGeneral(null)
+    setStory(null); setIndicators([]); setLimits(null); setPendingModality(null)
+    setErrors({}); setFieldErrors({}); setConflict(null); setSaving('idle'); retrySave.current = null
+    // Conserva la lista y todos los datos persistidos; no actualiza ni descarta campañas.
+    if (requestedDraft) setSearchParams({})
   }
 
   async function reloadGeneral(id: string) {
@@ -240,13 +254,22 @@ export function CampaignBuilderPage() {
         {conflict ?? 'Comprueba la conexión e inténtalo otra vez. Tus campos se conservan; no se confirmó el guardado.'}
       </Message>}
       <section aria-label="Borradores guardados">
-        <h2>Borradores guardados</h2>
+        <h2>Mis campañas guardadas ({drafts.length})</h2>
+        <p>Cada borrador se guarda por separado. Abrir o crear otro no reemplaza el anterior. Guarda los cambios de la sección antes de cambiar de campaña.</p>
+        {drafts.length > 0 && <FormField id="saved-draft-selector" label="Elegir campaña guardada">
+          <select id="saved-draft-selector" value={current?.id ?? ''} disabled={saving === 'saving' || sectionBusy || sectionDirty}
+            onChange={event => { if (event.target.value) void open(event.target.value) }}>
+            <option value="">Selecciona una campaña</option>
+            {drafts.map(item => <option key={item.id} value={item.id}>{item.title} · {statusNames[item.status] ?? item.status} · {item.id.slice(0, 8)}</option>)}
+          </select>
+        </FormField>}
+        {current && <Button variant="secondary" disabled={saving === 'saving' || sectionBusy || sectionDirty} onClick={startAnother}>Crear otro borrador · conservar los anteriores</Button>}
         {drafts.length === 0
           ? <p>Todavía no tienes borradores. Crea uno para empezar.</p>
           : <ul>{drafts.map((item) => <li key={item.id}>
             <h3>{item.title}</h3>
             <p>{typeNames[item.campaignType] ?? item.campaignType} · {statusNames[item.status] ?? item.status}</p>
-            <Button variant="secondary" disabled={sectionBusy || sectionDirty} onClick={() => { void open(item.id) }}>
+            <Button variant="secondary" disabled={saving === 'saving' || sectionBusy || sectionDirty} onClick={() => { void open(item.id) }}>
               {item.id === current?.id ? 'Abierto' : item.status === 'CHANGES_REQUESTED' ? 'Corregir' : item.status === 'DRAFT' ? 'Continuar' : 'Consultar'}
             </Button>
           </li>)}</ul>}

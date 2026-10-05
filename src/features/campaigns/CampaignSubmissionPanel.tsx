@@ -54,7 +54,7 @@ export function CampaignSubmissionPanel({ id, categories, onGoTo, onStatusChange
         setSaved({ ...saved, report: { ...saved.report, missing: cause.missing } })
         setError('La campaña no se envió. Completa los campos señalados.')
       } else if (cause instanceof SessionError && cause.status === 403) {
-        setError('Tu cuenta necesita el rol Creador para enviar la campaña.')
+        setError('Tu cuenta necesita CREATOR para enviar la campaña. Solicita al administrador la habilitación provisional en Administración → Usuarios. Tu borrador sigue guardado y editable; elegir Creador al registrarte no concede ese permiso.')
       } else if (cause instanceof SessionError && cause.status === 409) {
         const latest = await readSubmission(id).catch(() => null)
         if (!mounted.current) return

@@ -15,6 +15,7 @@ import { OrganizationsPage } from '../../features/organizations/OrganizationsPag
 import { CampaignBuilderPage } from '../../features/campaigns/CampaignBuilderPage'
 import { CoverDraftPage } from '../../features/campaign-drafts/CoverDraftPage'
 import { ProjectsPage } from '../../features/campaigns/ProjectsPage'
+import { CreatorAdministrationPage } from '../../features/organizations/CreatorAdministrationPage'
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'mis-proyectos/:id', element: <ProjectsPage /> },
       { path: 'administracion/campanas', element: <ProjectsPage admin /> },
       { path: 'administracion/campanas/:id', element: <ProjectsPage admin /> },
+      { path: 'administracion/usuarios', element: <CreatorAdministrationPage /> },
       { path: 'mi-campana/portada', element: <CoverDraftPage /> },
       { path: 'registro', element: <RegisterPage /> },
       { path: 'recuperar-contrasena', element: <RecoverPasswordPage /> },

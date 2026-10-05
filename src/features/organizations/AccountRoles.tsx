@@ -19,6 +19,7 @@ export function AccountRoles() {
     {!error && roles?.some(role=>role.code==='REGISTERED_USER') && <p><ButtonLink to="/mis-organizaciones">Organizaciones en borrador</ButtonLink></p>}
     {!error && roles?.some(role=>role.code==='CREATOR') && <p><ButtonLink to="/mis-proyectos">Mis proyectos</ButtonLink></p>}
     {!error && roles?.some(role=>role.code==='ADMIN') && <p><ButtonLink to="/administracion/campanas">Revisión de campañas</ButtonLink></p>}
+    {!error && roles?.some(role=>role.code==='ADMIN') && <p><ButtonLink to="/administracion/usuarios">Habilitar creadores · provisional</ButtonLink></p>}
     <p>Registrar una organización es opcional y no concede permisos de administrador ni verifica a la empresa.</p>
   </section>
 }
