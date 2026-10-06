@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
@@ -73,6 +73,7 @@ export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
   }
 
   if (status === 'loading') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta."><p role="status">Cargando portada…</p></AccessShell>
+  if (status === 'load-error' && lastError === 401) return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent(`/mi-campana/portada?borrador=${campaignId}`)}`} />
   if (status === 'load-error') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta.">
     <div id="cover-response" tabIndex={-1}><Message tone="error" title="No se pudo cargar la portada">{errorMessage[lastError] ?? errorMessage[0]}</Message></div>
     <div className={accessStyles.actions}><Button onClick={() => { setStatus('loading'); readCoverDraft(campaignId).then(result => { setCover(result); setValues({ altText: result?.altText ?? '', file: null }); setStatus('ready') }).catch(() => setStatus('load-error')) }}>Reintentar</Button><Link to="/crear-campana">Volver a mis borradores</Link></div>

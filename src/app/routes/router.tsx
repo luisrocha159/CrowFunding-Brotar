@@ -16,6 +16,7 @@ import { CampaignBuilderPage } from '../../features/campaigns/CampaignBuilderPag
 import { CoverDraftPage } from '../../features/campaign-drafts/CoverDraftPage'
 import { ProjectsPage } from '../../features/campaigns/ProjectsPage'
 import { CreatorAdministrationPage } from '../../features/organizations/CreatorAdministrationPage'
+import { GuestAccessGate } from '../../features/access/session/GuestAccessGate'
 
 export const router = createBrowserRouter([
   {
@@ -27,7 +28,7 @@ export const router = createBrowserRouter([
       { path: 'explorar', element: <ExploreProjectsPage /> },
       { path: 'explorar/buscar', element: <SearchProjectsPage /> },
       { path: 'proyectos/:slug', element: <ProjectDetailPage /> },
-      { path: 'iniciar-sesion', element: <LoginPage /> },
+      { path: 'iniciar-sesion', element: <GuestAccessGate><LoginPage /></GuestAccessGate> },
       { path: 'mi-cuenta', element: <AccountPage /> },
       { path: 'mis-organizaciones', element: <OrganizationsPage /> },
       { path: 'crear-campana', element: <CampaignBuilderPage /> },
@@ -37,7 +38,7 @@ export const router = createBrowserRouter([
       { path: 'administracion/campanas/:id', element: <ProjectsPage admin /> },
       { path: 'administracion/usuarios', element: <CreatorAdministrationPage /> },
       { path: 'mi-campana/portada', element: <CoverDraftPage /> },
-      { path: 'registro', element: <RegisterPage /> },
+      { path: 'registro', element: <GuestAccessGate><RegisterPage /></GuestAccessGate> },
       { path: 'recuperar-contrasena', element: <RecoverPasswordPage /> },
       { path: '*', element: <NotFoundPage /> }
     ]

@@ -221,7 +221,7 @@ export function CampaignBuilderPage() {
     }, reloadGeneral)
   }
 
-  if (screen === 'anonymous') return <Navigate to="/iniciar-sesion?continuar=%2Fcrear-campana" replace />
+  if (screen === 'anonymous') return <Navigate to={`/iniciar-sesion?continuar=${encodeURIComponent(`/crear-campana${requestedDraft ? `?borrador=${requestedDraft}` : ''}`)}`} replace />
 
   const step = current?.builderStep ?? 0
   const total = current?.totalSteps ?? 0

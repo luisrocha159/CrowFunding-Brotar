@@ -13,5 +13,6 @@ test('BG-02 explica el recorrido y distingue campañas publicadas de pagos todav
 
 test('BG-03 explica modalidades y revisión sin prometer publicación ni verificación automática', () => {
   const source = readFileSync(new URL('../src/features/public/for-creators/ForCreatorsPage.tsx', import.meta.url), 'utf8')
-  for (const text of ['Donación', 'Recompensa', 'Preventa', 'verificación y revisión', 'reglas de aprobación se confirmarán', '/registro?perfil=creador', '/iniciar-sesion']) assert.ok(source.includes(text))
+  for (const text of ['Donación', 'Recompensa', 'Preventa', 'verificación y revisión', 'reglas de aprobación se confirmarán', 'CreatorAccessActions']) assert.ok(source.includes(text))
+  assert.ok(!source.includes('El editor y el panel privado del creador no forman parte de esta entrega'))
 })

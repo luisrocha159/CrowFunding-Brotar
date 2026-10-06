@@ -3,10 +3,12 @@ import { EmptyState, ErrorState, ProjectCardSkeleton } from '../../../shared/com
 import { ProjectCard } from '../../../shared/components/ProjectCard'
 import hero from '../../../shared/assets/proyecto-reforestacion.webp'
 import { useProjectResource } from '../useProjectResource'
+import { usePublicSession } from '../../access/session/useHeaderSession'
 import styles from '../public.module.css'
 
 export function LandingPage() {
   const resource = useProjectResource({ featured: true })
+  const { user, checking, unavailable } = usePublicSession()
   return <>
     <section className={styles.hero}>
       <img className={styles.heroImage} src={hero} alt="" width={1344} height={768} fetchPriority="high" />
@@ -31,6 +33,6 @@ export function LandingPage() {
         : resource.projects.length === 0 ? <EmptyState title="Todavía no hay campañas publicadas" description="Puedes explorar todas las campañas o conocer cómo funciona Brotar." action={<ButtonLink to="/explorar">Explorar proyectos</ButtonLink>} />
         : <div className={styles.grid}>{resource.projects.map(project => <ProjectCard key={project.id} project={project} />)}</div>}
     </section>
-    <section className={styles.hero}><p className="eyebrow">Para quienes quieren transformar su entorno</p><h2>Tu idea puede ser el próximo comienzo</h2><p>Conoce cómo preparar una campaña, presentar su impacto y dar el primer paso con tu comunidad.</p><div className={styles.actions}><ButtonLink to="/para-creadores">Quiero crear un proyecto</ButtonLink><ButtonLink variant="secondary" to="/iniciar-sesion">Iniciar sesión</ButtonLink></div></section>
+    <section className={styles.hero}><p className="eyebrow">Para quienes quieren transformar su entorno</p><h2>Tu idea puede ser el próximo comienzo</h2><p>Conoce cómo preparar una campaña, presentar su impacto y dar el primer paso con tu comunidad.</p><div className={styles.actions}><ButtonLink to="/para-creadores">Quiero crear un proyecto</ButtonLink>{checking ? <Button loading loadingLabel="Comprobando cuenta…" /> : <ButtonLink variant="secondary" to={user || unavailable ? '/mi-cuenta' : '/iniciar-sesion'}>{user ? 'Ir a mi cuenta' : unavailable ? 'Comprobar mi cuenta' : 'Iniciar sesión'}</ButtonLink>}</div></section>
   </>
 }
