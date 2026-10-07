@@ -117,6 +117,14 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
 
     // La lista propia lo incluye; la de otra cuenta no.
     assert.ok((await (await call('campaigns/drafts', returned)).json() as DraftBody[]).some((row) => row.id === draft.id))
+    const secondResponse = await call('campaigns/drafts', returned, 'POST', { title: `Segundo borrador ${suffix}`, summary: 'Independiente', campaignType: 'DONATION' })
+    assert.equal(secondResponse.status, 201)
+    const second = await secondResponse.json() as DraftBody
+    assert.notEqual(second.id, draft.id)
+    const ownList = await (await call('campaigns/drafts', returned)).json() as DraftBody[]
+    assert.equal(ownList.length, 2)
+    assert.ok(ownList.some(row => row.id === draft.id) && ownList.some(row => row.id === second.id))
+    assert.equal((await (await call(`campaigns/drafts/${draft.id}`, returned)).json() as DraftBody).title, `Campaña ${suffix} v3`, 'Crear otro no sustituye el contenido del anterior.')
     assert.deepEqual(await (await call('campaigns/drafts', outsider.cookie)).json(), [])
 
     // Propiedad: un borrador ajeno no se lee ni se guarda, y no se distingue de inexistente.

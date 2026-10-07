@@ -2,7 +2,7 @@
 
 **Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
 
-> **Entrega vigente en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1. `main` no se modifica. La revisión de calidad aprobó 130 pruebas frontend, 128 backend y 18 integraciones PostgreSQL (276 casos); la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue el ensayo de esta publicación. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
+> **Entrega vigente en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1 y añade los ajustes de navegación con sesión de la sección 17. `main` no se modifica. Los resultados del corte de campañas y del incremento de permisos están en las secciones 15 y 16; la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue ese ensayo de las comprobaciones posteriores. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
 
 **Por dónde empezar:** instalación nueva → sección 3; copia V2 ya instalada → sección 15; abrir otro día → sección 4; probar todos los flujos → [tutorial PDF](output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf). No hace falta copiar cuentas, contraseñas, `.env` ni archivos de esta computadora. Cada integrante genera su configuración local.
 
@@ -95,6 +95,17 @@ pnpm install --frozen-lockfile
 
 Desde `backend/`, utiliza el SQL incluido en el repositorio:
 
+**Antes del primer `install`: elige si esta es la única copia de Brotar en esta PC.** Una carpeta diferente no aísla Docker: por defecto todas las copias usan el proyecto `brotar-provisional-v2`, el mismo volumen y el puerto `15433`. Si ya tienes otra instalación en este equipo y quieres probar desde cero, ejecuta primero **en la terminal PowerShell**, desde `backend/`:
+
+```powershell
+$env:BROTAR_COMPOSE_PROJECT='brotar-ensayo'
+$env:BROTAR_DB_PORT='15434'
+```
+
+Usa un nombre y un puerto libres para cada copia adicional. En otra PC, o si esta es la única instalación, no necesitas este bloque: se usan los valores normales. Si ya ejecutaste `install` con la configuración equivocada, estas dos variables no sustituyen los archivos ya generados: conserva la configuración y pide diagnóstico antes de repetir la instalación o cambiar contraseñas. No borres el volumen original.
+
+**Todos los bloques `powershell` de esta guía se ejecutan en la terminal; no se pegan dentro de `.env`.** No crees `backend/.env` manualmente: `install` prepara el candidato y `activate` lo copia automáticamente después de verificar la conexión.
+
 ```powershell
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
 pnpm run check
@@ -104,11 +115,13 @@ node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar. Las migraciones registran la línea base y añaden el valor REJECTED al enum de campaña; **no crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar. Las migraciones registran la línea base, añaden REJECTED al enum de campaña y conceden la inserción de auditoría para habilitación provisional de creadores; **no crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
 
-El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL. Después verifica las pruebas de integración contra el candidato:
+El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL.
+
+**Pruebas de integración opcionales para comprobar la entrega:** el siguiente bloque se ejecuta completo en PowerShell. Las líneas `$env:...` son variables temporales de la terminal, no el contenido de `backend/.env`. Las pruebas crean datos temporales y los limpian; no las ejecutes sobre una base de producción.
 
 ```powershell
 $env:ALLOW_DB_TEST_WRITES='true'
@@ -121,12 +134,27 @@ try {
 }
 ```
 
-Solo si todo pasó, y con la API detenida:
+Con la instalación, migraciones y verificación aprobadas (y las pruebas aprobadas si las ejecutaste), y con la API detenida:
 
 ```powershell
 node scripts/adopt-provisional-v2.mjs activate
 pnpm run dev
 ```
+
+**Cómo debe quedar `backend/.env`:** lo genera `activate` desde `infra/postgres-v2/.env.backend`. Es texto de configuración `CLAVE=valor`, no comandos de PowerShell, `try/finally` ni instrucciones de pruebas. Comprueba estas claves sin publicar ni compartir la contraseña:
+
+| Clave | Instalación normal | Copia aislada del ejemplo |
+| --- | --- | --- |
+| `DATABASE_ENABLED` | `true` | `true` |
+| `DB_HOST` | `127.0.0.1` | `127.0.0.1` |
+| `DB_PORT` | `15433` | `15434` |
+| `DB_NAME` | `brotar_db` | `brotar_db` |
+| `DB_USER` | `brotar_app` | `brotar_app` |
+| `DB_PASSWORD` | Generada localmente por `install` | Generada para esta copia; no reutilizar la de otra |
+| `DB_SSL` | `false`, conexión local | `false`, conexión local |
+| `HOST` / `PORT` | `127.0.0.1` / `3000` | Igual; detén la otra API si ocupa `3000` |
+
+No necesitas copiar esta tabla a ningún archivo. Tras activar, reinicia la API si estaba abierta: el proceso carga `.env` al arrancar. Solo una API y un frontend pueden usar los puertos `3000` y `5173` a la vez.
 
 No necesitas ejecutar `install` ni `activate` cada vez que abras el proyecto. Ambos admiten repetición segura con la configuración vigente; `install` no vuelve a aplicar el SQL sobre una base poblada y `activate` no sobrescribe un respaldo previo. Para una instalación antigua con permisos faltantes, consulta [la guía V2](infra/postgres-v2/README.md).
 
@@ -437,7 +465,7 @@ Recorrido con una **cuenta de ensayo**:
 4. Guardar meta positiva, moneda activa, duración y modelo. Las fechas son opcionales y coherentes. No se impone presupuesto igual a meta ni una duración comercial no confirmada. No se activan pagos.
 5. Guardar recompensas/preventas: tipo, descripción, aporte mínimo, disponibilidad y entrega. Donación omite el paso; cambiar de modalidad conserva los datos anteriores sin mostrarlos como recompensas aplicables a donación.
 6. En **Revisión y envío**, comprobar los datos guardados. Los faltantes enlazan su paso y el servidor vuelve a validar al enviar.
-7. Con **REGISTERED_USER y CREATOR vigentes**, una campaña completa queda **IN_REVIEW**, con fecha, actor y nueva ronda; aparece en la cola y se bloquea la edición. El registro no concede CREATOR automáticamente; su provisión sigue pendiente de acuerdo del equipo.
+7. Con **REGISTERED_USER y CREATOR vigentes**, una campaña completa queda **IN_REVIEW**, con fecha, actor y nueva ronda; aparece en la cola y se bloquea la edición. El registro no concede CREATOR automáticamente; ADMIN puede habilitarlo manualmente de forma provisional (sección 16).
 8. Si se solicitan cambios, **Mis proyectos → Corregir campaña** abre el asistente. El último paso muestra las observaciones de la última ronda. Corregir, guardar y reenviar conserva el historial y crea otra ronda. La sección 15 añade la acción administrativa real de solicitud de cambios; el ensayo integral ya usa esa API, no cambios de estado por SQL.
 
 Comprobación: `bun run check` en raíz, comprobaciones backend con pnpm **11.19.0** y suite PostgreSQL de la sección 12. La nueva prueba `backend/integration/campaign-sections-submission.integration.test.ts` cubre propiedad, roles, entradas inválidas, persistencia tras reiniciar la API, envíos concurrentes, bloqueo de edición, observaciones, reenvío y conexión con S2-15/S2-16/S2-17. Limpia sus cuentas/campañas temporales y no asigna roles a compañeros.
@@ -473,11 +501,29 @@ CAMPAIGN_ADMIN_PUBLICATION_ENABLED=true
 
 Después ejecutar `pnpm run dev` y, en otra terminal desde la raíz, `bun run dev`. Una instalación nueva sigue la sección 3 y genera esa variable en el candidato; si ya tenía un valor explícito, se conserva. Un candidato antiguo no se reescribe automáticamente. La API exige un booleano válido; sin la variable, o con `false`, la publicación queda bloqueada. **Aprobar sigue sin publicar**. No registrar ni subir `.env` a Git.
 
-La nueva migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). `migrate status` debe mostrar ambas migraciones aplicadas y `pending: false`.
+La migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). Desde la habilitación provisional de creadores, `migrate status` debe mostrar **tres** migraciones aplicadas (`BaselineProvisionalV21789948800000`, `CampaignRejected1791244800000`, `CreatorGrantAudit1791244800001`) y `pending: false`. La tercera se explica en la sección 16.
 
 ### Demostrar el flujo con cuentas autorizadas
 
-El registro básico **no concede CREATOR ni ADMIN**, aunque se seleccione un perfil de uso. No hay contraseña administrativa compartida en el repositorio. Se necesitan cuentas de ensayo a las que el responsable haya concedido esos roles; su provisión definitiva sigue pendiente en D06. Las integraciones preparan y limpian sus propias cuentas temporales sin modificar personas existentes.
+#### Crear un administrador de ensayo en cada computadora
+
+Las cuentas de la base local **no viajan con Git**. DEV incluye el procedimiento, no una cuenta compartida, una contraseña predeterminada ni un backup poblado. Cada responsable prepara su propia cuenta y contraseña; nunca las añade al SQL oficial, README, scripts o archivos versionados.
+
+1. Inicia PostgreSQL, backend y frontend siguiendo la sección 3. Registra la cuenta de ensayo desde **Crear una cuenta**, usando una contraseña exclusiva de prueba. Seleccionar un perfil no concede ADMIN.
+2. El responsable de esta instalación, con acceso al archivo privado de PostgreSQL, ejecuta desde `backend/` el comando siguiente. Sustituye el correo de ejemplo por el de la cuenta que **ya registró** y que autoriza como administradora:
+
+```powershell
+node scripts/grant-local-admin.mjs --email=admin@example.invalid --confirm-local-admin
+```
+
+3. Inicia sesión normalmente con esa cuenta y su contraseña. Si ya había sesión abierta, ciérrala y vuelve a entrar. Abre **Mi cuenta → Opciones para iniciativas y permisos → Administración de campañas**, o `http://127.0.0.1:5173/administracion/campanas`.
+4. Comprueba consulta, detalle y decisiones sobre una campaña enviada. Aprobar no publica; publicar requiere la configuración provisional de esta sección. ADMIN no implica CREATOR ni sustituye la cuenta del creador para demostrar ambos lados.
+
+Este comando exige configuración **V2 local de desarrollo**, verifica el proyecto Docker, el contenedor y su puerto loopback, y utiliza las credenciales privadas del operador. Concede solo ADMIN a la cuenta indicada. No crea usuarios, restablece contraseñas, verifica correo/identidad ni cambia el estado de la cuenta. Repetirlo para una concesión vigente no duplica roles; una concesión vencida/futura requiere revisión manual. No habilita cuentas suspendidas, cerradas, eliminadas o bloqueadas. No es un endpoint ni un seed que se ejecute al instalar o arrancar. La provisión definitiva en despliegue continúa pendiente de D06.
+
+Las pruebas de este procedimiento están incluidas en `pnpm run check`; también se pueden ejecutar por separado con `pnpm run test:local-admin`. No necesitan una base para los casos simulados de protección e idempotencia.
+
+El registro básico **no concede CREATOR ni ADMIN**, aunque se seleccione un perfil de uso. No hay contraseña administrativa compartida en el repositorio. ADMIN se provisiona mediante el procedimiento local anterior; puede habilitar CREATOR provisionalmente desde la sección 16. Las reglas definitivas siguen pendientes en D06. Las integraciones preparan y limpian sus propias cuentas temporales sin modificar personas existentes.
 
 1. **Creador:** iniciar sesión, abrir Mis borradores/Mis proyectos y completar una campaña propia con información, modalidad, historia/impacto, portada, plan, presupuesto, financiamiento y recompensas aplicables. Guardar cada sección y revisar los faltantes. Donación no exige recompensas.
 2. En Revisión y envío, enviar la campaña completa. Debe quedar IN_REVIEW, no pública y sin edición. Un segundo envío no crea una ronda duplicada.
@@ -508,3 +554,45 @@ Los PDF conservan el corte local con el que se redactaron antes de la entrega; e
 La revisión extrajo `useCampaignSections`, corrigió falsos rechazos decimales y suma de céntimos, fechas imposibles, NUL en textos persistidos, límites técnicos y el campo HTML de contraseñas Unicode. El hash y la política de sesión se conservaron: Ñ, acentos y espacios de contraseña siguen siendo exactos, sin recorte ni normalización. No constituye una certificación absoluta de seguridad ni introduce reglas comerciales pendientes.
 
 Fuente reproducible: `scripts/build-sprint2-pdfs.py` (Python con reportlab/pypdf y fuentes Arial/Consolas de Windows). El generador valida las trece tareas, los anclajes y la cantidad de páginas; la revisión visual con Poppler es un paso separado. Usar los PDF incluidos para estudiar: no es necesario ejecutar el generador para arrancar Brotar.
+
+## 16. Habilitación provisional de creadores y varios borradores
+
+**Decisión provisional del equipo, no regla definitiva del cliente ni aprobación KYC.** El administrador puede habilitar exclusivamente CREATOR desde la interfaz. ADMIN nunca se concede desde registro ni desde este panel. La relación definitiva entre acceso, creador y KYC continúa pendiente.
+
+Para una instalación existente, desde `backend/`:
+
+```powershell
+pnpm run build
+node scripts/migrate.mjs up
+```
+
+La migración `CreatorGrantAudit1791244800001` concede a `brotar_app` únicamente la inserción de auditoría y el uso de su secuencia oficial. No crea tablas, cambia el SQL oficial, asigna roles a personas, verifica cuentas ni elimina datos. La secuencia de instalación de la sección 3 ya incluye `migrate.mjs up`; reinicia el backend si no está en modo desarrollo.
+
+1. Iniciar sesión con la cuenta ADMIN provisionada localmente (sección 15). Abrir **Mi cuenta → Habilitar creadores · provisional**, o `/administracion/usuarios`.
+2. Buscar el correo exacto de una cuenta ya registrada. Se muestran nombre, correo, estado y roles vigentes; no contraseñas, tokens, documentos ni un listado público de cuentas.
+3. Introducir un motivo y marcar la confirmación explícita. Pulsar **Habilitar como creador · provisional**. Solo se admite una cuenta disponible, no bloqueada y con REGISTERED_USER; Auditor permanece en lectura. Concesiones CREATOR vencidas/futuras no se reactivan silenciosamente.
+4. El backend exige sesión ADMIN y protección de origen. Guarda CREATOR con `granted_by` y una entrada en `audit_log` dentro de una transacción. Repetir una concesión vigente no duplica rol ni auditoría. Conserva contraseña, estado pendiente y verificaciones.
+5. Volver a la cuenta del creador, recargar Mi cuenta/constructor y completar **Revisión y envío → Enviar a revisión**. Habilitar el rol no envía automáticamente una campaña. Solo «Campaña recibida» / IN_REVIEW confirma el envío; entonces aparecerá en el panel administrativo.
+
+**Varios borradores:** el constructor muestra el selector **Elegir campaña guardada**, el número de campañas y **Crear otro borrador · conservar los anteriores**. Abrir una cambia el parámetro `?borrador=<id>` para que recargar conserve la selección. Cada campaña tiene un ID independiente. Crear otra no modifica ni descarta la anterior. Guarda cada sección antes de cambiar; un error de envío conserva DRAFT editable. Enviada y confirmada pasa a IN_REVIEW y queda en consulta hasta que administración solicite cambios. Solo la cuenta propietaria ve sus borradores; ADMIN ve la cola de enviados, no borradores ajenos.
+
+Pruebas añadidas: contratos frontend, reglas/guardias/confirmación backend e integración PostgreSQL de concesión, concurrencia, auditoría, CSRF, cuenta bloqueada, rol caducado y conservación de contraseña/estado/verificaciones. La integración de borradores comprueba que dos campañas propias siguen accesibles sin sustituir datos. Los recuentos de la sección anterior corresponden al corte previo.
+
+Verificación del incremento del **05/10/2026**: **133** pruebas frontend, **131** pruebas backend, **8** pruebas del procedimiento ADMIN local y **19** integraciones PostgreSQL: **291 casos aprobados**, sin omisiones. Lint, tipos y compilación aprobados. La integración de campañas recorre envío, cambios, reenvío, aprobación privada, publicación y rechazo; la de migraciones ensaya la nueva secuencia desde SQL oficial aislado. La interfaz administrativa se comprobó buscando una cuenta existente, sin concederle permisos durante ese ensayo visual. Estos resultados permiten demostrar el incremento; no equivalen a aceptación de los líderes ni certificación absoluta de seguridad. Las cuentas locales no viajan con Git.
+
+## 17. Navegación con sesión iniciada
+
+Login y registro comprueban primero la sesión mediante `GET /api/auth/me`. Con una sesión válida no vuelven a pedir credenciales: conservan un destino `continuar` permitido o llevan a Mi cuenta; el acceso de creador u organización conserva su pantalla correspondiente. Estas redirecciones no conceden roles: la API sigue comprobando sesión, permisos y propiedad.
+
+- **Para creadores**, inicio, cabecera y pie adaptan sus botones a la sesión confirmada. Con sesión aparecen Mi cuenta/Mis borradores en lugar de otro registro o login.
+- Cambiar entre login, registro y recuperación conserva el borrador o la portada seleccionados. Se rechazan destinos externos, parámetros no admitidos y bucles hacia otro acceso.
+- Durante la comprobación aparece un estado de carga. Un fallo de conexión no se interpreta como cierre de sesión: permite reintentar. La revalidación en segundo plano no desmonta los formularios que se están rellenando.
+- Recuperación sigue accesible aunque haya sesión. Un restablecimiento confirmado actualiza el estado de la interfaz; el backend mantiene la revocación de sesiones existente.
+
+**Cómo comprobarlo:** iniciar sesión, visitar Para creadores y abrir Mis borradores. Escribir `/iniciar-sesion` o `/registro` en la dirección: debe volver a Mi cuenta sin pedir otra contraseña. Probar `/iniciar-sesion?continuar=%2Fadministracion%2Fcampanas` con ADMIN: conserva ese destino; otra cuenta no obtiene permisos administrativos. Cerrar sesión desde Mi cuenta y entrar en una ruta privada: vuelve al login con su destino conservado. La cuenta y contraseña para ensayar deben crearse/provisionarse en cada instalación; no viajan en Git.
+
+Este incremento no cambia la arquitectura, el esquema SQL ni las reglas provisionales de CREATOR/publicación. La revisión de Figma fue parcial, no una certificación de coincidencia de todas las pantallas. Los resultados automatizados actuales y sus límites se indican a continuación.
+
+**Comprobación del arranque posterior al apagado · 05/10/2026:** `bun run check` aprobó **142** pruebas frontend; `pnpm run check`, **131** backend y **8** del procedimiento ADMIN local; la suite PostgreSQL aprobó **19** integraciones con `ALLOW_DB_TEST_WRITES=true`, `NODE_ENV=test` y `DB_TEST_RESTART=true`: **300 casos**, sin fallos ni omisiones. Lint, tipos y compilaciones aprobaron. El aviso de Vite por un paquete de unos 505 kB sigue presente: no impide arrancar, pero es una optimización pendiente. API `/api/health/ready` y el mismo endpoint mediante Vite respondieron HTTP 200 con `database=connected`; la consulta pública de campañas también respondió 200. La suite comprobó conservación de datos tras reiniciar PostgreSQL y los escenarios de sesiones/recuperación. No se restauró SQL ni se borró el volumen original.
+
+El ensayo visual de las redirecciones se realizó antes del apagado. No se repitió por completo en este arranque: la herramienta de escritorio detuvo el acceso a Opera al no poder determinar su URL con seguridad. Los tests de navegación/renderizado y las integraciones de sesión sí se repitieron; no sustituyen una aceptación visual de los líderes. La recuperación del socket local de Docker se describe en [infraestructura V2](infra/postgres-v2/README.md#recuperación-y-conservación); no se declara resuelto definitivamente su origen.

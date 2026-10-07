@@ -125,7 +125,13 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     assert.deepEqual(await snapshot(source), originalRoles, 'Los catálogos iniciales se conservan.')
     assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
     assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
-    await assert.rejects(() => source.undoLastMigration({ transaction: 'each' }), /no elimina valores ENUM/)
+    // La nueva última migración solo concede INSERT de auditoría y admite reversión.
+    await source.undoLastMigration({ transaction: 'each' })
+    assert.equal(await source.showMigrations(), true)
+    await source.runMigrations({ transaction: 'each' })
+    // REJECTED sigue sin permitir eliminar su ENUM; no depende de ser la última.
+    const { CampaignRejected1791244800000 } = await import('../src/shared/infrastructure/database/migrations/1791244800000-CampaignRejected')
+    await assert.rejects(() => new CampaignRejected1791244800000().down(), /no elimina valores ENUM/)
     assert.equal(await source.showMigrations(), false)
     const tables: { n: number }[] = await source.query(
       `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace

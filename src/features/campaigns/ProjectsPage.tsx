@@ -6,6 +6,7 @@ import projectTree from '../../assets/figma/project-tree.svg'
 import { canContinueProject, projectGoal, projectStatusNames, type ProjectSummary } from './projectsClient'
 import { useProjects } from './useProjects'
 import { AdministrativeCampaignPanel } from './AdministrativeCampaignPanel'
+import { AdministrativeNavigation } from './AdministrativeNavigation'
 import styles from './projects.module.css'
 
 export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary[]; onDiscard: (project: ProjectSummary) => void }) {
@@ -38,7 +39,7 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
   const visible = data.projects.filter(project => `${project.title} ${project.creatorName}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
   const back = admin ? '/administracion/campanas' : '/mis-proyectos'
   return <div className={admin ? styles.adminLayout : styles.creatorLayout}>
-    {admin && <aside className={styles.sidebar}><h2>Administración</h2><Link aria-current="page" to="/administracion/campanas">Panel de revisión</Link><Link to="/mi-cuenta">Mi cuenta y perfil</Link><p>Esta etapa incluye la cola de campañas. No incluye KYC ni operaciones financieras.</p></aside>}
+    {admin && <AdministrativeNavigation />}
     <section className={styles.content}>
       <header className={styles.heading}><div><h1>{id ? (admin ? 'Detalle para revisión' : 'Detalle de mi proyecto') : admin ? 'Revisión de campañas' : 'Mis proyectos'}</h1><p>{admin ? 'Campañas en revisión y aprobadas pendientes de publicación. Aprobar y publicar son operaciones distintas.' : 'Lista completa de tus campañas y su estado actual.'}</p></div>
         {!admin && !id && data.state === 'ready' && <ButtonLink to="/crear-campana">+ Crear nueva campaña</ButtonLink>}

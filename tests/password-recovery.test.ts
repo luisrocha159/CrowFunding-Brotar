@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { RecoveryError, requestPasswordRecovery, resetPassword, validateRecoveryEmail, validateReset, type ResetValues } from '../src/features/access/recover-password/passwordRecoveryClient'
+import { SESSION_CHANGED } from '../src/features/access/session/sessionClient'
 
 const token = 'a'.repeat(64)
 const values: ResetValues = { token, password: 'una frase nueva segura', confirmation: 'una frase nueva segura' }
@@ -38,4 +39,21 @@ test('cliente distingue errores de recuperación y enlace vencido', async () => 
     await assert.rejects(requestPasswordRecovery('test@example.invalid', undefined, (async () => new Response('', { status })) as typeof fetch), (error: unknown) => error instanceof RecoveryError && error.kind === kind)
   }
   await assert.rejects(resetPassword(values, undefined, (async () => new Response('', { status: 401 })) as typeof fetch), (error: unknown) => error instanceof RecoveryError && error.kind === 'expired')
+})
+
+test('solo un restablecimiento confirmado avisa a la interfaz de que debe revalidar la sesión', async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  const events = new EventTarget()
+  let changes = 0
+  events.addEventListener(SESSION_CHANGED, () => { changes++ })
+  Object.defineProperty(globalThis, 'window', { value: events, configurable: true })
+  try {
+    await resetPassword(values, undefined, (async () => new Response(null, { status: 204 })) as typeof fetch)
+    assert.equal(changes, 1)
+    await assert.rejects(resetPassword(values, undefined, (async () => new Response(null, { status: 401 })) as typeof fetch), RecoveryError)
+    assert.equal(changes, 1)
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'window', descriptor)
+    else Reflect.deleteProperty(globalThis, 'window')
+  }
 })
