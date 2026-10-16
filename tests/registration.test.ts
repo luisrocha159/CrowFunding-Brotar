@@ -18,7 +18,7 @@ test('registro explica la longitud de contraseña sin afirmar que mide toda su s
 })
 test('registro asocia errores de validación del servidor con campos conocidos sin mostrar detalles internos', async () => {
   assert.deepEqual(registrationErrorsFrom(['phoneNumber must match /^\\d/', 'email must be an email']), {
-    phoneNumber: 'Usa de 4 a 30 dígitos, sin espacios.', email: 'Revisa el formato del correo electrónico.'
+    phoneNumber: 'Usa solo dígitos, con un máximo de 15 entre el prefijo y el teléfono.', email: 'Revisa el formato del correo electrónico.'
   })
   await assert.rejects(registerAccount(values, undefined, (async () => Response.json({ statusCode: 400, message: ['phoneNumber must match /^\\d/'] }, { status: 400 })) as typeof fetch),
     (error: unknown) => error instanceof RegistrationError && error.kind === 'invalid' && !!error.fields.phoneNumber)

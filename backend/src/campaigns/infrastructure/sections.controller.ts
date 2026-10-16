@@ -1,6 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Header, NotFoundException, Param, ParseUUIDPipe, Put, Req, UseGuards } from '@nestjs/common'
 import { Type } from 'class-transformer'
-import { ArrayMaxSize, IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator'
+import { ArrayMaxSize, ArrayUnique, IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, IsUUID, MaxLength, Min, ValidateNested } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { DraftNotEditable, DraftNotFound } from '../application/drafts'
@@ -13,7 +13,9 @@ class ActivityDto {
   @IsDateString() plannedStartOn!: string
   @IsDateString() plannedEndOn!: string
 }
-class MilestoneDto extends ActivityDto { @IsOptional() @IsInt() activityIndex!: number | null }
+class MilestoneDto extends ActivityDto {
+  @IsArray() @ArrayMaxSize(50) @ArrayUnique() @IsInt({ each: true }) @Min(0, { each: true }) activityIndexes: number[] = []
+}
 export class PlanDto {
   @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => ActivityDto) activities!: ActivityDto[]
   @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => MilestoneDto) milestones!: MilestoneDto[]
@@ -24,7 +26,7 @@ class BudgetItemDto {
   @IsNumber() quantity!: number
   @IsNumber() unitPrice!: number
   @IsNumber() plannedAmount!: number
-  @IsString() @MaxLength(SECTION_TEXT_LIMIT) notes!: string
+  @IsString() @MaxLength(SECTION_TEXT_LIMIT) notes = ''
 }
 class RiskDto {
   @IsString() @MaxLength(200) title!: string
@@ -42,16 +44,16 @@ export class FundingDto {
   @IsString() @MaxLength(3) currencyCode!: string
   @IsInt() durationDays!: number
   @IsString() fundingModel!: string
-  @IsOptional() @IsDateString() startsAt!: string | null
-  @IsOptional() @IsDateString() endsAt!: string | null
+  @IsOptional() @IsDateString() startsAt: string | null = null
+  @IsOptional() @IsDateString() endsAt: string | null = null
 }
 class RewardDto {
   @IsString() @MaxLength(200) title!: string
   @IsString() @MaxLength(SECTION_TEXT_LIMIT) description!: string
   @IsString() @MaxLength(60) rewardKind!: string
   @IsNumber() minAmount!: number
-  @IsOptional() @IsInt() quantityTotal!: number | null
-  @IsOptional() @IsDateString() estimatedDeliveryOn!: string | null
+  @IsOptional() @IsInt() quantityTotal: number | null = null
+  @IsOptional() @IsDateString() estimatedDeliveryOn: string | null = null
 }
 export class RewardsDto { @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => RewardDto) rewards!: RewardDto[] }
 
@@ -99,5 +101,5 @@ export class SectionsController {
     try { return { rewards: await this.sections.saveRewards(request.brotarUser.id, id, input.rewards as RewardInput[]) } } catch (error) { translate(error) }
   }
   @Get('section-catalogs') @Header('Cache-Control', 'no-store')
-  async catalogs() { return { expenseCategories: await this.sections.expenseCategories(), currencies: await this.sections.currencies() } }
+  async catalogs() { return { expenseCategories: await this.sections.expenseCategories(), currencies: await this.sections.currencies(), countries: await this.sections.countries() } }
 }

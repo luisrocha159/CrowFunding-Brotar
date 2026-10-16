@@ -76,8 +76,8 @@ test('S2 calidad: borrador e historia admiten español pero rechazan NUL por cam
   assert.ok(validateDraft({ ...draft, title: 'Campaña\u0000' }).title)
   const general = { title: 'Ñandú', summary: 'Cultivo', categoryId: 'cat', location: { countryCode: 'bo', locality: 'Nulo\u0000', addressLine: '', reference: '' } }
   assert.deepEqual(validateGeneralInput(general), validateGeneral(normalizeGeneral(general)))
-  const story = { problem: 'Sequía', solution: 'Plantación', beneficiaries: 'Familias', expectedResults: 'Mejora' }
-  assert.deepEqual(validateStoryInput(story, []), {})
+  const story = { problem: 'Sequía en comunidades rurales', solution: 'Plantación de especies nativas', beneficiaries: 'Familias de las comunidades rurales', expectedResults: 'Mejora de los cultivos comunitarios' }
+  assert.deepEqual(validateStoryInput(story, [{ name: 'Familias', description: '', unit: 'familias', baselineValue: 0, targetValue: 10 }]), {})
   assert.ok(validateStoryInput({ ...story, problem: 'Nulo\u0000' }, []).problem)
   assert.ok(validateStoryInput(story, [{ name: 'Meta\u0000', description: '', unit: 'familias', baselineValue: null, targetValue: 10 }])['indicators.0.name'])
 })

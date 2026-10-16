@@ -8,6 +8,10 @@ import { UserProfileSchema, UserSchema } from './user.schemas'
 @Injectable()
 export class TypeormRegistrationRepository implements UserRegistrationRepository {
   constructor(private readonly database: DatabaseService) {}
+  async emailExists(email: string): Promise<boolean> {
+    const rows: unknown[] = await this.database.connection().query('SELECT 1 FROM public.app_user WHERE lower(email)=lower($1) LIMIT 1', [email])
+    return rows.length > 0
+  }
 
   async create(input: NewUser): Promise<RegistrationResult> {
     const id = randomUUID()

@@ -38,6 +38,8 @@
 .cover { display: block; width: 100%; max-height: 320px; object-fit: cover; border-radius: var(--radius-md); }
 .reviewForm { display: grid; gap: var(--space-4); border: 0; padding: 0; margin: 0; min-width: 0; }
 .reviewForm label { display: grid; gap: var(--space-2); }
+.reviewForm .confirmation { display: flex; align-items: flex-start; gap: var(--space-3); }
+.confirmation input { flex: 0 0 auto; margin-top: .3em; }
 .reviewForm textarea, .reviewForm select { width: 100%; box-sizing: border-box; padding: var(--space-3); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); font: inherit; }
 .reviewForm textarea { min-height: 110px; resize: vertical; }
 .reviewForm [aria-invalid="true"] { border-color: var(--color-danger, #a52a2a); }

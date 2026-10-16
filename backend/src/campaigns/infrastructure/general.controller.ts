@@ -18,8 +18,8 @@ const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? valu
 export class LocationDto {
   @IsOptional() @Transform(trim) @IsString() @Length(2, 2) countryCode?: string
   @Transform(trim) @IsString() @MaxLength(LIMITS.locality) locality!: string
-  @Transform(trim) @IsString() @MaxLength(LIMITS.addressLine) addressLine!: string
-  @Transform(trim) @IsString() @MaxLength(LIMITS.reference) reference!: string
+  @Transform(trim) @IsString() @MaxLength(LIMITS.addressLine) addressLine = ''
+  @Transform(trim) @IsString() @MaxLength(LIMITS.reference) reference = ''
 }
 
 export class GeneralDto {
@@ -31,7 +31,7 @@ export class GeneralDto {
 
 export class IndicatorDto {
   @Transform(trim) @IsString() @MaxLength(STORY_LIMITS.indicatorName) name!: string
-  @Transform(trim) @IsString() @MaxLength(STORY_LIMITS.text) description!: string
+  @Transform(trim) @IsString() @MaxLength(STORY_LIMITS.text) description = ''
   @Transform(trim) @IsString() @MaxLength(STORY_LIMITS.unit) unit!: string
   @IsOptional() @IsNumber() baselineValue?: number
   @IsOptional() @IsNumber() targetValue?: number
@@ -50,8 +50,8 @@ export class StoryDto {
 function translate(error: unknown): never {
   if (error instanceof DraftNotFound) throw new NotFoundException('Borrador no disponible.')
   if (error instanceof DraftNotEditable) throw new ConflictException('El borrador ya no admite edición por el asistente.')
-  if (error instanceof CategoryUnavailable) throw new BadRequestException('La categoría no está disponible.')
-  if (error instanceof CountryUnavailable) throw new BadRequestException('El país no está disponible.')
+  if (error instanceof CategoryUnavailable) throw new BadRequestException(['categoryId: Selecciona una categoría activa del catálogo.'])
+  if (error instanceof CountryUnavailable) throw new BadRequestException(['countryCode: Selecciona un país activo del catálogo.'])
   if (error instanceof TooManyIndicators) throw new BadRequestException(`Máximo ${STORY_LIMITS.indicators} indicadores.`)
   if (error instanceof FieldErrors) {
     // El filtro global conserva message como lista de cadenas: un error por campo (CA 2).

@@ -29,12 +29,13 @@ import { AdministrativeReview } from './application/administrative-review'
 import { TypeormAdministrativeRepository } from './infrastructure/typeorm-administrative.repository'
 import { AdministrativeReviewController } from './infrastructure/administrative-review.controller'
 import { publicationEnabled } from './domain/administrative-review'
+import { CampaignWriteLimitGuard } from './infrastructure/campaign-write-limit.guard'
 
 @Module({
   imports: [RolesModule, OrganizationsModule, DatabaseModule],
   controllers: [DraftController, ModalityController, GeneralController, ProjectsController, CampaignReviewQueueController, PublicCampaignController, SectionsController, SubmissionController, AdministrativeReviewController],
   providers: [
-    SessionMutationGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
+    SessionMutationGuard, CampaignWriteLimitGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
     TypeormSectionsRepository, TypeormSubmissionRepository,
     { provide: CampaignSections, inject: [TypeormDraftRepository, TypeormSectionsRepository], useFactory: (drafts: TypeormDraftRepository, sections: TypeormSectionsRepository) => new CampaignSections(drafts, sections) },
     { provide: CampaignSubmission, inject: [TypeormDraftRepository, TypeormSubmissionRepository], useFactory: (drafts: TypeormDraftRepository, submission: TypeormSubmissionRepository) => new CampaignSubmission(drafts, submission) },

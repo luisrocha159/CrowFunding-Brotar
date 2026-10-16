@@ -1,4 +1,10 @@
-# Planificación de Brotar · ajuste Fase 3
+# Planificación de Brotar
+
+**Vigente desde el 15/10/2026: [plan v2.4 de cierre del MVP](plan-sprint-3-cierre-mvp-2026-10-15.md), [datos actualizados](planificacion-sprints.json) y [mapa Trello](trello-sprints.json).** 64 historias / 67 tareas únicas; Sprint 3 = 36 tareas, Ricardo 18 / Santiago 9 / Alison 9. S1-11 y S1-12 son arrastres, no duplicados.
+
+## Antecedente conservado: ajuste Fase 3 v2.3
+
+El contenido siguiente describe el reparto y los conteos históricos del 30/09 y el avance técnico del 05/10. No usarlo para asignar el Sprint 3 ni interpretar sus estados como actuales.
 
 Plan v2.3, actualizado el 30/09/2026 según [tarea oficial de campañas](requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf). El PDF define el alcance de esta entrega; el Figma orienta las pantallas. No se modifica la arquitectura ni se agregan historias duplicadas.
 

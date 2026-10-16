@@ -1,31 +1,23 @@
 {
-  "version": "2.3",
+  "version": "2.4",
   "delivery": {
-    "date": "2026-10-05",
+    "date": "2026-10-16",
     "branch": "DEV",
-    "evidence": "entrega-dev-sprint-2-2026-10-05.md",
-    "verification": "Copia Git limpia: dependencias congeladas, V2 nueva aislada, dos migraciones, permisos, activación/arranque/repetición y 276 pruebas aprobadas.",
-    "acceptance": "Revisión formal de líderes pendiente; sin cambios en Trello. localProgress conserva el corte histórico anterior a esta entrega; no determina la disponibilidad de estos archivos en DEV."
+    "evidence": "entrega-dev-2026-10-16.md",
+    "scope": "Validaciones, siete migraciones, catálogos automáticos, relación múltiple de hitos, nombres repetidos permitidos e identificación técnica única; planificación/asignaciones Sprint 3.",
+    "acceptance": "La publicación de código no certifica aceptación externa ni el MVP completo. Consultar la evidencia de la entrega y su commit remoto."
   },
-  "localProgress": {
-    "date": "2026-10-05",
-    "branch": "RicardoDev",
-    "published": false,
-    "evidence": "cierre-tecnico-sprint-2-2026-10-05.md",
-    "tasks": { "S2-02": "Cierre técnico", "S2-03": "Cierre técnico", "S2-04": "Cierre técnico", "S2-05": "Cierre técnico", "S2-10": "Cierre técnico", "S2-11": "Cierre técnico", "S2-12": "Cierre técnico", "S2-13": "Cierre técnico", "S2-14": "Cierre técnico", "S2-15": "Cierre técnico", "S2-16": "Cierre técnico", "S2-17": "Cierre técnico", "S2-21": "Verificación técnica completa; entrega y aceptación pendientes" },
-    "acceptance": "Pendiente de publicación del incremento y revisión de los líderes; Trello no actualizado en este corte.",
-    "note": "13 tareas implementadas y verificadas en su alcance técnico; revisión de calidad: 130 pruebas frontend, 128 backend y 18 PostgreSQL aprobadas (276). Dos guías PDF de tareas y principios en output/pdf. El ensayo real escritorio/móvil/teclado del corte previo se conserva; no se repitió el ensayo interactivo adicional por bloqueo de acceso de la herramienta. D05 autoriza ADMIN provisionalmente y separa aprobar/publicar; provisión definitiva de roles D06 sigue pendiente. No cierra historias generales del MVP. Los estados del inventario tasks conservan su corte histórico y este bloque expresa el estado local actual."
-  },
-  "cutoff": "2026-09-16",
-  "status": "Sprint 2 ajustado a Fase 3; Sprint 3 es inventario futuro por refinar. Asignaciones conservadas; capacidad, fechas y reparto posterior pendientes.",
+  "cutoff": "2026-10-15",
+  "status": "Sprint 2 implementado en su alcance técnico; Sprint 3 reúne el cierre integral del MVP. 64 historias, 67 tareas únicas; S1-11 y S1-12 se arrastran sin duplicarse. Capacidad, fechas, proveedores y aprobaciones aplicables siguen pendientes.",
   "trelloSync": {
-    "date": "2026-09-30",
+    "date": "2026-10-15",
     "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
     "mapping": "trello-sprints.json",
-    "verification": "ajuste-sprint-2-fase-3-2026-09-30.md"
+    "verification": "plan-sprint-3-cierre-mvp-2026-10-15.md"
   },
   "totalStories": 64,
-  "totalTasks": 62,
+  "totalTasks": 67,
+  "assignmentSource": "tasks[].owner y trello-sprints.json/taskCards expresan el reparto vigente por tarea. Los owner/state de stories conservan antecedentes acotados y no prueban la aceptación global de una historia.",
   "tasks": [
     {
       "sprint": 1,
@@ -39,8 +31,9 @@
       "result": "Aplicaciones separadas, configuración de ejemplo sin credenciales, instalación y commits descriptivos publicados en main (067f832 y dc7bcad).",
       "dependencies": "Autorización y revisión antes de publicar",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -52,8 +45,9 @@
       "result": "Base provisional V2 restaurada de forma aislada y persistencia con TypeORM comprobada. No cierra las migraciones de BG-59.",
       "dependencies": "E01",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -65,8 +59,9 @@
       "result": "HTTP real para acceso, perfil y organización, con validación y estados de carga, éxito y error. Las campañas públicas siguen simuladas.",
       "dependencies": "E01 y E02",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -78,8 +73,9 @@
       "result": "Registro básico persistente, validaciones, contraseña protegida y rol básico. Texto legal y política definitiva siguen en S1-11.",
       "dependencies": "E02 y E03",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -91,8 +87,9 @@
       "result": "Ingreso, consulta de sesión, expiración y cierre probados contra API y PostgreSQL, bajo la política local ADR-002.",
       "dependencies": "E04",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -104,8 +101,9 @@
       "result": "Datos básicos propios consultables y editables, con persistencia. Guardados y compatibilidad de perfiles se completan después.",
       "dependencies": "E05",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -117,8 +115,9 @@
       "result": "Roles iniciales y controles de autenticación y propiedad operativos. No equivale a toda la matriz de permisos del MVP.",
       "dependencies": "E05",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -130,8 +129,9 @@
       "result": "Organización DRAFT persistida y relacionada con su usuario. Sin autoaprobación ni verificación KYB ficticia.",
       "dependencies": "E05 y E07",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -144,8 +144,9 @@
       "result": "114 pruebas correctas y guion reproducible publicados en main (067f832 y dc7bcad). Cierre técnico de la entrega básica; aceptación de líderes separada.",
       "dependencies": "E01 a E08 y revisión de los responsables",
       "size": "M",
-      "state": "Cierre técnico",
-      "owner": "Ricardo"
+      "state": "Cierre técnico documentado",
+      "owner": "Ricardo",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -157,11 +158,12 @@
       "result": "Versionar mecanismo de migración sobre la baseline oficial y ensayar respaldo y recuperación en copia aislada, conservando vistas, funciones y triggers.",
       "dependencies": "E02; D01 y VT",
       "size": "L",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
-      "sprint": 1,
+      "sprint": 3,
       "id": "S1-11",
       "title": "Completar condiciones del registro",
       "stories": [
@@ -170,11 +172,15 @@
       "result": "Aplicar texto legal y datos por perfil aprobados; documentar y probar la política de verificación sin confundirla con KYC o KYB.",
       "dependencies": "E04; D03 y D08",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Alison"
+      "state": "Bloqueada por decisión o canal externo",
+      "owner": "Alison",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad. Arrastre de alcance definitivo: se conserva la implementación técnica del Sprint 1, sin repetirla.",
+      "trelloUrl": "https://trello.com/c/Mk5I3PVJ",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21.",
+      "originalSprint": 1
     },
     {
-      "sprint": 1,
+      "sprint": 3,
       "id": "S1-12",
       "title": "Implementar recuperación de contraseña",
       "stories": [
@@ -183,8 +189,12 @@
       "result": "Conectar un remitente autorizado y restablecimiento con caducidad y uso único; comprobar solicitud, error y enlace vencido sin afirmar envíos ficticios.",
       "dependencies": "E05; D08 y configuración del correo",
       "size": "L",
-      "state": "Pendiente",
-      "owner": "Alison"
+      "state": "Bloqueada por decisión o canal externo",
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad. Arrastre de alcance definitivo: se conserva la implementación técnica del Sprint 1, sin repetirla.",
+      "trelloUrl": "https://trello.com/c/Y6mwzal0",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21.",
+      "originalSprint": 1
     },
     {
       "sprint": 1,
@@ -196,8 +206,9 @@
       "result": "Refinar permisos de creador, revisor y cumplimiento; probar pertenencia y denegaciones en API. Las responsabilidades financieras se completan en S3-16.",
       "dependencies": "E07; D06",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -209,8 +220,9 @@
       "result": "Implementar almacenamiento autorizado, límites de carga, acceso por caso y rol, errores y limpieza de cargas fallidas; configurar privacidad y retención acordadas.",
       "dependencies": "E07; D03 y D08",
       "size": "L",
-      "state": "Pendiente",
-      "owner": "Alison"
+      "state": "Cierre técnico documentado",
+      "owner": "Alison",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -222,8 +234,9 @@
       "result": "API y edición autorizada de categorías necesarias, con referencias existentes protegidas. No crear parámetros de negocio todavía no aprobados.",
       "dependencies": "E07; D02 y D10",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -235,8 +248,9 @@
       "result": "Persistir datos y posición del asistente; recuperar después de cerrar sesión y comprobar propiedad, guardado, reintento y navegación entre pasos.",
       "dependencies": "E05, S1-10 y S1-13",
       "size": "L",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -248,8 +262,9 @@
       "result": "Guardar donación, recompensa o preventa, mostrar progreso y omitir recompensas en donación; confirmar cambios sin descartar datos silenciosamente.",
       "dependencies": "S1-16; D02",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -261,8 +276,9 @@
       "result": "Capturar nombre, categoría, ubicación y resumen con validaciones y límites acordados, reutilizando los datos de tarjeta y revisión.",
       "dependencies": "S1-15, S1-16 y S1-17; D02",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -274,8 +290,9 @@
       "result": "Seleccionar, previsualizar, sustituir y persistir portada; validar en cliente y servidor y conservar formulario ante un fallo.",
       "dependencies": "S1-14 y S1-16; D03",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Alison"
+      "state": "Cierre técnico documentado",
+      "owner": "Alison",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 1,
@@ -287,8 +304,9 @@
       "result": "Guardar problema, solución, beneficiarios e indicadores esperados; distinguir metas de resultados y recuperar el contenido del borrador.",
       "dependencies": "S1-16",
       "size": "M",
-      "state": "Pendiente",
-      "owner": "Santiago"
+      "state": "Cierre técnico documentado",
+      "owner": "Santiago",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 3,
@@ -303,7 +321,9 @@
       "state": "Pendiente",
       "owner": "Santiago",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/aW8N2PsG",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 2,
@@ -315,14 +335,15 @@
       "result": "Registrar actividades, responsables y cronograma; relacionar hitos cuando corresponda y validar fechas coherentes. Guardar y recuperar la planificación del borrador propio.",
       "dependencies": "S1-16; reglas de planificación y campos contrastados con PostgreSQL.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Registrar actividades, responsables y cronograma; relacionar hitos cuando corresponda y validar fechas coherentes. Guardar y recuperar la planificación del borrador propio.",
         "Validar fechas coherentes, responsabilidades, persistencia al salir y volver, campos obligatorios y rechazo de edición por otro usuario.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -334,14 +355,15 @@
       "result": "Persistir gastos, partidas de presupuesto y riesgos del proyecto. Validar montos mayores a cero y mostrar totales sin imponer reglas de igualdad con la meta no confirmadas.",
       "dependencies": "S1-16 y S2-02; D02 para reglas adicionales de presupuesto.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Persistir gastos, partidas de presupuesto y riesgos del proyecto. Validar montos mayores a cero y mostrar totales sin imponer reglas de igualdad con la meta no confirmadas.",
         "Validar montos, longitudes, riesgos y totales; conservar los datos ante errores y comprobar propiedad desde la API.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -353,14 +375,15 @@
       "result": "Guardar meta mayor a cero, moneda, duración y modelo de financiamiento admitidos por la base; validar fechas coherentes y explicar los datos requeridos.",
       "dependencies": "S2-03; D02 y revisión del esquema para moneda, duración y modelo. Sin pagos, proveedor ni checkout en esta fase.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Guardar meta mayor a cero, moneda, duración y modelo de financiamiento admitidos por la base; validar fechas coherentes y explicar los datos requeridos.",
         "Probar meta positiva, moneda y modelo válidos, duración y fechas coherentes, guardado progresivo y respuestas de error por campo.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -372,14 +395,15 @@
       "result": "Gestionar tipo, descripción, aporte mínimo, disponibilidad y fecha estimada de recompensas según la modalidad. Omitir el paso cuando no corresponda; conservar cambios sin activar aportes ni pagos.",
       "dependencies": "S1-17 y S2-04; D02 y D07 para condiciones adicionales no confirmadas.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Gestionar tipo, descripción, aporte mínimo, disponibilidad y fecha estimada de recompensas según la modalidad. Omitir el paso cuando no corresponda; conservar cambios sin activar aportes ni pagos.",
         "Probar importes positivos, disponibilidad y fechas, límites de texto y persistencia; omitir recompensas en donación y mantener coherencia al cambiar modalidad.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 3,
@@ -393,9 +417,11 @@
       "dependencies": "S1-14; D03",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Alison",
+      "owner": "Santiago",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/mXia80Q5",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -409,9 +435,11 @@
       "dependencies": "E08 y S1-14; D03 y D06",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Alison",
+      "owner": "Santiago",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/QzpTCGZ6",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -427,7 +455,9 @@
       "state": "Pendiente",
       "owner": "Ricardo",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/iN5WZPEd",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -440,9 +470,11 @@
       "dependencies": "S2-08; D03 y D09",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Alison",
+      "owner": "Santiago",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/f2wKElZK",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 2,
@@ -454,14 +486,15 @@
       "result": "Mostrar resumen y vista previa de la campaña persistida, indicar campos faltantes y enlazar al paso correspondiente. Cubrir tipo, información general con portada, historia e impacto, plan y presupuesto, financiamiento y recompensas aplicables.",
       "dependencies": "S1-17, S1-18, S1-19 y S1-20; S2-02 a S2-05. KYC/KYB, galería extra y checkout no son requisitos de envío de esta fase.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Mostrar resumen y vista previa de la campaña persistida, indicar campos faltantes y enlazar al paso correspondiente. Cubrir tipo, información general con portada, historia e impacto, plan y presupuesto, financiamiento y recompensas aplicables.",
         "Comparar resumen con datos guardados; señalar exactamente los faltantes, volver al campo correspondiente y impedir envíos incompletos en frontend y backend. Revisar los siete pasos esperados por el PDF sin perder datos existentes.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -473,14 +506,15 @@
       "result": "Permitir al creador propietario enviar una campaña completa a pendiente de revisión. Controlar la transición y registrar usuario y fecha en backend; confirmar recepción y evitar envíos duplicados.",
       "dependencies": "S2-10; D05, D08 y D09 solo donde subsistan dudas sobre publicación o comunicaciones. Sin requisito KYC/KYB ni correo obligatorio para demostrar la fase.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Permitir al creador propietario enviar una campaña completa a pendiente de revisión. Controlar la transición y registrar usuario y fecha en backend; confirmar recepción y evitar envíos duplicados.",
         "Probar campaña incompleta, envío válido, doble envío y acceso ajeno; comprobar el rol creador y la transición registrada en la API.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -492,14 +526,15 @@
       "result": "Permitir al administrador consultar campañas pendientes y toda la información enviada; aprobar, rechazar con motivo o solicitar cambios con comentarios al creador. Registrar la decisión y su responsable.",
       "dependencies": "S2-11 y S1-13; D06 para provisión de roles y permisos. No depende de KYC/KYB ni de estadísticas administrativas completas.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "acceptance": [
         "Permitir al administrador consultar campañas pendientes y toda la información enviada; aprobar, rechazar con motivo o solicitar cambios con comentarios al creador. Registrar la decisión y su responsable.",
         "Probar las tres decisiones, motivos y comentarios requeridos, historial y denegación en la API a usuarios sin permiso administrativo; aprobación no implica publicación.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -511,14 +546,15 @@
       "result": "Mostrar al creador propietario los cambios solicitados; permitir corregir las secciones habilitadas y reenviar la campaña sin perder datos ni historial de decisiones.",
       "dependencies": "S2-12; reglas de edición por estado de S2-14.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Santiago",
       "acceptance": [
         "Mostrar al creador propietario los cambios solicitados; permitir corregir las secciones habilitadas y reenviar la campaña sin perder datos ni historial de decisiones.",
         "Probar lectura de observaciones, corrección persistente, reenvío y restricciones de estado y propiedad; no admitir modificaciones ajenas.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -530,14 +566,15 @@
       "result": "Controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada. Separar aprobación de publicación y hacer visible solo lo publicado; conservar motivo de rechazo e historial.",
       "dependencies": "S2-11 y S2-12; acordar el contrato de estados antes de integrar S2-13. D05 para quién ejecuta publicación y D09 para mapear los seis estados al esquema existente. Sin KYC/KYB, cierre financiero ni cancelaciones no definidas.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "acceptance": [
         "Controlar y registrar en backend borrador, pendiente de revisión, cambios solicitados, aprobada, publicada y rechazada. Separar aprobación de publicación y hacer visible solo lo publicado; conservar motivo de rechazo e historial.",
         "Probar transiciones válidas y rechazadas, permisos de cada actor e historial; excluir de la API pública las campañas aprobadas pero no publicadas y las demás privadas.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -550,7 +587,7 @@
       "result": "Listar campañas propias con detalle y acciones según estado; continuar, consultar y actualizar el borrador. Permitir eliminar o descartar únicamente borradores propios con confirmación y control en backend.",
       "dependencies": "S1-16, S2-11 y S2-14; consultar el esquema antes de implementar el descarte. Estadísticas avanzadas del creador se posponen.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "acceptance": [
         "Listar campañas propias con detalle y acciones según estado; continuar, consultar y actualizar el borrador. Permitir eliminar o descartar únicamente borradores propios con confirmación y control en backend.",
@@ -558,7 +595,8 @@
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa.",
         "Probar descarte confirmado de borrador propio, rechazo de otro propietario y rechazo de estados no borrador; recuperar la lista sin datos descartados."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -575,14 +613,15 @@
       "result": "Sustituir campañas simuladas por la API pública. Mostrar solo publicadas con imagen, nombre, categoría, avance, meta y creador; buscar por texto y filtrar por categoría, ubicación y tipo. Incluir historia, problema, solución, beneficiarios, impacto y recompensas en el detalle.",
       "dependencies": "S2-14. Sin aportes, checkout ni KYC/KYB; guardados y favoritos se posponen sin eliminar su alcance del backlog general.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Alison",
       "acceptance": [
         "Sustituir campañas simuladas por la API pública. Mostrar solo publicadas con imagen, nombre, categoría, avance, meta y creador; buscar por texto y filtrar por categoría, ubicación y tipo. Incluir historia, problema, solución, beneficiarios, impacto y recompensas en el detalle.",
         "Probar filtros, resultados vacíos y errores; comprobar contenido real y exclusión de campañas privadas. El avance debe proceder de datos reales, sin recaudaciones ficticias.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 2,
@@ -594,14 +633,15 @@
       "result": "Preparar navegación y acceso administrativo para listar campañas pendientes y abrir su detalle. Reutilizar la revisión de S2-12; no construir un panel completo con estadísticas ni colas KYC/KYB.",
       "dependencies": "S1-13 y S2-12; D06 para roles administrativos. La cola de campañas puede prepararse antes con el contrato acordado.",
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "acceptance": [
         "Preparar navegación y acceso administrativo para listar campañas pendientes y abrir su detalle. Reutilizar la revisión de S2-12; no construir un panel completo con estadísticas ni colas KYC/KYB.",
         "Probar acceso permitido y denegado, lista vacía, carga y error. Diferenciar esta tarea de S2-12: navegación y cola frente a decisiones y registro de revisión.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 3,
@@ -616,7 +656,9 @@
       "state": "Pendiente",
       "owner": "Alison",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/Fb0YQnbF",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -629,9 +671,11 @@
       "dependencies": "S2-18; D04 y D07",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Alison",
+      "owner": "Ricardo",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/jn96M3kd",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -646,7 +690,9 @@
       "state": "Pendiente",
       "owner": "Alison",
       "originalSprint": 2,
-      "planningNote": "Trasladada el 29/09/2026 a inventario Sprint 3 por quedar fuera de Fase 3. ID y responsable se conservan; no es compromiso de ejecución en una sola iteración."
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/UMGYVbmE",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 2,
@@ -663,14 +709,15 @@
       "result": "Probar y documentar el recorrido real de creador, borrador por pasos, continuidad, descarte, revisión administrativa, correcciones, aprobación, publicación y exploración pública. Actualizar README, contratos y evidencias sin cambiar la arquitectura.",
       "dependencies": "Las otras 12 tareas vigentes del Sprint 2 y la base del Sprint 1. Los ocho traslados a Sprint 3 no bloquean la entrega de campañas.",
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "acceptance": [
         "Probar y documentar el recorrido real de creador, borrador por pasos, continuidad, descarte, revisión administrativa, correcciones, aprobación, publicación y exploración pública. Actualizar README, contratos y evidencias sin cambiar la arquitectura.",
         "Validar campos obligatorios, longitudes, montos positivos, fechas coherentes, carga/éxito/error y solicitudes duplicadas; comprobar autenticación existente, rol creador, propiedad, permiso administrativo, móvil y teclado. Checkout, pagos y KYC/KYB quedan fuera de estas pruebas de aceptación.",
         "Adjuntar evidencia reproducible, pruebas y referencia de commit/PR; actualizar documentación y obtener revisión del alcance. No confundir cierre técnico con aceptación externa."
       ],
-      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026"
+      "source": "Fase 3, módulo de campañas; ajuste 30/09/2026",
+      "planningNote": "Alcance acotado del incremento; la BG completa y aceptación externa se verifican por separado."
     },
     {
       "sprint": 3,
@@ -683,7 +730,10 @@
       "dependencies": "S2-19 y S2-20; D04 y acceso al proveedor",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/003Q6udE",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -696,7 +746,10 @@
       "dependencies": "S3-01; D02, D04 y D09",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/ONoYcbCB",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -709,7 +762,10 @@
       "dependencies": "S3-02 y S2-16",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/GhSvBSpq",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -722,7 +778,10 @@
       "dependencies": "S3-02; D04 y D09",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/yH3AVvNa",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -735,7 +794,10 @@
       "dependencies": "S3-02; D04 y D07",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/mAYpejK5",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -748,7 +810,10 @@
       "dependencies": "S3-02 y permisos de S3-16; D04 y D09",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/YyzU54ve",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -761,7 +826,10 @@
       "dependencies": "S3-06; D04",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/JWVj9Mjh",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -774,7 +842,10 @@
       "dependencies": "S3-07 y S2-08; D04, D06 y D09",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/Bl3KhxK4",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -787,7 +858,10 @@
       "dependencies": "S3-02 y S3-06; D04, D05 y D09",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/TPFXEeaS",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -800,7 +874,10 @@
       "dependencies": "S1-14 y S3-04; D05",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Alison",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/wOJdAFK4",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -813,7 +890,10 @@
       "dependencies": "S3-10 y S3-09; D05 y D09",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/IyIZIgso",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -828,7 +908,10 @@
       "dependencies": "S2-02 y S2-14; D05, D07 y D10",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/GfwdpFM3",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -841,7 +924,10 @@
       "dependencies": "S3-08 y S3-12; D05 y D10",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/qbBmvUPd",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -854,7 +940,10 @@
       "dependencies": "E08 y S2-08; D06 y D10",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/Tx8F84Ts",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -867,7 +956,10 @@
       "dependencies": "Instrumentar desde cada módulo; D03, D06 y VT",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/sLKDJe4q",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -882,7 +974,10 @@
       "dependencies": "S1-13; D06. Preparar cada permiso antes de exponer su módulo",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/hNo1pl1D",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -895,7 +990,10 @@
       "dependencies": "S1-15; D02 y D10",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Santiago",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/RNolTk1j",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -910,7 +1008,10 @@
       "dependencies": "Módulos S3 y S1-10; D01, D03, D09 y VT",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/rNXI5zUy",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -924,7 +1025,10 @@
       "dependencies": "S2-21 y módulos S3",
       "size": "L",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/Uvg6Lvlq",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -937,7 +1041,10 @@
       "dependencies": "S3-18 y S3-19; autorización de publicación y acceso a Figma",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/91EYkwLi",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     },
     {
       "sprint": 3,
@@ -950,7 +1057,91 @@
       "dependencies": "S3-19 y S3-20; decisiones aplicables y revisión externa",
       "size": "M",
       "state": "Pendiente",
-      "owner": "Por asignar"
+      "owner": "Ricardo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/S2ULIrQD",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+    },
+    {
+      "sprint": 3,
+      "id": "S3-26",
+      "title": "Verificar contactos y comunicar estados reales",
+      "stories": [
+        "BG-10",
+        "BG-25",
+        "BG-26",
+        "BG-28",
+        "BG-42",
+        "BG-44"
+      ],
+      "result": "## Sprint 3 · cierre del MVP · plan v2.4 · 15/10/2026\nID: S3-26 · [L] preliminar · responsable: por asignar. Estado: pendiente; no iniciada.\n\nDesglose de historias existentes (BG-10, BG-25, BG-26, BG-28, BG-42, BG-44), NO una nueva historia de usuario.\n\n## Resultado y criterios verificables\n1. Confirmar posesión de correo y teléfono cuando sean verificaciones aplicables mediante canal autorizado, token/código temporal y de un uso; limitar intentos/reenvíos y vincular al contacto y titular correctos.\n2. Al cambiar el contacto invalidar su verificación anterior según política, impedir escalamiento de rol y exponer solo distintivos que expliquen qué fue comprobado. Cargar datos o validar formato no equivale a verificarlos ni a aprobar identidad/destino.\n3. Comunicar revisión, observaciones y verificación por canal acordado con trazabilidad, errores y reintentos sin datos sensibles; no afirmar entrega de correo/SMS ante fallo o simulación.\n4. Probar tokens vencidos/usados, intentos indebidos, cambio de contacto, falta de canal y flujo real integrado; sandbox o buzón local quedan rotulados y no acreditan contacto real verificado.\n\n## Dependencias\nD03/D08, S1-11/S1-12 y canal autorizado; integrar S2-08/S2-09 y S3-23. Elegir requisitos exactos de correo/teléfono según perfil antes de exigir ambos indiscriminadamente.\n\n## Condición de terminado\nCierre: interfaz + API + PostgreSQL reales; criterios BG aplicables, casos válidos/negativos, propiedad y permisos; carga/vacío/error/reintento, móvil/teclado; migración y datos existentes protegidos; evidencia reproducible, revisión de código y README sin secretos. M/L son tamaños preliminares, no horas ni puntos acordados. Pendiente no significa comenzada ni terminada. La aceptación del MVP es S3-21.\n\n## Fuentes\nGuía general MVP (24/08/2026), historias originales del Backlog general y ajuste autorizado por Ricardo el 15/10/2026. No asignar fecha/capacidad sin acuerdo del equipo. Las decisiones provisionales quedan explícitas; ninguna simulación acredita verificación o dinero real.",
+      "size": "L",
+      "owner": "Ricardo",
+      "state": "Bloqueada por decisión o canal externo",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/id2SPfjB",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+    },
+    {
+      "sprint": 3,
+      "id": "S3-22",
+      "title": "Guardar favoritos y seguir campañas",
+      "stories": [
+        "BG-12"
+      ],
+      "result": "## Sprint 3 · cierre del MVP · plan v2.4 · 15/10/2026\nID: S3-22 · [M] preliminar · responsable: por asignar. Estado: pendiente; no iniciada.\n\nDesglose de historias existentes (BG-12), NO una nueva historia de usuario.\n\n## Resultado y criterios verificables\n1. Guardar y quitar una campaña publicada de la lista propia; repetir la acción no duplica relaciones y el estado persiste tras recarga y nueva sesión.\n2. Listar y abrir favoritos/seguidos con paginación y vacío; reflejar campañas finalizadas o canceladas sin perder historial ni permitir apoyo fuera de estado.\n3. API por propietario, sin consultar/modificar selecciones ajenas; probar dos sesiones, concurrencia, error y reintento. S3-03 consume esta selección, no la implementa de nuevo.\n\n## Dependencias\nS2-16 y sesión existente; acordar si favorito/seguimiento son una sola relación o dos acciones con semánticas diferentes antes de duplicar modelos.\n\n## Condición de terminado\nCierre: interfaz + API + PostgreSQL reales; criterios BG aplicables, casos válidos/negativos, propiedad y permisos; carga/vacío/error/reintento, móvil/teclado; migración y datos existentes protegidos; evidencia reproducible, revisión de código y README sin secretos. M/L son tamaños preliminares, no horas ni puntos acordados. Pendiente no significa comenzada ni terminada. La aceptación del MVP es S3-21.\n\n## Fuentes\nGuía general MVP (24/08/2026), historias originales del Backlog general y ajuste autorizado por Ricardo el 15/10/2026. No asignar fecha/capacidad sin acuerdo del equipo. Las decisiones provisionales quedan explícitas; ninguna simulación acredita verificación o dinero real.",
+      "size": "M",
+      "owner": "Alison",
+      "state": "Pendiente",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/kbrLkB1M",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+    },
+    {
+      "sprint": 3,
+      "id": "S3-24",
+      "title": "Completar el panel del creador",
+      "stories": [
+        "BG-13",
+        "BG-14"
+      ],
+      "result": "## Sprint 3 · cierre del MVP · plan v2.4 · 15/10/2026\nID: S3-24 · [M] preliminar · responsable: por asignar. Estado: pendiente; no iniciada.\n\nDesglose de historias existentes (BG-13, BG-14), NO una nueva historia de usuario.\n\n## Resultado y criterios verificables\n1. Mostrar resumen básico propio por estado, pendientes, observaciones y enlaces a continuar, corregir, revisión, verificación, ejecución y rendición cuando correspondan.\n2. Calcular indicadores básicos desde registros autorizados: campañas, recaudación confirmada y progreso; distinguir cero, dato no disponible y error. No agregar predicciones ni analítica avanzada fuera del MVP.\n3. Separar campañas personales/institucionales según representación autorizada, mantener identificación UUID/slug y probar vacío, permisos, estados y retorno al proyecto correcto.\n\n## Dependencias\nS2-15, S3-12 y S3-23; datos financieros disponibles desde S3-02/S3-08. No bloquea crear borradores ni reutiliza estadísticas ficticias.\n\n## Condición de terminado\nCierre: interfaz + API + PostgreSQL reales; criterios BG aplicables, casos válidos/negativos, propiedad y permisos; carga/vacío/error/reintento, móvil/teclado; migración y datos existentes protegidos; evidencia reproducible, revisión de código y README sin secretos. M/L son tamaños preliminares, no horas ni puntos acordados. Pendiente no significa comenzada ni terminada. La aceptación del MVP es S3-21.\n\n## Fuentes\nGuía general MVP (24/08/2026), historias originales del Backlog general y ajuste autorizado por Ricardo el 15/10/2026. No asignar fecha/capacidad sin acuerdo del equipo. Las decisiones provisionales quedan explícitas; ninguna simulación acredita verificación o dinero real.",
+      "size": "M",
+      "owner": "Santiago",
+      "state": "Pendiente",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/fxHKjdAl",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+    },
+    {
+      "sprint": 3,
+      "id": "S3-25",
+      "title": "Completar el panel administrativo y alertas",
+      "stories": [
+        "BG-41"
+      ],
+      "result": "## Sprint 3 · cierre del MVP · plan v2.4 · 15/10/2026\nID: S3-25 · [M] preliminar · responsable: por asignar. Estado: pendiente; no iniciada.\n\nDesglose de historias existentes (BG-41), NO una nueva historia de usuario.\n\n## Resultado y criterios verificables\n1. Mostrar contadores y pendientes reales de revisión, KYC/KYB, pagos, conciliación, desembolsos, devoluciones y disputas; enlazar a su bandeja y registro correctos.\n2. Definir alertas mínimas operativas con reglas explícitas y parámetros aprobados; distinguir dato actualizado, vacío y error sin números de ejemplo.\n3. Filtrar contadores, detalles y accesos por responsabilidad; auditor solo lectura. Probar que las agregaciones tampoco revelen datos o documentos de roles ajenos.\n\n## Dependencias\nS3-16 y módulos de revisión, cumplimiento, finanzas y soporte; consolidar con S3-15 y S3-17.\n\n## Condición de terminado\nCierre: interfaz + API + PostgreSQL reales; criterios BG aplicables, casos válidos/negativos, propiedad y permisos; carga/vacío/error/reintento, móvil/teclado; migración y datos existentes protegidos; evidencia reproducible, revisión de código y README sin secretos. M/L son tamaños preliminares, no horas ni puntos acordados. Pendiente no significa comenzada ni terminada. La aceptación del MVP es S3-21.\n\n## Fuentes\nGuía general MVP (24/08/2026), historias originales del Backlog general y ajuste autorizado por Ricardo el 15/10/2026. No asignar fecha/capacidad sin acuerdo del equipo. Las decisiones provisionales quedan explícitas; ninguna simulación acredita verificación o dinero real.",
+      "size": "M",
+      "owner": "Alison",
+      "state": "Pendiente",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/vlHnwFl7",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+    },
+    {
+      "sprint": 3,
+      "id": "S3-23",
+      "title": "Completar el ciclo de vida de campaña",
+      "stories": [
+        "BG-32"
+      ],
+      "result": "## Sprint 3 · cierre del MVP · plan v2.4 · 15/10/2026\nID: S3-23 · [L] preliminar. Responsable: por asignar. Estado: pendiente.\nDesglose de BG-32, no nueva historia. Los títulos pueden repetirse; identificador/slug únicos.\n\n## Criterios de aceptación\n1. Definir y persistir fin de recaudación, ejecución, cierre y cancelación, responsables y permisos de edición. Revalidar revisión y verificaciones aplicables antes de publicar en el MVP definitivo; el permiso provisional de S2 no es verificación KYC/KYB.\n2. Aplicar vencimiento/modelo flexible o todo-o-nada y resultado de meta desde pagos confirmados; cerrar apoyo en fecha/estado no elegibles. Generar la obligación de desembolso/devolución según regla aprobada; S3-08/S3-09 ejecutan la operación financiera, sin duplicarla aquí.\n3. Auditar cada transición, proteger carreras con pagos pendientes y acciones simultáneas, permitir reintentos sin doble efecto y mostrar estados coherentes al creador, visitante y patrocinador; probar alcanzó/no alcanzó meta y cancelación.\n\n## Dependencias\nS2-14, S3-02, S2-08 y S3-26 para verificaciones aplicables; contratos con S3-08/S3-09. D02/D05/D09: fijar transiciones antes de implementarlas.\n\nCierre: interfaz + API + PostgreSQL reales; criterios BG aplicables, casos válidos/negativos, propiedad y permisos; carga/vacío/error/reintento, móvil/teclado; migración y datos existentes protegidos; evidencia reproducible, revisión de código y README sin secretos. M/L son tamaños preliminares, no horas ni puntos acordados. Pendiente no significa comenzada ni terminada. La aceptación del MVP es S3-21.\n\nFuente: guía general MVP, BG-32 y ajuste autorizado por Ricardo el 15/10/2026. No garantiza plazo ni capacidad de una sola iteración.",
+      "size": "L",
+      "owner": "Ricardo",
+      "state": "Pendiente",
+      "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
+      "trelloUrl": "https://trello.com/c/hNfXRXun",
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
     }
   ],
   "stories": [
@@ -1139,11 +1330,13 @@
       "title": "Registrar una cuenta",
       "state": "Parcial",
       "sprints": [
-        1
+        1,
+        3
       ],
       "tasks": [
         "E04",
-        "S1-11"
+        "S1-11",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -1160,7 +1353,7 @@
       "title": "Recuperar el acceso",
       "state": "Parcial",
       "sprints": [
-        1
+        3
       ],
       "tasks": [
         "S1-12"
@@ -1187,7 +1380,8 @@
       "tasks": [
         "E06",
         "S2-16",
-        "S3-16"
+        "S3-16",
+        "S3-22"
       ],
       "antecedent": false,
       "criteria": [
@@ -1204,10 +1398,12 @@
       "title": "Consultar el panel del creador",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        2,
+        3
       ],
       "tasks": [
-        "S2-15"
+        "S2-15",
+        "S3-24"
       ],
       "antecedent": false,
       "criteria": [
@@ -1224,10 +1420,12 @@
       "title": "Gestionar mis proyectos",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        2,
+        3
       ],
       "tasks": [
-        "S2-15"
+        "S2-15",
+        "S3-24"
       ],
       "antecedent": false,
       "criteria": [
@@ -1442,7 +1640,8 @@
         3
       ],
       "tasks": [
-        "S2-06"
+        "S2-06",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -1463,7 +1662,8 @@
       ],
       "tasks": [
         "E08",
-        "S2-07"
+        "S2-07",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -1502,7 +1702,8 @@
         3
       ],
       "tasks": [
-        "S2-09"
+        "S2-09",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -1576,10 +1777,12 @@
       "title": "Publicar y controlar el ciclo de campaña",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        2,
+        3
       ],
       "tasks": [
-        "S2-14"
+        "S2-14",
+        "S3-23"
       ],
       "antecedent": false,
       "criteria": [
@@ -1754,7 +1957,8 @@
       ],
       "tasks": [
         "S2-17",
-        "S3-16"
+        "S3-16",
+        "S3-25"
       ],
       "antecedent": false,
       "criteria": [
@@ -1771,10 +1975,12 @@
       "title": "Revisar y decidir sobre una campaña",
       "state": "Pendiente de desarrollo",
       "sprints": [
-        2
+        2,
+        3
       ],
       "tasks": [
-        "S2-12"
+        "S2-12",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -1812,7 +2018,8 @@
         3
       ],
       "tasks": [
-        "S2-08"
+        "S2-08",
+        "S3-26"
       ],
       "antecedent": false,
       "criteria": [
@@ -2255,15 +2462,7 @@
     ],
     "countsAsTask": false
   },
-  "delivery": {
-    "date": "2026-09-17",
-    "implementationCommit": "067f832",
-    "documentationCommit": "dc7bcad",
-    "publishedBranch": "main",
-    "technicalTasksComplete": 9,
-    "externalAcceptance": "Pendiente"
-  },
-  "phase3": {
+  "historicalPhase3": {
     "date": "2026-09-30",
     "source": "requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf",
     "sourceSections": [
@@ -2300,5 +2499,72 @@
       "Estadísticas avanzadas de creador y administración"
     ],
     "technicalStateNote": "El ajuste modifica planificación y criterios, no certifica avances nuevos ni actualiza el corte técnico histórico del Sprint 1."
+  },
+  "historicalDeliveries": [
+    {
+      "date": "2026-09-17",
+      "implementationCommit": "067f832",
+      "documentationCommit": "dc7bcad",
+      "publishedBranch": "main",
+      "technicalTasksComplete": 9,
+      "externalAcceptance": "Pendiente"
+    },
+    {
+      "date": "2026-10-05",
+      "branch": "DEV",
+      "evidence": "entrega-dev-sprint-2-2026-10-05.md",
+      "verification": "Copia Git limpia: dependencias congeladas, V2 nueva aislada, dos migraciones, permisos, activación/arranque/repetición y 276 pruebas aprobadas.",
+      "acceptance": "Revisión formal de líderes pendiente; sin cambios en Trello. localProgress conserva el corte histórico anterior a esta entrega; no determina la disponibilidad de estos archivos en DEV."
+    }
+  ],
+  "historicalProgress": {
+    "date": "2026-10-05",
+    "branch": "RicardoDev",
+    "published": false,
+    "evidence": "cierre-tecnico-sprint-2-2026-10-05.md",
+    "tasks": {
+      "S2-02": "Cierre técnico",
+      "S2-03": "Cierre técnico",
+      "S2-04": "Cierre técnico",
+      "S2-05": "Cierre técnico",
+      "S2-10": "Cierre técnico",
+      "S2-11": "Cierre técnico",
+      "S2-12": "Cierre técnico",
+      "S2-13": "Cierre técnico",
+      "S2-14": "Cierre técnico",
+      "S2-15": "Cierre técnico",
+      "S2-16": "Cierre técnico",
+      "S2-17": "Cierre técnico",
+      "S2-21": "Verificación técnica completa; entrega y aceptación pendientes"
+    },
+    "acceptance": "Pendiente de publicación del incremento y revisión de los líderes; Trello no actualizado en este corte.",
+    "note": "13 tareas implementadas y verificadas en su alcance técnico; revisión de calidad: 130 pruebas frontend, 128 backend y 18 PostgreSQL aprobadas (276). Dos guías PDF de tareas y principios en output/pdf. El ensayo real escritorio/móvil/teclado del corte previo se conserva; no se repitió el ensayo interactivo adicional por bloqueo de acceso de la herramienta. D05 autoriza ADMIN provisionalmente y separa aprobar/publicar; provisión definitiva de roles D06 sigue pendiente. No cierra historias generales del MVP. Los estados del inventario tasks conservan su corte histórico y este bloque expresa el estado local actual."
+  },
+  "sprint3": {
+    "date": "2026-10-15",
+    "source": "requisitos/Guia_Contexto_y_Alcance_MVP_Crowdfunding.pdf",
+    "objective": "Ciclo funcional integral, validado y con datos consistentes, hasta rendición y cierre.",
+    "tasks": 36,
+    "previousFutureTasks": 29,
+    "newBreakdowns": 5,
+    "carryovers": [
+      "S1-11",
+      "S1-12"
+    ],
+    "newTaskIds": [
+      "S3-22",
+      "S3-23",
+      "S3-24",
+      "S3-25",
+      "S3-26"
+    ],
+    "assignments": {
+      "Ricardo": 18,
+      "Santiago": 9,
+      "Alison": 9
+    },
+    "acceptanceTask": "S3-21",
+    "scopeGuide": "plan-sprint-3-cierre-mvp-2026-10-15.md",
+    "capacity": "M/L preliminares; no equivale a horas o fechas comprometidas. Dividir ejecución en más iteraciones si la capacidad lo requiere, sin declarar el MVP cerrado antes de cumplir sus criterios."
   }
 }

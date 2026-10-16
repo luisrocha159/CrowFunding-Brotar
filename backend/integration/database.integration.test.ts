@@ -2,15 +2,14 @@ import 'reflect-metadata'
 import { strict as assert } from 'node:assert'
 import { randomBytes, randomUUID, scryptSync } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
-import { parseEnv } from 'node:util'
 import { test } from 'node:test'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { createDataSource } from '../src/shared/infrastructure/database/data-source'
 import { UserProfileSchema, UserSchema } from '../src/users/infrastructure/persistence/user.schemas'
 import { SessionTokenSchema } from '../src/auth/infrastructure/session-token.schema'
+import { readTestDatabaseTarget } from './database-target'
 
 test('PostgreSQL: mapeo, permisos, commit, reconexión y rollback', { timeout: 90000 }, async (context) => {
   const config = readDatabaseConfig(process.env)
@@ -23,12 +22,11 @@ test('PostgreSQL: mapeo, permisos, commit, reconexión y rollback', { timeout: 9
   if (process.env.DB_TEST_RESTART === 'true') {
     const envPath = resolve(process.cwd(), '../infra/postgres-v2/.env')
     const composePath = resolve(process.cwd(), '../infra/postgres-v2/compose.yaml')
-    const local = parseEnv(readFileSync(envPath, 'utf8'))
-    assert.equal(String(config.port), local.POSTGRES_PORT)
+    const target = readTestDatabaseTarget(config)
     restartContainer = execFileSync('docker', ['compose', '--env-file', envPath, '-f', composePath, 'ps', '-q', 'postgres'], { encoding: 'utf8', timeout: 10000 }).trim()
     assert.match(restartContainer, /^[a-f0-9]{12,64}$/)
     const project = execFileSync('docker', ['inspect', '--format', '{{index .Config.Labels "com.docker.compose.project"}}', restartContainer], { encoding: 'utf8', timeout: 10000 }).trim()
-    assert.equal(project, 'brotar-provisional-v2')
+    assert.equal(project, target.project)
     const ports = JSON.parse(execFileSync('docker', ['inspect', '--format', '{{json .NetworkSettings.Ports}}', restartContainer], { encoding: 'utf8', timeout: 10000 })) as Record<string, { HostIp: string; HostPort: string }[]>
     assert.deepEqual(ports['5432/tcp'], [{ HostIp: '127.0.0.1', HostPort: String(config.port) }])
   }

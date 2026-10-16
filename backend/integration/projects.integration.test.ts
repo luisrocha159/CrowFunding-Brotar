@@ -53,8 +53,9 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
       INSERT INTO user_role(user_id,role_id) SELECT '${administrator.id}',id FROM role WHERE code='ADMIN';`)
     sql(`INSERT INTO category(id,slug,name) VALUES('${categoryId}','projects-${suffix}','Categoría de ensayo ${suffix}');`)
     assert.deepEqual(await (await call('campaigns/mine', creator.cookie)).json(), [])
+    let sequence = 0
     const create = async () => {
-      const response = await call('campaigns/drafts', creator.cookie, { title: `Proyecto ${suffix}`, summary: '', campaignType: 'DONATION' })
+      const response = await call('campaigns/drafts', creator.cookie, { title: `Proyecto ${suffix} ${++sequence}`, summary: 'Resumen inicial de campaña', campaignType: 'DONATION' })
       assert.equal(response.status, 201)
       const { id } = await response.json() as { id: string }; assert.match(id, /^[a-f0-9-]{36}$/)
       return id
@@ -73,8 +74,8 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
     const general = { title: `Proyecto actualizado ${suffix}`, summary: 'Resumen guardado al continuar el proyecto', categoryId,
       location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' } }
     assert.equal((await call(`campaigns/drafts/${draftId}/general`, creator.cookie, general, 'PUT')).status, 200)
-    const story = { problem: 'Problema de ensayo', solution: 'Solución de ensayo', beneficiaries: 'Comunidad de ensayo', expectedResults: 'Resultados esperados de ensayo' }
-    assert.equal((await call(`campaigns/drafts/${draftId}/story`, creator.cookie, { ...story, indicators: [] }, 'PUT')).status, 200)
+    const story = { problem: 'Problema comunitario de ensayo', solution: 'Solución comunitaria de ensayo', beneficiaries: 'Comunidad beneficiaria de ensayo', expectedResults: 'Resultados esperados de ensayo' }
+    assert.equal((await call(`campaigns/drafts/${draftId}/story`, creator.cookie, { ...story, indicators: [{ name: 'Familias', description: '', unit: 'familias', baselineValue: 0, targetValue: 10 }] }, 'PUT')).status, 200)
     assert.equal((await call(`campaigns/drafts/${draftId}`, creator.cookie, { title: general.title, summary: general.summary, campaignType: 'DONATION', categoryId, builderStep: 1 }, 'PUT')).status, 200)
     assert.equal((await call('auth/logout', creator.cookie, {})).status, 204)
     const resumed = await call('auth/login', '', { email: creator.email, password })
@@ -110,7 +111,7 @@ test('S2 PostgreSQL: proyectos propios, rol, cola, descarte lógico e historial'
       // Fixtures de decisiones: S2-13 admite correcciones; el descarte sigue limitado a DRAFT.
       sql(`UPDATE campaign SET status='${status}' WHERE id='${reviewedId}';`)
       assert.equal((await call(`campaigns/mine/${reviewedId}/discard`, creator.cookie, { confirmed: true })).status, 409)
-      assert.equal((await call(`campaigns/drafts/${reviewedId}`, creator.cookie, { title: 'Corrección de ensayo', summary: '', campaignType: 'DONATION', builderStep: 0 }, 'PUT')).status, status === 'CHANGES_REQUESTED' ? 200 : 409)
+      assert.equal((await call(`campaigns/drafts/${reviewedId}`, creator.cookie, { title: `Corrección de ensayo ${reviewedId}`, summary: 'Resumen corregido de campaña', campaignType: 'DONATION', builderStep: 0 }, 'PUT')).status, status === 'CHANGES_REQUESTED' ? 200 : 409)
       assert.equal((await call(`admin/campaigns/review/${reviewedId}`, administrator.cookie)).status, 200, 'El administrador conserva consulta de decisiones y publicaciones.')
       const filtered = await (await call('admin/campaigns/review', administrator.cookie)).json() as { id: string }[]
       assert.equal(filtered.some(item => item.id === reviewedId), status === 'APPROVED', 'La cola incluye revisión y aprobación pendiente de publicar, no campañas ya decididas/publicadas.')

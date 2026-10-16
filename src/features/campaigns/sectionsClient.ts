@@ -4,7 +4,7 @@ import { DraftFieldError, fieldErrorsFrom } from './campaignsClient'
 import { validatePlan, validateBudget, validateFunding, validateRewards } from './sectionValidation'
 
 export interface ActivityInput { name: string; responsibleName: string; plannedStartOn: string; plannedEndOn: string }
-export interface MilestoneInput extends ActivityInput { activityIndex: number | null }
+export interface MilestoneInput extends ActivityInput { activityIndexes: number[] }
 export interface PlanInput { activities: ActivityInput[]; milestones: MilestoneInput[] }
 export interface BudgetItemInput { categoryId: string; description: string; quantity: number; unitPrice: number; plannedAmount: number; notes: string }
 export interface RiskInput { title: string; description: string; likelihood: string; impact: string; mitigation: string }
@@ -13,7 +13,7 @@ export interface FundingInput { goalAmount: number | null; currencyCode: string;
 export interface RewardInput { title: string; description: string; rewardKind: string; minAmount: number; quantityTotal: number | null; estimatedDeliveryOn: string | null }
 export interface CatalogChoice { id: string; name: string }
 export interface CurrencyChoice { code: string; name: string }
-export interface SectionCatalogs { expenseCategories: CatalogChoice[]; currencies: CurrencyChoice[] }
+export interface SectionCatalogs { expenseCategories: CatalogChoice[]; currencies: CurrencyChoice[]; countries: CurrencyChoice[] }
 
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
 
@@ -38,7 +38,7 @@ const optionalText = (value: unknown) => value === null || text(value)
 const optionalNumber = (value: unknown) => value === null || finite(value)
 const arrayOf = (value: unknown, check: (item: unknown) => boolean) => Array.isArray(value) && value.length <= 50 && value.every(check)
 const activity = (value: unknown) => object(value) && ['name', 'responsibleName', 'plannedStartOn', 'plannedEndOn'].every(key => text(value[key]))
-const milestone = (value: unknown) => activity(value) && object(value) && (value.activityIndex === null || (Number.isInteger(value.activityIndex) && Number(value.activityIndex) >= 0))
+const milestone = (value: unknown) => activity(value) && object(value) && arrayOf(value.activityIndexes, index => Number.isInteger(index) && Number(index) >= 0) && new Set(value.activityIndexes as number[]).size === (value.activityIndexes as number[]).length
 const item = (value: unknown) => object(value) && ['categoryId', 'description', 'notes'].every(key => text(value[key])) && ['quantity', 'unitPrice', 'plannedAmount'].every(key => finite(value[key]))
 const risk = (value: unknown) => object(value) && ['title', 'description', 'likelihood', 'impact', 'mitigation'].every(key => text(value[key]))
 const reward = (value: unknown) => object(value) && ['title', 'description', 'rewardKind'].every(key => text(value[key])) && finite(value.minAmount) && optionalNumber(value.quantityTotal) && optionalText(value.estimatedDeliveryOn)
@@ -47,7 +47,19 @@ function checked<T>(value: unknown, valid: boolean): T {
   return value as T
 }
 export function planFrom(value: unknown): PlanInput {
-  return checked(value, object(value) && arrayOf(value.activities, activity) && arrayOf(value.milestones, milestone))
+  // Conserva los vínculos del estado singular que una pantalla abierta puede retener al actualizarse.
+  const normalized = object(value) && Array.isArray(value.milestones) ? { ...value, milestones: value.milestones.map(item => {
+    if (!object(item) || 'activityIndexes' in item) return item
+    const { activityIndex, ...rest } = item
+    return activityIndex === null || (Number.isInteger(activityIndex) && Number(activityIndex) >= 0)
+      ? { ...rest, activityIndexes: activityIndex === null ? [] : [activityIndex] } : item
+  }) } : value
+  return checked(normalized, object(normalized) && arrayOf(normalized.activities, activity) && arrayOf(normalized.milestones, milestone) && (normalized.milestones as MilestoneInput[]).every(item => item.activityIndexes.every(index => index < (normalized.activities as ActivityInput[]).length)))
+}
+
+export function withoutActivity(plan: PlanInput, removedIndex: number): PlanInput {
+  return { activities: plan.activities.filter((_, index) => index !== removedIndex),
+    milestones: plan.milestones.map(item => ({ ...item, activityIndexes: item.activityIndexes.filter(index => index !== removedIndex).map(index => index > removedIndex ? index - 1 : index) })) }
 }
 export function budgetFrom(value: unknown): BudgetInput {
   return checked(value, object(value) && arrayOf(value.items, item) && arrayOf(value.risks, risk))
@@ -67,8 +79,9 @@ export async function readPlan(id: string, signal?: AbortSignal, send?: typeof f
   return planFrom(await request(`${encodeURIComponent(id)}/plan`, 'GET', undefined, signal, send))
 }
 export async function savePlan(id: string, plan: PlanInput, signal?: AbortSignal, send?: typeof fetch): Promise<PlanInput> {
-  requireValid(validatePlan(plan))
-  return planFrom(await request(`${encodeURIComponent(id)}/plan`, 'PUT', plan, signal, send))
+  const normalized = planFrom(plan)
+  requireValid(validatePlan(normalized))
+  return planFrom(await request(`${encodeURIComponent(id)}/plan`, 'PUT', normalized, signal, send))
 }
 export async function readBudget(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<BudgetInput> {
   return budgetFrom(await request(`${encodeURIComponent(id)}/budget`, 'GET', undefined, signal, send))
@@ -87,13 +100,13 @@ export async function saveFunding(id: string, funding: FundingInput, signal?: Ab
 export async function readRewards(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<RewardInput[]> {
   return rewardsFrom(await request(`${encodeURIComponent(id)}/rewards`, 'GET', undefined, signal, send))
 }
-export async function saveRewards(id: string, rewards: RewardInput[], signal?: AbortSignal, send?: typeof fetch): Promise<RewardInput[]> {
-  requireValid(validateRewards('REWARD', rewards)) // La API decide la modalidad real bajo bloqueo.
+export async function saveRewards(id: string, rewards: RewardInput[], signal?: AbortSignal, send?: typeof fetch, campaignType: 'DONATION' | 'REWARD' | 'PRESALE' = 'REWARD'): Promise<RewardInput[]> {
+  requireValid(validateRewards(campaignType, rewards)) // La API reafirma la modalidad bajo bloqueo.
   return rewardsFrom(await request(`${encodeURIComponent(id)}/rewards`, 'PUT', { rewards }, signal, send))
 }
 export async function readSectionCatalogs(id: string, signal?: AbortSignal, send?: typeof fetch): Promise<SectionCatalogs> {
   const value = await request(`${encodeURIComponent(id)}/section-catalogs`, 'GET', undefined, signal, send)
-  return checked(value, object(value) && Array.isArray(value.expenseCategories) && value.expenseCategories.every(row => object(row) && text(row.id) && text(row.name)) && Array.isArray(value.currencies) && value.currencies.every(row => object(row) && text(row.code) && /^[A-Z]{3}$/.test(row.code) && text(row.name)))
+  return checked(value, object(value) && Array.isArray(value.expenseCategories) && value.expenseCategories.every(row => object(row) && text(row.id) && text(row.name)) && Array.isArray(value.currencies) && value.currencies.every(row => object(row) && text(row.code) && /^[A-Z]{3}$/.test(row.code) && text(row.name)) && Array.isArray(value.countries) && value.countries.every(row => object(row) && text(row.code) && /^[A-Z]{2}$/.test(row.code) && text(row.name)))
 }
 export function budgetTotal(budget: BudgetInput): number {
   // Hasta 50 partidas numeric(14,2): los centavos acumulados caben en un entero seguro.

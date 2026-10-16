@@ -12,7 +12,7 @@ const complete: GeneralInput = {
   title: 'Campaña', summary: 'Resumen corto', categoryId: 'cat-1',
   location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' }
 }
-const story: StoryInput = { problem: 'Problema', solution: 'Solución', beneficiaries: 'Beneficiarios', expectedResults: 'Resultados' }
+const story: StoryInput = { problem: 'Problema de la comunidad rural', solution: 'Solución de la comunidad rural', beneficiaries: 'Beneficiarios de la comunidad', expectedResults: 'Resultados de la comunidad rural' }
 const indicator: IndicatorInput = { name: 'Familias', description: '', unit: 'familias', baselineValue: 0, targetValue: 120 }
 
 const stored: Draft = {
@@ -70,8 +70,9 @@ test('BG-19 CA 2: un indicador declara una meta con su unidad, nunca un resultad
   assert.ok(validateIndicator({ ...indicator, name: '' }).name)
   // Una meta sin unidad no se interpreta.
   assert.ok(validateIndicator({ ...indicator, unit: '' }).unit)
-  // Sin meta, la unidad deja de ser obligatoria.
-  assert.deepEqual(validateIndicator({ ...indicator, unit: '', targetValue: null }), {})
+  // La regla del equipo requiere indicadores interpretables, con unidad y meta.
+  const incomplete = validateIndicator({ ...indicator, unit: '', targetValue: null })
+  assert.ok(incomplete.unit && incomplete.targetValue)
   assert.ok(validateIndicator({ ...indicator, targetValue: Number.NaN }).targetValue)
 
   // El tipo de entrada no admite achievedValue: no hay forma de declarar un resultado.
@@ -98,7 +99,7 @@ test('propiedad, estado y referencias se comprueban antes de escribir', async ()
 
   const correction = build({ status: 'CHANGES_REQUESTED' })
   await correction.info.saveGeneral('own', stored.id, complete)
-  await correction.info.saveStory('own', stored.id, story, [])
+  await correction.info.saveStory('own', stored.id, story, [indicator])
   assert.equal(correction.saved.general.length, 1)
 
   await assert.rejects(

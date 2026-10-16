@@ -53,6 +53,8 @@ export function CampaignSubmissionPanel({ id, categories, onGoTo, onStatusChange
       if (cause instanceof SubmissionIncompleteError) {
         setSaved({ ...saved, report: { ...saved.report, missing: cause.missing } })
         setError('La campaña no se envió. Completa los campos señalados.')
+      } else if (cause instanceof SessionError && cause.status === 429) {
+        setError('Demasiados intentos. Espera un minuto antes de volver a enviar; tu borrador se conserva.')
       } else if (cause instanceof SessionError && cause.status === 403) {
         setError('Tu cuenta necesita CREATOR para enviar la campaña. Solicita al administrador la habilitación provisional en Administración → Usuarios. Tu borrador sigue guardado y editable; elegir Creador al registrarte no concede ese permiso.')
       } else if (cause instanceof SessionError && cause.status === 409) {
@@ -82,13 +84,13 @@ export function CampaignSubmissionPanel({ id, categories, onGoTo, onStatusChange
     <ul>{indicators.map((indicator, index) => <li key={index}>{indicator.name}: meta {indicator.targetValue ?? 'sin definir'} {indicator.unit} · línea base {indicator.baselineValue ?? 'sin definir'}{indicator.description && <p>{indicator.description}</p>}</li>)}</ul>
     <h4>Plan y presupuesto</h4>
     <ul>{plan.activities.map((activity, index) => <li key={index}>{activity.name} · {activity.responsibleName} · {activity.plannedStartOn} a {activity.plannedEndOn}</li>)}</ul>
-    {plan.milestones.length > 0 && <><h5>Hitos</h5><ul>{plan.milestones.map((milestone, index) => <li key={index}>{milestone.name} · {milestone.responsibleName} · {milestone.plannedStartOn} a {milestone.plannedEndOn} · actividad {milestone.activityIndex === null ? 'sin vínculo' : plan.activities[milestone.activityIndex]?.name ?? 'no disponible'}</li>)}</ul></>}
+    {plan.milestones.length > 0 && <><h5>Hitos</h5><ul>{plan.milestones.map((milestone, index) => <li key={index}>{milestone.name} · {milestone.responsibleName} · {milestone.plannedStartOn} a {milestone.plannedEndOn} · actividades: {milestone.activityIndexes.length ? milestone.activityIndexes.map(activityIndex => plan.activities[activityIndex]?.name ?? 'no disponible').join(', ') : 'sin vínculo'}</li>)}</ul></>}
     <h5>Partidas</h5><ul>{budget.items.map((item, index) => <li key={index}>{item.description} · {item.quantity} × {item.unitPrice} · importe {item.plannedAmount}{item.notes && <p>Notas: {item.notes}</p>}</li>)}</ul>
     <p>Total planificado: {budgetTotal(budget).toFixed(2)}</p>
     {difference !== null && Math.abs(difference) >= 0.01 && <p role="note">El presupuesto {difference > 0 ? 'supera' : 'está por debajo de'} la meta por {Math.abs(difference).toFixed(2)} {funding.currencyCode}. Esta diferencia no impide el envío.</p>}
     {budget.risks.length > 0 && <><h5>Riesgos</h5><ul>{budget.risks.map((risk, index) => <li key={index}>{risk.title} · {risk.description} · probabilidad {risk.likelihood || 'sin especificar'} · impacto {risk.impact || 'sin especificar'} · mitigación {risk.mitigation}</li>)}</ul></>}
     <h4>Financiamiento</h4>
-    <p>Meta: {funding.goalAmount ?? 'sin definir'} {funding.currencyCode} · {funding.durationDays ?? 'sin definir'} días · {funding.fundingModel || 'sin modelo'}</p>
+    <p>Meta: {funding.goalAmount ?? 'sin definir'} {funding.currencyCode} · {funding.durationDays ?? 'sin definir'} días · {{ FLEXIBLE: 'Flexible', ALL_OR_NOTHING: 'Todo o nada' }[funding.fundingModel] || 'sin modelo'}</p>
     {(funding.startsAt || funding.endsAt) && <p>Periodo: {funding.startsAt?.slice(0, 10)} a {funding.endsAt?.slice(0, 10)}</p>}
     {draft.campaignType !== 'DONATION' && rewards.length > 0 && <><h4>Recompensas y preventas</h4><ul>{rewards.map((reward, index) => <li key={index}>{reward.title} · {reward.description} · tipo {reward.rewardKind} · mínimo {reward.minAmount} {funding.currencyCode} · disponibilidad {reward.quantityTotal ?? 'sin límite'} · entrega {reward.estimatedDeliveryOn ?? 'sin fecha'}</li>)}</ul></>}
 
@@ -101,6 +103,7 @@ export function CampaignSubmissionPanel({ id, categories, onGoTo, onStatusChange
     {report.missing.length > 0 && <section aria-label="Faltantes de la campaña"><h4>Falta completar</h4>
       <ul>{report.missing.map(item => <li key={item.field}>{item.label} <Button variant="secondary" onClick={() => onGoTo(item.step)}>Ir al paso {item.step + 1}</Button></li>)}</ul>
     </section>}
+    {report.duplicateWarning && <Message tone="info" title="Aviso orientativo de semejanzas">{report.duplicateWarning}</Message>}
     {error && <Message tone="error" title="No se pudo enviar">{error}</Message>}
     {report.status === 'IN_REVIEW' && <Message tone="success" title="Campaña recibida">Tu campaña está pendiente de revisión.</Message>}
     {editable && <Button disabled={sending || report.missing.length > 0} onClick={() => { void submit() }}>

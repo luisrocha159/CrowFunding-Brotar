@@ -1,5 +1,8 @@
 import { SessionError } from '../access/session/sessionClient'
 import { readJson, requestApi } from '../../shared/api/request'
+import { validateGeneral, normalizeGeneral } from '../../../backend/src/campaigns/domain/general'
+import { validateStory, validateIndicator, normalizeStory, normalizeIndicator } from '../../../backend/src/campaigns/domain/story'
+import { MINIMUMS, textError } from '../../../backend/src/campaigns/domain/input-policy'
 
 export const CAMPAIGN_TYPES = ['DONATION', 'REWARD', 'PRESALE'] as const
 export type CampaignType = typeof CAMPAIGN_TYPES[number]
@@ -51,11 +54,11 @@ export class DraftFieldError extends SessionError {
   constructor(readonly fields: Record<string, string>) { super(400) }
 }
 
-async function request(path: string, method: 'GET' | 'POST' | 'PUT', body?: unknown, signal?: AbortSignal): Promise<unknown> {
+async function request(path: string, method: 'GET' | 'POST' | 'PUT', body?: unknown, signal?: AbortSignal, idempotencyKey?: string): Promise<unknown> {
   const response = await requestApi(`/api/${path}`, {
-    method, body, signal,
+    method, body, signal, idempotencyKey,
     errorFromResponse: async response => {
-      if (response.status === 400) {
+      if (response.status === 400 || response.status === 409) {
         // El contrato de errores devuelve message como lista de "campo: mensaje".
         const detail: unknown = await response.json().catch(() => null)
         const fields = fieldErrorsFrom(object(detail) ? detail.message : null)
@@ -107,8 +110,13 @@ export async function readDraft(id: string, signal?: AbortSignal): Promise<Draft
   return draft(await request(`campaigns/drafts/${id}`, 'GET', undefined, signal))
 }
 
-export async function createDraft(input: DraftInput, signal?: AbortSignal): Promise<Draft> {
-  return draft(await request('campaigns/drafts', 'POST', payload(input), signal))
+export async function createDraft(input: DraftInput, signal?: AbortSignal, idempotencyKey?: string): Promise<Draft> {
+  return draft(await request('campaigns/drafts', 'POST', payload(input), signal, idempotencyKey))
+}
+
+/** Volver no exige completar una sección futura, pero tampoco descarta texto a escondidas. */
+export function needsBackConfirmation(current: number, next: number, errors: Record<string, string>): boolean {
+  return next < current && Object.keys(errors).length > 0
 }
 
 export async function saveDraft(id: string, input: DraftInput, builderStep: number, signal?: AbortSignal): Promise<Draft> {
@@ -128,9 +136,10 @@ export async function activeCategories(signal?: AbortSignal): Promise<Category[]
 
 export function validateDraft(input: DraftInput): Partial<Record<keyof DraftInput, string>> {
   const errors: Partial<Record<keyof DraftInput, string>> = {}
-  const title = [...input.title.trim()].length
-  if (!title || title > 200 || input.title.includes('\u0000')) errors.title = 'Escribe entre 1 y 200 caracteres de texto.'
-  if ([...input.summary.trim()].length > 500 || input.summary.includes('\u0000')) errors.summary = 'El resumen admite hasta 500 caracteres de texto.'
+  const title = textError(input.title, MINIMUMS.title, 200)
+  const summary = textError(input.summary, MINIMUMS.summary, 500)
+  if (title) errors.title = title
+  if (summary) errors.summary = summary
   if (!CAMPAIGN_TYPES.some((type) => type === input.campaignType)) errors.campaignType = 'Elige una modalidad disponible.'
   return errors
 }
@@ -208,26 +217,10 @@ const stringFields = (value: Record<string, unknown>, keys: string[]) => keys.ev
 export const STORY_LIMITS = { text: 5000, indicatorName: 200, unit: 60, indicators: 20 } as const
 
 export function validateStoryInput(story: StoryInput, indicators: IndicatorInput[]): Record<string, string> {
-  const errors: Record<string, string> = {}
-  for (const key of ['problem', 'solution', 'beneficiaries', 'expectedResults'] as const) {
-    if ([...story[key].trim()].length > STORY_LIMITS.text) errors[key] = `Admite hasta ${STORY_LIMITS.text} caracteres.`
-    if (story[key].includes('\u0000')) errors[key] = 'El campo contiene un carácter de control no admitido.'
-  }
-  if (indicators.length > STORY_LIMITS.indicators) errors.indicators = `Máximo ${STORY_LIMITS.indicators} indicadores.`
+  const errors = validateStory(normalizeStory(story))
+  if (!indicators.length || indicators.length > STORY_LIMITS.indicators) errors.indicators = 'Añade entre 1 y 20 indicadores.'
   indicators.forEach((item, index) => {
-    const prefix = `indicators.${index}.`
-    if (!item.name.trim() || [...item.name.trim()].length > STORY_LIMITS.indicatorName) errors[prefix + 'name'] = 'Usa entre 1 y 200 caracteres.'
-    if ([...item.description.trim()].length > STORY_LIMITS.text) errors[prefix + 'description'] = 'Usa hasta 5000 caracteres.'
-    if ([...item.unit.trim()].length > STORY_LIMITS.unit || (item.targetValue !== null && !item.unit.trim())) errors[prefix + 'unit'] = 'Indica la unidad con hasta 60 caracteres.'
-    for (const field of ['name', 'description', 'unit'] as const) {
-      if (item[field].includes('\u0000')) errors[prefix + field] = 'El campo contiene un carácter de control no admitido.'
-    }
-    for (const field of ['baselineValue', 'targetValue'] as const) {
-      const value = item[field]
-      if (value !== null && (!Number.isFinite(value) || Math.abs(value) > 999999999999.99 || value !== Number(value.toFixed(2)))) {
-        errors[prefix + field] = 'Usa un número entre -999999999999.99 y 999999999999.99 con hasta dos decimales.'
-      }
-    }
+    for (const [field, message] of Object.entries(validateIndicator(normalizeIndicator(item)))) errors[`indicators.${index}.${field}`] = message
   })
   return errors
 }
@@ -244,22 +237,7 @@ export async function readGeneral(id: string, signal?: AbortSignal): Promise<Gen
 }
 
 export function validateGeneralInput(input: GeneralInput): Record<string, string> {
-  const errors: Record<string, string> = {}
-  const title = [...input.title.trim()].length, summary = [...input.summary.trim()].length
-  if (!title) errors.title = 'El nombre de la campaña es obligatorio.'
-  else if (title > 200) errors.title = 'El nombre admite hasta 200 caracteres.'
-  if (!summary) errors.summary = 'El resumen corto es obligatorio.'
-  else if (summary > 500) errors.summary = 'El resumen admite hasta 500 caracteres.'
-  if (input.categoryId === null) errors.categoryId = 'Elige una categoría del catálogo.'
-  const country = input.location.countryCode?.trim().toUpperCase()
-  if (!country) errors.countryCode = 'Elige el país de la campaña.'
-  else if (!/^[A-Z]{2}$/.test(country)) errors.countryCode = 'El país debe ser un código de dos letras.'
-  const texts = { title: input.title, summary: input.summary, locality: input.location.locality, addressLine: input.location.addressLine, reference: input.location.reference }
-  for (const [field, max, label] of [['locality', 160, 'La localidad'], ['addressLine', 500, 'La dirección'], ['reference', 500, 'La referencia']] as const) {
-    if ([...texts[field].trim()].length > max) errors[field] = `${label} admite hasta ${max} caracteres.`
-  }
-  for (const [field, value] of Object.entries(texts)) if (value.includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
-  return errors
+  return validateGeneral(normalizeGeneral(input))
 }
 
 export async function saveGeneral(id: string, input: GeneralInput, signal?: AbortSignal): Promise<void> {

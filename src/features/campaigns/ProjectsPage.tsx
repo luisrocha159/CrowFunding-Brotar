@@ -13,7 +13,7 @@ export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary
   return <div className={styles.list}>{projects.map(project => <article key={project.id} className={styles.project}>
     <span className={styles.icon}><img src={projectTree} alt="" /></span>
     <div className={styles.projectInfo}><div className={styles.titleRow}><h2>{project.title}</h2><span className={`${styles.badge} ${project.status === 'PUBLISHED' ? styles.published : ''}`}>{projectStatusNames[project.status]}</span></div>
-      <p>{project.categoryName ?? 'Categoría por definir'} · {projectGoal(project)}</p>
+      <p>{project.categoryName ?? 'Categoría por definir'} · {projectGoal(project)} · Código: <span title={project.id}>{project.id.slice(0, 8)}</span></p>
     </div>
     <div className={styles.actions}>
       {canContinueProject(project.status) && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Continuar borrador</ButtonLink>}

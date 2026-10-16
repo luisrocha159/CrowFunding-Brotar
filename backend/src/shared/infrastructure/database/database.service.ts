@@ -28,7 +28,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         SELECT to_regclass('public.app_user') IS NOT NULL
           AND to_regclass('public.user_profile') IS NOT NULL
           AND to_regclass('public.role') IS NOT NULL
-          AND to_regclass('public.organization') IS NOT NULL AS ready
+          AND to_regclass('public.organization') IS NOT NULL
+          AND to_regclass('brotar_extension.campaign_identity') IS NOT NULL
+          AND to_regclass('brotar_extension.stage_claim') IS NOT NULL
+          AND to_regclass('brotar_extension.request_idempotency') IS NOT NULL
+          AND to_regclass('brotar_extension.rate_bucket') IS NOT NULL AS ready
       `)
       return rows[0]?.ready === true
     } catch { return false }

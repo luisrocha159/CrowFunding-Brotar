@@ -32,10 +32,11 @@ test('información general exige un objeto ubicación antes de llegar al caso de
 })
 
 test('indicadores respetan numeric 14 2 y no redondean datos silenciosamente', () => {
-  const base = { name: 'Familias', description: '', unit: 'familias', baselineValue: null, targetValue: 120 }
+  const base = { name: 'Kilogramos', description: '', unit: 'kg', baselineValue: null, targetValue: 120 }
   for (const value of [1e12, -1e12, 1.234, Infinity, NaN]) {
     assert.ok(validateIndicator({ ...base, targetValue: value }).targetValue)
   }
-  for (const value of [0, 0.29, -0.25, 999999999999.99]) assert.deepEqual(validateIndicator({ ...base, targetValue: value }), {})
+  for (const value of [0, 0.29, 999999999999.99]) assert.deepEqual(validateIndicator({ ...base, targetValue: value }), {})
+  assert.ok(validateIndicator({ ...base, targetValue: -0.25 }).targetValue)
   assert.ok(validateIndicator({ ...base, description: 'x'.repeat(5001) }).description)
 })

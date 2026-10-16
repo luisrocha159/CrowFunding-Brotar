@@ -4,9 +4,13 @@ import type { MigrationConfig } from './migration.config'
 import { BaselineProvisionalV21789948800000 } from './migrations/1789948800000-BaselineProvisionalV2'
 import { CampaignRejected1791244800000 } from './migrations/1791244800000-CampaignRejected'
 import { CreatorGrantAudit1791244800001 } from './migrations/1791244800001-CreatorGrantAudit'
+import { MilestoneActivities1791849600000 } from './migrations/1791849600000-MilestoneActivities'
+import { ProvisionalCatalogs1792015200000 } from './migrations/1792015200000-ProvisionalCatalogs'
+import { InitiativeIdentity1792015200001 } from './migrations/1792015200001-InitiativeIdentity'
+import { IdentityDraftCorrections1792015200002 } from './migrations/1792015200002-IdentityDraftCorrections'
 
 // Orden explícito: no se descubren por glob para que el contenido aplicado sea revisable en el repositorio.
-export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001]
+export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002]
 
 // Nombre propio: el esquema oficial trae sus propias tablas y no se invade con el genérico "migrations".
 export const MIGRATIONS_TABLE = 'schema_migration_brotar'

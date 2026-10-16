@@ -11,22 +11,40 @@ import { FundingDto, PlanDto } from '../src/campaigns/infrastructure/sections.co
 test('S2-02: actividades e hitos exigen responsables, fechas coherentes y vínculo válido', () => {
   const plan: PlanInput = {
     activities: [{ name: 'Construcción', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-10' }],
-    milestones: [{ name: 'Entrega', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10', activityIndex: 0 }]
+    milestones: [{ name: 'Entrega', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10', activityIndexes: [0] }]
   }
   assert.deepEqual(validatePlan(plan), {})
   assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, plannedEndOn: '2026-10-01' }] })['activities.0.plannedEndOn'])
   assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, plannedStartOn: '2026-02-31' }] })['activities.0.plannedStartOn'])
-  assert.ok(validatePlan({ ...plan, milestones: [{ ...plan.milestones[0]!, activityIndex: 4 }] })['milestones.0.activityIndex'])
+  assert.ok(validatePlan({ ...plan, milestones: [{ ...plan.milestones[0]!, activityIndexes: [4] }] })['milestones.0.activityIndexes'])
   assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, responsibleName: '' }] })['activities.0.responsibleName'])
 })
 
 test('S2-03: presupuesto y riesgos validan importes positivos', () => {
-  const budget: BudgetInput = { items: [{ categoryId: 'cat', description: 'Material', quantity: 2, unitPrice: 5, plannedAmount: 10, notes: '' }], risks: [{ title: 'Retraso', description: '', likelihood: '', impact: '', mitigation: 'Proveedor alternativo' }] }
+  const budget: BudgetInput = { items: [{ categoryId: 'cat', description: 'Material para la obra', quantity: 2, unitPrice: 5, plannedAmount: 10, notes: '' }], risks: [{ title: 'Retraso', description: 'Retraso del proveedor', likelihood: '50', impact: 'Medio', mitigation: 'Proveedor alternativo' }] }
   assert.deepEqual(validateBudget(budget), {})
   assert.ok(validateBudget({ ...budget, items: [{ ...budget.items[0]!, plannedAmount: 0 }] })['items.0.plannedAmount'])
-  assert.deepEqual(validateBudget({ ...budget, items: [{ ...budget.items[0]!, unitPrice: 0.29, plannedAmount: 0.29 }] }), {})
+  assert.deepEqual(validateBudget({ ...budget, items: [{ ...budget.items[0]!, quantity: 1, unitPrice: 0.29, plannedAmount: 0.29 }] }), {})
   assert.ok(validateBudget({ ...budget, risks: [{ ...budget.risks[0]!, title: '' }] })['risks.0.title'])
   assert.ok(validateBudget({ ...budget, risks: [{ ...budget.risks[0]!, impact: 'x'.repeat(41) }] })['risks.0.impact'])
+})
+
+test('un hito admite varias actividades, sin referencias repetidas, inexistentes ni cierre anticipado', async () => {
+  const activities = [
+    { name: 'Preparar terreno', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-05' },
+    { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: '2026-11-06', plannedEndOn: '2026-11-10' }
+  ]
+  const milestone = { name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-11', activityIndexes: [0, 1] }
+  assert.deepEqual(validatePlan({ activities, milestones: [milestone] }), {})
+  assert.deepEqual(validatePlan({ activities, milestones: [milestone, { ...milestone, name: 'Instalación terminada' }] }), {}, 'Una actividad puede participar en varios hitos.')
+  assert.deepEqual(validatePlan({ activities, milestones: [{ ...milestone, activityIndexes: [] }] }), {}, 'El vínculo sigue siendo opcional.')
+  for (const activityIndexes of [[0, 0], [-1], [2], [0.5]]) assert.ok(validatePlan({ activities, milestones: [{ ...milestone, activityIndexes }] })['milestones.0.activityIndexes'])
+  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedEndOn: '2026-11-09' }] })['milestones.0.plannedEndOn'])
+  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedStartOn: '2026-10-31' }] })['milestones.0.plannedStartOn'])
+  for (const activityIndexes of [null, '0', [true], ['0'], [0, 0], [-1], [0.5], Array.from({ length: 51 }, () => 0)]) {
+    const dto = plainToInstance(PlanDto, { activities, milestones: [{ ...milestone, activityIndexes }] })
+    assert.ok((await validate(dto)).some(error => error.property === 'milestones'))
+  }
 })
 
 test('S2-04: meta, moneda, modelo y duración tienen límites reales', () => {
@@ -35,7 +53,7 @@ test('S2-04: meta, moneda, modelo y duración tienen límites reales', () => {
   assert.ok(validateFunding({ ...funding, goalAmount: 0 }).goalAmount)
   assert.ok(validateFunding({ ...funding, fundingModel: 'INVALID' }).fundingModel)
   assert.ok(validateFunding({ ...funding, endsAt: funding.startsAt }).endsAt)
-  assert.deepEqual(validateFunding({ ...funding, endsAt: '2026-11-20T00:00:00.000Z' }), {}, 'No se impone una equivalencia exacta entre duración y fechas que todavía no está confirmada.')
+  assert.ok(validateFunding({ ...funding, endsAt: '2026-11-20T00:00:00.000Z' }).durationDays, 'La regla del equipo exige coherencia entre duración y fechas.')
   assert.ok(validateFunding({ ...funding, endsAt: null }).endsAt)
 })
 
@@ -50,7 +68,7 @@ test('S2-05: recompensas aplicables requieren importe, disponibilidad y fecha', 
 })
 
 test('las secciones se guardan solo para el creador y en estado editable', async () => {
-  const plan: PlanInput = { activities: [{ name: 'Obra', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [] }
+  const plan: PlanInput = { activities: [{ name: 'Obra comunitaria', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [] }
   const writes: PlanInput[] = []
   let status = 'DRAFT'
   const drafts = { findOwn: async (user: string) => user === 'creador' ? { id: 'camp', status, campaignType: 'DONATION' } : null } as unknown as DraftRepository
@@ -59,7 +77,7 @@ test('las secciones se guardan solo para el creador y en estado editable', async
     readBudget: async () => ({ items: [], risks: [] }), saveBudget: async () => {},
     readFunding: async () => ({ goalAmount: null, currencyCode: '', durationDays: null, fundingModel: '', startsAt: null, endsAt: null }), saveFunding: async () => {},
     readRewards: async () => [], saveRewards: async () => {}, currencyActive: async () => true,
-    expenseCategories: async () => [], currencies: async () => [], expenseCategoryActive: async () => true
+    expenseCategories: async () => [], currencies: async () => [], countries: async () => [], expenseCategoryActive: async () => true
   } as SectionsRepository
   const sections = new CampaignSections(drafts, repository)
   await assert.rejects(() => sections.savePlan('otro', 'camp', plan), DraftNotFound)
@@ -80,6 +98,7 @@ test('la moneda no cambia mientras hay recompensas guardadas', async () => {
   const repository = {
     readFunding: async () => ({ goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE', startsAt: null, endsAt: null }),
     readRewards: async () => [{ title: 'Producto' }], currencyActive: async () => true,
+    readBudget: async () => ({ items: [], risks: [] }),
     saveFunding: async () => { wrote = true }
   } as unknown as SectionsRepository
   const sections = new CampaignSections(drafts, repository)
@@ -95,4 +114,6 @@ test('la API valida objetos anidados y fechas antes de guardar', async () => {
   const invalid = plainToInstance(PlanDto, { activities: [{ name: 4, responsibleName: 'Ana', plannedStartOn: 'no', plannedEndOn: '2026-11-02' }], milestones: [] })
   assert.ok((await validate(invalid)).some(error => error.property === 'activities'))
   assert.ok((await validate(plainToInstance(FundingDto, { goalAmount: '100', currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE' }))).some(error => error.property === 'goalAmount'))
+  const withoutDates = plainToInstance(FundingDto, { goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE' })
+  assert.deepEqual(validateFunding(withoutDates), {}, 'Las fechas opcionales omitidas se normalizan a null, sin exigirlas ni lanzar un 500.')
 })

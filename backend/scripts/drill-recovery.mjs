@@ -5,6 +5,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { parseEnv } from 'node:util'
 import { randomBytes } from 'node:crypto'
+import { isDeepStrictEqual } from 'node:util'
 import pg from 'pg'
 
 /**
@@ -84,16 +85,27 @@ if (differences.length > 0) {
 }
 steps.push('inventario verificado')
 
-// 5. El respaldo arrastra el esquema de control con la migración ya aplicada; se retira de la
-//    copia para que el ensayo ejercite el mecanismo de verdad y no informe "sin pendientes".
-inContainer(['psql', '-U', 'postgres', '-d', DRILL_DATABASE, '-v', 'ON_ERROR_STOP=1', '-c',
-  'DROP SCHEMA IF EXISTS brotar_migration CASCADE'], 'reset')
-steps.push('control de migraciones reiniciado en la copia')
+// 5. Una recuperación profesional conserva el historial: borrar el control intentaría
+//    repetir migraciones ya aplicadas. La instalación desde cero se ensaya por separado.
+const recordSql = `SELECT json_build_object(
+  'users',(SELECT count(*) FROM public.app_user),
+  'campaigns',(SELECT count(*) FROM public.campaign),
+  'initiatives',(SELECT count(*) FROM brotar_extension.initiative),
+  'stages',(SELECT count(*) FROM brotar_extension.initiative_stage),
+  'identities',(SELECT count(*) FROM brotar_extension.campaign_identity),
+  'claims',(SELECT count(*) FROM brotar_extension.stage_claim),
+  'idempotency',(SELECT count(*) FROM brotar_extension.request_idempotency),
+  'migrations',(SELECT count(*) FROM brotar_migration.schema_migration_brotar))::text`
+const records = database => JSON.parse(inContainer(['psql','-U','postgres','-d',database,'-X','-At','-v','ON_ERROR_STOP=1','-c',recordSql], 'records'))
+const beforeRecords = records(DRILL_DATABASE)
+steps.push('historial de migraciones y extensión recuperados')
 
 const migrateOutput = execFileSync('node', [
   fileURLToPath(new URL('migrate.mjs', import.meta.url)), 'up', `--database=${DRILL_DATABASE}`
 ], { timeout: 120000, encoding: 'utf8' }).trim()
 steps.push('migraciones aplicadas sobre la copia')
+if (!isDeepStrictEqual(beforeRecords, records(DRILL_DATABASE))) throw new Error('El up de la copia alteró los registros recuperados inesperadamente.')
+steps.push('conteos de datos y control conservados después de up')
 
 // 6. Migrar no debe alterar el esquema oficial de la copia.
 const afterMigration = await inventoryOf(DRILL_DATABASE)
@@ -123,6 +135,7 @@ console.log(JSON.stringify({
   copy: DRILL_DATABASE,
   migration: migrateOutput,
   inventory: restored,
+  recoveredRecords: beforeRecords,
   evidenceBytes: statSync(evidencePath).size,
   steps
 }, null, 2))
