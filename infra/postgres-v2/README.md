@@ -1,5 +1,7 @@
 # PostgreSQL provisional V2 · base vigente
 
+**Avance local de RicardoDev · 19/10/2026:** esta rama añade dos migraciones S3 y requiere nueve en total. La entrega DEV del 16/10 con siete se conserva como antecedente. No restaurar SQL para actualizar: respaldar antes y seguir README principal §24. Los permisos provisionales no crean roles de cuenta ni activan un proveedor; ver [contratos S3](../../docs/contratos-sprint-3.md).
+
 Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinación. Es un esquema inicial, no una migración. Nunca ejecutarlo encima de la base anterior.
 
 **Esta es la infraestructura vigente.** `infra/postgres/` es legado y no debe levantarse junto con V2. Docker aloja solo PostgreSQL; API y frontend corren fuera del contenedor. La guía paso a paso principal está en el [README de la raíz](../../README.md#3-primera-instalación-completa).

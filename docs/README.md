@@ -2,6 +2,10 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Avance local de Ricardo · Sprint 3 · 19/10/2026
+
+[S3-16/S3-02/base S3-18: implementación y evidencia](avance-ricardo-sprint-3-2026-10-19.md) y [contratos 0.1 para el equipo](contratos-sprint-3.md). Nueve migraciones, permisos por responsabilidad y núcleo sandbox interno de aportes; no hay proveedor conectado ni cobros reales. Las tres tareas siguen en curso y este incremento no se ha publicado. El plan y el mapa de Trello conservan su captura de reparto del 15/10; no sustituyen la evidencia técnica de este avance.
+
 ## Entrega actualizada de DEV · 16/10/2026
 
 [Registro de instalación y comprobaciones](entrega-dev-2026-10-16.md). Incluye las validaciones, siete migraciones, categorías automáticas, hitos con varias actividades y semejanzas orientativas, sin unicidad del título. La guía operativa vigente es el README; las frases «local/sin push» de los apartados fechados siguientes corresponden a esos cortes históricos.

@@ -88,7 +88,8 @@ test('sesiones reales: cookies, estados de cuenta, rotación, expiración, revoc
     assert.equal((await me(rotated)).status, 401)
     assert.equal((await post('logout', {}, rotated)).status, 204)
     const expires = cookieFrom(await post('login', credentials))
-    await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, { usedAt: new Date() })
+    // El fixture usa el mismo reloj PostgreSQL que created_at, igual que la revocación real.
+    await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, { usedAt: () => 'clock_timestamp()' })
     assert.equal((await me(expires)).status, 401)
     await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, { usedAt: null, createdAt: new Date(Date.now() - 7200000), expiresAt: new Date(Date.now() - 1000) })
     assert.equal((await me(expires)).status, 401)

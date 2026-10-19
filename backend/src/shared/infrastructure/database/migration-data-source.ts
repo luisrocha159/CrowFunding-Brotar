@@ -8,9 +8,11 @@ import { MilestoneActivities1791849600000 } from './migrations/1791849600000-Mil
 import { ProvisionalCatalogs1792015200000 } from './migrations/1792015200000-ProvisionalCatalogs'
 import { InitiativeIdentity1792015200001 } from './migrations/1792015200001-InitiativeIdentity'
 import { IdentityDraftCorrections1792015200002 } from './migrations/1792015200002-IdentityDraftCorrections'
+import { ResponsibilityPermissions1792368000000 } from './migrations/1792368000000-ResponsibilityPermissions'
+import { ContributionIntegrity1792368000001 } from './migrations/1792368000001-ContributionIntegrity'
 
 // Orden explícito: no se descubren por glob para que el contenido aplicado sea revisable en el repositorio.
-export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002]
+export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002, ResponsibilityPermissions1792368000000, ContributionIntegrity1792368000001]
 
 // Nombre propio: el esquema oficial trae sus propias tablas y no se invade con el genérico "migrations".
 export const MIGRATIONS_TABLE = 'schema_migration_brotar'

@@ -5,7 +5,7 @@ import {
 import { Transform } from 'class-transformer'
 import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { RequirePermissions, RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import {
   Categories, CategoryInUse, CategoryInvalid, CategoryNotFound, CategoryParentUnavailable, CategorySlugTaken
 } from '../application/categories'
@@ -52,7 +52,7 @@ export class CategoryController {
  * queda fuera por la regla de solo lectura del RoleGuard, aunque acumule ADMIN.
  */
 @Injectable()
-@Controller('catalogs/admin/categories') @UseGuards(RoleGuard) @RequireRoles('ADMIN')
+@Controller('catalogs/admin/categories') @UseGuards(RoleGuard) @RequireRoles('ADMIN') @RequirePermissions('catalog.manage')
 export class CategoryAdminController {
   constructor(private readonly categories: Categories) {}
 

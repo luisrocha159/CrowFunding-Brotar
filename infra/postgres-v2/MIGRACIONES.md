@@ -1,5 +1,11 @@
 # Control de cambios de PostgreSQL
 
+## Incremento local de Sprint 3 · 19/10/2026
+
+`RicardoDev` añade dos migraciones a las siete del corte anterior: `ResponsibilityPermissions1792368000000` puebla una matriz provisional de permisos sin asignar roles a cuentas; `ContributionIntegrity1792368000001` crea unicidad de referencia de cobro por proveedor y concede acceso técnico limitado a las tablas oficiales de aportes/pagos/eventos y sus secuencias. No inserta proveedores, no modifica el SQL oficial ni añade tablas en `public`. Ante duplicados existentes, el índice falla y preserva los datos para diagnóstico.
+
+La secuencia vigente de esta rama es **nueve migraciones**, sin restaurar de nuevo una base instalada. Los `down` rechazan retirar integridad/permisos automáticamente. Ver README §24 y [contratos S3](../../docs/contratos-sprint-3.md). `drill:recovery` incluye ahora conteos de aportes, pagos, eventos, devoluciones, disputas y permisos, además del historial y el inventario; se ejecuta en una copia aislada.
+
 ## Línea base registrada
 
 `baseline.json` identifica por SHA-256 el SQL oficial instalado, el inventario esperado y el ajuste de permisos E07. La API conserva `synchronize=false`, `dropSchema=false` y `migrationsRun=false`. El instalador restaura únicamente si el esquema está vacío; al repetirlo reconoce una línea base completa y conserva los datos. Nunca aplicar el SQL inicial sobre datos existentes ni forzar la restauración sobre un esquema parcial.

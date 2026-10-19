@@ -137,6 +137,10 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
     assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
     assert.equal((await source.query('SELECT count(*)::int AS n FROM public.category WHERE is_active=true'))[0].n, 5, 'Instalación desde cero: categorías disponibles sin carga manual.')
+    assert.deepEqual(await source.query(`SELECT has_table_privilege('brotar_app','public.payment_event','INSERT') AS can_append,
+      has_table_privilege('brotar_app','public.payment_event','UPDATE') AS can_edit,
+      has_table_privilege('brotar_app','public.payment_event','DELETE') AS can_delete`),
+    [{can_append:true,can_edit:false,can_delete:false}], 'El rol de API conserva el historial financiero como inserción/lectura.')
     const { ProvisionalCatalogs1792015200000 } = await import('../src/shared/infrastructure/database/migrations/1792015200000-ProvisionalCatalogs')
     await source.query("UPDATE public.category SET name='Catálogo personalizado',is_active=false WHERE slug='medio-ambiente'")
     const catalogRunner = source.createQueryRunner()

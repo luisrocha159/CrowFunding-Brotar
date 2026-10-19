@@ -90,6 +90,12 @@ steps.push('inventario verificado')
 const recordSql = `SELECT json_build_object(
   'users',(SELECT count(*) FROM public.app_user),
   'campaigns',(SELECT count(*) FROM public.campaign),
+  'contributions',(SELECT count(*) FROM public.contribution),
+  'payments',(SELECT count(*) FROM public.payment),
+  'paymentEvents',(SELECT count(*) FROM public.payment_event),
+  'refunds',(SELECT count(*) FROM public.refund),
+  'disputes',(SELECT count(*) FROM public.dispute),
+  'permissions',(SELECT count(*) FROM public.role_permission),
   'initiatives',(SELECT count(*) FROM brotar_extension.initiative),
   'stages',(SELECT count(*) FROM brotar_extension.initiative_stage),
   'identities',(SELECT count(*) FROM brotar_extension.campaign_identity),

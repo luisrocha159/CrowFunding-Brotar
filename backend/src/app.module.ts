@@ -8,6 +8,7 @@ import { CatalogsModule } from './catalogs/catalogs.module'
 import { CampaignsModule } from './campaigns/campaigns.module'
 import { FilesModule } from './files/files.module'
 import { CampaignDraftsModule } from './campaign-drafts/campaign-drafts.module'
+import { ContributionsModule } from './contributions/contributions.module'
 
-@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule] })
+@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule] })
 export class AppModule {}

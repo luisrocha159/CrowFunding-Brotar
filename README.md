@@ -1,5 +1,7 @@
 # Brotar · Base integrada del equipo
 
+> **Avance local de Sprint 3 · 19/10/2026 · RicardoDev:** se inició S3-16, el núcleo sandbox de S3-02 y la base de S3-18. Este incremento requiere **nueve migraciones**; ver sección 24 y [contratos de integración](docs/contratos-sprint-3.md). No conecta un proveedor ni habilita cobros reales. La entrega remota DEV del 16/10 y sus comprobaciones se conservan como antecedente; este avance no está publicado todavía.
+
 **Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
 
 > **Antecedente de entrega en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1 y añade los ajustes de navegación con sesión de la sección 17. `main` no se modifica. Los resultados del corte de campañas y del incremento de permisos están en las secciones 15 y 16; la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue ese ensayo de las comprobaciones posteriores. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
@@ -119,7 +121,7 @@ node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **siete migraciones** registran la línea base, añaden REJECTED, auditoría, vínculos hito/actividades, catálogos provisionales y las extensiones técnicas con controles de reintento y frecuencia. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **nueve migraciones de RicardoDev** conservan las siete del Sprint 2 y añaden permisos por responsabilidad e integridad de referencias de pago. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Las categorías adicionales se cargan automáticamente con `migrate up`, sin modificar ese SQL.
 
@@ -759,3 +761,41 @@ El [registro de esta entrega](docs/entrega-dev-2026-10-16.md) documenta una inst
 Se corrigió una prueba que asumía el nombre del contenedor original: ahora verifica el proyecto configurado en cada copia sin quitar sus controles de aislamiento. No hace falta cambiar puertos ni nombres en los tests para instalar en otra computadora. El entorno normal sigue siendo `15433/3000/5173`.
 
 Para instalar desde cero, seguir la sección 3 completa; para actualizar, conservar cambios propios y seguir las secciones 4 y 21 y [CONTRIBUTING](CONTRIBUTING.md). No restaurar SQL, borrar volúmenes, copiar `.env` ajenos ni forzar un pull. Un pull divergente requiere integrar los commits; no puede prometerse ausencia de conflictos futuros entre ramas con cambios diferentes.
+
+## 24. Inicio de Sprint 3 · RicardoDev · 19/10/2026
+
+Este incremento sigue local y las tres tareas permanecen **en curso**. Ver [alcance y evidencia](docs/avance-ricardo-sprint-3-2026-10-19.md) y [contratos 0.1](docs/contratos-sprint-3.md). No modificar DEV/main ni conceder roles nuevos automáticamente para probarlo.
+
+El catálogo provisional de permisos ahora distingue revisión, publicación, Finanzas, Soporte y auditoría. Las vistas consultan `/api/access/permissions`; la API aplica permisos vigentes y mantiene al auditor en lectura incluso si acumula ADMIN. Revisión permite REVIEWER, publicación continúa reservada a ADMIN y separada de aprobar. La matriz definitiva D06 y la integración de los módulos futuros siguen pendientes.
+
+Para una **V2 ya instalada**, primero detener la API y guardar un respaldo completo, fuera del repositorio. Desde `backend/`, con el contenedor saludable:
+
+```powershell
+$backupName='brotar-pre-s3-{0}.dump' -f ([Guid]::NewGuid().ToString('N'))
+$backupDirectory=Join-Path $env:LOCALAPPDATA 'Brotar-private/backups'
+New-Item -ItemType Directory -Path $backupDirectory -Force | Out-Null
+$containerBackup='/tmp/'+$backupName
+$localBackup=Join-Path $backupDirectory $backupName
+docker compose --env-file ../infra/postgres-v2/.env -f ../infra/postgres-v2/compose.yaml exec -T postgres pg_dump -U postgres -Fc -f $containerBackup brotar_db
+if ($LASTEXITCODE -ne 0) { throw 'No se creó el respaldo; no continuar.' }
+docker compose --env-file ../infra/postgres-v2/.env -f ../infra/postgres-v2/compose.yaml cp "postgres:$containerBackup" $localBackup
+if ($LASTEXITCODE -ne 0) { throw 'No se copió el respaldo; no continuar.' }
+```
+
+El archivo lleva datos privados: no subirlo a Git/Trello ni compartirlo. Después, sin repetir la restauración SQL:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run check
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+corepack pnpm run dev
+```
+
+Debe mostrar nueve migraciones y `pending:false`. Si ya existían referencias de pago repetidas para el mismo proveedor, la novena migración se detiene sin borrar pagos: requiere diagnóstico, no quitar el índice. Una instalación nueva sigue la sección 3 con el compilado actual y aplica las nueve automáticamente. La API no anuncia readiness para el nuevo incremento si faltan sus objetos. Reiniciar frontend desde la raíz con `bun run dev`; no copiar los puertos ni credenciales de la copia de ensayo.
+
+Después de migrar, `corepack pnpm run drill:recovery` ensaya la restauración del estado actualizado en otra base. El script actual compara también permisos e historial: no usar ese ensayo como reemplazo del respaldo previo sobre una base que aún tenga migraciones de catálogos/permisos pendientes.
+
+El núcleo de aportes está disponible solo para integración interna de servidor y pruebas sandbox. `GET /api/contributions/:id` permite consultar el aporte propio, con importes decimales en cadenas y sin payloads privados. No existen POST públicos de creación o confirmación: completar checkout, verificar callbacks del proveedor, conciliar pagos tardíos y cumplir las verificaciones aplicables es trabajo pendiente antes de exponerlos. Un evento sintético de prueba no acredita un cobro externo.

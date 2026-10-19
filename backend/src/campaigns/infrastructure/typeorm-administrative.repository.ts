@@ -66,7 +66,10 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
     const report = snapshot.duplication
     if (!report?.matches.length) return
     await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,description,new_values)
-      VALUES($1,'ADMIN','UPDATE','campaign',$2,'Revisión de coincidencias de campaña', $3::jsonb)`,
+      VALUES($1,(SELECT r.code FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id
+        WHERE ur.user_id=$1 AND r.code IN ('ADMIN','REVIEWER') AND ur.revoked_at IS NULL AND ur.granted_at<=now()
+        AND (ur.expires_at IS NULL OR ur.expires_at>now()) ORDER BY r.code LIMIT 1),
+        'UPDATE','campaign',$2,'Revisión de coincidencias de campaña', $3::jsonb)`,
     [actorId, id, JSON.stringify({ operation, round, ruleVersion: 3, advisoryOnly: true, token: report.reviewToken,
       reason: reviewed?.token === report.reviewToken ? reviewed.reason : null,
       candidates: report.matches.map(match => ({ id: match.id, kind: match.kind, reasons: match.reasons })) })])

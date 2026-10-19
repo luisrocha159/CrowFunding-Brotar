@@ -32,7 +32,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AND to_regclass('brotar_extension.campaign_identity') IS NOT NULL
           AND to_regclass('brotar_extension.stage_claim') IS NOT NULL
           AND to_regclass('brotar_extension.request_idempotency') IS NOT NULL
-          AND to_regclass('brotar_extension.rate_bucket') IS NOT NULL AS ready
+          AND to_regclass('brotar_extension.rate_bucket') IS NOT NULL
+          AND to_regclass('public.brotar_payment_provider_reference_uq') IS NOT NULL
+          AND EXISTS(SELECT 1 FROM public.permission WHERE code='campaign.review.decide') AS ready
       `)
       return rows[0]?.ready === true
     } catch { return false }

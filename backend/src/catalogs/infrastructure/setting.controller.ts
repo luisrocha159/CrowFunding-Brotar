@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Header, NotFoundException, Param, Put, Req, UseGuards } from '@nestjs/common'
 import { IsDefined } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { RequirePermissions, RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { Settings, SettingNotAgreed } from '../application/categories'
 
 export class SettingDto {
@@ -13,7 +13,7 @@ export class SettingDto {
  * vacía mientras D02 y D10 sigan abiertas, así que toda clave se rechaza por ahora.
  * El mecanismo registra quién modifica en system_setting.updated_by.
  */
-@Controller('catalogs/admin/settings') @UseGuards(RoleGuard) @RequireRoles('ADMIN')
+@Controller('catalogs/admin/settings') @UseGuards(RoleGuard) @RequireRoles('ADMIN') @RequirePermissions('catalog.manage')
 export class SettingController {
   constructor(private readonly settings: Settings) {}
 

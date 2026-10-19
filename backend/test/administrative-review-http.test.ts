@@ -25,7 +25,7 @@ const repository: AdministrativeRepository = {
   { provide: AdministrativeReview, useValue: new AdministrativeReview(repository, false) },
   { provide: Sessions, useValue: { current: async (token?: string) => { if (!token) throw new SessionMissing(); return { id: token[0] === 'a' ? 'admin' : 'creator', email: 'test@example.invalid', firstName: 'Ensayo', lastName: 'Prueba', status: 'ACTIVE' } } } },
   { provide: RoleAccess, useValue: new RoleAccess({ active: async user => [{ code: user === 'admin' ? 'ADMIN' : 'CREATOR', name: user }] }) },
-  { provide: PermissionAccess, useValue: new PermissionAccess({ granted: async () => [] }) }
+  { provide: PermissionAccess, useValue: new PermissionAccess({ granted: async user => user === 'admin' ? ['campaign.review.read','campaign.review.decide','campaign.publish'] : [] }) }
 ] })
 class TestModule {}
 let app: INestApplication, base: string

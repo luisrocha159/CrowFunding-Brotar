@@ -1,5 +1,19 @@
 {
   "version": "2.4",
+  "localProgressSprint3": {
+    "date": "2026-10-19",
+    "branch": "RicardoDev",
+    "published": false,
+    "verification": "344 casos distintos aprobados: 163 frontend, 151 backend, 8 ADMIN local y 22 PostgreSQL; recuperación y nueve migraciones en copia aislada. No cierra las tres tareas ni la integración general.",
+    "evidence": "avance-ricardo-sprint-3-2026-10-19.md",
+    "contracts": "contratos-sprint-3.md",
+    "tasks": {
+      "S3-16": "En curso: matriz provisional y controles de módulos existentes; módulos futuros y D06 pendientes.",
+      "S3-02": "En curso: núcleo interno sandbox; checkout, proveedor verificado y compensación tardía pendientes.",
+      "S3-18": "En curso: contratos iniciales, migraciones y recuperación; integración completa del MVP pendiente."
+    },
+    "note": "No modifica el reparto ni las tarjetas. El inventario del plan y el mapa Trello conservan su captura de planificación; esta sección distingue el progreso técnico local."
+  },
   "delivery": {
     "date": "2026-10-16",
     "branch": "DEV",

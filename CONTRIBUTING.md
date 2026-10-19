@@ -138,7 +138,7 @@ No editar simultáneamente routers, contratos compartidos o configuración sin a
 
 Usar la base local oficial V2 de cada persona. Nunca compartir `.env`, contraseñas, tokens, dumps ni datos personales en Git/Trello. El SQL oficial revisado de estructura y catálogos se distribuye como `infra/postgres-v2/official-schema.sql`; no sustituirlo por un backup de una base poblada.
 
-No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. Ya existe un mecanismo de siete migraciones y recuperación: seguir `infra/postgres-v2/MIGRACIONES.md`. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya aplicadas.
+No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. La entrega DEV del 16/10 tiene siete migraciones; el avance local S3 de RicardoDev añade dos (nueve en total). Seguir `infra/postgres-v2/MIGRACIONES.md` y README §24. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos iniciales de S3 están en `docs/contratos-sprint-3.md`.
 
 No versionar `node_modules`, `dist`, `dist-test`, cobertura o temporales. Conservar los dos lockfiles y usar el gestor correspondiente. No actualizar dependencias sin necesidad y sin pruebas.
 
