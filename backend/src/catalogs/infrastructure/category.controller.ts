@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common'
 import { Transform } from 'class-transformer'
 import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min } from 'class-validator'
+import { CatalogReadGuard } from './catalog-read.guard'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import {
@@ -56,18 +57,18 @@ export class CategoryController {
 export class CategoryAdminController {
   constructor(private readonly categories: Categories) {}
 
-  @Get() @Header('Cache-Control', 'no-store')
+  @Get() @Header('Cache-Control', 'no-store') @RequireRoles('REGISTERED_USER') @UseGuards(CatalogReadGuard)
   list() { return this.categories.list(true) }
 
   @Post() @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
-  async create(@Body() input: CategoryDto) {
-    try { return await this.categories.create({ ...input, parentId: input.parentId ?? null }) }
+  async create(@Req() request: AuthenticatedRequest, @Body() input: CategoryDto) {
+    try { return await this.categories.create({ ...input, parentId: input.parentId ?? null }, request.brotarUser.id) }
     catch (error) { translate(error) }
   }
 
   @Put(':id') @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
-  async update(@Param('id', new ParseUUIDPipe()) id: string, @Body() input: CategoryDto) {
-    try { return await this.categories.update(id, { ...input, parentId: input.parentId ?? null }) }
+  async update(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: CategoryDto) {
+    try { return await this.categories.update(id, { ...input, parentId: input.parentId ?? null }, request.brotarUser.id) }
     catch (error) { translate(error) }
   }
 
@@ -77,8 +78,6 @@ export class CategoryAdminController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() input: CategoryStateDto
   ) {
-    // request.brotarUser confirma que la operación va asociada a una identidad autenticada.
-    void request.brotarUser.id
-    try { return await this.categories.setActive(id, input.isActive) } catch (error) { translate(error) }
+    try { return await this.categories.setActive(id, input.isActive, request.brotarUser.id) } catch (error) { translate(error) }
   }
 }

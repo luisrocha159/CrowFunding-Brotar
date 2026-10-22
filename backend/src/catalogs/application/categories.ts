@@ -1,5 +1,5 @@
 import { allowsDeactivation, isSelfReference, isValidSlug, normalizeCategory, type Category, type CategoryInput } from '../domain/category'
-import { isAgreedSetting, isValidSettingKey } from '../domain/setting'
+import { AGREED_SETTINGS, isAgreedSetting, isValidSettingKey } from '../domain/setting'
 export type { Category, CategoryInput } from '../domain/category'
 
 export class CategoryInvalid extends Error {}
@@ -14,13 +14,14 @@ export class SettingNotAgreed extends Error {}
 export interface CategoryUsage { campaigns: number; activeChildren: number }
 
 export interface CategoryRepository {
+  transaction<T>(operation: (repository: CategoryRepository) => Promise<T>, protectCampaigns?: boolean): Promise<T>
   list(includeInactive: boolean): Promise<Category[]>
   find(id: string): Promise<Category | null>
   findBySlug(slug: string): Promise<Category | null>
   usage(id: string): Promise<CategoryUsage>
-  create(input: CategoryInput): Promise<Category>
-  update(id: string, input: CategoryInput): Promise<Category>
-  setActive(id: string, isActive: boolean): Promise<Category>
+  create(input: CategoryInput, actorId: string): Promise<Category>
+  update(id: string, input: CategoryInput, actorId: string): Promise<Category>
+  setActive(id: string, isActive: boolean, actorId: string): Promise<Category>
 }
 
 export interface SettingRepository {
@@ -44,6 +45,7 @@ export class Categories {
   private async validate(input: CategoryInput, id: string | null): Promise<CategoryInput> {
     const normalized = normalizeCategory(input)
     if (!isValidSlug(normalized.slug)) throw new CategoryInvalid()
+    if (normalized.description.length > 2000 || normalized.description.includes('\0') || normalized.name.includes('\0')) throw new CategoryInvalid()
     if (normalized.name.length === 0 || normalized.name.length > 120) throw new CategoryInvalid()
     if (!Number.isInteger(normalized.displayOrder) || normalized.displayOrder < 0 || normalized.displayOrder > 32767) {
       throw new CategoryInvalid()
@@ -55,29 +57,46 @@ export class Categories {
 
     // El padre debe existir y estar activo: no se cuelga un catálogo de una rama retirada.
     if (normalized.parentId !== null) {
-      const parent = await this.repository.find(normalized.parentId)
-      if (!parent || !parent.isActive) throw new CategoryParentUnavailable()
+      await this.validateParent(normalized.parentId, id)
     }
     return normalized
   }
 
-  async create(input: CategoryInput): Promise<Category> {
-    return this.repository.create(await this.validate(input, null))
-  }
-
-  async update(id: string, input: CategoryInput): Promise<Category> {
-    await this.find(id)
-    return this.repository.update(id, await this.validate(input, id))
-  }
-
-  /** Reactivar es seguro; desactivar exige que nada la esté usando. */
-  async setActive(id: string, isActive: boolean): Promise<Category> {
-    await this.find(id)
-    if (!isActive) {
-      const usage = await this.repository.usage(id)
-      if (!allowsDeactivation(usage.campaigns, usage.activeChildren)) throw new CategoryInUse()
+  private async validateParent(parentId: string, id: string | null): Promise<void> {
+    const visited = new Set<string>(id ? [id] : [])
+    let next: string | null = parentId
+    while (next) {
+      if (visited.has(next)) throw new CategoryInvalid()
+      visited.add(next)
+      const parent = await this.repository.find(next)
+      if (!parent || !parent.isActive) throw new CategoryParentUnavailable()
+      next = parent.parentId
     }
-    return this.repository.setActive(id, isActive)
+  }
+
+  async create(input: CategoryInput, actorId: string): Promise<Category> {
+    return this.repository.transaction(async repository => repository.create(await new Categories(repository).validate(input, null), actorId))
+  }
+
+  async update(id: string, input: CategoryInput, actorId: string): Promise<Category> {
+    return this.repository.transaction(async repository => {
+      const categories = new Categories(repository)
+      await categories.find(id)
+      return repository.update(id, await categories.validate(input, id), actorId)
+    })
+  }
+
+  async setActive(id: string, isActive: boolean, actorId: string): Promise<Category> {
+    return this.repository.transaction(async repository => {
+      const categories = new Categories(repository)
+      const current = await categories.find(id)
+      if (isActive && current.parentId) await categories.validateParent(current.parentId, id)
+      if (!isActive) {
+        const usage = await repository.usage(id)
+        if (!allowsDeactivation(usage.campaigns, usage.activeChildren)) throw new CategoryInUse()
+      }
+      return repository.setActive(id, isActive, actorId)
+    }, !isActive)
   }
 }
 
@@ -90,6 +109,10 @@ export class Settings {
 
   private check(key: string): void {
     if (!isValidSettingKey(key) || !isAgreedSetting(key)) throw new SettingNotAgreed()
+  }
+
+  async list() {
+    return Promise.all(AGREED_SETTINGS.map(async key => await this.repository.read(key) ?? { key, value: null, updatedBy: null, updatedAt: null }))
   }
 
   async read(key: string) {

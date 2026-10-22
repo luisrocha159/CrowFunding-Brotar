@@ -6,7 +6,7 @@ import { SessionMutationGuard } from '../../auth/infrastructure/http/session-htt
 import { FileAccessDenied, FileInUse, FileUnavailable, Files, InvalidFileUpload, type FilePurpose, type FileVisibility } from '../application/files'
 
 const visibility: FileVisibility[] = ['PUBLIC', 'PRIVATE']
-const purpose: FilePurpose[] = ['PROFILE_AVATAR', 'ORGANIZATION_DOCUMENT', 'CAMPAIGN_PUBLIC_IMAGE']
+const purpose: FilePurpose[] = ['PROFILE_AVATAR', 'ORGANIZATION_DOCUMENT', 'CAMPAIGN_PUBLIC_IMAGE', 'VERIFICATION_DOCUMENT', 'SUPPORT_EVIDENCE']
 
 class FileUploadDto {
   @IsIn(visibility)

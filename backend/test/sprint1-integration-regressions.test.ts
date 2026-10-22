@@ -9,8 +9,9 @@ import { smtpRecoveryConfig } from '../src/auth/infrastructure/smtp-recovery-del
 
 test('categorías normaliza UPDATE RETURNING al objeto del contrato', async () => {
   const category = { id: 'category', isActive: false }
-  const database = { connection: () => ({ query: async () => [[category], 1] }) } as unknown as DatabaseService
-  assert.deepEqual(await new TypeormCategoryRepository(database).setActive('category', false), category)
+  const manager = { query: async (sql: string) => sql.includes('UPDATE') ? [[category], 1] : sql.includes('SELECT') ? [category] : [] }
+  const database = { connection: () => ({ transaction: async (operation: (transaction: typeof manager) => Promise<unknown>) => operation(manager) }) } as unknown as DatabaseService
+  assert.deepEqual(await new TypeormCategoryRepository(database).setActive('category', false, 'admin-1'), category)
 })
 
 test('la navegación omite recompensas solo en donación', () => {

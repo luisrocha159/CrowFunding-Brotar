@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Header, NotFoundException, Param, Put, Req, UseGuards } from '@nestjs/common'
 import { IsDefined } from 'class-validator'
+import { CatalogReadGuard } from './catalog-read.guard'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { Settings, SettingNotAgreed } from '../application/categories'
@@ -17,7 +18,10 @@ export class SettingDto {
 export class SettingController {
   constructor(private readonly settings: Settings) {}
 
-  @Get(':key') @Header('Cache-Control', 'no-store')
+  @Get() @Header('Cache-Control', 'no-store') @RequireRoles('REGISTERED_USER') @UseGuards(CatalogReadGuard)
+  list() { return this.settings.list() }
+
+  @Get(':key') @Header('Cache-Control', 'no-store') @RequireRoles('REGISTERED_USER') @UseGuards(CatalogReadGuard)
   async read(@Param('key') key: string) {
     try {
       const setting = await this.settings.read(key)

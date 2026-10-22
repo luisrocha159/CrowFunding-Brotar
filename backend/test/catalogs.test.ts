@@ -13,7 +13,8 @@ const base: Category = {
 }
 
 function repositoryWith(overrides: Partial<CategoryRepository> = {}): CategoryRepository {
-  return {
+  const repository: CategoryRepository = {
+    transaction: async operation => operation(repository),
     list: async () => [base],
     find: async (id) => id === base.id ? base : null,
     findBySlug: async () => null,
@@ -23,6 +24,7 @@ function repositoryWith(overrides: Partial<CategoryRepository> = {}): CategoryRe
     setActive: async (id, isActive) => ({ ...base, id, isActive }),
     ...overrides
   }
+  return repository
 }
 
 const input = { slug: ' EDUCACION ', name: ' Educación ', description: ' Texto ', displayOrder: 1, parentId: null }
@@ -44,33 +46,35 @@ test('BG-55 protege las referencias existentes al desactivar', async () => {
   assert.equal(allowsDeactivation(0, 1), false)
 
   const inUse = new Categories(repositoryWith({ usage: async () => ({ campaigns: 2, activeChildren: 0 }) }))
-  await assert.rejects(() => inUse.setActive(base.id, false), CategoryInUse)
+  await assert.rejects(() => inUse.setActive(base.id, false, 'admin-1'), CategoryInUse)
   // Reactivar no exige la comprobación: no deja referencias colgando.
-  assert.equal((await inUse.setActive(base.id, true)).isActive, true)
+  assert.equal((await inUse.setActive(base.id, true, 'admin-1')).isActive, true)
 
   const withChildren = new Categories(repositoryWith({ usage: async () => ({ campaigns: 0, activeChildren: 1 }) }))
-  await assert.rejects(() => withChildren.setActive(base.id, false), CategoryInUse)
+  await assert.rejects(() => withChildren.setActive(base.id, false, 'admin-1'), CategoryInUse)
 
   const free = new Categories(repositoryWith())
-  assert.equal((await free.setActive(base.id, false)).isActive, false)
+  assert.equal((await free.setActive(base.id, false, 'admin-1')).isActive, false)
 })
 
 test('rechaza datos inválidos, identificadores repetidos y padres no disponibles', async () => {
   const categories = new Categories(repositoryWith())
-  await assert.rejects(() => categories.create({ ...input, slug: 'Mayúsculas' }), CategoryInvalid)
-  await assert.rejects(() => categories.create({ ...input, name: '   ' }), CategoryInvalid)
-  await assert.rejects(() => categories.create({ ...input, displayOrder: -1 }), CategoryInvalid)
-  await assert.rejects(() => categories.create({ ...input, displayOrder: 1.5 }), CategoryInvalid)
-  await assert.rejects(() => categories.update(base.id, { ...input, parentId: base.id }), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, slug: 'Mayúsculas' }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, name: '   ' }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, name: 'Texto\0oculto' }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, description: 'Texto\0oculto' }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, displayOrder: -1 }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.create({ ...input, displayOrder: 1.5 }, 'admin-1'), CategoryInvalid)
+  await assert.rejects(() => categories.update(base.id, { ...input, parentId: base.id }, 'admin-1'), CategoryInvalid)
 
   const taken = new Categories(repositoryWith({ findBySlug: async () => ({ ...base, id: 'otra' }) }))
-  await assert.rejects(() => taken.create(input), CategorySlugTaken)
+  await assert.rejects(() => taken.create(input, 'admin-1'), CategorySlugTaken)
   // El mismo identificador en la propia categoría no es conflicto.
   const same = new Categories(repositoryWith({ findBySlug: async () => base }))
-  assert.equal((await same.update(base.id, input)).slug, 'educacion')
+  assert.equal((await same.update(base.id, input, 'admin-1')).slug, 'educacion')
 
   const retired = new Categories(repositoryWith({ find: async (id) => id === base.id ? base : { ...base, id, isActive: false } }))
-  await assert.rejects(() => retired.create({ ...input, parentId: 'padre-retirado' }), CategoryParentUnavailable)
+  await assert.rejects(() => retired.create({ ...input, parentId: 'padre-retirado' }, 'admin-1'), CategoryParentUnavailable)
 })
 
 test('solo se gestionan parámetros acordados y se registra quién modifica', async () => {
@@ -91,4 +95,22 @@ test('solo se gestionan parámetros acordados y se registra quién modifica', as
   await assert.rejects(() => settings.write('campaign.max_goal', 100, 'admin-1'), SettingNotAgreed)
   await assert.rejects(() => settings.read('campaign.max_goal'), SettingNotAgreed)
   assert.equal(recorded, null, 'Una clave no acordada no llega al repositorio.')
+})
+
+
+test('categorías: rechaza ciclos de varios niveles y reactivación con padre inactivo', async () => {
+  const parent = { ...base, id: 'parent', parentId: base.id }
+  const leaf = { ...base, id: 'leaf', parentId: parent.id }
+  const categories = new Categories(repositoryWith({ find: async id => [base, parent, leaf].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => categories.update(base.id, { ...input, parentId: leaf.id }, 'admin-1'), CategoryInvalid)
+  const inactiveParent = { ...base, id: 'retired', isActive: false }
+  const inactiveChild = { ...base, id: 'child', parentId: inactiveParent.id, isActive: false }
+  const retired = new Categories(repositoryWith({ find: async id => [inactiveParent, inactiveChild].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => retired.setActive(inactiveChild.id, true, 'admin-1'), CategoryParentUnavailable)
+})
+
+
+test('parámetros: listar claves acordadas no consulta ni filtra valores desconocidos', async () => {
+  const settings = new Settings({ read: async () => { throw new Error('No debe leer claves no aprobadas') }, write: async () => { throw new Error('No debe escribir') } })
+  assert.deepEqual(await settings.list(), [])
 })

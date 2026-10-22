@@ -30,11 +30,16 @@ import { TypeormAdministrativeRepository } from './infrastructure/typeorm-admini
 import { AdministrativeReviewController } from './infrastructure/administrative-review.controller'
 import { publicationEnabled } from './domain/administrative-review'
 import { CampaignWriteLimitGuard } from './infrastructure/campaign-write-limit.guard'
+import { Bookmarks } from './application/bookmarks'
+import { TypeormBookmarkRepository } from './infrastructure/typeorm-bookmark.repository'
+import { BookmarkController } from './infrastructure/bookmark.controller'
 
 @Module({
   imports: [RolesModule, OrganizationsModule, DatabaseModule],
-  controllers: [DraftController, ModalityController, GeneralController, ProjectsController, CampaignReviewQueueController, PublicCampaignController, SectionsController, SubmissionController, AdministrativeReviewController],
+  controllers: [DraftController, ModalityController, GeneralController, ProjectsController, CampaignReviewQueueController, PublicCampaignController, SectionsController, SubmissionController, AdministrativeReviewController, BookmarkController],
   providers: [
+    TypeormBookmarkRepository,
+    { provide: Bookmarks, inject: [TypeormBookmarkRepository], useFactory: (repository: TypeormBookmarkRepository) => new Bookmarks(repository) },
     SessionMutationGuard, CampaignWriteLimitGuard, TypeormDraftRepository, TypeormModalityRepository, TypeormGeneralRepository,
     TypeormSectionsRepository, TypeormSubmissionRepository,
     { provide: CampaignSections, inject: [TypeormDraftRepository, TypeormSectionsRepository], useFactory: (drafts: TypeormDraftRepository, sections: TypeormSectionsRepository) => new CampaignSections(drafts, sections) },

@@ -9,5 +9,11 @@ import { CampaignsModule } from './campaigns/campaigns.module'
 import { FilesModule } from './files/files.module'
 import { CampaignDraftsModule } from './campaign-drafts/campaign-drafts.module'
 
-@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule] })
+import { CampaignProgressModule } from './campaign-progress/campaign-progress.module'
+import { ContributionsModule } from './contributions/contributions.module'
+import { VerificationsModule } from './verifications/verifications.module'
+
+import { SupportCasesModule } from './support-cases/support-cases.module'
+
+@Module({ imports: [SupportCasesModule, CampaignProgressModule, ContributionsModule, VerificationsModule, HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule] })
 export class AppModule {}

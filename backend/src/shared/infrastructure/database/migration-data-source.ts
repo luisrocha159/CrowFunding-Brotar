@@ -8,9 +8,16 @@ import { MilestoneActivities1791849600000 } from './migrations/1791849600000-Mil
 import { ProvisionalCatalogs1792015200000 } from './migrations/1792015200000-ProvisionalCatalogs'
 import { InitiativeIdentity1792015200001 } from './migrations/1792015200001-InitiativeIdentity'
 import { IdentityDraftCorrections1792015200002 } from './migrations/1792015200002-IdentityDraftCorrections'
+import { GalleryBookmarks1792627200000 } from './migrations/1792627200000-GalleryBookmarks'
+
+import { CampaignProgress1792627200001 } from './migrations/1792627200001-CampaignProgress'
+import { ContributionRead1792627200002 } from './migrations/1792627200002-ContributionRead'
+import { VerificationCapture1792627200003 } from './migrations/1792627200003-VerificationCapture'
+
+import { SupportCases1792627200004 } from './migrations/1792627200004-SupportCases'
 
 // Orden explícito: no se descubren por glob para que el contenido aplicado sea revisable en el repositorio.
-export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002]
+export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002, GalleryBookmarks1792627200000, CampaignProgress1792627200001, ContributionRead1792627200002, VerificationCapture1792627200003, SupportCases1792627200004]
 
 // Nombre propio: el esquema oficial trae sus propias tablas y no se invade con el genérico "migrations".
 export const MIGRATIONS_TABLE = 'schema_migration_brotar'

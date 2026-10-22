@@ -1,5 +1,5 @@
 export type FileVisibility = 'PUBLIC' | 'PRIVATE'
-export type FilePurpose = 'PROFILE_AVATAR' | 'ORGANIZATION_DOCUMENT' | 'CAMPAIGN_PUBLIC_IMAGE'
+export type FilePurpose = 'PROFILE_AVATAR' | 'ORGANIZATION_DOCUMENT' | 'CAMPAIGN_PUBLIC_IMAGE' | 'VERIFICATION_DOCUMENT' | 'SUPPORT_EVIDENCE'
 
 export interface StoredFile {
   id: string
@@ -70,7 +70,7 @@ function assertUpload(input: FileUploadInput, content: Buffer): void {
     if (input.purpose !== 'PROFILE_AVATAR' && input.purpose !== 'CAMPAIGN_PUBLIC_IMAGE') throw new InvalidFileUpload()
     if (!imageTypes.has(input.mimeType) || content.length > MAX_PUBLIC_IMAGE_BYTES) throw new InvalidFileUpload()
   } else {
-    if (input.purpose !== 'ORGANIZATION_DOCUMENT') throw new InvalidFileUpload()
+    if (!['ORGANIZATION_DOCUMENT', 'VERIFICATION_DOCUMENT', 'SUPPORT_EVIDENCE'].includes(input.purpose)) throw new InvalidFileUpload()
     if (!privateTypes.has(input.mimeType) || content.length > MAX_PRIVATE_DOCUMENT_BYTES) throw new InvalidFileUpload()
   }
 }
@@ -93,7 +93,17 @@ export class Files implements AuthorizedFileReader {
   async privateDownload(id: string, userId: string): Promise<FileDownload> {
     const result = await this.storage.read(id)
     if (!result) throw new FileUnavailable()
+    // Documentos KYC/KYB requieren autorización actual sobre su caso, incluso para quien los subió.
+    if (result.file.purpose === 'VERIFICATION_DOCUMENT') throw new FileAccessDenied()
     if (result.file.visibility !== 'PUBLIC' && result.file.ownerUserId !== userId) throw new FileAccessDenied()
+    return result
+  }
+
+  /** Uso interno: el caso de verificación debe autorizar al solicitante y devolver el propietario. */
+  async verificationDownload(id: string, authorizedOwnerId: string): Promise<FileDownload> {
+    const result = await this.storage.read(id)
+    if (!result || result.file.visibility !== 'PRIVATE' || result.file.purpose !== 'VERIFICATION_DOCUMENT') throw new FileUnavailable()
+    if (result.file.ownerUserId !== authorizedOwnerId) throw new FileAccessDenied()
     return result
   }
 

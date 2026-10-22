@@ -39,7 +39,7 @@ export class TypeormFileStorage implements FileStorage {
       scope AS visibility,file_name AS "originalName",mime_type AS "mimeType",size_bytes::float8 AS "sizeBytes",
       checksum AS sha256,uploaded_at AS "createdAt" FROM public.file_asset WHERE id=$1 AND deleted_at IS NULL`, [id]) as (Omit<StoredFile, 'purpose' | 'createdAt'> & { key: string; createdAt: Date })[]
     const row = rows[0]
-    if (!row || !/^(PROFILE_AVATAR|ORGANIZATION_DOCUMENT|CAMPAIGN_PUBLIC_IMAGE)\/[a-f0-9-]{36}\.bin$/.test(row.key)) return null
+    if (!row || !/^(PROFILE_AVATAR|ORGANIZATION_DOCUMENT|CAMPAIGN_PUBLIC_IMAGE|VERIFICATION_DOCUMENT|SUPPORT_EVIDENCE)\/[a-f0-9-]{36}\.bin$/.test(row.key)) return null
     try {
       const { key, createdAt, ...metadata } = row
       return { file: { ...metadata, createdAt: createdAt.toISOString(), purpose: key.split('/')[0] as StoredFile['purpose'] }, content: await readFile(join(this.root, key)) }
@@ -57,6 +57,8 @@ export class TypeormFileStorage implements FileStorage {
       const used: { used: boolean }[] = await manager.query(`SELECT
         EXISTS(SELECT 1 FROM public.campaign WHERE cover_file_id=$1) OR
         EXISTS(SELECT 1 FROM public.file_attachment WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM public.verification_document WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM brotar_extension.support_case_evidence WHERE file_id=$1) OR
         EXISTS(SELECT 1 FROM public.user_profile WHERE avatar_file_id=$1) AS used`, [id])
       if (used[0]?.used) throw new FileInUse()
       // Baja lógica: no inventa un plazo de retención ni elimina evidencias de forma irreversible.

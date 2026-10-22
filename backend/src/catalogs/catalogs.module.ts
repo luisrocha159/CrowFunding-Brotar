@@ -1,3 +1,4 @@
+import { CatalogReadGuard } from './infrastructure/catalog-read.guard'
 import { Module } from '@nestjs/common'
 import { RolesModule } from '../roles/roles.module'
 import { DatabaseModule } from '../shared/infrastructure/database/database.module'
@@ -11,7 +12,7 @@ import { TypeormCategoryRepository, TypeormSettingRepository } from './infrastru
   imports: [RolesModule, DatabaseModule],
   controllers: [CategoryController, CategoryAdminController, SettingController],
   providers: [
-    SessionMutationGuard, TypeormCategoryRepository, TypeormSettingRepository,
+    SessionMutationGuard, CatalogReadGuard, TypeormCategoryRepository, TypeormSettingRepository,
     { provide: Categories, inject: [TypeormCategoryRepository], useFactory: (repository: TypeormCategoryRepository) => new Categories(repository) },
     { provide: Settings, inject: [TypeormSettingRepository], useFactory: (repository: TypeormSettingRepository) => new Settings(repository) }
   ],
