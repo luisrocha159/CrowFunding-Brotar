@@ -4,7 +4,7 @@ import styles from './ui.module.css'
 export function Message({ tone = 'info', title, children }: { tone?: 'info' | 'success' | 'error' | 'warning'; title: string; children?: ReactNode }) {
   return <div className={`${styles.message} ${styles[tone]}`} role={tone === 'error' ? 'alert' : 'status'}>
     <span aria-hidden="true">{tone === 'success' ? '✓' : tone === 'error' || tone === 'warning' ? '!' : 'i'}</span>
-    <div><strong>{title}</strong>{children && <p>{children}</p>}</div>
+    <div><strong>{title}</strong>{children && <div className={styles.messageBody}>{children}</div>}</div>
   </div>
 }
 

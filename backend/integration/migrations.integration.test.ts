@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseEnv } from 'node:util'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { test } from 'node:test'
 import { DataSource } from 'typeorm'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
@@ -109,11 +109,22 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     `SELECT code, name FROM public.role ORDER BY code`)
   let originalValues: { enumlabel: string }[] = []
   let originalRoles: unknown = []
+  const legacyOwner = randomUUID(), legacyCampaign = randomUUID(), otherCampaign = randomUUID()
+  const legacyActivity = randomUUID(), secondActivity = randomUUID(), foreignActivity = randomUUID(), legacyMilestone = randomUUID()
   await withAdmin(REJECTED_DATABASE, async (source) => {
     await source.query(official)
     originalValues = await enumValues(source)
     originalRoles = await snapshot(source)
+    assert.equal((await source.query('SELECT count(*)::int AS n FROM public.category'))[0].n, 0, 'El SQL oficial no trae categorías de campañas.')
     assert.ok(!originalValues.some((row) => row.enumlabel === 'REJECTED'))
+    await source.query(`INSERT INTO public.app_user(id,email,password_hash) VALUES('${legacyOwner}','migration-fixture@example.invalid','fixture-no-login');
+      INSERT INTO public.campaign(id,slug,title,campaign_type,creator_user_id) VALUES
+        ('${legacyCampaign}','legacy-fixture','Campaña anterior','DONATION','${legacyOwner}'),
+        ('${otherCampaign}','other-fixture','Otra campaña','DONATION','${legacyOwner}');
+      INSERT INTO public.campaign_activity(id,campaign_id,name) VALUES
+        ('${legacyActivity}','${legacyCampaign}','Preparar terreno'),('${secondActivity}','${legacyCampaign}','Instalar riego'),
+        ('${foreignActivity}','${otherCampaign}','Actividad ajena');
+      INSERT INTO public.milestone(id,campaign_id,activity_id,name) VALUES('${legacyMilestone}','${legacyCampaign}','${legacyActivity}','Huerto listo');`)
     await source.query(`CREATE SCHEMA ${MIGRATIONS_SCHEMA}`)
   })
   const source = createMigrationDataSource({ ...adminConfig(), database: REJECTED_DATABASE })
@@ -125,10 +136,28 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     assert.deepEqual(await snapshot(source), originalRoles, 'Los catálogos iniciales se conservan.')
     assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
     assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
-    // La nueva última migración solo concede INSERT de auditoría y admite reversión.
-    await source.undoLastMigration({ transaction: 'each' })
-    assert.equal(await source.showMigrations(), true)
-    await source.runMigrations({ transaction: 'each' })
+    assert.equal((await source.query('SELECT count(*)::int AS n FROM public.category WHERE is_active=true'))[0].n, 5, 'Instalación desde cero: categorías disponibles sin carga manual.')
+    const { ProvisionalCatalogs1792015200000 } = await import('../src/shared/infrastructure/database/migrations/1792015200000-ProvisionalCatalogs')
+    await source.query("UPDATE public.category SET name='Catálogo personalizado',is_active=false WHERE slug='medio-ambiente'")
+    const catalogRunner = source.createQueryRunner()
+    try { await new ProvisionalCatalogs1792015200000().up(catalogRunner) } finally { await catalogRunner.release() }
+    assert.deepEqual(await source.query("SELECT name,is_active FROM public.category WHERE slug='medio-ambiente'"), [{ name: 'Catálogo personalizado', is_active: false }], 'Reaplicar no pisa decisiones ni reactiva categorías desactivadas.')
+    const links = () => source.query('SELECT activity_id FROM brotar_extension.milestone_activity WHERE milestone_id=$1 ORDER BY activity_id', [legacyMilestone])
+    assert.deepEqual(await links(), [{ activity_id: legacyActivity }], 'Migra el vínculo anterior sin borrar ni modificar el hito.')
+    await source.query('INSERT INTO brotar_extension.milestone_activity(milestone_id,activity_id) VALUES($1,$2)', [legacyMilestone, secondActivity])
+    assert.equal((await links()).length, 2)
+    await assert.rejects(() => source.query('INSERT INTO brotar_extension.milestone_activity(milestone_id,activity_id) VALUES($1,$2)', [legacyMilestone, foreignActivity]), /misma campaña/)
+    await assert.rejects(() => source.query('INSERT INTO brotar_extension.milestone_activity(milestone_id,activity_id) VALUES($1,$2)', [legacyMilestone, secondActivity]), /duplicate key/)
+    assert.deepEqual(await source.query(`SELECT has_schema_privilege('brotar_app','brotar_extension','USAGE') AS allowed,
+      has_table_privilege('brotar_app','brotar_extension.milestone_activity','SELECT,INSERT,UPDATE,DELETE') AS writable`), [{ allowed: true, writable: true }])
+    const { MilestoneActivities1791849600000 } = await import('../src/shared/infrastructure/database/migrations/1791849600000-MilestoneActivities')
+    const runner = source.createQueryRunner()
+    try { await new MilestoneActivities1791849600000().up(runner) } finally { await runner.release() }
+    assert.equal((await links()).length, 2, 'Reaplicar en una copia restaurada conserva todos los vínculos y no duplica el anterior.')
+    await source.query('DELETE FROM public.campaign_activity WHERE id=$1', [legacyActivity])
+    assert.deepEqual(await links(), [{ activity_id: secondActivity }], 'Borrar una actividad no elimina el hito ni sus demás relaciones.')
+    assert.deepEqual(await source.query('SELECT id,activity_id FROM public.milestone WHERE id=$1', [legacyMilestone]), [{ id: legacyMilestone, activity_id: null }])
+    await assert.rejects(() => source.undoLastMigration({ transaction: 'each' }), /no se revierte automáticamente/, 'No se ofrece un down que elimine restricciones o datos sin revisión.')
     // REJECTED sigue sin permitir eliminar su ENUM; no depende de ser la última.
     const { CampaignRejected1791244800000 } = await import('../src/shared/infrastructure/database/migrations/1791244800000-CampaignRejected')
     await assert.rejects(() => new CampaignRejected1791244800000().down(), /no elimina valores ENUM/)
@@ -137,5 +166,19 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
       `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
        WHERE n.nspname='public' AND c.relkind='r'`)
     assert.equal(tables[0]?.n, 59)
+    // Carga sintética SOLO en esta base desechable: verifica el plan real, sin forzar índices.
+    await source.query(`INSERT INTO public.campaign(id,slug,title,campaign_type,creator_user_id)
+      SELECT public.gen_random_uuid(),'load-identity-'||n,'Proyecto de carga '||n,'DONATION',$1 FROM generate_series(1,6000) n`, [legacyOwner])
+    await source.query(`INSERT INTO public.campaign_story(campaign_id,problem,solution,beneficiaries,expected_results)
+      SELECT id,'Problema de carga',CASE WHEN slug='load-identity-6000' THEN 'Restauración del humedal Ñandú mediante árboles nativos de Samaipata'
+      ELSE md5(slug)||' '||md5(slug||'material')||' '||md5(slug||'actividad') END,'Beneficiarios de carga','Resultado de carga'
+      FROM public.campaign WHERE slug LIKE 'load-identity-%'`)
+    await source.query('VACUUM ANALYZE public.campaign_story')
+    const explanation = await source.query(`EXPLAIN(ANALYZE,BUFFERS,FORMAT JSON) SELECT campaign_id FROM public.campaign_story WHERE solution OPERATOR(public.%) $1`, ['Restauración del humedal Ñandú mediante árboles nativos de Samaipata'])
+    const measured = explanation[0]['QUERY PLAN'][0]
+    const [index] = await source.query("SELECT indisvalid FROM pg_index WHERE indexrelid='public.campaign_story_solution_trgm_idx'::regclass")
+    assert.equal(index.indisvalid, true, 'Índice disponible y válido; no se obliga al planificador a usarlo en una carga pequeña.')
+    assert.equal(measured.Plan['Actual Rows'], 1)
+    context.diagnostic(`Carga sintética de búsqueda: 6000 registros, 1 candidato, plan ${measured.Plan['Node Type']}, ejecución ${measured['Execution Time']} ms, índice GIN válido. No es una medición de capacidad de producción ni garantiza que cada consulta use índice.`)
   } finally { await source.destroy() }
 })

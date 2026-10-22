@@ -38,6 +38,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
   async function start() {
     app = await NestFactory.create(AppModule, { logger: false })
     configureHttp(app, readEnvironment({ NODE_ENV: 'test' }))
+    app.use((request: object, _response: unknown, next: () => void) => { Object.defineProperty(request, 'ip', { value: `fixture-sections-${suffix}` }); next() })
     await app.listen(0, '127.0.0.1'); base = await app.getUrl()
   }
   const call = (path: string, cookie = '', body?: unknown, method = body === undefined ? 'GET' : 'POST') => fetch(`${base}/api/${path}`, {
@@ -59,11 +60,24 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
   try {
     await start()
     const creator = await register('creador'), other = await register('otro'), admin = await register('administrador')
+    for (const [email, available] of [[creator.email.toUpperCase(), false], [`libre-${suffix}@example.invalid`, true]] as const) {
+      const response = await call('auth/email-availability', '', { email })
+      assert.equal(response.status, 201)
+      assert.deepEqual(await response.json(), { email: email.toLowerCase(), available })
+    }
     sql(`INSERT INTO category(id,slug,name) VALUES('${category}','santiago-${suffix}','Categoría temporal');
       INSERT INTO expense_category(id,code,name) VALUES('${expense}','santiago-${suffix}','Gasto temporal');`)
-    const created = await call('campaigns/drafts', creator.cookie, { title: 'Campaña integrada', summary: 'Resumen de ensayo', campaignType: 'REWARD' })
+    const created = await call('campaigns/drafts', creator.cookie, { title: `Campaña integrada ${suffix}`, summary: 'Resumen de ensayo', campaignType: 'REWARD' })
     assert.equal(created.status, 201)
     const { id } = await created.json() as { id: string }
+    const duplicate = await call('campaigns/drafts', other.cookie, { title: `  CAMPAÑA   INTEGRADA ${suffix.toUpperCase()} `, summary: ' resumen  de ensayo ', campaignType: 'DONATION' })
+    assert.equal(duplicate.status, 201, 'Un encabezado no prueba identidad: el borrador privado no reserva una causa. Se compara el contenido completo al enviar.')
+    const concurrentBody = { title: `Duplicado concurrente ${suffix}`, summary: 'Contenido concurrente de ensayo', campaignType: 'DONATION' }
+    const duplicates = await Promise.all([call('campaigns/drafts', creator.cookie, concurrentBody), call('campaigns/drafts', other.cookie, concurrentBody)])
+    assert.deepEqual(duplicates.map(response => response.status).sort(), [201, 201], 'Los borradores privados pueden coexistir; solo una copia completa podrá ingresar a revisión.')
+    const concurrent = await duplicates.find(response => response.status === 201)!.json() as { id: string }
+    assert.equal(sql(`SELECT count(*) FROM campaign WHERE title='Duplicado concurrente ${suffix}';`), '2')
+    assert.ok(concurrent.id !== id)
     const path = `campaigns/drafts/${id}`
     const adminPath = `admin/campaigns/${id}`
     assert.equal((await call(`${adminPath}/detail`, admin.cookie)).status, 403)
@@ -82,15 +96,36 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     const missing = await incomplete.json() as { missing: { step: number }[] }
     assert.ok(missing.missing.some(item => item.step === 4))
     assert.equal(sql(`SELECT count(*) FROM campaign_review WHERE campaign_id='${id}';`), '0')
-    const plan = { activities: [{ name: 'Plantación', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-10' }], milestones: [{ name: 'Entrega', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10', activityIndex: 0 }] }
+    const plan = { activities: [
+      { name: 'Plantación', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-10' },
+      { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: '2026-11-11', plannedEndOn: '2026-11-12' }
+    ], milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-12', plannedEndOn: '2026-11-12', activityIndexes: [0, 1] }] }
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
+    assert.equal((await call(`${path}/plan`, creator.cookie, { activities: [{ ...plan.activities[0], plannedStartOn: '2000-01-01' }], milestones: [] }, 'PUT')).status, 400, 'No se admiten fechas planificadas pasadas.')
+    assert.equal((await call(`${path}/plan`, creator.cookie, { activities: [null], milestones: [] }, 'PUT')).status, 400, 'Un elemento nulo no llega al dominio ni provoca un 500.')
     assert.deepEqual(await (await call(`${path}/plan`, creator.cookie)).json(), plan)
+    for (const activityIndexes of [[0, 0], [2], [-1], [0.5], ['0'], null, Array.from({ length: 51 }, () => 0)]) {
+      assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, milestones: [{ ...plan.milestones[0], activityIndexes }] }, 'PUT')).status, 400)
+      assert.deepEqual(await (await call(`${path}/plan`, creator.cookie)).json(), plan, 'Una lista inválida no destruye los vínculos guardados.')
+    }
+    assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, milestones: [{ ...plan.milestones[0], plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10' }] }, 'PUT')).status, 400, 'El resultado no puede cerrar antes de terminar el riego.')
+    assert.equal(sql(`SELECT count(*) FROM brotar_extension.milestone_activity link JOIN milestone m ON m.id=link.milestone_id WHERE m.campaign_id='${id}';`), '2')
+    const oneActivity = { activities: [plan.activities[1]!], milestones: [{ ...plan.milestones[0]!, activityIndexes: [0] }] }
+    assert.equal((await call(`${path}/plan`, creator.cookie, oneActivity, 'PUT')).status, 200)
+    assert.deepEqual(await (await call(`${path}/plan`, creator.cookie)).json(), oneActivity, 'Quitar una actividad conserva el otro vínculo y el hito.')
+    assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, activities: [{ ...plan.activities[0], plannedEndOn: '2026-10-01' }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, activities: [{ ...plan.activities[0], name: 42 }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     assert.equal((await call(`${path}/plan`, other.cookie, plan, 'PUT')).status, 404)
-    const budget = { items: [{ categoryId: expense, description: 'Semillas', quantity: 2, unitPrice: 5, plannedAmount: 10, notes: 'Compra local' }], risks: [{ title: 'Retraso', description: 'Proveedor', likelihood: 'Media', impact: 'Medio', mitigation: 'Proveedor alternativo' }] }
+    const budget = { items: [{ categoryId: expense, description: 'Semillas comunitarias', quantity: 2, unitPrice: 5, plannedAmount: 10, notes: 'Compra local' }], risks: [{ title: 'Retraso', description: 'Retraso del proveedor', likelihood: '50', impact: 'Medio', mitigation: 'Proveedor alternativo' }] }
     assert.equal((await call(`${path}/budget`, creator.cookie, budget, 'PUT')).status, 200)
+    for (const likelihood of ['101', '-1', '50%', 'Media']) {
+      const response = await call(`${path}/budget`, creator.cookie, { ...budget, risks: [{ ...budget.risks[0], likelihood }] }, 'PUT')
+      assert.equal(response.status, 400)
+      assert.ok((await response.json() as { message: string[] }).message.some(message => message.startsWith('risks.0.likelihood:')))
+    }
+    assert.equal((await call(`${path}/budget`, creator.cookie, { ...budget, items: [{ ...budget.items[0], plannedAmount: 11 }] }, 'PUT')).status, 400, 'No se puede falsificar el producto cantidad × precio.')
     assert.deepEqual(await (await call(`${path}/budget`, creator.cookie)).json(), budget)
     for (const invalid of [{ ...budget, items: [{ ...budget.items[0], notes: 'Nulo\u0000' }] },
       { ...budget, items: [{ ...budget.items[0], notes: 'a'.repeat(5001) }] },
@@ -105,9 +140,17 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     sql(`UPDATE expense_category SET is_active=true WHERE id='${expense}';`)
     const funding = { goalAmount: 1000, currencyCode: currency, durationDays: 30, fundingModel: 'FLEXIBLE', startsAt: null, endsAt: null }
     assert.equal((await call(`${path}/funding`, creator.cookie, funding, 'PUT')).status, 200)
+    for (const goalAmount of [9, 10]) assert.equal((await call(`${path}/funding`, creator.cookie, { ...funding, goalAmount }, 'PUT')).status, 400, 'La meta debe superar el presupuesto.')
+    assert.equal((await call(`${path}/budget`, creator.cookie, { ...budget, items: [{ ...budget.items[0], unitPrice: 501, plannedAmount: 1002 }] }, 'PUT')).status, 400, 'Aumentar presupuesto no permite rebasar la meta ya guardada.')
+    const raceBudget = { ...budget, items: [{ ...budget.items[0], unitPrice: 20, plannedAmount: 40 }] }
+    const raceFunding = { ...funding, goalAmount: 30 }
+    const financialRace = await Promise.all([call(`${path}/budget`, creator.cookie, raceBudget, 'PUT'), call(`${path}/funding`, creator.cookie, raceFunding, 'PUT')])
+    assert.deepEqual(financialRace.map(response => response.status).sort(), [200, 400], 'La regla presupuesto/meta se reafirma bajo el mismo bloqueo en ambos órdenes.')
+    assert.equal((await call(`${path}/funding`, creator.cookie, funding, 'PUT')).status, 200)
+    assert.equal((await call(`${path}/budget`, creator.cookie, budget, 'PUT')).status, 200)
     assert.equal((await call(`${path}/funding`, creator.cookie, { ...funding, goalAmount: 0 }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/funding`, creator.cookie, { ...funding, fundingModel: 'INVALID' }, 'PUT')).status, 400)
-    const rewards = [{ title: 'Planta', description: 'Una planta', rewardKind: 'REWARD', minAmount: 10, quantityTotal: 20, estimatedDeliveryOn: '2027-01-01' }]
+    const rewards = [{ title: 'Planta', description: 'Una planta de la comunidad', rewardKind: 'REWARD', minAmount: 10, quantityTotal: 20, estimatedDeliveryOn: '2027-01-01' }]
     assert.equal((await call(`${path}/rewards`, creator.cookie, { rewards }, 'PUT')).status, 200)
     assert.equal((await call(`${path}/rewards`, creator.cookie, { rewards: [{ ...rewards[0], minAmount: 0 }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/modality`, creator.cookie, { campaignType: 'DONATION', fundingModel: 'FLEXIBLE' }, 'PUT')).status, 409)
@@ -117,16 +160,25 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(sql(`SELECT count(*) FROM reward WHERE campaign_id='${id}';`), '1', 'Cambiar a donación no borra las recompensas.')
     assert.equal((await call(`${path}/modality`, creator.cookie, { campaignType: 'REWARD', fundingModel: 'FLEXIBLE' }, 'PUT')).status, 200)
     assert.deepEqual((await (await call(`${path}/rewards`, creator.cookie)).json() as { rewards: unknown[] }).rewards, rewards)
-    const general = { title: 'Campaña integrada', summary: 'Resumen de ensayo', categoryId: category, location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' } }
+    const general = { title: `Campaña integrada ${suffix}`, summary: 'Resumen de ensayo', categoryId: category, location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' } }
     assert.equal((await call(`${path}/general`, creator.cookie, general, 'PUT')).status, 200)
-    const story = { problem: 'Problema de ensayo', solution: 'Solución de ensayo', beneficiaries: 'Familias de ensayo', expectedResults: 'Resultado de ensayo', indicators: [{ name: 'Plantas', description: 'Meta de ensayo', unit: 'unidades', targetValue: 100 }] }
+    const story = { problem: 'Problema comunitario de ensayo', solution: 'Solución comunitaria de ensayo', beneficiaries: 'Familias beneficiarias de ensayo', expectedResults: 'Resultado comunitario de ensayo', indicators: [{ name: 'Plantas', description: 'Meta de ensayo', unit: 'unidades', targetValue: 100 }] }
     assert.equal((await call(`${path}/story`, creator.cookie, story, 'PUT')).status, 200)
+    for (const indicator of [{ name: 'Porcentaje', description: '', unit: '%', targetValue: 101 }, { name: 'Familias', description: '', unit: 'familias', targetValue: 1.5 }]) {
+      assert.equal((await call(`${path}/story`, creator.cookie, { ...story, indicators: [indicator] }, 'PUT')).status, 400)
+    }
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64')
     const uploaded = await call('files', creator.cookie, { visibility: 'PUBLIC', purpose: 'CAMPAIGN_PUBLIC_IMAGE', originalName: 'ensayo.png', mimeType: 'image/png', contentBase64: png.toString('base64') })
     assert.equal(uploaded.status, 201)
     const file = await uploaded.json() as { id: string }; files.push(file.id)
     assert.equal((await call(`${path}/cover`, creator.cookie, { fileId: file.id, altText: 'Plantas para la campaña de ensayo' }, 'PATCH')).status, 200)
     assert.deepEqual((await (await call(`${path}/submission`, creator.cookie)).json() as SubmissionReport).missing, [])
+    // Un dato antiguo inválido no esquiva la nueva política por haber sido guardado antes.
+    sql(`UPDATE campaign_activity SET planned_start_on='2000-01-01' WHERE campaign_id='${id}';`)
+    const staleSubmission = await call(`${path}/submission`, creator.cookie, {})
+    assert.equal(staleSubmission.status, 422)
+    assert.ok((await staleSubmission.json() as SubmissionReport).missing.some(item => item.field === 'activities.0.plannedStartOn' && item.step === 4), 'El error anidado se conserva en el contrato para corregir el campo exacto.')
+    assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     sql(`UPDATE file_asset SET scope='PRIVATE' WHERE id='${file.id}';`)
     assert.equal((await call(`${path}/submission`, creator.cookie, {})).status, 422, 'No envía una campaña con portada privada.')
     sql(`UPDATE file_asset SET scope='PUBLIC' WHERE id='${file.id}';`)
@@ -171,14 +223,14 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(sql(`SELECT changed_by FROM status_history WHERE entity_id='${id}' AND to_status='CHANGES_REQUESTED';`), admin.id)
     const observed = await (await call(`${path}/submission`, creator.cookie)).json() as SubmissionReport
     assert.equal(observed.observations[0]!.message, 'Aclara el problema')
-    assert.equal((await call(`${path}/story`, creator.cookie, { ...story, problem: 'Problema corregido' }, 'PUT')).status, 200)
+    assert.equal((await call(`${path}/story`, creator.cookie, { ...story, problem: 'Problema comunitario corregido' }, 'PUT')).status, 200)
     assert.equal((await call(`${path}/cover`, creator.cookie, { fileId: file.id, altText: 'Portada corregida de la campaña' }, 'PATCH')).status, 200)
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     assert.equal((await call(`campaigns/mine/${id}/discard`, creator.cookie, { confirmed: true })).status, 409)
     assert.equal((await call(`${path}/submission`, creator.cookie, {})).status, 201)
     assert.equal(sql(`SELECT count(*) FROM campaign_review WHERE campaign_id='${id}';`), '2')
     assert.equal(sql(`SELECT count(*) FROM campaign_review_observation WHERE review_id IN (SELECT id FROM campaign_review WHERE campaign_id='${id}');`), '1', 'Reenviar no borra observaciones históricas.')
-    assert.equal(sql(`SELECT problem FROM campaign_story WHERE campaign_id='${id}';`), 'Problema corregido')
+    assert.equal(sql(`SELECT problem FROM campaign_story WHERE campaign_id='${id}';`), 'Problema comunitario corregido')
     assert.equal((await call(`${adminPath}/decision`, admin.cookie, changes)).status, 409, 'No decide sobre otra ronda usando una vista antigua.')
     assert.equal((await call(`${adminPath}/decision`, admin.cookie, { ...changes, expectedRound: 2, comment: 'Detalla las partidas', observations: [{ section: 'budget', fieldPath: null, message: 'Detalla las partidas' }] })).status, 200)
     const second = await (await call(`${path}/submission`, creator.cookie)).json() as SubmissionReport
@@ -217,9 +269,10 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(publishedDetail.project.status, 'PUBLISHED'); assert.equal(publishedDetail.rounds.length, 3)
     assert.equal(publishedDetail.rounds.at(-1)!.reviewerName, 'Ensayo administrador')
     // Segundo recorrido para rechazo, usando constructor y envío reales, sin fabricar estados.
-    const rejectedDraft = await (await call('campaigns/drafts', creator.cookie, { title: 'Campaña para rechazo', summary: 'Ensayo negativo', campaignType: 'DONATION' })).json() as { id: string }
+    const rejectedDraft = await (await call('campaigns/drafts', creator.cookie, { title: `Campaña para rechazo ${suffix}`, summary: 'Ensayo negativo', campaignType: 'DONATION' })).json() as { id: string }
     const rejectedPath = `campaigns/drafts/${rejectedDraft.id}`, rejectedAdmin = `admin/campaigns/${rejectedDraft.id}`
-    for (const [section, body] of [['general', { ...general, title: 'Campaña para rechazo' }], ['story', story], ['plan', plan], ['budget', budget], ['funding', funding]] as const) assert.equal((await call(`${rejectedPath}/${section}`, creator.cookie, body, 'PUT')).status, 200)
+    const differentStory = { ...story, solution: 'Capacitar estudiantes con técnicas de energía solar', beneficiaries: 'Estudiantes de escuelas rurales interesados en energía', expectedResults: 'Cinco talleres de energía renovable completados' }
+    for (const [section, body] of [['general', { ...general, title: `Campaña para rechazo ${suffix}` }], ['story', differentStory], ['plan', plan], ['budget', budget], ['funding', funding]] as const) assert.equal((await call(`${rejectedPath}/${section}`, creator.cookie, body, 'PUT')).status, 200)
     assert.equal((await call(`${rejectedPath}/cover`, creator.cookie, { fileId: file.id, altText: 'Portada de prueba' }, 'PATCH')).status, 200)
     assert.equal((await call(`${rejectedPath}/submission`, creator.cookie, {})).status, 201)
     const rejection = { decision: 'REJECTED', comment: 'No satisface el alcance de esta convocatoria.', expectedRound: 1, observations: [] }

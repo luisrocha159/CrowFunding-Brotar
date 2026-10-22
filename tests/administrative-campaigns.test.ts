@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router-dom'
 import { administrativeDetailFrom, decisionErrors, decideCampaign, publishCampaign, readAdministrativeDetail, type AdministrativeDetail, type DecisionInput } from '../src/features/campaigns/administrativeClient'
 import { AdministrativeInformation } from '../src/features/campaigns/AdministrativeCampaignPanel'
 import { SessionError } from '../src/features/access/session/sessionClient'
@@ -14,7 +15,7 @@ const fixture: AdministrativeDetail = {
   campaignType: 'REWARD', organizationName: 'Organización de ensayo', slug: 'campana-ensayo', publicationEnabled: true,
   general: { title: 'Campaña de ensayo', summary: 'Resumen', categoryId: id, location: { countryCode: 'BO', locality: 'La Paz', addressLine: 'Dirección administrativa', reference: 'Referencia interna' } },
   story: { story: { problem: 'Problema', solution: 'Solución', beneficiaries: 'Familias', expectedResults: 'Resultado esperado' }, indicators: [{ name: 'Árboles', description: 'Plantación', unit: 'unidades', baselineValue: 0, targetValue: 100 }] },
-  cover: { fileId: id, altText: 'Bosque' }, plan: { activities: [{ name: 'Actividad', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [{ name: 'Hito', responsibleName: 'Ana', plannedStartOn: '2026-11-02', plannedEndOn: '2026-11-02', activityIndex: 0 }] },
+  cover: { fileId: id, altText: 'Bosque' }, plan: { activities: [{ name: 'Actividad', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [{ name: 'Hito', responsibleName: 'Ana', plannedStartOn: '2026-11-02', plannedEndOn: '2026-11-02', activityIndexes: [0] }] },
   budget: { items: [{ categoryId: id, description: 'Semillas', quantity: 2, unitPrice: 5, plannedAmount: 10, notes: 'Nota de compra' }], risks: [{ title: 'Retraso', description: 'Proveedor', likelihood: 'Media', impact: 'Alto', mitigation: 'Alternativa' }] },
   funding: { goalAmount: 1000, currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE', startsAt: null, endsAt: null },
   rewards: [{ title: 'Planta', description: 'Recompensa de ensayo', rewardKind: 'REWARD', minAmount: 10, quantityTotal: 20, estimatedDeliveryOn: '2027-01-01' }],
@@ -67,4 +68,35 @@ test('vista administrativa: todas las secciones e historial, sin acciones financ
   const published = renderToStaticMarkup(createElement(AdministrativeInformation, { detail: { ...fixture, project: { ...fixture.project, status: 'PUBLISHED' }, rounds: [{ ...fixture.rounds[0]!, decision: 'APPROVED' }] } }))
   assert.match(published, /Ronda .*Aprobada/)
   assert.doesNotMatch(published, /aún no publicada/)
+})
+
+test('semejanzas administrativas: evidencia orientativa, identificadores visibles y ausencia de bloqueo', () => {
+  const duplication = { reviewToken: 'a'.repeat(64), matches: [{ id, title: 'Restauración del bosque', status: 'PUBLISHED', kind: 'POSSIBLE' as const,
+    reasons: ['Mismo país y localidad', 'Periodos distintos: comprobar si corresponde a una nueva etapa'] }] }
+  const detail = administrativeDetailFrom({ ...fixture, duplication })
+  const markup = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(AdministrativeInformation, { detail })))
+  for (const text of ['Coincidencias orientativas', 'Restauración del bosque', 'Mismo país y localidad', 'nueva etapa', 'Identificador', 'campana-ensayo', `/administracion/campanas/${id}`]) assert.ok(markup.includes(text), text)
+  assert.doesNotMatch(markup, /95\s*%|99\s*%|100\s*%/)
+  const copy = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(AdministrativeInformation, { detail: { ...detail, duplication: { ...duplication, matches: [{ ...duplication.matches[0]!, kind: 'COPY' }] } } })))
+  assert.match(copy, /Coincidencia fuerte de contenido/)
+  assert.doesNotMatch(copy, /Copia bloqueada|no puede aprobarse|no puede publicarse/)
+  for (const malformed of [{ matches: [], reviewToken: 'a'.repeat(64) }, { ...duplication, reviewToken: 'falso' },
+    { ...duplication, matches: [{ ...duplication.matches[0], kind: 'PROVEN_FRAUD' }] }, { ...duplication, matches: [{ ...duplication.matches[0], reasons: [123] }] }]) {
+    assert.throws(() => administrativeDetailFrom({ ...fixture, duplication: malformed }), SessionError)
+  }
+})
+
+test('compatibilidad: comentario opcional sobre semejanzas se valida si se proporciona, nunca es requisito', async () => {
+  const duplicateReview = { token: 'b'.repeat(64), reason: 'Etapa nueva con actividades y beneficiarios de otra zona.' }
+  let count = 0
+  const send = (async (url, init) => {
+    count++
+    assert.deepEqual(JSON.parse(String(init!.body)).duplicateReview, duplicateReview)
+    return Response.json({ id, round: 1, status: String(url).endsWith('publish') ? 'PUBLISHED' : 'APPROVED' })
+  }) as typeof fetch
+  await decideCampaign(id, { ...input, duplicateReview }, undefined, send)
+  await publishCampaign(id, 1, undefined, send, duplicateReview)
+  await assert.rejects(() => publishCampaign(id, 1, undefined, send, { ...duplicateReview, reason: 'Sí' }), SessionError)
+  await assert.rejects(() => decideCampaign(id, { ...input, duplicateReview: { ...duplicateReview, token: 'falso' } }, undefined, send), SessionError)
+  assert.equal(count, 2)
 })

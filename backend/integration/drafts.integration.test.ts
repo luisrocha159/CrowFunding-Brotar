@@ -89,7 +89,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     for (const title of [`Campaña ${suffix} v2`, `Campaña ${suffix} v3`]) {
       step += 1
       const saved = await call(`campaigns/drafts/${draft.id}`, creator.cookie, 'PUT', {
-        title, summary: `Resumen ${step}`, campaignType: 'DONATION', builderStep: step
+        title, summary: `Resumen del paso ${step}`, campaignType: 'DONATION', builderStep: step
       })
       assert.equal(saved.status, 200)
       const body = await saved.json() as DraftBody
@@ -99,7 +99,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
 
     // CA 3: retroceder es libre y no descarta lo guardado.
     const back = await call(`campaigns/drafts/${draft.id}`, creator.cookie, 'PUT', {
-      title: `Campaña ${suffix} v3`, summary: 'Resumen 2', campaignType: 'DONATION', builderStep: 0
+      title: `Campaña ${suffix} v3`, summary: 'Resumen del paso 2', campaignType: 'DONATION', builderStep: 0
     })
     assert.equal(back.status, 200)
     assert.equal((await back.json() as DraftBody).title, `Campaña ${suffix} v3`)
@@ -112,7 +112,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     const after = await recovered.json() as DraftBody
     assert.equal(after.id, draft.id)
     assert.equal(after.title, `Campaña ${suffix} v3`)
-    assert.equal(after.summary, 'Resumen 2')
+    assert.equal(after.summary, 'Resumen del paso 2')
     assert.equal(after.builderStep, 0, 'La posición del asistente sobrevive a la sesión.')
 
     // La lista propia lo incluye; la de otra cuenta no.
@@ -121,7 +121,9 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     assert.equal(secondResponse.status, 201)
     const second = await secondResponse.json() as DraftBody
     assert.notEqual(second.id, draft.id)
-    const ownList = await (await call('campaigns/drafts', returned)).json() as DraftBody[]
+    const ownResponse = await call('campaigns/drafts', returned)
+    assert.equal(ownResponse.status, 200, await ownResponse.clone().text())
+    const ownList = await ownResponse.json() as DraftBody[]
     assert.equal(ownList.length, 2)
     assert.ok(ownList.some(row => row.id === draft.id) && ownList.some(row => row.id === second.id))
     assert.equal((await (await call(`campaigns/drafts/${draft.id}`, returned)).json() as DraftBody).title, `Campaña ${suffix} v3`, 'Crear otro no sustituye el contenido del anterior.')
@@ -130,7 +132,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     // Propiedad: un borrador ajeno no se lee ni se guarda, y no se distingue de inexistente.
     assert.equal((await call(`campaigns/drafts/${draft.id}`, outsider.cookie)).status, 404)
     assert.equal((await call(`campaigns/drafts/${draft.id}`, outsider.cookie, 'PUT', {
-      title: 'Secuestrada', summary: '', campaignType: 'DONATION', builderStep: 1
+      title: 'Secuestrada', summary: 'Resumen inicial de campaña', campaignType: 'DONATION', builderStep: 1
     })).status, 404)
     const untouched: { title: string }[] = await source.query('SELECT title FROM campaign WHERE id = $1', [draft.id])
     assert.equal(untouched[0]!.title, `Campaña ${suffix} v3`, 'El intento ajeno no modificó nada.')
@@ -144,7 +146,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     assert.equal(foreignOrganization.status, 201)
     const organization = await foreignOrganization.json() as { id: string }
     assert.equal((await call(`campaigns/drafts/${draft.id}`, returned, 'PUT', {
-      title: `Campaña ${suffix} v3`, summary: 'Resumen 2', campaignType: 'DONATION',
+      title: `Campaña ${suffix} v3`, summary: 'Resumen del paso 2', campaignType: 'DONATION',
       builderStep: 0, organizationId: organization.id
     })).status, 403)
 
@@ -152,7 +154,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     const retired = randomUUID()
     admin(`INSERT INTO category(id, slug, name, is_active) VALUES('${retired}','ret-${suffix}','Retirada ${suffix}', false);`)
     assert.equal((await call(`campaigns/drafts/${draft.id}`, returned, 'PUT', {
-      title: `Campaña ${suffix} v3`, summary: 'Resumen 2', campaignType: 'DONATION',
+      title: `Campaña ${suffix} v3`, summary: 'Resumen del paso 2', campaignType: 'DONATION',
       builderStep: 0, categoryId: retired
     })).status, 400)
 
@@ -161,7 +163,7 @@ test('borrador real: propiedad, guardado, recuperación tras volver a entrar y n
     admin(`UPDATE campaign SET status='IN_REVIEW', goal_amount=1000,
       currency_code=(SELECT code FROM currency LIMIT 1) WHERE id='${draft.id}';`)
     assert.equal((await call(`campaigns/drafts/${draft.id}`, returned, 'PUT', {
-      title: 'Tras revisión', summary: '', campaignType: 'DONATION', builderStep: 1
+      title: 'Tras revisión', summary: 'Resumen inicial de campaña', campaignType: 'DONATION', builderStep: 1
     })).status, 409)
     assert.equal((await call(`campaigns/drafts/${draft.id}`, returned)).status, 200, 'Se sigue pudiendo consultar.')
   } finally {

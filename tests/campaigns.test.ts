@@ -6,7 +6,7 @@ import {
 } from '../src/features/campaigns/campaignsClient'
 import { SessionError } from '../src/features/access/session/sessionClient'
 
-const input: DraftInput = { title: 'Campaña de prueba', summary: 'Resumen', campaignType: 'DONATION', categoryId: null, organizationId: null }
+const input: DraftInput = { title: 'Campaña de prueba', summary: 'Resumen de la campaña', campaignType: 'DONATION', categoryId: null, organizationId: null }
 const draft = { id: 'draft-id', title: 'Campaña de prueba', summary: 'Resumen', campaignType: 'DONATION', categoryId: null, organizationId: null, status: 'DRAFT', builderStep: 1, totalSteps: 8 }
 
 test('borrador: se validan nombre, resumen y modalidad sin inventar tipos', () => {
@@ -57,7 +57,7 @@ test('borrador: contrato real con cookies, cabecera de mutación y posición', a
     assert.equal(saved.builderStep, 2)
     // Datos y posición viajan juntos: no se guarda una posición sin sus datos.
     assert.deepEqual(seen.find((call) => call.method === 'PUT')?.body,
-      { title: 'Campaña de prueba', summary: 'Resumen', campaignType: 'DONATION', builderStep: 2 })
+      { title: 'Campaña de prueba', summary: 'Resumen de la campaña', campaignType: 'DONATION', builderStep: 2 })
   } finally { globalThis.fetch = original }
 })
 
@@ -144,9 +144,9 @@ test('la historia nunca envía un resultado ya conseguido', async () => {
       return Response.json({ story: {}, indicators: [] })
     }) as typeof fetch
     await saveStory('draft-id',
-      { problem: ' P ', solution: 'S', beneficiaries: 'B', expectedResults: 'R' },
+      { problem: ' Problema comunitario de prueba ', solution: 'Solución comunitaria de prueba', beneficiaries: 'Beneficiarios comunitarios de prueba', expectedResults: 'Resultados esperados de prueba' },
       [{ name: ' Familias ', description: '', unit: 'familias', baselineValue: 0, targetValue: 120 }])
-    assert.equal(sent.problem, 'P', 'El texto se recorta antes de enviarlo.')
+    assert.equal(sent.problem, 'Problema comunitario de prueba', 'El texto se recorta antes de enviarlo.')
     const indicators = sent.indicators as Record<string, unknown>[]
     assert.equal(indicators[0]!.name, 'Familias')
     assert.equal(indicators[0]!.targetValue, 120)
@@ -161,7 +161,7 @@ test('un 400 con errores por campo llega como DraftFieldError utilizable por la 
       { statusCode: 400, message: ['title: El nombre de la campaña es obligatorio.', 'countryCode: Elige el país de la campaña.'] },
       { status: 400 })) as typeof fetch
     await assert.rejects(
-      () => saveGeneral('draft-id', { title: '', summary: '', categoryId: null, location: { countryCode: null, locality: '', addressLine: '', reference: '' } }),
+      () => saveGeneral('draft-id', { title: 'Campaña de prueba', summary: 'Resumen de la campaña', categoryId: 'cat', location: { countryCode: 'BO', locality: 'La Paz', addressLine: '', reference: '' } }),
       (error: unknown) => {
         assert.ok(error instanceof DraftFieldError)
         assert.equal(error.status, 400)

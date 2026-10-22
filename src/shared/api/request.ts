@@ -4,6 +4,7 @@ interface ApiRequest {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   signal?: AbortSignal
+  idempotencyKey?: string
   errorFromResponse?: (response: Response) => Promise<SessionError>
 }
 
@@ -13,7 +14,7 @@ export async function requestApi(path: string, options: ApiRequest = {}, send: t
   try {
     const response = await send(path, {
       method, credentials: 'same-origin', cache: 'no-store', redirect: 'error',
-      headers: { 'Content-Type': 'application/json', ...(method === 'GET' ? {} : { 'X-Brotar-Request': '1' }) },
+      headers: { 'Content-Type': 'application/json', ...(method === 'GET' ? {} : { 'X-Brotar-Request': '1' }), ...(options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
     })

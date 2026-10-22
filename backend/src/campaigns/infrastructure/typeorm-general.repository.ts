@@ -33,7 +33,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
 
   async countryExists(code: string): Promise<boolean> {
     const rows: { code: string }[] = await this.database.connection().query(
-      'SELECT code FROM public.country WHERE code = $1', [code])
+      'SELECT code FROM public.country WHERE code = $1 AND is_active=true', [code])
     return rows.length > 0
   }
 

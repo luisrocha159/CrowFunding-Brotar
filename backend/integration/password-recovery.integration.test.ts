@@ -2,7 +2,6 @@ import 'reflect-metadata'
 import { strict as assert } from 'node:assert'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { test } from 'node:test'
-import { setTimeout as delay } from 'node:timers/promises'
 import { readdir, readFile, unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { NestFactory } from '@nestjs/core'
@@ -44,8 +43,10 @@ test('recuperación PostgreSQL consume una vez, rechaza vencido y revoca la sesi
     const repository = app.get(TypeormPasswordRecoveryRepository)
     const hash = (raw: string) => createHash('sha256').update(raw).digest('hex')
     const expired = randomBytes(32).toString('hex')
-    assert.equal(await repository.issue(email, hash(expired), new Date(Date.now() + 1000)), true)
-    await delay(1200)
+    assert.equal(await repository.issue(email, hash(expired), new Date(Date.now() + 60000)), true)
+    // Caducidad determinista del fixture, con el reloj de PostgreSQL y sin carreras de un segundo.
+    await source.query(`UPDATE public.user_token SET created_at=now()-interval '2 minutes',
+      expires_at=now()-interval '1 minute' WHERE user_id=$1 AND token_hash=$2`, [userId, hash(expired)])
     assert.equal((await post('auth/password/reset', { token: expired, password: nextPassword })).status, 401)
     const token = randomBytes(32).toString('hex')
     assert.equal(await repository.issue(email, hash(token), new Date(Date.now() + 60000)), true)

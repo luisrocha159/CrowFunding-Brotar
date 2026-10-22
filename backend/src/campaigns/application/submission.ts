@@ -24,7 +24,10 @@ export class CampaignSubmission {
   async review(userId: string, id: string) {
     const draft = await this.own(userId, id)
     const [snapshot, observations] = await Promise.all([this.repository.snapshot(id), this.repository.observations(id)])
-    return { id, status: draft.status, missing: missingForSubmission(snapshot), observations }
+    // Nunca revelar títulos, IDs, importes ni historia de campañas ajenas al creador.
+    const possible = Boolean(snapshot.duplication?.matches.length)
+    return { id, status: draft.status, missing: missingForSubmission(snapshot), observations,
+      duplicateWarning: possible ? 'Se encontraron semejanzas con otras campañas. Son un aviso para la revisión administrativa y no impiden el envío; cada campaña tiene su propio identificador.' : null }
   }
 
   async submit(userId: string, id: string) {

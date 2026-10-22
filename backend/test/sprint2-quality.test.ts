@@ -34,7 +34,7 @@ test('S2 calidad: DTO acota texto anidado de presupuesto, riesgos y recompensas'
 })
 
 test('S2 calidad: reglas de importes no confunden precisión binaria con tres decimales', () => {
-  const item = { categoryId: 'cat', description: 'Semillas', quantity: 1, unitPrice: 1, plannedAmount: 999999999999.99, notes: '' }
+  const item = { categoryId: 'cat', description: 'Semillas comunitarias', quantity: 1, unitPrice: 999999999999.99, plannedAmount: 999999999999.99, notes: '' }
   assert.deepEqual(validateBudget({ items: [item], risks: [] }), {})
   assert.ok(validateBudget({ items: [{ ...item, plannedAmount: 1.001 }], risks: [] })['items.0.plannedAmount'])
   assert.ok(validateFunding({ goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE', startsAt: '2026-02-31T00:00:00Z', endsAt: '2026-04-01T00:00:00Z' }).startsAt)

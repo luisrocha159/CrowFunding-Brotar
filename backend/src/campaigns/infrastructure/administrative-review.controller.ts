@@ -1,6 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common'
 import { Type } from 'class-transformer'
-import { ArrayMaxSize, Equals, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator'
+import { ArrayMaxSize, Equals, IsArray, IsBoolean, IsIn, IsInt, IsObject, IsOptional, IsString, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { AdministrativeReview } from '../application/administrative-review'
@@ -13,15 +13,21 @@ export class ObservationDto {
   @IsOptional() @IsString() @MaxLength(160) fieldPath: string | null = null
   @IsString() @MaxLength(5000) message!: string
 }
+export class DuplicateReviewDto {
+  @IsString() @Matches(/^[a-f0-9]{64}$/) token!: string
+  @IsString() @Length(20, 2000) reason!: string
+}
 export class DecisionDto {
   @IsIn(['APPROVED', 'CHANGES_REQUESTED', 'REJECTED']) decision!: ReviewDecision
   @IsString() @MaxLength(5000) comment!: string
   @IsInt() @Min(1) @Max(32767) expectedRound!: number
   @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => ObservationDto) observations!: ObservationDto[]
+  @IsOptional() @IsObject() @ValidateNested() @Type(() => DuplicateReviewDto) duplicateReview?: DuplicateReviewDto
 }
 export class PublishDto {
   @IsBoolean() @Equals(true) confirmed!: boolean
   @IsInt() @Min(1) @Max(32767) expectedRound!: number
+  @IsOptional() @IsObject() @ValidateNested() @Type(() => DuplicateReviewDto) duplicateReview?: DuplicateReviewDto
 }
 function translate(error: unknown): never {
   if (error instanceof ReviewMissing) throw new NotFoundException('Campaña no disponible para administración.')
@@ -44,6 +50,6 @@ export class AdministrativeReviewController {
   }
   @Post(':id/publish') @HttpCode(200) @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
   async publish(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: PublishDto) {
-    try { return await this.review.publish(request.brotarUser.id, id, input.expectedRound) } catch (error) { translate(error) }
+    try { return await this.review.publish(request.brotarUser.id, id, input.expectedRound, input.duplicateReview) } catch (error) { translate(error) }
   }
 }

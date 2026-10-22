@@ -2,11 +2,15 @@
 
 **Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
 
-> **Entrega vigente en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1 y añade los ajustes de navegación con sesión de la sección 17. `main` no se modifica. Los resultados del corte de campañas y del incremento de permisos están en las secciones 15 y 16; la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue ese ensayo de las comprobaciones posteriores. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
+> **Antecedente de entrega en DEV · Sprint 2 · 05/10/2026:** integra las 13 tareas de campañas de Ricardo, Alison y Santiago, las correcciones de validación, la separación de lógica del editor y tres PDF de estudio/tutorial. Conserva las funciones del Sprint 1 y añade los ajustes de navegación con sesión de la sección 17. `main` no se modifica. Los resultados del corte de campañas y del incremento de permisos están en las secciones 15 y 16; la [verificación de instalación limpia](docs/entrega-dev-sprint-2-2026-10-05.md) distingue ese ensayo de las comprobaciones posteriores. Aceptación de líderes y reglas definitivas del cliente siguen pendientes.
 
-**Por dónde empezar:** instalación nueva → sección 3; copia V2 ya instalada → sección 15; abrir otro día → sección 4; probar todos los flujos → [tutorial PDF](output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf). No hace falta copiar cuentas, contraseñas, `.env` ni archivos de esta computadora. Cada integrante genera su configuración local.
+**Por dónde empezar:** instalación nueva → sección 3; copia V2 ya instalada → sección 21; abrir otro día → sección 4; probar los flujos → secciones 5, 15, 16 y 20. El [tutorial PDF](output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf) conserva su fecha de corte; no sustituye las instrucciones actuales. No hace falta copiar cuentas, contraseñas, `.env` ni archivos de esta computadora. Cada integrante genera su configuración local.
 
-**Antecedentes:** los documentos fechados de septiembre y las secciones 13–14 conservan los cortes previos de integración. Sus conteos y frases sobre trabajo local describen esas fechas, no el estado de esta entrega. La planificación conserva 62 tareas y 64 historias: Sprint 1 = 20, Sprint 2 = 13, Sprint 3 = 29 por refinar. No se declara terminado todo el MVP.
+**Entrega actualizada · 16/10/2026:** este incremento incorpora a DEV las validaciones de la sección 18, varias actividades por hito y su migración (sección 19), y la política de identificación de las secciones 20–21. Consulta el [registro de entrega y comprobaciones](docs/entrega-dev-2026-10-16.md). Los informes anteriores conservan su fecha de corte.
+
+**Política vigente · 15/10/2026:** las secciones 20–21 alinean la entrega con la aclaración de los líderes: nombres repetidos permitidos, UUID/slug únicos y coincidencias solo orientativas. No se exige registrar una iniciativa/etapa adicional. La instalación de la sección 3 carga las cinco categorías provisionales mediante migración, sin pasos SQL manuales. Este incremento conserva las siete migraciones; no borres las extensiones históricas ni el control de migraciones.
+
+**Plan vigente v2.4:** 64 historias y 67 tareas únicas. Sprint 3 reúne 36 tareas: 29 anteriores, cinco desgloses y dos arrastres del Sprint 1, sin duplicar historias. Reparto confirmado: Ricardo 18, Santiago 9, Alison 9. Consulta el [alcance y las dependencias](docs/plan-sprint-3-cierre-mvp-2026-10-15.md). Las 20 tareas originales del Sprint 1 incluyen dos pendientes trasladadas; no sumarlas de nuevo al total. El Sprint 2 aporta 13 tareas de campañas. No se declara terminado todo el MVP.
 
 Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores**; también desde **Mi cuenta → Opciones para iniciativas y permisos → Ver mis borradores**. La portada se guarda por campaña en la base oficial, no en un JSON por usuario. Para una V2 ya instalada ejecuta `node scripts/prepare-sprint1.mjs` desde backend si le faltan permisos recientes; no vuelvas a restaurar el backup.
 
@@ -55,7 +59,7 @@ Comprueba en PowerShell:
 git --version
 node --version
 bun --version
-pnpm --version
+corepack pnpm --version
 docker version
 ```
 
@@ -80,13 +84,13 @@ Estas instrucciones son para PowerShell en Windows, desde una copia nueva. Ejecu
 ### A. Obtener el código
 
 ```powershell
-git clone https://github.com/luisrocha159/CrowFunding-Brotar.git
+git clone --branch DEV https://github.com/luisrocha159/CrowFunding-Brotar.git
 cd CrowFunding-Brotar
 git switch DEV
 git pull --ff-only origin DEV
 bun install --frozen-lockfile
 cd backend
-pnpm install --frozen-lockfile
+corepack pnpm install --frozen-lockfile
 ```
 
 `DEV` contiene esta entrega integrada de Sprint 1 y Sprint 2. Para desarrollar, sigue [CONTRIBUTING.md](CONTRIBUTING.md) y trabaja en tu rama personal. Si tu pnpm global tiene otra versión, sustituye **cada** invocación de `pnpm` por `bun x --package pnpm@11.19.0 pnpm`, también `run check` y `run dev`; no cambies el lockfile por ello. Desde `backend/`, `corepack pnpm install --frozen-lockfile` también resuelve la versión declarada, pero no ejecutes Corepack desde la raíz, cuyo gestor es Bun.
@@ -108,16 +112,16 @@ Usa un nombre y un puerto libres para cada copia adicional. En otra PC, o si est
 
 ```powershell
 node scripts/adopt-provisional-v2.mjs install ../infra/postgres-v2/official-schema.sql
-pnpm run check
+corepack pnpm run check
 node scripts/migrate.mjs up
 node scripts/prepare-sprint2.mjs
 node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar. Las migraciones registran la línea base, añaden REJECTED al enum de campaña y conceden la inserción de auditoría para habilitación provisional de creadores; **no crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **siete migraciones** registran la línea base, añaden REJECTED, auditoría, vínculos hito/actividades, catálogos provisionales y las extensiones técnicas con controles de reintento y frecuencia. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
-El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Los permisos técnicos y las cinco categorías se aplican con los scripts separados de este README.
+El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Las categorías adicionales se cargan automáticamente con `migrate up`, sin modificar ese SQL.
 
 El instalador nuevo aplica los permisos necesarios. Si la instalación V2 es **anterior** a esta corrección, ejecuta `node scripts/prepare-sprint1.mjs` antes de las pruebas, sin volver a restaurar el SQL.
 
@@ -138,7 +142,7 @@ Con la instalación, migraciones y verificación aprobadas (y las pruebas aproba
 
 ```powershell
 node scripts/adopt-provisional-v2.mjs activate
-pnpm run dev
+corepack pnpm run dev
 ```
 
 **Cómo debe quedar `backend/.env`:** lo genera `activate` desde `infra/postgres-v2/.env.backend`. Es texto de configuración `CLAVE=valor`, no comandos de PowerShell, `try/finally` ni instrucciones de pruebas. Comprueba estas claves sin publicar ni compartir la contraseña:
@@ -197,12 +201,14 @@ git pull --ff-only origin DEV
 bun install --frozen-lockfile
 docker compose --env-file infra/postgres-v2/.env -f infra/postgres-v2/compose.yaml up -d --wait
 cd backend
-pnpm install --frozen-lockfile
+corepack pnpm install --frozen-lockfile
 node scripts/prepare-sprint1.mjs
-pnpm run build
+corepack pnpm run build
 node scripts/migrate.mjs up
 node scripts/prepare-sprint2.mjs
-pnpm run dev
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+corepack pnpm run dev
 ```
 
 En otra terminal, raíz: `bun run dev`. Actualizar código **no** exige restaurar nuevamente la base. Configura la publicación provisional según la sección 15. Los `.env` y archivos privados no se descargan: una computadora nueva sigue la sección 3 y una copia existente conserva su configuración.
@@ -238,14 +244,15 @@ La portada ya queda asociada a su campaña en PostgreSQL. No publica campañas n
 
 ### Configuración del catálogo provisional
 
-Con PostgreSQL V2 saludable, desde la raíz en PowerShell:
+La instalación de la sección 3 ya lo prepara. En una copia existente, desde `backend/`, con PostgreSQL V2 saludable:
 
 ```powershell
-$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
-Get-Content -Raw -Encoding UTF8 infra/postgres-v2/seed-categories-demo.sql | docker exec -i brotar-provisional-v2-postgres-1 psql -U postgres -d brotar_db -v ON_ERROR_STOP=1
+corepack pnpm run build
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
 ```
 
-Debe mostrar cinco categorías activas: Medio ambiente, Producción sostenible, Economía circular, Educación y Desarrollo comunitario. El script se puede repetir: inserta slugs faltantes, no sobrescribe ni reactiva registros existentes. Es un catálogo provisional autorizado por el equipo, no una aprobación definitiva del cliente. No restaura el SQL oficial.
+Una instalación nueva ofrece Medio ambiente, Producción sostenible, Economía circular, Educación y Desarrollo comunitario. `ProvisionalCatalogs1792015200000` inserta slugs faltantes; no sobrescribe nombres ni reactiva categorías desactivadas deliberadamente. Países, monedas y categorías de gasto también quedan preparados. El frontend consulta el catálogo de PostgreSQL; no contiene una lista alternativa hardcodeada. El antiguo `seed-categories-demo.sql` se conserva como referencia, no como paso adicional requerido. Son categorías provisionales del equipo, no aprobación definitiva del cliente.
 
 ### Recuperación sin correo: solo para la entrega local
 
@@ -501,7 +508,7 @@ CAMPAIGN_ADMIN_PUBLICATION_ENABLED=true
 
 Después ejecutar `pnpm run dev` y, en otra terminal desde la raíz, `bun run dev`. Una instalación nueva sigue la sección 3 y genera esa variable en el candidato; si ya tenía un valor explícito, se conserva. Un candidato antiguo no se reescribe automáticamente. La API exige un booleano válido; sin la variable, o con `false`, la publicación queda bloqueada. **Aprobar sigue sin publicar**. No registrar ni subir `.env` a Git.
 
-La migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). Desde la habilitación provisional de creadores, `migrate status` debe mostrar **tres** migraciones aplicadas (`BaselineProvisionalV21789948800000`, `CampaignRejected1791244800000`, `CreatorGrantAudit1791244800001`) y `pending: false`. La tercera se explica en la sección 16.
+La migración `CampaignRejected1791244800000` añade REJECTED al enum oficial de campaña, manteniendo tablas/datos. Se ensayó desde el SQL oficial en una base temporal aislada, incluyendo repetición segura. No tiene reversión destructiva de ENUM: [procedimiento de migraciones](infra/postgres-v2/MIGRACIONES.md). **Actualmente deben figurar siete migraciones y `pending: false`**, no tres ni cuatro: la lista vigente y el procedimiento de actualización están en la sección 21. Se conservan las migraciones de compatibilidad aunque su formulario experimental se retiró.
 
 ### Demostrar el flujo con cuentas autorizadas
 
@@ -596,3 +603,159 @@ Este incremento no cambia la arquitectura, el esquema SQL ni las reglas provisio
 **Comprobación del arranque posterior al apagado · 05/10/2026:** `bun run check` aprobó **142** pruebas frontend; `pnpm run check`, **131** backend y **8** del procedimiento ADMIN local; la suite PostgreSQL aprobó **19** integraciones con `ALLOW_DB_TEST_WRITES=true`, `NODE_ENV=test` y `DB_TEST_RESTART=true`: **300 casos**, sin fallos ni omisiones. Lint, tipos y compilaciones aprobaron. El aviso de Vite por un paquete de unos 505 kB sigue presente: no impide arrancar, pero es una optimización pendiente. API `/api/health/ready` y el mismo endpoint mediante Vite respondieron HTTP 200 con `database=connected`; la consulta pública de campañas también respondió 200. La suite comprobó conservación de datos tras reiniciar PostgreSQL y los escenarios de sesiones/recuperación. No se restauró SQL ni se borró el volumen original.
 
 El ensayo visual de las redirecciones se realizó antes del apagado. No se repitió por completo en este arranque: la herramienta de escritorio detuvo el acceso a Opera al no poder determinar su URL con seguridad. Los tests de navegación/renderizado y las integraciones de sesión sí se repitieron; no sustituyen una aceptación visual de los líderes. La recuperación del socket local de Docker se describe en [infraestructura V2](infra/postgres-v2/README.md#recuperación-y-conservación); no se declara resuelto definitivamente su origen.
+
+## 18. Validaciones del equipo para el Sprint 2
+
+Las reglas acordadas por Ricardo para este ajuste están detalladas en [ADR-006](docs/decisiones/ADR-006-validaciones-del-equipo-sprint-2.md). Son criterios del equipo para el MVP, no reglas atribuidas al cliente. Se reutiliza la validación de dominio entre frontend y backend, con mensajes junto al campo y protección también en la API.
+
+- **Registro:** correo primero, comprobación de formato y disponibilidad al salir del campo, asteriscos de obligatoriedad y distribución responsive del teléfono. La disponibilidad no verifica la propiedad del correo. El endpoint está limitado a 20 consultas por minuto/IP en cada instancia y permite conocer si un correo está registrado; ese compromiso exige revisión antes de una exposición pública de producción. El registro conserva la comprobación definitiva de unicidad.
+- **Textos y opciones:** límites de longitud, contenido significativo y rechazo de etiquetas HTML, controles invisibles y Unicode mal formado. El resumen exige entre 11 y 500 caracteres. Países y categorías de gasto provienen de los catálogos; unidades, impacto y modalidad usan opciones permitidas. Ñ, acentos y contraseñas Unicode siguen admitidos; las contraseñas no se recortan ni normalizan.
+- **Fechas y cantidades:** calendario real y fechas planificadas no pasadas según el día de Bolivia; un hito de cierre no termina antes de sus actividades relacionadas, y la duración es coherente con las fechas de financiamiento. Personas, familias, unidades y stock requieren enteros; medidas y dinero admiten decimales según su precisión. Porcentajes no exceden 100.
+- **Presupuesto:** el importe planificado se calcula a partir de cantidad × precio unitario y no se edita manualmente. La API rechaza importes alterados y exige que la meta sea estrictamente mayor al presupuesto, tanto al guardar financiamiento como al modificar partidas. El control se repite bajo bloqueo transaccional para solicitudes simultáneas.
+- **Modalidades:** donación no tiene recompensas; preventa exige stock y el tipo de recompensa debe corresponder a la modalidad. Los aportes mínimos y las fechas de entrega deben ser compatibles con el financiamiento cuando corresponde. No se añadieron formularios particulares por materiales.
+- **Campañas con nombres repetidos:** la política vigente de la sección 20 sustituye los bloqueos ensayados anteriormente. Nombres y contenido similares no bloquean el envío ni la decisión; UUID/slug son únicos y las coincidencias son orientativas.
+- **Asistente y revisión:** «Siguiente» señala los faltantes del paso actual sin exigir pasos futuros. Envío, aprobación y publicación revalidan lo guardado y devuelven campo/paso para corregir datos antiguos. Los borradores existentes pueden necesitar correcciones; no se cambian ni eliminan silenciosamente.
+
+No hace falta restaurar el SQL ni borrar el volumen para aplicar este ajuste. No cambia el esquema oficial, las credenciales ni los comandos de instalación de la sección 3. Reinicia el backend después de actualizar el código si no utilizas el modo desarrollo.
+
+### Comprobar las nuevas reglas
+
+1. En Registro, salir de un correo mal formado y después probar uno ya registrado: debe aparecer el error junto al correo, sin crear otra cuenta. Probar uno libre debe indicar disponibilidad, no verificación de identidad.
+2. Crear un borrador con resumen de 10 caracteres: debe rechazarse. Un resumen significativo de 11 o más, hasta 500, supera ese límite; los demás campos siguen siendo obligatorios.
+3. En una partida, escribir cantidad `100` y precio `60`: debe calcular `6000` como importe planificado no editable. Con ese presupuesto, meta `6000` se rechaza; `6000.01` cumple esta comparación. Las otras validaciones de financiamiento siguen aplicándose.
+4. Probar probabilidad `101` y después `100`. La primera debe rechazarse. Un indicador de porcentaje no acepta más de 100; un indicador de personas no acepta `1.5`.
+5. Probar una actividad para ayer, un hito que finalice antes de sus actividades relacionadas o fechas de financiamiento incompatibles con la duración: deben señalarse sus campos. En preventa, stock vacío o fraccionario debe rechazarse.
+6. Seguir la sección 20: dos campañas con el mismo nombre y contenido pueden enviarse y publicarse con UUID/slug distintos. No deben aparecer faltantes de iniciativa/etapa ni un `422` por semejanza. Otros datos incompletos o inválidos siguen impidiendo el envío.
+7. Pulsar «Siguiente» con el paso incompleto: debe permanecer allí y explicar los faltantes. Completar, guardar y revisar permite seguir; un dato antiguo que incumpla las reglas se informa antes del envío o de una decisión administrativa.
+
+### Pruebas del ajuste del 13 de octubre
+
+**315 casos aprobados:** 153 frontend, 135 backend sin base, 8 del procedimiento ADMIN local y 19 integraciones PostgreSQL. Lint, tipos y compilaciones aprobaron. Los ensayos incluyen disponibilidad de correo, errores anidados, porcentajes, fechas, cálculo monetario, modalidades, duplicados simultáneos y la carrera entre presupuesto y meta. Las repeticiones de suites no se suman como casos nuevos.
+
+Frontend: `bun run check` desde la raíz. Backend: `pnpm run lint`, `pnpm run typecheck`, `pnpm run test`, `pnpm run test:local-admin` y `pnpm run build` desde `backend/`, con la versión de pnpm fijada en su `package.json`. En este equipo se invocaron mediante `corepack pnpm` para evitar otra versión de pnpm disponible en PATH.
+
+Las 19 integraciones de este corte usaron la configuración V2 generada, `NODE_ENV=test`, `ALLOW_DB_TEST_WRITES=true` y `DB_TEST_RESTART=false`, siguiendo las precauciones de la sección 12. Prueban persistencia, reconexión y reinicio de la API; **no declaran un nuevo ensayo de reinicio de PostgreSQL**. El ensayo con reinicio de base de la sección 17 corresponde al 05/10.
+
+La revisión visual comprobó registro, disponibilidad de correo, campos obligatorios, cálculo de partida, error de porcentaje y distribución móvil a 375 px. La entrada de fechas se verificó mediante pruebas de reglas/API; no se presenta como un recorrido manual completo del selector de calendario. Vite conserva un aviso no bloqueante por un paquete de unos 517 kB. Estos resultados no garantizan ausencia absoluta de fallos ni aceptación externa.
+
+## 19. Varias actividades por hito
+
+En **Plan y presupuesto → Hito → Actividades relacionadas**, las casillas permiten seleccionar una o varias actividades. Por ejemplo, «Huerto listo» puede vincular «Preparar terreno», «Instalar riego» y «Sembrar». El vínculo sigue siendo opcional; cada actividad también puede participar en varios hitos. Las actividades y el hito conservan su nombre, responsable y fechas propios. Revisión y administración muestran todos los nombres vinculados.
+
+El criterio del equipo trata estos hitos como resultados de cierre: no pueden finalizar antes de la última actividad relacionada ni comenzar antes del inicio más temprano de las relacionadas. Pueden finalizar después de ellas. Se mantienen las validaciones de fechas no pasadas y fin posterior o igual al inicio. Al quitar una actividad del formulario, se elimina su vínculo y se reajustan las referencias; el hito y sus otras actividades no se eliminan. Los cambios se persisten al pulsar **Guardar planificación**.
+
+Para actualizar otra instalación V2, primero respalda su base siguiendo [Migraciones](infra/postgres-v2/MIGRACIONES.md). Desde `backend/`, con PostgreSQL iniciado:
+
+```powershell
+pnpm run build
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+pnpm run dev
+```
+
+Una instalación nueva ya ejecuta `migrate.mjs up` en la sección 3. No restaura nuevamente el SQL ni borra el volumen de una instalación existente. El corte inicial de hitos tenía cuatro migraciones; la instalación vigente debe mostrar siete y `pending: false` (sección 21). El frontend se inicia desde la raíz con `bun run dev`.
+
+`MilestoneActivities1791849600000` crea `brotar_extension.milestone_activity`, copia los vínculos anteriores y concede acceso limitado a `brotar_app`. El archivo oficial y sus 59 tablas públicas se conservan. Las claves foráneas, la clave primaria y un trigger impiden vínculos inexistentes, repetidos o entre campañas distintas. La API utiliza `activityIndexes: number[]`, no el campo singular anterior, y guarda el bloque en una transacción bajo el bloqueo de campaña existente. No se concede ningún rol nuevo a personas.
+
+La migración puede reaplicarse en una copia restaurada sin duplicar ni borrar vínculos. Su `down` se rechaza: volver al modelo singular automáticamente perdería información. Los hitos anteriores conservan su actividad vinculada, aunque sus fechas pueden necesitar corrección para cumplir el criterio de cierre antes de un nuevo envío/aprobación.
+
+El frontend reconoce el formato singular retenido en una pantalla antigua y lo convierte al arreglo al mostrar/guardar. Guarda los formularios antes de actualizar el código o recargar el navegador: ese soporte no sustituye la persistencia de cambios aún no guardados.
+
+**Verificación del incremento:** 154 casos frontend, 136 backend, 8 ADMIN local y 19 integraciones PostgreSQL: **317 aprobados**. Lint, tipos y compilaciones aprobaron. La integración comprueba dos actividades por hito, listas inválidas sin pérdida de lo guardado, conservación del otro vínculo al quitar una actividad, reinicio de API, revisión y publicación. El ensayo de migración usa una base aislada con un vínculo antiguo, conserva ese dato y mantiene el inventario oficial. Este corte no reinició PostgreSQL (`DB_TEST_RESTART=false`). La compatibilidad de estado anterior tiene una regresión automatizada; la pantalla de un borrador guardado volvió a abrirse, sin editar sus datos durante la inspección visual.
+
+## 20. Nombres e identificación de campañas · política vigente 15/10/2026
+
+La aclaración de Heriberto del 14/10, compartida por Santiago el 15/10 y autorizada por Ricardo, sustituye los bloqueos semánticos ensayados previamente:
+
+- **El nombre no es único.** Se pueden guardar, enviar, aprobar y publicar campañas con nombres iguales o parecidos, incluso con contenido coincidente. El resto de validaciones y permisos sigue siendo obligatorio.
+- **UUID y slug sí son únicos.** PostgreSQL conserva la clave primaria y el índice único de slug. El slug estable `camp-<UUID>` no depende del título; cambiar el nombre no cambia la identidad técnica ni los enlaces.
+- **Semejanzas solo orientativas.** La comparación de ubicación, historia, presupuesto y cronograma informa al administrador. `COPY` es un código interno de coincidencia fuerte, no prueba de fraude ni prohibición; `POSSIBLE` expresa una semejanza parcial. No hay porcentajes de certeza.
+- ADMIN puede solicitar cambios con motivo si hay confusión, o aprobar/publicar sin una casilla, token ni justificación adicional obligatorios. Se registra en auditoría la evidencia actual disponible y la operación. Un comentario del contrato anterior sigue siendo opcional y se valida si se proporciona; una evidencia antigua no veta la decisión.
+- El creador solo recibe un aviso general, nunca títulos, IDs o contenido privado de otras cuentas.
+- Se retiraron el formulario y las rutas experimentales `/api/campaigns/drafts/:id/identity`, la reserva de etapa en admisión y el bloqueo global que la acompañaba. No se borraron datos, tablas, migraciones ni auditorías anteriores. Una declaración histórica existente puede consultarse en el detalle ADMIN, sin bloquear campañas nuevas o antiguas.
+- Evitar que **un mismo reintento técnico** cree dos borradores sigue siendo distinto de prohibir dos campañas intencionales: se mantiene `Idempotency-Key` UUID v4 por actor y datos, así como la cuota compartida creación/envío de 20/minuto por cuenta e IP.
+
+Los métodos comparativos son heurísticos, no identidad real verificada ni un sistema antifraude infalible. No se impide automáticamente financiar dos veces una causa: esa prohibición requeriría una política de negocio explícita, diferente de la unicidad técnica aquí acordada.
+
+### Prueba de aceptación de la aclaración
+
+1. A crea una campaña completa, la envía y ADMIN la aprueba/publica.
+2. B crea otra con **el mismo nombre y contenido**, completa sus secciones y la envía. Debe admitirse; el aviso no se convierte en faltante.
+3. ADMIN consulta coincidencias, UUID y slug. Puede solicitar ajustes o aprobar y publicar normalmente.
+4. Los dos enlaces e identificadores deben ser distintos. La base rechaza reutilizar el slug exacto.
+5. Dos campañas equivalentes pueden enviarse simultáneamente. Repetir la misma solicitud con la misma clave de idempotencia devuelve el mismo borrador, no crea otro.
+
+Los antiguos guiones de bloqueo del 13–15/10 fueron sustituidos por este comportamiento. Los informes docentes conservan su fecha de corte; no usarlos como instrucciones actuales de un bloqueo eliminado.
+
+## 21. Preparación y verificación del cierre local · 15/10/2026
+
+### Actualizar una V2 existente
+
+Con los formularios guardados, la API detenida y PostgreSQL saludable, respalda según [Migraciones](infra/postgres-v2/MIGRACIONES.md). Desde `backend/`:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run check
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+corepack pnpm run dev
+```
+
+Ejecuta en orden y detente ante cualquier error. Deben quedar **siete migraciones aplicadas, ninguna pendiente**. En otra terminal, raíz: `bun install --frozen-lockfile` y `bun run dev`. Para una instalación nueva sigue íntegramente la sección 3: primero SQL oficial, después compilación/migraciones, permisos y activación. No copies archivos privados ni restaures de nuevo el SQL sobre una base poblada.
+
+Las categorías provisionales se insertan mediante migración en PostgreSQL y se consultan por API, sin una lista alternativa hardcodeada en frontend. La repetición no sobrescribe categorías modificadas ni reactiva las deshabilitadas deliberadamente. Si todas fueron deshabilitadas, el aviso de configuración es correcto.
+
+### Cambios conservados
+
+Registro con correo primero y disponibilidad al salir; teléfono separado en país/prefijo y número nacional, con Bolivia (+591) claro; áreas de texto y mensajes consistentes. El retorno desde General/Historia incompletas ofrece descarte explícito de esa sección sin perder el resto. El avance sigue validando el paso actual.
+
+Se mantienen Ñ/Unicode, contraseñas exactas, mínimos/máximos, fechas reales no pasadas, porcentajes 0–100, enteros cuando corresponden, cálculo monetario, coherencia presupuesto/meta, modalidades, stock/entrega, hitos con varias actividades, propiedad, roles, sesiones, origen y archivos privados. No se rebaja la seguridad al retirar una regla de negocio de duplicidad.
+
+### Verificación de este corte
+
+**338 casos aprobados, sin fallos ni omisiones: 162 frontend, 147 backend, 8 ADMIN local y 21 integraciones PostgreSQL.** Lint, tipos y compilación aprobaron; los 298 archivos de código/pruebas/scripts comparados coinciden por hash con la copia aislada ensayada. El caso de escritura del endpoint experimental retirado se sustituyó por comprobaciones de compatibilidad/lectura y rutas ausentes; no comparar el total con los 339 del ensayo anterior como si la política fuera idéntica.
+
+El recorrido real de integración cubre creación y guardado de secciones, retorno tras login, portada, roles/propiedad, porcentajes/fechas/importes, reintentos y cuotas entre dos API, envío, correcciones/reenvío, aprobación privada, publicación/rechazo y consulta pública. Dos campañas con el mismo nombre y contenido se envían/publican sin justificación adicional; UUID/slug distintos y el índice único rechaza un slug repetido. La recuperación de acceso comprueba caducidad, un solo uso y revocación de sesiones; su fixture vencido usa el reloj de PostgreSQL en vez de depender de un plazo de un segundo. La prueba de semejanzas ya no presupone un orden de UUID aleatorios.
+
+La copia nueva completó instalación con lockfiles → SQL oficial → siete migraciones → permisos → verificación → activación. API y proxy devolvieron readiness 200 con base conectada; el registro nuevo se renderizó sin errores de consola. Se conserva el aviso de error deliberado del test que rechaza una base sin tablas: el resultado final de la suite es 21/21, no una migración fallida de la instalación. No se reinició PostgreSQL durante esta suite (DB_TEST_RESTART=false).
+
+Una copia nueva del código local, sin `.env`, dependencias ni volumen previo, se prepara en el proyecto Docker `brotar-s2-alineado-20261015`, puerto `15440`. No es un clon remoto de cambios aún sin publicar. La instalación normal sigue en `15433/3000/5173`. Las pruebas con escritura se ejecutan únicamente en la copia aislada y limpian sus fixtures.
+
+La recuperación conserva el historial de migraciones restaurado; `corepack pnpm run drill:recovery` comprueba una base desechable, no borra el volumen original. Las migraciones de la extensión experimental se retienen para no perder datos ni romper instalaciones anteriores, aunque sus controles de admisión se retiraron.
+
+Permanece un aviso de tamaño del paquete frontend mayor a 500 kB antes de gzip. El arranque local de Docker puede requerir resolver sockets temporales inaccesibles de Windows: no se soluciona borrando bases ni haciendo Factory Reset. No se garantiza cero defectos ni capacidad de producción por pasar pruebas locales.
+
+**Corte histórico del 15/10:** estas comprobaciones precedieron a la publicación de este incremento. La [entrega del 16/10](docs/entrega-dev-2026-10-16.md) registra las comprobaciones para compartirlo. La aceptación externa no la sustituye una suite verde.
+
+## 22. Sprint 2 frente al proyecto completo
+
+La guía general `docs/requisitos/Guia_Contexto_y_Alcance_MVP_Crowdfunding.pdf` abarca el ciclo descubrir → verificar → aportar → ejecutar → rendir cuentas. No define que todo ese ciclo deba terminar en el Sprint 2.
+
+El documento específico `docs/requisitos/Brotar_Tarea_Fase3_Modulo_Campanas.pdf` delimita esta entrega a campañas: creación progresiva, guardado/continuación, consulta y descarte de borradores propios, historia/impacto, plan/presupuesto/riesgos, financiamiento, recompensas condicionales, envío/correcciones, revisión/aprobación/rechazo y exploración pública real. Excluye explícitamente aportes, checkout, pagos, desembolsos, devoluciones, finanzas/conciliación, KYC/KYB y rendición.
+
+Para completar el **MVP general**, además de lo anterior, hacen falta:
+
+1. Identidad verificada KYC y organizaciones KYB, documentos privados, destino de fondos, niveles de confianza explicados y responsables de revisión.
+2. Aporte por donación/recompensa/preventa, checkout con condiciones y desglose, cupos y pagos con estados confirmados/pendientes/fallidos/expirados; solo lo confirmado suma recaudación y los reintentos no duplican operaciones.
+3. Panel del patrocinador, favoritos/seguimiento, historial, detalle/comprobante, novedades y consulta de incidencias.
+4. Operación financiera: conciliación, desembolsos, devoluciones y disputas con autorizaciones, referencias e historial.
+5. Ejecución: avances reales de actividades/hitos, responsables, evidencias y actualizaciones. Rendición presupuesto frente a gasto real, saldo, resultados/indicadores y cierre.
+6. Administración por permisos: revisión, Compliance, Finanzas, Soporte, configuración y auditoría de solo lectura; no confundir el ADMIN provisional del Sprint 2 con todos esos roles separados.
+7. Completar multimedia adicional, avisos legales/correo operativo y reglas de negocio pendientes antes de declarar operación definitiva.
+
+Los tres documentos de pantallas describen **9 públicas + 10 de creador + 11 de patrocinador/administración**, con variantes de carga/vacío/error, no treinta historias nuevas ni treinta pantallas pendientes. Su contexto inicial era prototipado Figma: el documento de patrocinador pide pago simulado, no pasarela real. La guía general incorpora operación financiera conceptual; proveedor, custodia, comisiones y reglas definitivas requieren acuerdo antes de integrar dinero real.
+
+No forman parte del MVP: equity/préstamos/retorno financiero, tokenización/criptomoneda/billetera, apps nativas, IA predictiva/reputación de estrellas ni logística completa de envío de recompensas. Las menciones antiguas a datos de entrega en checkout no deben convertirse sin acuerdo en gestión de transportistas o paquetes.
+
+**Conclusión de alcance:** un Sprint 2 técnicamente comprobado no significa MVP completo, KYC aprobado ni sistema financiero listo para operar.
+
+## 23. Comprobación de entrega · 16/10/2026
+
+El [registro de esta entrega](docs/entrega-dev-2026-10-16.md) documenta una instalación nueva aislada con lockfiles congelados, SQL oficial, siete migraciones, categorías automáticas y activación, más la repetición segura de instalación/migraciones/activación conservando datos y sesión. Pasaron **338 casos** (162 frontend, 147 backend, 8 ADMIN local y 21 integraciones PostgreSQL), esta vez con reinicio real del contenedor de ensayo. También se comprobaron registro, login, categorías y logout por el proxy, readiness 200 y recuperación aislada del respaldo.
+
+Se corrigió una prueba que asumía el nombre del contenedor original: ahora verifica el proyecto configurado en cada copia sin quitar sus controles de aislamiento. No hace falta cambiar puertos ni nombres en los tests para instalar en otra computadora. El entorno normal sigue siendo `15433/3000/5173`.
+
+Para instalar desde cero, seguir la sección 3 completa; para actualizar, conservar cambios propios y seguir las secciones 4 y 21 y [CONTRIBUTING](CONTRIBUTING.md). No restaurar SQL, borrar volúmenes, copiar `.env` ajenos ni forzar un pull. Un pull divergente requiere integrar los commits; no puede prometerse ausencia de conflictos futuros entre ramas con cambios diferentes.

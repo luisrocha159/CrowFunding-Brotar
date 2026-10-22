@@ -1,5 +1,5 @@
 import { DraftNotEditable, DraftNotFound, type DraftRepository } from './drafts'
-import { validateBudget, validateFunding, validatePlan, validateRewards, type BudgetInput, type FundingInput, type PlanInput, type RewardInput, type SectionErrors } from '../domain/sections'
+import { validateBudget, validateFunding, validatePlan, validateRewards, validateBudgetGoal, validateRewardFunding, type BudgetInput, type FundingInput, type PlanInput, type RewardInput, type SectionErrors } from '../domain/sections'
 import type { CampaignType } from '../domain/draft'
 
 export class SectionInvalid extends Error {
@@ -19,6 +19,7 @@ export interface SectionsRepository {
   saveRewards(userId: string, id: string, rewards: RewardInput[]): Promise<void>
   expenseCategories(): Promise<CatalogChoice[]>
   currencies(): Promise<CurrencyChoice[]>
+  countries(): Promise<CurrencyChoice[]>
   expenseCategoryActive(id: string): Promise<boolean>
   currencyActive(code: string): Promise<boolean>
 }
@@ -55,6 +56,7 @@ export class CampaignSections {
   async saveBudget(userId: string, id: string, input: BudgetInput) {
     await this.editable(userId, id)
     const fields = validateBudget(input)
+    Object.assign(fields, validateBudgetGoal(input, await this.repository.readFunding(id)))
     for (const [index, item] of input.items.entries()) {
       if (item.categoryId && !await this.repository.expenseCategoryActive(item.categoryId)) {
         fields[`items.${index}.categoryId`] = 'La categoría de gasto no está activa.'
@@ -68,6 +70,8 @@ export class CampaignSections {
   async saveFunding(userId: string, id: string, input: FundingInput) {
     await this.editable(userId, id)
     const fields = validateFunding(input)
+    Object.assign(fields, validateBudgetGoal(await this.repository.readBudget(id), input))
+    if ((await this.editable(userId, id)).campaignType !== 'DONATION') Object.assign(fields, validateRewardFunding(await this.repository.readRewards(id), input))
     if (!fields.currencyCode && !await this.repository.currencyActive(input.currencyCode)) fields.currencyCode = 'La moneda no está activa.'
     const previous = await this.repository.readFunding(id)
     if (previous.currencyCode && previous.currencyCode !== input.currencyCode && (await this.repository.readRewards(id)).length) {
@@ -82,6 +86,7 @@ export class CampaignSections {
     const draft = await this.editable(userId, id)
     const fields = validateRewards(draft.campaignType as CampaignType, input)
     const funding = await this.repository.readFunding(id)
+    Object.assign(fields, validateRewardFunding(input, funding))
     if (draft.campaignType !== 'DONATION' && !funding.currencyCode) fields.currencyCode = 'Configura el financiamiento antes de las recompensas.'
     if (Object.keys(fields).length) throw new SectionInvalid(fields)
     await this.repository.saveRewards(userId, id, input)
@@ -90,4 +95,5 @@ export class CampaignSections {
 
   expenseCategories() { return this.repository.expenseCategories() }
   currencies() { return this.repository.currencies() }
+  countries() { return this.repository.countries() }
 }

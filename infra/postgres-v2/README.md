@@ -4,6 +4,8 @@ Esta instalación adopta **Brotar_BD_Provisional (3).sql** recibido de coordinac
 
 **Esta es la infraestructura vigente.** `infra/postgres/` es legado y no debe levantarse junto con V2. Docker aloja solo PostgreSQL; API y frontend corren fuera del contenedor. La guía paso a paso principal está en el [README de la raíz](../../README.md#3-primera-instalación-completa).
 
+**Actualización 16/10/2026:** este incremento requiere siete migraciones. Instala primero el SQL oficial, compila, aplica `migrate up`, prepara permisos y activa la configuración generada, en ese orden. Las categorías provisionales se insertan automáticamente en PostgreSQL, no en el frontend. Para una base existente sigue README §21 sin restaurar el SQL. El ensayo de recuperación conserva el historial de migraciones; las notas de septiembre/octubre siguientes son antecedentes, no pasos adicionales de instalación.
+
 **Incremento local del 05/10/2026:** después de instalar la línea base se aplica la migración separada de REJECTED y los permisos S2 de revisión. No restaurar de nuevo una base existente. Para actualizar y habilitar la publicación administrativa provisional, seguir [la sección 15 del README](../../README.md#15-revisión-y-publicación-del-sprint-2); consultar [migraciones y recuperación](MIGRACIONES.md). El SQL oficial se conserva sin modificar.
 
 - PostgreSQL 18.6, base `brotar_db`, proyecto Compose `brotar-provisional-v2`.

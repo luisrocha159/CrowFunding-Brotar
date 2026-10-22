@@ -13,12 +13,13 @@ export class DraftOrganizationForbidden extends Error {}
 export class DraftCategoryUnavailable extends Error {}
 /** El paso solicitado no es alcanzable desde la posición actual. */
 export class DraftStepUnreachable extends Error {}
+export class DraftRetryConflict extends Error {}
 
 export interface DraftRepository {
   /** Borradores del creador. La propiedad se filtra en la consulta, no después. */
   listOwn(creatorUserId: string): Promise<Draft[]>
   findOwn(creatorUserId: string, id: string): Promise<Draft | null>
-  create(creatorUserId: string, input: DraftInput): Promise<Draft>
+  create(creatorUserId: string, input: DraftInput, requestKey?: string): Promise<Draft>
   save(creatorUserId: string, id: string, input: DraftInput, builderStep: number): Promise<Draft>
   categoryIsActive(categoryId: string): Promise<boolean>
 }
@@ -59,8 +60,8 @@ export class Drafts {
     return normalized
   }
 
-  async create(creatorUserId: string, input: DraftInput): Promise<Draft> {
-    return this.repository.create(creatorUserId, await this.validate(creatorUserId, input))
+  async create(creatorUserId: string, input: DraftInput, requestKey?: string): Promise<Draft> {
+    return this.repository.create(creatorUserId, await this.validate(creatorUserId, input), requestKey)
   }
 
   /**

@@ -33,11 +33,11 @@ export class RegisterUserDto {
 
   @ValidateIf((body: RegisterUserDto) => body.phoneCountryCode !== undefined || body.phoneNumber !== undefined)
   @IsString()
-  @Matches(/^\+[1-9]\d{0,4}$/)
+  @Matches(/^\+[1-9]\d{0,2}$/)
   phoneCountryCode?: string
 
   @ValidateIf((body: RegisterUserDto) => body.phoneCountryCode !== undefined || body.phoneNumber !== undefined)
   @IsString()
-  @Matches(/^\d{4,30}$/)
+  @Matches(/^\d{4,15}$/)
   phoneNumber?: string
 }

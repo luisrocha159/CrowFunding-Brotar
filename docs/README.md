@@ -2,6 +2,26 @@
 
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
 
+## Entrega actualizada de DEV · 16/10/2026
+
+[Registro de instalación y comprobaciones](entrega-dev-2026-10-16.md). Incluye las validaciones, siete migraciones, categorías automáticas, hitos con varias actividades y semejanzas orientativas, sin unicidad del título. La guía operativa vigente es el README; las frases «local/sin push» de los apartados fechados siguientes corresponden a esos cortes históricos.
+
+[Plan v2.4 y reparto del Sprint 3](plan-sprint-3-cierre-mvp-2026-10-15.md): 36 tareas, Ricardo 18 / Santiago 9 / Alison 9; 64 historias y 67 tareas globales sin duplicados. Cierre integral condicionado a pruebas, decisiones y aceptación, no a un conteo de tarjetas.
+
+Documentos para el docente (conservan el corte de su elaboración; no sustituyen las instrucciones actuales):
+
+- [Informe detallado del Sprint 2 — Word](entregables/sprint-2/Informe_Detallado_Sprint_2_Brotar.docx).
+- [Principios y patrones del Sprint 2 — Word](entregables/sprint-2/Principios_y_Patrones_Sprint_2_Brotar.docx).
+- [Guía de defensa de pruebas de integración — Word](entregables/sprint-2/Guia_Defensa_Pruebas_Integracion_Sprint_2_Brotar.docx).
+
+## Cierre local ampliado del Sprint 2 · 15 de octubre de 2026
+
+La política vigente está en las secciones 20–21 del README: nombres iguales/parecidos permitidos, UUID y slug únicos y semejanzas solo orientativas para ADMIN. Se retiraron el formulario de iniciativa/etapa y sus requisitos de admisión; los datos anteriores se conservan. Categorías automáticas, validaciones, reintentos y cuotas siguen activos. **338 casos aprobados** (162 frontend, 147 backend, 8 ADMIN local, 21 PostgreSQL), instalación nueva y readiness por API/proxy comprobados. La sección 22 contrasta el Sprint 2 con la guía general del MVP. [ADR-006](decisiones/ADR-006-validaciones-del-equipo-sprint-2.md) registra la sustitución de la política experimental. El ajuste sigue local en DEV, sin commit/push ni cambios en Trello.
+
+## Validaciones del equipo actualizadas el 13 de octubre de 2026
+
+[Reglas de validación del Sprint 2](decisiones/ADR-006-validaciones-del-equipo-sprint-2.md): correo primero y consulta de disponibilidad, mínimos y máximos, campos obligatorios, fechas no pasadas, porcentajes, importes calculados, meta mayor al presupuesto y reintentos idempotentes y unicidad técnica de campañas. La política posterior del 15/10 sustituye los bloqueos semánticos de aquel ensayo. Es un cambio local en DEV, autorizado como criterio del equipo; no representa confirmación del cliente ni modifica los informes docentes de cortes anteriores. Los resultados de pruebas del nuevo corte están en el README principal.
+
 ## Avance local del Sprint 2
 
 El [cierre técnico local del 5 de octubre](cierre-tecnico-sprint-2-2026-10-05.md) completa S2-12/S2-14 y la verificación/documentación de S2-21: **13 tareas implementadas**, **263 casos aprobados** (122 frontend, 123 backend, 18 PostgreSQL), más ensayo de interfaz escritorio/móvil y teclado. La revisión, corrección, aprobación privada y publicación administrativa funcionan con datos reales. La copia sigue local en `RicardoDev`, sin commit/push ni Trello; publicación del incremento y aceptación externa pendientes. [ADR-005](decisiones/ADR-005-publicacion-administrativa-provisional.md) registra la autorización provisional de publicación por ADMIN, no una decisión definitiva del cliente.

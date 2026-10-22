@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../../shared/components/Button'
 import { FormField } from '../../../shared/components/FormField'
+import { PhoneFields } from '../../../shared/components/PhoneFields'
 import { Message } from '../../../shared/components/Feedback'
 import { readProfile, saveProfile, validateProfile, type Profile, type ProfileInput } from './profileClient'
 import { notifySessionChanged, SessionError } from './sessionClient'
@@ -59,7 +60,9 @@ export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onS
     {status === 'save-error' && <Message tone="error" title="No se confirmó el guardado">Tus cambios siguen en el formulario. Revisa los datos y la conexión antes de reintentar.</Message>}
     <fieldset className={styles.fields} disabled={status === 'saving'}>
       <div className={styles.row}><FormField id="profile-firstName" label="Nombre" autoComplete="given-name" value={values.firstName} required maxLength={120} error={errors.firstName} onChange={event => change('firstName', event.target.value)} /><FormField id="profile-lastName" label="Apellido" autoComplete="family-name" value={values.lastName} required maxLength={120} error={errors.lastName} onChange={event => change('lastName', event.target.value)} /></div>
-      <div className={styles.row}><FormField id="profile-phoneCountryCode" label="Prefijo (opcional)" autoComplete="tel-country-code" placeholder="+591" value={values.phoneCountryCode} error={errors.phoneCountryCode} onChange={event => change('phoneCountryCode', event.target.value)} /><FormField id="profile-phoneNumber" label="Teléfono (opcional)" type="tel" autoComplete="tel-national" value={values.phoneNumber} error={errors.phoneNumber} onChange={event => change('phoneNumber', event.target.value)} /></div>
+      <PhoneFields idPrefix="profile" value={values} errors={errors} onChange={phone => {
+        setValues(previous => ({ ...previous, ...phone })); setErrors(previous => ({ ...previous, phoneCountryCode: undefined, phoneNumber: undefined })); setStatus('ready')
+      }} onBlur={() => setErrors(previous => ({ ...previous, phoneCountryCode: validateProfile(values).phoneCountryCode, phoneNumber: validateProfile(values).phoneNumber }))} />
       <p>Deja los dos campos vacíos para quitar el teléfono. Cambiarlo no lo verifica automáticamente.</p>
       <div className={styles.actions}><Button type="submit" loading={status === 'saving'} loadingLabel="Guardando perfil…">Guardar cambios</Button><Button type="button" variant="secondary" onClick={() => { setValues(profile); setErrors({}); setStatus('ready') }}>Descartar cambios</Button></div>
     </fieldset>

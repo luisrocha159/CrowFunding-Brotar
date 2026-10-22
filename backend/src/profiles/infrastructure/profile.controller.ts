@@ -11,8 +11,8 @@ const trim = ({ value }: { value: unknown }): unknown => typeof value === 'strin
 export class ProfileDto {
   @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) firstName!: string
   @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) lastName!: string
-  @Transform(trim) @IsString() @Matches(/^(?:\+[1-9]\d{0,4})?$/) phoneCountryCode!: string
-  @Transform(trim) @IsString() @Matches(/^(?:\d{4,30})?$/) phoneNumber!: string
+  @Transform(trim) @IsString() @Matches(/^(?:\+[1-9]\d{0,2})?$/) phoneCountryCode!: string
+  @Transform(trim) @IsString() @Matches(/^(?:\d{4,15})?$/) phoneNumber!: string
 }
 
 @Controller('profile')

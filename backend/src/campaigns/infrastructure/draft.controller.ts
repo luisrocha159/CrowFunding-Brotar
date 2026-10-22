@@ -1,22 +1,23 @@
 import {
   BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header,
-  NotFoundException, Param, ParseUUIDPipe, Post, Put, Req, UseGuards
+  Headers, NotFoundException, Param, ParseUUIDPipe, Post, Put, Req, UseGuards
 } from '@nestjs/common'
 import { Transform } from 'class-transformer'
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min } from 'class-validator'
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { CampaignWriteLimitGuard } from './campaign-write-limit.guard'
 import { CAMPAIGN_TYPES, LAST_BUILDER_STEP, TOTAL_BUILDER_STEPS } from '../domain/draft'
 import {
   Drafts, DraftCategoryUnavailable, DraftInvalid, DraftNotEditable, DraftNotFound,
-  DraftOrganizationForbidden, DraftStepUnreachable, type CampaignType
+  DraftOrganizationForbidden, DraftStepUnreachable, DraftRetryConflict, type CampaignType
 } from '../application/drafts'
 
 const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value
 
 export class DraftDto {
-  @Transform(trim) @IsString() @Length(1, 200) title!: string
-  @Transform(trim) @IsString() @MaxLength(500) summary!: string
+  @Transform(trim) @IsString() @Length(5, 200) title!: string
+  @Transform(trim) @IsString() @Length(11, 500) summary!: string
   @IsIn([...CAMPAIGN_TYPES]) campaignType!: CampaignType
   @IsOptional() @IsUUID() categoryId?: string
   @IsOptional() @IsUUID() organizationId?: string
@@ -27,6 +28,7 @@ export class DraftSaveDto extends DraftDto {
 }
 
 function translate(error: unknown): never {
+  if (error instanceof DraftRetryConflict) throw new ConflictException('Ese intento ya se usó con otros datos. Consulta tus borradores antes de crear otro.')
   if (error instanceof DraftNotFound) throw new NotFoundException('Borrador no disponible.')
   if (error instanceof DraftNotEditable) throw new ConflictException('El borrador ya no admite edición por el asistente.')
   if (error instanceof DraftStepUnreachable) throw new ConflictException('Ese paso no es alcanzable desde la posición actual.')
@@ -57,12 +59,13 @@ export class DraftController {
     } catch (error) { translate(error) }
   }
 
-  @Post() @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
-  async create(@Req() request: AuthenticatedRequest, @Body() input: DraftDto) {
+  @Post() @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard, CampaignWriteLimitGuard)
+  async create(@Req() request: AuthenticatedRequest, @Body() input: DraftDto, @Headers('idempotency-key') requestKey?: string) {
     try {
+      if (requestKey !== undefined && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestKey)) throw new BadRequestException('Idempotency-Key debe ser un UUID v4 válido.')
       const draft = await this.drafts.create(request.brotarUser.id, {
         ...input, categoryId: input.categoryId ?? null, organizationId: input.organizationId ?? null
-      })
+      }, requestKey)
       return { ...draft, totalSteps: TOTAL_BUILDER_STEPS }
     } catch (error) { translate(error) }
   }

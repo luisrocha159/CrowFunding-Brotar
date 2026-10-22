@@ -9,6 +9,8 @@ import { TypeormGeneralRepository } from './typeorm-general.repository'
 import { TypeormSectionsRepository } from './typeorm-sections.repository'
 import { TypeormSubmissionRepository } from './typeorm-submission.repository'
 import { TypeormProjectRepository } from './typeorm-project.repository'
+import type { DuplicateReviewInput } from '../domain/duplication'
+import { identityForCampaign } from './initiative-identity'
 
 @Injectable()
 export class TypeormAdministrativeRepository implements AdministrativeRepository {
@@ -44,7 +46,7 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       return { project, campaignType: metadata!.campaignType, slug: metadata!.slug, organizationName: metadata!.organizationName,
         cover: metadata!.fileId ? { fileId: metadata!.fileId, altText: metadata!.altText } : null,
         general, story, plan, budget, funding, rewards: metadata!.campaignType === 'DONATION' ? [] : rewards,
-        rounds, missing: missingForSubmission(snapshot), publicationEnabled: false }
+        rounds, missing: missingForSubmission(snapshot), publicationEnabled: false, duplication: snapshot.duplication, initiative: await identityForCampaign(manager, id) }
     })
   }
 
@@ -57,9 +59,17 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
     if (rounds[0]?.round !== round || rounds[0]?.decision !== decision) throw new ReviewConflict()
     return rounds[0]
   }
-  private async complete(manager: EntityManager, id: string) {
-    const missing = missingForSubmission(await this.submission.snapshot(id, manager))
+  private async complete(manager: EntityManager, id: string, actorId: string, round: number, operation: string, reviewed?: DuplicateReviewInput) {
+    const snapshot = await this.submission.snapshot(id, manager)
+    const missing = missingForSubmission(snapshot)
     if (missing.length) throw new SubmissionIncomplete(missing)
+    const report = snapshot.duplication
+    if (!report?.matches.length) return
+    await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,description,new_values)
+      VALUES($1,'ADMIN','UPDATE','campaign',$2,'Revisión de coincidencias de campaña', $3::jsonb)`,
+    [actorId, id, JSON.stringify({ operation, round, ruleVersion: 3, advisoryOnly: true, token: report.reviewToken,
+      reason: reviewed?.token === report.reviewToken ? reviewed.reason : null,
+      candidates: report.matches.map(match => ({ id: match.id, kind: match.kind, reasons: match.reasons })) })])
   }
   private async actor(manager: EntityManager, actorId: string) { await manager.query('SELECT set_config($1,$2,true)', ['brotar.actor_id', actorId]) }
   private async reason(manager: EntityManager, id: string, actorId: string, from: string, to: string, reason: string, round: number) {
@@ -70,7 +80,7 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
   decide(actorId: string, id: string, input: DecisionInput) {
     return this.database.connection().transaction(async manager => {
       const round = await this.lock(manager, id, 'IN_REVIEW', input.expectedRound, 'PENDING')
-      if (input.decision === 'APPROVED') await this.complete(manager, id)
+      if (input.decision === 'APPROVED') await this.complete(manager, id, actorId, input.expectedRound, 'APPROVE', input.duplicateReview)
       await this.actor(manager, actorId)
       await manager.query(`UPDATE public.campaign_review SET reviewer_user_id=$2,decision=$3::review_decision,
         summary=$4,started_at=COALESCE(started_at,now()),decided_at=now() WHERE id=$1`, [round!.id, actorId, input.decision, input.comment || null])
@@ -82,10 +92,10 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       return { id, status: input.decision, round: input.expectedRound }
     })
   }
-  publish(actorId: string, id: string, expectedRound: number) {
+  publish(actorId: string, id: string, expectedRound: number, duplicateReview?: DuplicateReviewInput) {
     return this.database.connection().transaction(async manager => {
       await this.lock(manager, id, 'APPROVED', expectedRound, 'APPROVED')
-      await this.complete(manager, id)
+      await this.complete(manager, id, actorId, expectedRound, 'PUBLISH', duplicateReview)
       await this.actor(manager, actorId)
       await manager.query("UPDATE public.campaign SET status='PUBLISHED',published_at=now(),updated_at=now() WHERE id=$1", [id])
       await this.reason(manager, id, actorId, 'APPROVED', 'PUBLISHED', 'Publicación administrativa explícita', expectedRound)

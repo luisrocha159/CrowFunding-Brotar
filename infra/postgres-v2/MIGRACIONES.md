@@ -2,7 +2,7 @@
 
 ## Línea base registrada
 
-`baseline.json` identifica por SHA-256 el SQL oficial instalado, el inventario esperado y el ajuste de permisos E07. La API conserva `synchronize=false`, `dropSchema=false` y `migrationsRun=false`. El instalador solo acepta una base vacía; nunca aplicar el SQL inicial sobre datos existentes.
+`baseline.json` identifica por SHA-256 el SQL oficial instalado, el inventario esperado y el ajuste de permisos E07. La API conserva `synchronize=false`, `dropSchema=false` y `migrationsRun=false`. El instalador restaura únicamente si el esquema está vacío; al repetirlo reconoce una línea base completa y conserva los datos. Nunca aplicar el SQL inicial sobre datos existentes ni forzar la restauración sobre un esquema parcial.
 
 El 05/10/2026 se aplicó localmente la primera migración incremental propia: `CampaignRejected1791244800000`, que añade REJECTED a `public.campaign_status` para cubrir el estado exigido por el PDF de Fase 3. No reescribe el SQL oficial ni modifica campañas existentes. Adoptar V2 inicialmente fue una restauración nueva aislada, no un traslado de datos de V1. El SQL de estructura/catálogos oficial está incluido con hash; los backups poblados y credenciales siguen fuera de Git.
 
@@ -48,7 +48,25 @@ La nueva integración crea una base temporal `brotar_db_drill_rejected_*`, insta
 
 **Recuperación:** PostgreSQL no permite quitar un valor ENUM mediante una operación simétrica segura; `down` se rechaza antes de transformar/borrar datos. Respaldar antes de cambios compartidos y restaurar una copia aislada para diagnosticar. No borrar campañas rechazadas ni reconstruir tipos sobre datos existentes para fingir una reversión. Este cambio está aplicado solo al entorno local; cualquier entorno compartido requiere autorización y respaldo propios.
 
-`drill:recovery` respalda `brotar_db`, la restaura en `brotar_db_drill`, compara el inventario recuperado contra `baseline.json`, reinicia el control de migraciones en la copia, aplica ahí el mecanismo y comprueba que el esquema oficial no cambió. Conserva el respaldo fuera del repositorio (por defecto `~/Documents/brotar-privado/ensayos`). Nada destructivo toca la base de trabajo.
+`drill:recovery` respalda `brotar_db`, la restaura en una base `brotar_db_drill_*`, compara el inventario recuperado contra `baseline.json`, **conserva el historial de migraciones restaurado**, ejecuta `up` y comprueba que ni el esquema oficial ni los conteos de usuarios/campañas/extensión/control hayan cambiado. No se borra el historial para repetir migraciones aplicadas. La instalación sobre SQL oficial vacío se ensaya por separado en `migrations.integration.test.ts`. Conserva el respaldo fuera del repositorio (por defecto `~/Documents/brotar-privado/ensayos`). Nada destructivo toca la base de trabajo.
+
+## Migración de hitos con varias actividades
+
+`MilestoneActivities1791849600000` es la cuarta migración del equipo. Añade la tabla de vínculos `brotar_extension.milestone_activity`, fuera de `public`, sin modificar el archivo SQL oficial ni su inventario. Copia cada `milestone.activity_id` anterior; para los hitos sin actividad no inserta ningún vínculo. Las relaciones nuevas se guardan como pares hito/actividad, con clave primaria, referencias y control de pertenencia a la misma campaña. El rol `brotar_app` recibe uso del esquema y DML exclusivamente en esa tabla, no permisos DDL ni roles de usuario.
+
+Aplicación en V2 existente: respaldo propio → compilar backend → `node scripts/migrate.mjs up` → `node scripts/migrate.mjs status` → `node scripts/verify-provisional-v2.mjs` → reiniciar API. No repetir la restauración oficial. El corte de hitos tenía cuatro migraciones; **el cierre del 15/10 tiene siete**, sin pendientes. El README, sección 19, explica `activityIndexes`; la sección 21 describe la extensión de identidad vigente.
+
+El ensayo aislado comprueba conservación del vínculo anterior, dos actividades por hito, rechazo de otra campaña y de duplicados, permisos, repetición segura y conservación del hito/otro vínculo al eliminar una actividad. La migración de hitos admite reaplicarse; esto no autoriza borrar el historial ni implica que todas las migraciones puedan repetirse. Su reversión automática se rechaza para evitar perder relaciones múltiples; una reversión requiere una migración de conservación o recuperar un respaldo aislado.
+
+## Catálogos e identidad · 15/10/2026
+
+5. `ProvisionalCatalogs1792015200000`: categorías provisionales y referencias de país/moneda/gastos faltantes. Usa conflicto sin sobrescritura: conserva nombres y desactivaciones existentes. Una instalación desde cero no necesita ejecutar el seed manual.
+6. `InitiativeIdentity1792015200001`: tablas de iniciativa, etapa, vínculo de campaña, reserva única, idempotencia y cuotas; índices GIN. Viven en `brotar_extension`, salvo índices sobre tablas oficiales. No asigna identidad a campañas antiguas ni cambia su estado.
+7. `IdentityDraftCorrections1792015200002`: permisos del ensayo de corrección de identidad, mantenimiento de cuotas y claves/índices de búsqueda. La política vigente retiró el editor/API de identidad y las reservas de admisión; las tablas y los permisos históricos se conservan sin borrar datos.
+
+No se modifica `official-schema.sql`, no se activa `synchronize` y se conserva el inventario de 59 tablas de `public`. Las tablas adicionales tienen nombres, claves y permisos explícitos. Sus `down` no eliminan automáticamente información ni restricciones: se prepara una migración revisada o se restaura un respaldo aislado.
+
+La aclaración de identificación del 15/10 no requiere una migración destructiva ni reinstalar: UUID/slug continúan únicos y las coincidencias son orientativas. Las tablas de iniciativa/etapa/reserva quedan conservadas, pero no se escribe una reserva al enviar/aprobar/publicar. Las siete migraciones siguen siendo necesarias para la compatibilidad del esquema y los controles activos de idempotencia/frecuencia.
 
 ## Qué queda pendiente de BG-59
 

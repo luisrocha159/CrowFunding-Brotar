@@ -1,4 +1,6 @@
 /** Límite del esquema oficial: campaign_impact_indicator.name varchar(200), unit varchar(60). */
+import { INDICATOR_UNITS, MINIMUMS, textError } from './input-policy'
+
 export const STORY_LIMITS = { text: 5000, indicatorName: 200, unit: 60, indicators: 20 } as const
 
 export interface StoryInput {
@@ -30,6 +32,8 @@ export function validateStory(input: StoryInput): Record<string, string> {
     const length = [...input[field]].length
     if (length > STORY_LIMITS.text) errors[field] = `Admite hasta ${STORY_LIMITS.text} caracteres.`
     if (input[field].includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+    const error = textError(input[field], MINIMUMS.story, STORY_LIMITS.text)
+    if (error) errors[field] = error
   }
   return errors
 }
@@ -64,6 +68,19 @@ export function validateIndicator(input: IndicatorInput): Record<string, string>
   if (input.targetValue !== null && input.unit.length === 0) errors.unit = 'Indica la unidad de la meta.'
   for (const field of ['name', 'description', 'unit'] as const) {
     if (input[field].includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+  }
+  const nameError = textError(input.name, MINIMUMS.title, 200)
+  const descriptionError = textError(input.description, MINIMUMS.description, 5000, true)
+  if (nameError) errors.name = nameError
+  if (descriptionError) errors.description = descriptionError
+  if (!(INDICATOR_UNITS as readonly string[]).includes(input.unit)) errors.unit = 'Selecciona una unidad disponible.'
+  if (input.targetValue === null) errors.targetValue = 'Indica una meta esperada.'
+  for (const field of ['baselineValue', 'targetValue'] as const) {
+    const value = input[field]
+    if (value === null) continue
+    if (value < 0) errors[field] = 'El valor no puede ser negativo.'
+    if (input.unit === '%' && value > 100) errors[field] = 'El porcentaje no puede superar 100 %.'
+    if (['personas', 'familias', 'unidades'].includes(input.unit) && !Number.isInteger(value)) errors[field] = 'Esta unidad requiere un número entero.'
   }
   return errors
 }

@@ -14,17 +14,31 @@ const reviewDecisionNames: Readonly<Record<string, string>> = { PENDING: 'Pendie
 export function AdministrativeInformation({ detail }: { detail: AdministrativeDetail }) {
   const { general, story, plan, budget, funding, rewards } = detail
   return <>
+    {detail.duplication && detail.duplication.matches.length > 0 && <section className={styles.panel} aria-label="Coincidencias de campañas">
+      <h2>Coincidencias orientativas</h2><p>Estas semejanzas no prueban duplicidad ni bloquean la decisión. Se permiten nombres iguales o parecidos; si generan confusión, puedes solicitar ajustes durante la revisión.</p>
+      <ul>{detail.duplication.matches.map(match => <li key={match.id}>
+        <Link to={`/administracion/campanas/${encodeURIComponent(match.id)}`}>{match.title}</Link>
+        <p>{match.kind === 'COPY' ? 'Coincidencia fuerte de contenido: revisar el contexto' : 'Posible semejanza de contenido'} · {projectStatusNames[match.status] ?? match.status}</p>
+        <ul>{match.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>
+      </li>)}</ul>
+    </section>}
     <section className={styles.panel}><h2>{detail.project.title}</h2><p className={styles.badge}>{projectStatusNames[detail.project.status]}</p><p className={styles.prose}>{general.summary}</p>
-      <dl><dt>Creador</dt><dd>{detail.project.creatorName}</dd><dt>Organización</dt><dd>{detail.organizationName ?? 'Campaña personal'}</dd><dt>Modalidad</dt><dd>{{ DONATION: 'Donación', REWARD: 'Recompensas', PRESALE: 'Preventa' }[detail.campaignType] ?? detail.campaignType}</dd><dt>Categoría</dt><dd>{detail.project.categoryName ?? 'No disponible'}</dd><dt>Ubicación</dt><dd>{[general.location.locality, general.location.countryCode, general.location.addressLine, general.location.reference].filter(Boolean).join(' · ')}</dd></dl>
+      <dl><dt>Identificador</dt><dd>{detail.project.id}</dd><dt>Slug</dt><dd>{detail.slug}</dd><dt>Creador</dt><dd>{detail.project.creatorName}</dd><dt>Organización</dt><dd>{detail.organizationName ?? 'Campaña personal'}</dd><dt>Modalidad</dt><dd>{{ DONATION: 'Donación', REWARD: 'Recompensas', PRESALE: 'Preventa' }[detail.campaignType] ?? detail.campaignType}</dd><dt>Categoría</dt><dd>{detail.project.categoryName ?? 'No disponible'}</dd><dt>Ubicación</dt><dd>{[general.location.locality, general.location.countryCode, general.location.addressLine, general.location.reference].filter(Boolean).join(' · ')}</dd></dl>
       {detail.cover && <img className={styles.cover} src={`/api/files/public/${encodeURIComponent(detail.cover.fileId)}`} alt={detail.cover.altText} />}
     </section>
+    {detail.initiative && <section className={styles.panel} aria-label="Declaración histórica de la iniciativa"><h2>Iniciativa y etapa · declaración anterior</h2>
+      <h3>{detail.initiative.initiativeName} · {detail.initiative.stageName}</h3><p>{detail.initiative.purpose}</p>
+      <p>Lugar o ámbito: {detail.initiative.siteReference} · {detail.initiative.locality}</p>
+      <p>Objetivo de la etapa: {detail.initiative.objective}</p><p>Ejecución: {detail.initiative.startsOn} a {detail.initiative.endsOn}</p>
+      <p>Datos anteriores conservados para consulta. No son KYC/KYB ni un requisito para aprobar o publicar.</p>
+    </section>}
     <section className={styles.panel}><h2>Historia e impacto</h2>{(['problem', 'solution', 'beneficiaries', 'expectedResults'] as const).map((key, index) => <div key={key}><h3>{['Problema', 'Solución', 'Beneficiarios', 'Resultados esperados'][index]}</h3><p className={styles.prose}>{story.story[key]}</p></div>)}
       <h3>Indicadores</h3><ul>{story.indicators.map((item, index) => <li key={index}>{item.name} · línea base {item.baselineValue ?? 'no registrada'} · meta {item.targetValue ?? 'no registrada'} {item.unit}<p className={styles.prose}>{item.description}</p></li>)}</ul>
     </section>
     <section className={styles.panel}><h2>Plan y cronograma</h2><ul>{plan.activities.map((item, index) => <li key={index}>{item.name} · {item.responsibleName} · {item.plannedStartOn} a {item.plannedEndOn}</li>)}</ul>
-      <h3>Hitos</h3>{plan.milestones.length ? <ul>{plan.milestones.map((item, index) => <li key={index}>{item.name} · {item.responsibleName} · {item.plannedStartOn} a {item.plannedEndOn} · actividad: {item.activityIndex === null ? 'sin vínculo' : plan.activities[item.activityIndex]?.name ?? 'no disponible'}</li>)}</ul> : <p>No se registraron hitos.</p>}
+      <h3>Hitos</h3>{plan.milestones.length ? <ul>{plan.milestones.map((item, index) => <li key={index}>{item.name} · {item.responsibleName} · {item.plannedStartOn} a {item.plannedEndOn} · actividades: {item.activityIndexes.length ? item.activityIndexes.map(activityIndex => plan.activities[activityIndex]?.name ?? 'no disponible').join(', ') : 'sin vínculo'}</li>)}</ul> : <p>No se registraron hitos.</p>}
       <h3>Presupuesto</h3><ul>{budget.items.map((item, index) => <li key={index}>{item.description} · {item.quantity} × {item.unitPrice} · planificado {item.plannedAmount} {funding.currencyCode}{item.notes && <p className={styles.prose}>{item.notes}</p>}</li>)}</ul><p>Total planificado: {budgetTotal(budget).toFixed(2)} {funding.currencyCode}</p>
-      <h3>Riesgos</h3>{budget.risks.length ? <ul>{budget.risks.map((risk, index) => <li key={index}>{risk.title}<p>{risk.description}</p><p>Probabilidad: {risk.likelihood || 'no indicada'} · impacto: {risk.impact || 'no indicado'}</p><p>Mitigación: {risk.mitigation}</p></li>)}</ul> : <p>No se registraron riesgos.</p>}
+      <h3>Riesgos</h3>{budget.risks.length ? <ul>{budget.risks.map((risk, index) => <li key={index}>{risk.title}<p>{risk.description}</p><p>Probabilidad: {risk.likelihood ? `${risk.likelihood} %` : 'no indicada'} · impacto: {risk.impact || 'no indicado'}</p><p>Mitigación: {risk.mitigation}</p></li>)}</ul> : <p>No se registraron riesgos.</p>}
     </section>
     <section className={styles.panel}><h2>Financiamiento</h2><p>Meta: {funding.goalAmount} {funding.currencyCode} · {funding.durationDays} días · {{ FLEXIBLE: 'Flexible', ALL_OR_NOTHING: 'Todo o nada' }[funding.fundingModel] ?? funding.fundingModel}</p><p>Periodo: {funding.startsAt ?? 'no fijado'} a {funding.endsAt ?? 'no fijado'}</p>
       {detail.campaignType !== 'DONATION' && <><h3>Recompensas y preventas</h3><ul>{rewards.map((item, index) => <li key={index}>{item.title} · {item.rewardKind}<p className={styles.prose}>{item.description}</p><p>Mínimo: {item.minAmount} {funding.currencyCode} · disponibilidad: {item.quantityTotal ?? 'sin límite'} · entrega: {item.estimatedDeliveryOn ?? 'no fijada'}</p></li>)}</ul></>}
@@ -51,7 +65,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
   const loaded = useRef(false)
   useEffect(() => {
     const controller = new AbortController(); loaded.current = true
-    void readAdministrativeDetail(id, controller.signal).then(result => { if (!controller.signal.aborted) setDetail(result) })
+    void readAdministrativeDetail(id, controller.signal).then(result => { if (!controller.signal.aborted) { setDetail(result); setConfirmation(null) } })
       .catch(error => { if (!controller.signal.aborted) { setAccess(error instanceof SessionError ? error.status : 0); setMessage('No se pudo cargar la revisión completa. Actualiza antes de decidir.'); setSuccess(false) } })
     return () => { loaded.current = false; controller.abort(); active.current?.abort() }
   }, [id, retry])
@@ -81,7 +95,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
       if (status === 401) setAccess(401)
       setConfirmation(null)
       setMessage(status === 409 ? 'El estado o la ronda cambió. Actualiza la campaña antes de decidir.'
-        : status === 422 ? 'No se realizó la operación: faltan datos de la campaña. Actualiza para verlos.'
+        : status === 422 ? 'No se realizó la operación: hay datos obligatorios incompletos o inválidos. Actualiza para verlos.'
         : status === 403 ? 'No tienes permiso vigente para esta acción o la publicación está deshabilitada.'
         : status === 400 ? 'Revisa el motivo y las observaciones. No se guardó la decisión.'
         : 'No pudimos confirmar la operación. Actualiza antes de reintentar para comprobar el estado.')
@@ -97,10 +111,10 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
       {detail.project.status === 'PUBLISHED' && <Link to={`/proyectos/${encodeURIComponent(detail.slug)}`}>Ver campaña pública</Link>}
       {detail.project.status === 'IN_REVIEW' && round?.decision === 'PENDING' && <section className={styles.panel}><h2>Decidir · ronda {round.round}</h2><p>Aprobar no publica la campaña. El motivo de rechazo o cambios será visible para el creador.</p>
         <fieldset className={styles.reviewForm} disabled={busy || access !== 0}>
-          <label>Decisión<select value={decision} onChange={event => { setDecision(event.target.value as Decision); setConfirmation(null); setErrors({}) }}>{Object.entries(decisions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-          <label>Comentario {decision === 'APPROVED' ? '(opcional)' : '(obligatorio)'}<textarea maxLength={5000} value={comment} aria-invalid={Boolean(errors.comment)} aria-describedby="review-comment-error" onChange={event => { setComment(event.target.value); setConfirmation(null) }} /></label>
+          <label>Decisión *<select required value={decision} onChange={event => { setDecision(event.target.value as Decision); setConfirmation(null); setErrors({}) }}>{Object.entries(decisions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label>Comentario {decision === 'APPROVED' ? '(opcional)' : '*'}<textarea required={decision !== 'APPROVED'} minLength={5} maxLength={10000} onBlur={() => setErrors(previous => ({ ...previous, comment: decisionErrors(input).comment ?? '' }))} value={comment} aria-invalid={Boolean(errors.comment)} aria-describedby="review-comment-error" onChange={event => { setComment(event.target.value); setConfirmation(null) }} /></label>
           {errors.comment && <p id="review-comment-error" role="alert">{errors.comment}</p>}
-          {decision === 'CHANGES_REQUESTED' && <><h3>Observaciones por sección (opcionales)</h3>{observations.map((item, index) => <div key={index}><label>Sección {index + 1}<select value={item.section} onChange={event => { setObservations(observations.map((row, i) => i === index ? { ...row, section: event.target.value } : row)); setConfirmation(null) }}>{Object.entries(reviewSections).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>Cambio solicitado<textarea maxLength={5000} value={item.message} aria-invalid={Boolean(errors[`observations.${index}`])} onChange={event => { setObservations(observations.map((row, i) => i === index ? { ...row, message: event.target.value } : row)); setConfirmation(null) }} /></label>{errors[`observations.${index}`] && <p role="alert">{errors[`observations.${index}`]}</p>}<Button variant="tertiary" onClick={() => { setObservations(observations.filter((_, i) => i !== index)); setConfirmation(null) }}>Quitar observación {index + 1}</Button></div>)}<Button variant="secondary" disabled={observations.length >= 50} onClick={() => { setObservations([...observations, { section: 'general', fieldPath: null, message: '' }]); setConfirmation(null) }}>Añadir observación</Button></>}
+          {decision === 'CHANGES_REQUESTED' && <><h3>Observaciones por sección (opcionales)</h3>{observations.map((item, index) => <div key={index}><label>Sección {index + 1} *<select required value={item.section} onChange={event => { setObservations(observations.map((row, i) => i === index ? { ...row, section: event.target.value } : row)); setConfirmation(null) }}>{Object.entries(reviewSections).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>Cambio solicitado *<textarea required minLength={5} maxLength={10000} onBlur={() => setErrors(previous => ({ ...previous, [`observations.${index}`]: decisionErrors(input)[`observations.${index}`] ?? '' }))} value={item.message} aria-invalid={Boolean(errors[`observations.${index}`])} onChange={event => { setObservations(observations.map((row, i) => i === index ? { ...row, message: event.target.value } : row)); setConfirmation(null) }} /></label>{errors[`observations.${index}`] && <p role="alert">{errors[`observations.${index}`]}</p>}<Button variant="tertiary" onClick={() => { setObservations(observations.filter((_, i) => i !== index)); setConfirmation(null) }}>Quitar observación {index + 1}</Button></div>)}<Button variant="secondary" disabled={observations.length >= 50} onClick={() => { setObservations([...observations, { section: 'general', fieldPath: null, message: '' }]); setConfirmation(null) }}>Añadir observación</Button></>}
           <Button disabled={decision === 'APPROVED' && detail.missing.length > 0} onClick={() => { const fields = decisionErrors(input); setErrors(fields); if (!Object.keys(fields).length) setConfirmation('decision') }}>{decisions[decision]}</Button>
         </fieldset>
       </section>}

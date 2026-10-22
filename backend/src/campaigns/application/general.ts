@@ -83,6 +83,7 @@ export class GeneralInfo {
 
     const normalizedStory = normalizeStory(story)
     const errors = validateStory(normalizedStory)
+    if (!indicators.length) errors.indicators = 'Añade al menos un indicador de impacto.'
     const normalizedIndicators = indicators.map(normalizeIndicator)
     normalizedIndicators.forEach((indicator, index) => {
       for (const [field, message] of Object.entries(validateIndicator(indicator))) {

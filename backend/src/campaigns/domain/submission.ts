@@ -1,4 +1,5 @@
 import type { CampaignType } from './draft'
+import type { DuplicateReport } from './duplication'
 
 export interface SubmissionSnapshot {
   campaignType: CampaignType
@@ -20,6 +21,8 @@ export interface SubmissionSnapshot {
   durationDays: number | null
   fundingModel: string | null
   rewardCount: number
+  invalidFields?: MissingField[]
+  duplication?: DuplicateReport
 }
 
 export interface MissingField { field: string; label: string; step: number }
@@ -49,5 +52,10 @@ export function missingForSubmission(value: SubmissionSnapshot): MissingField[] 
   need(value.durationDays !== null && value.durationDays > 0, 'durationDays', 'Duración', 5)
   need(Boolean(value.fundingModel), 'fundingModel', 'Modelo de financiamiento', 5)
   if (value.campaignType !== 'DONATION') need(value.rewardCount > 0, 'rewards', 'Recompensas o preventas', 6)
+  for (const item of value.invalidFields ?? []) {
+    const previous = missing.findIndex(field => field.field === item.field)
+    if (previous >= 0) missing[previous] = item
+    else missing.push(item)
+  }
   return missing
 }

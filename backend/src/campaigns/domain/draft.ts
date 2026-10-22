@@ -3,6 +3,8 @@
  * nombrar cada etapa es contenido del flujo y depende de D02 y D10, no de la
  * persistencia. `campaign.builder_step` es smallint y arranca en 0.
  */
+import { MINIMUMS, textError } from './input-policy'
+
 export const TOTAL_BUILDER_STEPS = 8
 export const FIRST_BUILDER_STEP = 0
 export const LAST_BUILDER_STEP = TOTAL_BUILDER_STEPS - 1
@@ -47,12 +49,11 @@ export function normalizeDraft(input: DraftInput): DraftInput {
 }
 
 export function isValidTitle(title: string): boolean {
-  const length = [...title].length
-  return length > 0 && length <= 200 && !title.includes('\u0000')
+  return !textError(title, MINIMUMS.title, 200)
 }
 
 export function isValidSummary(summary: string): boolean {
-  return [...summary].length <= 500 && !summary.includes('\u0000')
+  return !textError(summary, MINIMUMS.summary, 500)
 }
 
 /**

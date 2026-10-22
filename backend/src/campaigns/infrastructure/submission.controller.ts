@@ -1,6 +1,7 @@
 import { ConflictException, Controller, Get, Header, NotFoundException, Param, ParseUUIDPipe, Post, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { CampaignWriteLimitGuard } from './campaign-write-limit.guard'
 import { DraftNotEditable, DraftNotFound } from '../application/drafts'
 import { CampaignSubmission, SubmissionIncomplete } from '../application/submission'
 
@@ -20,7 +21,7 @@ export class SubmissionController {
     try { return await this.submission.review(request.brotarUser.id, id) } catch (error) { translate(error) }
   }
 
-  @Post() @Header('Cache-Control', 'no-store') @RequireRoles('REGISTERED_USER', 'CREATOR') @UseGuards(SessionMutationGuard)
+  @Post() @Header('Cache-Control', 'no-store') @RequireRoles('REGISTERED_USER', 'CREATOR') @UseGuards(SessionMutationGuard, CampaignWriteLimitGuard)
   async submit(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string) {
     try { return await this.submission.submit(request.brotarUser.id, id) } catch (error) { translate(error) }
   }

@@ -4,6 +4,12 @@ import { DatabaseService } from '../../shared/infrastructure/database/database.s
 import { DraftNotEditable } from '../application/drafts'
 import { SubmissionIncomplete, type ReviewObservation, type SubmissionRepository } from '../application/submission'
 import { missingForSubmission, type SubmissionSnapshot } from '../domain/submission'
+import { validateGeneral } from '../domain/general'
+import { validateStory, validateIndicator } from '../domain/story'
+import { validatePlan, validateBudget, validateFunding, validateRewards, validateBudgetGoal, validateRewardFunding } from '../domain/sections'
+import { TypeormGeneralRepository } from './typeorm-general.repository'
+import { TypeormSectionsRepository } from './typeorm-sections.repository'
+import { campaignDuplicateReport } from './campaign-duplicates'
 
 @Injectable()
 export class TypeormSubmissionRepository implements SubmissionRepository {
@@ -25,7 +31,34 @@ export class TypeormSubmissionRepository implements SubmissionRepository {
       LEFT JOIN public.file_asset f ON f.id=c.cover_file_id AND f.scope='PUBLIC'
         AND f.storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%' AND f.deleted_at IS NULL
       LEFT JOIN public.campaign_story s ON s.campaign_id=c.id WHERE c.id=$1`, [id])
-    return rows[0]!
+    const snapshot = rows[0]!
+    const general = new TypeormGeneralRepository(this.database)
+    const sections = new TypeormSectionsRepository(this.database)
+    const info = await general.readGeneral(id, manager)
+    const story = await general.readStory(id, manager)
+    const plan = await sections.readPlan(id, manager)
+    const budget = await sections.readBudget(id, manager)
+    const funding = await sections.readFunding(id, manager)
+    const rewards = snapshot.campaignType === 'DONATION' ? [] : await sections.readRewards(id, manager)
+    snapshot.invalidFields = []
+    const collect = (errors: Record<string, string>, step: number) => {
+      for (const [field, label] of Object.entries(errors)) snapshot.invalidFields!.push({ field, label, step })
+    }
+    collect(validateGeneral(info), 1)
+    collect(validateStory(story.story), 2)
+    story.indicators.forEach((indicator, index) => {
+      const errors: Record<string, string> = {}
+      for (const [field, message] of Object.entries(validateIndicator(indicator))) errors[`indicators.${index}.${field}`] = message
+      collect(errors, 2)
+    })
+    collect(validatePlan(plan), 4)
+    collect(validateBudget(budget), 4)
+    collect(validateFunding(funding), 5)
+    collect(validateBudgetGoal(budget, funding), 5)
+    collect(validateRewards(snapshot.campaignType, rewards), 6)
+    collect(validateRewardFunding(rewards, funding), 6)
+    snapshot.duplication = await campaignDuplicateReport(manager, id)
+    return snapshot
   }
 
   snapshot(id: string, manager = this.database.connection().manager) { return this.load(manager, id) }
