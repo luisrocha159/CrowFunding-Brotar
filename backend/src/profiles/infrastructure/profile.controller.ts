@@ -6,16 +6,17 @@ import { SessionMissing, Sessions } from '../../auth/application/sessions'
 import { readSessionCookie, SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { InvalidProfile, ProfileUnavailable, Profiles } from '../application/profile'
 import { PERSON_NAME } from '../../shared/domain/person-name'
+import {RequireRoles,RoleGuard} from '../../roles/infrastructure/roles-http'
 
 const trim = ({ value }: { value: unknown }): unknown => typeof value === 'string' ? value.trim() : value
 export class ProfileDto {
   @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) firstName!: string
   @Transform(trim) @IsString() @Length(1, 120) @Matches(PERSON_NAME) lastName!: string
-  @Transform(trim) @IsString() @Matches(/^(?:\+[1-9]\d{0,4})?$/) phoneCountryCode!: string
-  @Transform(trim) @IsString() @Matches(/^(?:\d{4,30})?$/) phoneNumber!: string
+  @Transform(trim) @IsString() @Matches(/^(?:\+[1-9]\d{0,2})?$/) phoneCountryCode!: string
+  @Transform(trim) @IsString() @Matches(/^(?:\d{4,15})?$/) phoneNumber!: string
 }
 
-@Controller('profile')
+@Controller('profile') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
 export class ProfileController {
   constructor(private readonly sessions: Sessions, private readonly profiles: Profiles) {}
   private async own<T>(request: Request, operation: (id: string) => Promise<T>): Promise<T> {

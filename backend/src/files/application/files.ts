@@ -1,5 +1,5 @@
 export type FileVisibility = 'PUBLIC' | 'PRIVATE'
-export type FilePurpose = 'PROFILE_AVATAR' | 'ORGANIZATION_DOCUMENT' | 'CAMPAIGN_PUBLIC_IMAGE'
+export type FilePurpose = 'PROFILE_AVATAR' | 'ORGANIZATION_DOCUMENT' | 'CAMPAIGN_PUBLIC_IMAGE' | 'VERIFICATION_DOCUMENT' | 'SUPPORT_EVIDENCE' | 'CLOSURE_EVIDENCE'
 
 export interface StoredFile {
   id: string
@@ -62,6 +62,7 @@ function matchesSignature(mimeType: string, content: Buffer): boolean {
 
 function assertUpload(input: FileUploadInput, content: Buffer): void {
   if (!input.originalName.trim() || input.originalName.length > 160 || /[\\/]/.test(input.originalName)) throw new InvalidFileUpload()
+  if(/[\p{Cc}\p{Cf}\p{Cs}]/u.test(input.originalName))throw new InvalidFileUpload()
   if (content.length === 0) throw new InvalidFileUpload()
   // Comprobación básica de firma: no confiar solamente en el MIME declarado.
   // No sustituye análisis antivirus ni validación documental/KYB.
@@ -70,7 +71,7 @@ function assertUpload(input: FileUploadInput, content: Buffer): void {
     if (input.purpose !== 'PROFILE_AVATAR' && input.purpose !== 'CAMPAIGN_PUBLIC_IMAGE') throw new InvalidFileUpload()
     if (!imageTypes.has(input.mimeType) || content.length > MAX_PUBLIC_IMAGE_BYTES) throw new InvalidFileUpload()
   } else {
-    if (input.purpose !== 'ORGANIZATION_DOCUMENT') throw new InvalidFileUpload()
+    if (!['ORGANIZATION_DOCUMENT', 'VERIFICATION_DOCUMENT', 'SUPPORT_EVIDENCE', 'CLOSURE_EVIDENCE'].includes(input.purpose)) throw new InvalidFileUpload()
     if (!privateTypes.has(input.mimeType) || content.length > MAX_PRIVATE_DOCUMENT_BYTES) throw new InvalidFileUpload()
   }
 }
@@ -93,11 +94,29 @@ export class Files implements AuthorizedFileReader {
   async privateDownload(id: string, userId: string): Promise<FileDownload> {
     const result = await this.storage.read(id)
     if (!result) throw new FileUnavailable()
+    // Documentos KYC/KYB requieren autorización actual sobre su caso, incluso para quien los subió.
+    if (result.file.purpose === 'VERIFICATION_DOCUMENT' || result.file.purpose === 'CLOSURE_EVIDENCE') throw new FileAccessDenied()
     if (result.file.visibility !== 'PUBLIC' && result.file.ownerUserId !== userId) throw new FileAccessDenied()
+    return result
+  }
+
+  /** Uso interno: el caso de verificación debe autorizar al solicitante y devolver el propietario. */
+  async verificationDownload(id: string, authorizedOwnerId: string): Promise<FileDownload> {
+    const result = await this.storage.read(id)
+    if (!result || result.file.visibility !== 'PRIVATE' || result.file.purpose !== 'VERIFICATION_DOCUMENT') throw new FileUnavailable()
+    if (result.file.ownerUserId !== authorizedOwnerId) throw new FileAccessDenied()
     return result
   }
 
   async delete(id: string, userId: string): Promise<void> {
     if (!await this.storage.delete(id, userId)) throw new FileUnavailable()
+  }
+
+  /** El ciclo autoriza el vínculo y propietario actuales antes de llamar a esta lectura. */
+  async closureDownload(id:string,authorizedOwnerId:string):Promise<FileDownload>{
+    const result=await this.storage.read(id)
+    if(!result||result.file.visibility!=='PRIVATE'||result.file.purpose!=='CLOSURE_EVIDENCE')throw new FileUnavailable()
+    if(result.file.ownerUserId!==authorizedOwnerId)throw new FileAccessDenied()
+    return result
   }
 }

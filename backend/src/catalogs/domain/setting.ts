@@ -1,12 +1,13 @@
-/**
- * Parámetros de negocio administrables (BG-55 CA 2).
- *
- * La lista está **vacía a propósito**: el criterio exige gestionar «solo parámetros
- * de negocio previamente acordados», y D02 y D10 siguen abiertas. Añadir claves aquí
- * sin esa aprobación sería inventar reglas del MVP. El mecanismo queda listo y
- * cualquier clave no acordada se rechaza, que es el lado seguro.
- */
-export const AGREED_SETTINGS: readonly string[] = []
+/** ADR-013 v1.0: metas operativas DEMO, no SLA legal ni parámetros financieros. */
+export const SETTING_RULES = {
+  'support.first_response_hours': {initial:48,min:1,max:48},
+  'support.escalation_hours': {initial:120,min:72,max:720}
+} as const
+export const AGREED_SETTINGS: readonly string[] = Object.keys(SETTING_RULES)
+export function isValidSettingValue(key: string,value: unknown): value is number {
+  const rule=SETTING_RULES[key as keyof typeof SETTING_RULES]
+  return Boolean(rule) && typeof value==='number' && Number.isInteger(value) && value>=rule.min && value<=rule.max
+}
 
 export function isAgreedSetting(key: string): boolean {
   return AGREED_SETTINGS.includes(key)

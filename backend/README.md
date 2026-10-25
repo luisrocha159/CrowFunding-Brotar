@@ -1,9 +1,32 @@
 # Brotar API · base de desarrollo
 
+## Corte integrado RicardoDev
+
+Para instalar la versión actual, seguir primero [README principal, §3 y §34–36](../README.md). Incluye 30 migraciones con categorías, persistencia del correo y panel por responsabilidad. Configurar cada contenedor desde cero y mantener las credenciales fuera de Git; no copiar el `.env` completo de otra máquina. Gmail, verificación de correo y avisos se documentan en esas secciones; los apartados de arranque básico que siguen no sustituyen esa preparación.
+
 Backend independiente: **NestJS 12 + TypeScript + pnpm 11.19.0**, ejecutado en Node.js 24 (>=24.13.0). El frontend permanece en la raíz del repositorio y usa Bun. No hay workspace común ni lockfiles mezclados.
 
 ## Estado de este incremento
 
+- Entrega DEV del 05/10/2026: integración completa de las 13 tareas de campañas. Añade decisiones ADMIN, observaciones por sección, aprobación privada, publicación explícita y rechazo persistido. La revisión aprobó **128 pruebas backend y 18 PostgreSQL**, además de lint, tipos y compilación. Aceptación externa pendiente; Trello no se modifica. Ver [cierre técnico](../docs/cierre-tecnico-sprint-2-2026-10-05.md), [instalación limpia](../docs/entrega-dev-sprint-2-2026-10-05.md) y sección 15 del README principal.
+
+- La integración previa de las siete tareas de Santiago (`SantiagoDev` en `2603426`) añade GET/PUT propios de `plan`, `budget`, `funding`, `rewards` y GET/POST `submission`. Envío requiere REGISTERED_USER y CREATOR vigentes, completitud y estado editable bajo bloqueo; registra ronda, fecha y actor. Correcciones solo en CHANGES_REQUESTED. Su [revisión histórica](../docs/revision-integracion-santiago-sprint-2-2026-10-05.md) conserva el conteo anterior al cierre administrativo.
+
+### Contratos administrativos vigentes
+
+| Ruta | Entrada y efecto |
+| --- | --- |
+| GET `/api/admin/campaigns/:id/detail` | Detalle completo autorizado, rondas/observaciones/historial y faltantes |
+| POST `/api/admin/campaigns/:id/decision` | `{decision, comment, expectedRound, observations}`; APPROVED, CHANGES_REQUESTED o REJECTED |
+| POST `/api/admin/campaigns/:id/publish` | `{confirmed: true, expectedRound}`; solo campaña APPROVED con última ronda aprobada |
+
+Todas requieren ADMIN vigente y las mutaciones también el guard de origen. Las decisiones actualizan la ronda pendiente con actor/fecha; cambios y rechazo requieren motivo. Observaciones contienen `section`, `fieldPath` opcional y `message`; las secciones admitidas son general, modality, story, cover, plan, budget, funding y rewards. Una decisión/ronda obsoleta produce 409 sin mutar; una campaña incompleta produce 422. No se acepta actor ni rol desde el cuerpo. La cola incluye IN_REVIEW y APPROVED pendientes de publicación.
+
+Actualizar V2 en este orden, sin reinstalar: compilar → `node scripts/migrate.mjs up` → `node scripts/prepare-sprint2.mjs` → verificar → arrancar. La migración separada añade REJECTED al enum de campaña; no altera el SQL oficial. Para publicar, `CAMPAIGN_ADMIN_PUBLICATION_ENABLED=true` en el `.env` de la API y reinicio; ausencia/false bloquea publicación. El instalador nuevo conserva una configuración explícita o genera true conforme a la decisión provisional [ADR-005](../docs/decisiones/ADR-005-publicacion-administrativa-provisional.md). El registro no concede ADMIN/CREATOR.
+
+### Antecedentes de integración
+
+- Integración local del 04/10/2026: S2-16 de Alison adaptada sobre `RicardoDev`, preservando S2-15/S2-17. Añade `GET /api/campaigns/public` y `GET /api/campaigns/public/:slug`, sin sesión, con datos publicados y proyección limitada. Ejecutar `node scripts/prepare-sprint2.mjs` con V2 operativo antes de arrancar para aplicar los permisos de la vista financiera. No hay cambios de esquema, publicación automática ni pagos; consultar la [evidencia](../docs/revision-integracion-alison-s2-16-2026-10-04.md). Esta integración aún no se ha publicado.
 - E01: servidor, configuración, separación del frontend, validación HTTP, pruebas y documentación.
 - E02: TypeORM 0.3.31 y `pg` 8.23.0 conectados a PostgreSQL 18.6 real. Restauración, mapeo de usuarios/perfiles, permisos limitados, lectura/escritura, rollback y persistencia después de reiniciar el contenedor verificados el 16/09/2026.
 - E03/E04: `POST /api/auth/register` implementado y conectado a `/registro`. Persiste usuario y perfil juntos, con hash de contraseña, validaciones, duplicados y límite inicial de solicitudes. La cuenta conserva estado pendiente de verificación. Ver [contrato y evidencias](../docs/integracion-e03-e04.md).
@@ -14,7 +37,15 @@ Backend independiente: **NestJS 12 + TypeScript + pnpm 11.19.0**, ejecutado en N
 - `GET /api/health/live` solo verifica que la API responde, **no** la disponibilidad de PostgreSQL.
 - `GET /api/health/ready` devuelve 503 sin base conectada o sin las tablas base; devuelve 200 al comprobar conexión y existencia de las tablas requeridas. No acredita todos los módulos ni permisos.
 
-## Instalar y abrir
+## Instalar y abrir la entrega integrada
+
+**Seguir la sección 3 del [README principal](../README.md#3-primera-instalación-completa), desde el clon hasta la API y frontend.** La infraestructura vigente es `infra/postgres-v2`; Docker ejecuta PostgreSQL y esta API corre en Windows. Para una copia existente, usar su sección 15. No se necesitan herramientas NestJS o TypeORM globales.
+
+El orden de instalación nueva es: dependencias → `adopt-provisional-v2.mjs install` → comprobaciones/compilación → migraciones → permisos Sprint 2 → verificación → `activate` → API → frontend. No migrar sin línea base ni copiar `.env.example` encima de las credenciales generadas. La conexión de instalación normal apunta a `127.0.0.1:15433`, no al PostgreSQL local en 5432. Los archivos privados, usuarios y sesiones no se descargan por Git.
+
+Para ejecutar comprobaciones con un pnpm global distinto, sustituir todas sus invocaciones por `bun x --package pnpm@11.19.0 pnpm` dentro de backend, sin editar el lockfile. La publicación provisional necesita la bandera indicada arriba y una cuenta autorizada ADMIN; las migraciones no asignan roles a personas.
+
+### Arrancar únicamente la API sin base (diagnóstico, no entrega funcional)
 
 Instala Node.js 24 y pnpm 11.19.0 siguiendo la [documentación oficial de pnpm](https://pnpm.io/installation). Desde la raíz del repositorio:
 
@@ -27,7 +58,7 @@ pnpm run dev
 
 Abre <http://127.0.0.1:3000/api/health/live>. La respuesta esperada es `{"status":"ok","service":"brotar-api"}`. `Ctrl+C` detiene el servidor. El modo `dev` recompila los cambios de TypeScript.
 
-No es necesario un `.env` para probar esta base: por defecto escucha solo en `127.0.0.1:3000`. Para personalizarla, copia `.env.example` a `.env` dentro de `backend` y ajusta sus valores. No sobreescribas un `.env` existente y no lo subas a Git.
+Sin `.env`, por defecto escucha solo en `127.0.0.1:3000` y la base está desactivada. Esto sirve únicamente para comprobar `/health/live`: registro, sesión, campañas y `/health/ready` no estarán listos. `.env.example` documenta variables, no contiene una conexión operativa. Para la entrega integrada utilizar el instalador y `activate` del README principal; no copiar el ejemplo ni compartir `.env`.
 
 | Variable | Uso |
 | --- | --- |
@@ -72,7 +103,7 @@ src/
 
 Registro, sesiones (`auth`), perfiles (`profiles`), roles (`roles`) y organizaciones (`organizations`) separan modelos/reglas puras en Domain, casos de uso y puertos en Application, y adaptadores en Infrastructure. Domain y Application no importan NestJS, SQL ni ORM; una prueba comprueba esa frontera. DTOs HTTP y decoradores de validación pertenecen a Infrastructure.
 
-El responsable de esta implementación eligió **TypeORM** el 16/09/2026. Esa elección local no se presenta como aprobación común de coordinación. D01 mantiene pendientes los acuerdos aplicables, no la prueba local de conexión. No se habilita sincronización automática, borrado de esquema, migraciones automáticas ni creación automática de extensiones. Ver [ADR-001](../docs/decisiones/ADR-001-typeorm.md) y [preparación de PostgreSQL](../infra/postgres/README.md).
+El responsable de esta implementación eligió **TypeORM** el 16/09/2026. Esa elección local no se presenta como aprobación común de coordinación. D01 mantiene pendientes los acuerdos aplicables, no la prueba local de conexión. No se habilita sincronización automática, borrado de esquema, migraciones automáticas ni creación automática de extensiones. Ver [ADR-001](../docs/decisiones/ADR-001-typeorm.md) y [preparación vigente de PostgreSQL V2](../infra/postgres-v2/README.md).
 
 ## Activar PostgreSQL y probar persistencia
 

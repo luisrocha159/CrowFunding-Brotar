@@ -4,6 +4,8 @@ import { DatabaseService } from '../../shared/infrastructure/database/database.s
 import { UserProfileSchema, UserSchema } from '../../users/infrastructure/persistence/user.schemas'
 import type { Profile, ProfileInput, ProfileRepository } from '../application/profile'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
+import {transactionRegisteredAccess} from '../../roles/infrastructure/transaction-access'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormProfileRepository implements ProfileRepository {
@@ -22,6 +24,8 @@ export class TypeormProfileRepository implements ProfileRepository {
       const user = await manager.getRepository(UserSchema).createQueryBuilder('u').setLock('pessimistic_write')
         .where('u.id=:userId AND u.deleted_at IS NULL AND u.status IN (:...statuses) AND (u.locked_until IS NULL OR u.locked_until<=now())', { userId, statuses: BASIC_ACCESS_STATUSES }).getOne()
       if (!user || !await manager.getRepository(UserProfileSchema).existsBy({ userId })) return null
+      await transactionRegisteredAccess(manager,userId)
+      await setAuditActor(manager,userId)
       const phoneCountryCode = input.phoneCountryCode || null
       const phoneNumber = input.phoneNumber || null
       const changed = user.phoneCountryCode !== phoneCountryCode || user.phoneNumber !== phoneNumber
@@ -30,6 +34,7 @@ export class TypeormProfileRepository implements ProfileRepository {
         phoneCountryCode, phoneNumber, ...(changed ? { phoneVerifiedAt: null } : {})
       })
       // El resto del perfil (ubicación, área administrativa, etc.) queda intacto.
+      await recordAudit(manager,userId,'UPDATE','user_profile',userId)
       return this.select(manager, userId)
     })
   }

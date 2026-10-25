@@ -5,6 +5,7 @@ import { UserSchema } from '../../users/infrastructure/persistence/user.schemas'
 import type { Credentials, CurrentUser, SessionRepository } from '../application/sessions'
 import { allowsBasicAccess, BASIC_ACCESS_STATUSES } from '../application/basic-access'
 import { SessionTokenSchema } from './session-token.schema'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormSessionRepository implements SessionRepository {
@@ -29,6 +30,8 @@ export class TypeormSessionRepository implements SessionRepository {
       if (previousHash) await manager.getRepository(SessionTokenSchema).update({ tokenHash: previousHash, tokenType: 'SESSION', revokedAt: IsNull() }, { revokedAt: () => 'clock_timestamp()' })
       await manager.getRepository(SessionTokenSchema).insert({ userId: user.id, tokenType: 'SESSION', tokenHash, expiresAt })
       await manager.getRepository(UserSchema).update({ id: user.id }, { lastLoginAt: new Date(), failedLoginCount: 0, lockedUntil: null })
+      await setAuditActor(manager,user.id)
+      await recordAudit(manager,user.id,'LOGIN','app_user',user.id)
       return true
     })
   }
@@ -42,6 +45,11 @@ export class TypeormSessionRepository implements SessionRepository {
     return rows[0] ?? null
   }
   async revoke(tokenHash: string): Promise<void> {
-    await this.database.connection().getRepository(SessionTokenSchema).update({ tokenHash, tokenType: 'SESSION', revokedAt: IsNull() }, { revokedAt: () => 'clock_timestamp()' })
+    await this.database.connection().transaction(async manager=>{
+      const result=await manager.query(`UPDATE public.user_token SET revoked_at=clock_timestamp()
+        WHERE token_hash=$1 AND token_type='SESSION' AND revoked_at IS NULL RETURNING user_id AS "userId"`,[tokenHash])
+      const rows:{userId:string}[]=Array.isArray(result[0])?result[0]:result
+      if(rows[0]){await setAuditActor(manager,rows[0].userId);await recordAudit(manager,rows[0].userId,'LOGOUT','app_user',rows[0].userId)}
+    })
   }
 }

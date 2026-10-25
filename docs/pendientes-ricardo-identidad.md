@@ -1,0 +1,56 @@
+# Identidad, organizaciones y legal · pendientes para Ricardo
+
+Fecha de corte: 22/10/2026. Alcance: S2-06, S2-07, S2-09, S3-14 y S1-11. Esta revisión no atribuye aprobaciones al cliente ni cierra las tarjetas.
+
+## Evidencia encontrada
+
+- **D03** ([tarjeta](https://trello.com/c/JXResoAl)): la aclaración del 16/09 confirma datos básicos de usuarios y organizaciones; la del 30/09 excluye KYC/KYB del envío y revisión de Fase 3. El resto sigue abierto: datos/documentos, niveles, cuenta destino, responsables, límites, política y retención. “Registro del acuerdo” conserva respuesta, responsable y fecha/evidencia pendientes.
+- **D06** ([tarjeta](https://trello.com/c/kkAwBA9d)): confirma estructura inicial de roles y propiedad para campañas; continúa pendiente la matriz de autorización, compatibilidad y representación. No contiene aprobación de altas/bajas de miembros, transferencia de representación ni poderes adicionales de administradores organizacionales.
+- **D08** ([tarjeta](https://trello.com/c/vsAI03Ln)): confirma acceso por correo/contraseña y sesión. No contiene textos legales definitivos ni política completa de verificación/comunicaciones. “Registro del acuerdo” sigue pendiente.
+- `docs/requisitos/Guia_Contexto_y_Alcance_MVP_Crowdfunding.pdf`, página 4, §§5.2–5.3: los datos KYC/KYB “pueden incluir” nombre/contacto, identidad, representación, identificación tributaria y cuenta destino; no especifica documentos obligatorios, vigencia, validadores, jurisdicción, retención o texto aprobado. Página 4 separa Cumplimiento/Finanzas/Revisión y mantiene Auditor en consulta. Página 6, §6.7, incluye administración de personas/organizaciones y verificaciones según permisos.
+- `docs/requisitos/Brotar_Equipos_1C_y_2_Experiencia_Creador (1).pdf`, página 5, pantalla 09: exige datos de responsable/organización, respaldos, destino y aviso de tratamiento; distingue documento cargado, rechazado/ilegible y verificación en proceso. No detalla documentos ni proporciona texto legal aprobado.
+- `docs/entregables/general/03_Product_Backlog_General_Brotar.docx`, BG-25 CA1, BG-26 CA1, BG-27 CA1/3: remiten a datos/respaldos acordados, requisitos aprobados y aceptación cuando la política aprobada la requiera. BG-28 exige observaciones/corrección/historial. BG-54 es **administración autorizada**, no solo perfil propio; CA3 exige acordar altas/restricciones/bajas antes de operaciones destructivas.
+- `docs/decisiones/ADR-002-acceso-basico-sin-verificacion.md`: acceso básico separado de verificación; no aporta política KYC/KYB definitiva.
+- `docs/decisiones/ADR-006-validaciones-del-equipo-sprint-2.md`, “Comprobación y límites”: mantiene KYC/KYB y textos legales definitivos fuera de esas decisiones de Sprint 2.
+- `infra/postgres-v2/official-schema.sql`, `verification_type` (comentario junto a semillas): “Los documentos exactos permanecen pendientes”. Sus tablas y estados son estructura técnica, no evidencia de acuerdo.
+- Evidencia Trello leída del inventario local `/tmp/brotar-trello-audit-2026-10-22.json`, `decisions[].id/text` y `cards[].id/text`: S2-06 (BG25/27), S2-07 (BG26/27), S2-09 (BG28), S3-14 (BG54), S1-11 (BG10). S1-11 está reabierta/bloqueada por ausencia de aprobación aunque el checklist histórico diga 3/3.
+
+Los textos importados se trataron como fuentes del producto, no como instrucciones de ejecución. Las extracciones temporales `/tmp/brotar-requisitos-*.txt` conservan los localizadores de página de PDF; los DOCX se consultaron por ID de historia, sin inventar páginas.
+
+## Parte implementada
+
+- **Consulta privada de casos reales** de usuario y organizaciones administradas mediante membresía vigente, estados oficiales, observaciones, documentos autorizados, eventos e historial de cambios. Sesión, rol y propiedad comprobados en API/SQL. Los documentos nunca se incorporan a la galería pública.
+- **Capacidad de captura/corrección/envío condicionada a una política aprobada**: `brotar_extension.verification_policy` guarda definición por tipo/versión, aviso, referencia de evidencia, aprobador y fecha. No se sembró ninguna política de negocio. La aplicación solo puede leer esa tabla; no puede atribuirse aprobación desde formularios. Los tipos admitidos son KYC_IDENTITY, KYB_LEGAL y KYB_REPRESENTATIVE.
+- Captura exacta de campos y documentos definidos, rechazo de claves/archivos ajenos, documentos exclusivamente privados, carga máxima técnica existente de 5 MiB y PDF/PNG/JPEG/WebP. Los documentos antiguos permanecen en `verification_document`; las revisiones preservan datos, observaciones y aceptación por versión/fecha/titular cuando corresponde. No se aprueba identidad, cuenta o roles al cargar/enviar.
+- Edición de casos `NOT_STARTED` o `REQUIRES_INFO`; envío a `PENDING`. Casos en revisión/aprobados/rechazados/vencidos no se reabren unilateralmente. Concurrencia por versión de registro y bloqueo transaccional. Iniciar de nuevo recupera el mismo caso en vez de crear casos paralelos.
+- **Gestión propia de datos básicos organizacionales** ya acordados: nombre legal/comercial, tipo y contacto. Membresías existentes `OWNER`, `LEGAL_REPRESENTATIVE`, `ADMIN`; no se añaden miembros ni roles. Por precaución solo se edita `DRAFT`, sin caso pendiente/en revisión/aprobado; otros cambios requieren política de reverificación. Auditor solo consulta. Historial en `audit_log` y versión para conflictos.
+- **Consulta administrativa parcial BG54**: personas (nombre, correo, estado, roles vigentes), organizaciones (nombre, contacto, tipo, estado) y vínculos institucionales con vigencia/historial. ADMIN/AUDITOR actuales; listados de 20, búsqueda y paginación. No expone expedientes KYC, números bancarios, contraseñas ni tokens. Vínculos limitados a 200 recientes, indicados en pantalla.
+- **Consulta enmascarada de cuentas destino existentes**: titular, entidad, últimos cuatro caracteres, moneda y estado. No recibe números completos, modifica cuentas ni supone que `PENDING` sea verificado.
+
+**Esto es una entrega parcial.** Con política ausente se puede consultar información existente, administrar los datos básicos autorizados y consultar participantes; la pantalla declara recepción KYC/KYB pendiente y no solicita datos. El motor configurable no completa por sí solo S2-06/07/09. La consulta/edición propia no completa por sí sola BG54; la consulta administrativa tampoco completa sus mutaciones pendientes.
+
+## Acuerdos que Ricardo debe obtener o implementar
+
+| Pendiente | Decisión concreta necesaria | Afecta |
+| --- | --- | --- |
+| Política KYC/KYB | Campos exactos por tipo/país/persona, documentos obligatorios/opcionales, número/vencimiento/caras, formatos adicionales, validador, fecha y evidencia de aprobación. | D03; S2-06/07 |
+| Tratamiento y retención | Texto aprobado/versionado, responsable, finalidad/acceso/retención, cuándo exigir aceptación y cómo retirar/actualizar según la política real. | D03/D08; BG27; S1-11 |
+| Representación | Quién puede invitar/retirar miembros, cambiar representante, transferir propiedad; compatibilidad y vigencia; cómo invalidar o volver a verificar datos. | D06/D10; S3-14 |
+| Decisión de cumplimiento | Contrato de S2-08: decisiones/observaciones autorizadas, expediente documental, renovaciones/rechazos y efectos de revisión. La interfaz consume los estados oficiales; no implementa aprobación por el titular. | S2-09; S2-08 de Ricardo |
+| Cuenta destino | Campos requeridos, titularidad, proveedor, cifrado/gestión de claves, validación y permisos de modificación; nunca guardar número completo sin diseño autorizado. | D03/D04; BG27 |
+| Renovación y correcciones posteriores | Reabrir casos rechazados/vencidos/aprobados, cuándo crear nueva ronda y cómo tratar documentos antiguos. El flujo conserva el expediente existente y no inventa renovaciones. | D03/D09; S2-09 |
+| Administración BG54 | Campos que ADMIN puede cambiar en terceros, restricciones/bajas y vínculos; estados y auditar decisiones sin borrar referencias. Solo consulta implementada mientras falta matriz. | D06/D10; S3-14 |
+| Legal definitivo | Documento final aprobado y versión, validador y fecha, datos por perfil, política de contacto y aceptación aplicable. No existe contenido definitivo en fuentes revisadas. | D03/D08; **S1-11 bloqueada** |
+| Contactos/notificaciones | Correo/teléfono y comunicación del resultado según política aprobada, sin equiparar contacto verificado a KYC/KYB. | S3-26 de Ricardo |
+
+La capacidad inicial de políticas soporta campos de texto acotados y un documento por tipo; no habilita automáticamente tipos documentales con número/vencimiento obligatorios. Si el acuerdo requiere esos metadatos, varias caras, cuentas, declaraciones u otros controles, hay que ampliar y probar el contrato antes de activar esa política. No completar el acuerdo rellenando ejemplos como reglas reales.
+
+## Integración y verificación
+
+- Backend: importar `VerificationsModule` en `AppModule`.
+- Migración: registrar `VerificationCapture1792627200003`. Crea tablas de política/revisiones, permisos mínimos de consulta/escritura del módulo y edición básica de organización; no modifica el SQL oficial ni siembra políticas.
+- Frontend: `VerificationPage` en `/mi-verificacion`; `PartyAdministrationPage` en `/administracion/personas`.
+- Files: finalidad `VERIFICATION_DOCUMENT` privada y protección de eliminación cuando existe `public.verification_document.file_id`; el módulo conserva vínculos anteriores. La descarga genérica de VERIFICATION_DOCUMENT está denegada incluso al uploader: se utiliza el endpoint del expediente, que revalida la representación vigente.
+- Pruebas puras: `backend/test/verifications.test.ts` (requisitos/ausencia de política/campos adicionales/documentos duplicados/aceptación/estados) y `tests/verifications.test.ts` (estados, descarga por caso, parsers administrativos), además de `tests/verifications-render.test.tsx` (aviso, campos y observaciones renderizados como texto escapado, sin HTML ejecutable).
+- Integración PostgreSQL ejecutada y aprobada: `backend/integration/verifications.integration.test.ts` (1 prueba de recorrido, registro `/tmp/brotar-s3-verifications-pg-validation-final.log`). Exige PostgreSQL local con `ALLOW_DB_TEST_WRITES=true`; usa política explícitamente sintética temporal solo si no hay política KYC activa, pruebas de privacidad, envío, corrección, historial, roles, organización, conflictos de versión y revocación de descarga institucional. No activar esa política como acuerdo del producto. Prueba repetida tras bloquear la descarga genérica: verifica 403 también para el uploader y 404 del expediente/documento tras revocar su membresía. La regresión final comprueba además el rechazo 400 de NUL/Unicode no representable en JSONB sin escribir revisiones y de reutilizar un archivo institucional en otro expediente personal tras la revocación. Los vínculos ajenos se comprueban después del bloqueo del archivo, evitando eludir la propiedad durante cargas concurrentes. Navegador coordinado con el agente principal; resultados globales se registran en el informe de continuación.
+- Lint de archivos propios, compilación TypeScript frontend/backend y pruebas puras ejecutados (7 backend y 3 frontend, todos aprobados). El registro de aprobación, retención, cuentas y legal permanece pendiente aunque las pruebas técnicas pasen.

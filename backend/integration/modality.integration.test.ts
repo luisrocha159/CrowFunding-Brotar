@@ -57,7 +57,7 @@ test('modalidad real: se conserva, omite recompensas en donación y no descarta 
     const outsider = await register('ajeno')
 
     const created = await call('campaigns/drafts', creator.cookie, 'POST', {
-      title: `Modalidad ${suffix}`, summary: '', campaignType: 'REWARD'
+      title: `Modalidad ${suffix}`, summary: 'Resumen inicial de campaña', campaignType: 'REWARD'
     })
     assert.equal(created.status, 201)
     const draft = await created.json() as { id: string }
@@ -125,7 +125,7 @@ test('modalidad real: se conserva, omite recompensas en donación y no descarta 
 
     // La modalidad se conserva durante el asistente: guardar otro paso no la altera.
     assert.equal((await call(`campaigns/drafts/${draft.id}`, creator.cookie, 'PUT', {
-      title: `Modalidad ${suffix}`, summary: 'Avanza', campaignType: 'REWARD', builderStep: 1
+      title: `Modalidad ${suffix}`, summary: 'Avanza con datos guardados', campaignType: 'REWARD', builderStep: 1
     })).status, 200)
     assert.equal((await (await call(`campaigns/drafts/${draft.id}/modality`, creator.cookie)).json() as Modality).campaignType, 'REWARD')
   } finally {

@@ -13,9 +13,10 @@ export function FormField(props: FieldProps) {
   const { label, help, error, id = generatedId, ...control } = props
   const description = [control['aria-describedby'], help && `${id}-help`, error && `${id}-error`].filter(Boolean).join(' ') || undefined
   const accessibility = { id, 'aria-invalid': error ? true : control['aria-invalid'], 'aria-describedby': description }
+  const required = control.required || (isValidElement<{ required?: boolean }>(control.children) && control.children.props.required)
   let input: ReactNode
   if (control.as === undefined && isValidElement<InputHTMLAttributes<HTMLInputElement>>(control.children)) {
-    input = cloneElement(control.children, { ...accessibility, className: `${styles.input} ${control.children.props.className ?? ''}` })
+    input = cloneElement(control.children, { ...accessibility, required: Boolean(required), className: `${styles.input} ${control.children.type === 'textarea' ? styles.textarea : ''} ${control.children.props.className ?? ''}` })
   } else if (control.as === 'select') {
     const { as: kind, className = '', ...rest } = control
     input = <select {...rest} {...accessibility} data-control={kind} className={`${styles.input} ${className}`} />
@@ -27,7 +28,7 @@ export function FormField(props: FieldProps) {
     input = <input {...rest} {...accessibility} data-control={kind ?? 'input'} className={`${styles.input} ${className}`} />
   }
   return <div className={styles.field}>
-    <label className={styles.label} htmlFor={id}>{label}{control.required && ' *'}</label>
+    <label className={styles.label} htmlFor={id}>{label}{required && <span aria-label="obligatorio"> *</span>}</label>
     {input}
     {help && <p className={styles.help} id={`${id}-help`}>{help}</p>}
     {error && <p className={styles.fieldError} id={`${id}-error`} role="alert">{error}</p>}

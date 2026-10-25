@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
@@ -73,6 +73,7 @@ export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
   }
 
   if (status === 'loading') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta."><p role="status">Cargando portada…</p></AccessShell>
+  if (status === 'load-error' && lastError === 401) return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent(`/mi-campana/portada?borrador=${campaignId}`)}`} />
   if (status === 'load-error') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta.">
     <div id="cover-response" tabIndex={-1}><Message tone="error" title="No se pudo cargar la portada">{errorMessage[lastError] ?? errorMessage[0]}</Message></div>
     <div className={accessStyles.actions}><Button onClick={() => { setStatus('loading'); readCoverDraft(campaignId).then(result => { setCover(result); setValues({ altText: result?.altText ?? '', file: null }); setStatus('ready') }).catch(() => setStatus('load-error')) }}>Reintentar</Button><Link to="/crear-campana">Volver a mis borradores</Link></div>
@@ -108,13 +109,13 @@ export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
         </div>
         <div>
           <label className={styles.filePicker} htmlFor="cover-file">
-            <span>{values.file ? values.file.name : cover ? 'Reemplazar portada' : 'Seleccionar portada'}</span>
+            <span>{values.file ? values.file.name : cover ? 'Reemplazar portada' : 'Seleccionar portada'} *</span>
             <input id="cover-file" name="file" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="cover-file-help" onChange={event => change('file', event.target.files?.[0] ?? null)} />
           </label>
           <p id="cover-file-help" className={styles.help}>{COVER_HELP}</p>
           {errors.file && <p className={accessStyles.fieldError}>{errors.file}</p>}
         </div>
-        <FormField as="textarea" id="cover-altText" name="altText" label="Texto alternativo de la portada" required rows={4} value={values.altText} error={errors.altText} help="Describe el contenido visual sin prometer resultados ni verificaciones." onChange={event => change('altText', event.target.value)} />
+        <FormField as="textarea" id="cover-altText" name="altText" label="Texto alternativo de la portada" required minLength={10} maxLength={360} onBlur={() => setErrors(previous => ({ ...previous, altText: validateCover(values).altText }))} rows={4} value={values.altText} error={errors.altText} help="Describe el contenido visual en 10–180 caracteres, sin prometer resultados ni verificaciones." onChange={event => change('altText', event.target.value)} />
         <div className={accessStyles.actions}><Button type="submit" loading={busy} loadingLabel="Guardando portada…">{cover ? 'Reemplazar portada' : 'Guardar portada'}</Button><Link to="/mi-cuenta">Volver a mi cuenta</Link></div>
       </fieldset>
     </form>

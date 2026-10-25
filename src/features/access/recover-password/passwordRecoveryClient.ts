@@ -1,4 +1,5 @@
 import { normalizeEmail, validateEmail } from '../validation'
+import { notifySessionChanged } from '../session/sessionClient'
 
 export type RecoveryFailure = 'invalid' | 'busy' | 'expired' | 'unavailable' | 'unknown'
 export class RecoveryError extends Error {
@@ -54,4 +55,5 @@ export async function requestPasswordRecovery(email: string, signal?: AbortSigna
 export async function resetPassword(values: ResetValues, signal?: AbortSignal, request?: typeof fetch): Promise<void> {
   const response = await send('reset', { token: values.token, password: values.password }, signal, request)
   if (response.status !== 204) throw new RecoveryError('unknown')
+  notifySessionChanged()
 }

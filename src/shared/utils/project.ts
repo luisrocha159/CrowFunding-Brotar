@@ -11,6 +11,6 @@ export function canSupportProject(project: Pick<ProjectCardData, 'status'>): boo
 }
 
 export function toProjectCardData(project: Project): ProjectCardData {
-  const { slug, name, summary, category, creator, location, image, imageAlt, goal, raised, verified, status, daysRemaining } = project
-  return { slug, name, summary, category, creator, location, image, imageAlt, goal, raised, verified, status, daysRemaining }
+  const { slug, name, summary, category, creator, location, image, imageAlt, goal, raised, verified, status, daysRemaining, currencyCode, closingDateKnown } = project
+  return { slug, name, summary, category, creator, location, image, imageAlt, goal, raised, verified, status, daysRemaining, currencyCode, closingDateKnown }
 }

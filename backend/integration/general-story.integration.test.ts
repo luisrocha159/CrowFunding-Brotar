@@ -65,7 +65,7 @@ test('información, historia e impacto reales: límites, errores por campo y rev
     admin(`INSERT INTO category(id, slug, name) VALUES('${categoryId}','gen-${suffix}','Categoría ${suffix}');`)
 
     const created = await call('campaigns/drafts', creator.cookie, 'POST', {
-      title: `General ${suffix}`, summary: '', campaignType: 'DONATION'
+      title: `General ${suffix}`, summary: 'Resumen inicial de campaña', campaignType: 'DONATION'
     })
     assert.equal(created.status, 201)
     const draft = await created.json() as { id: string }
@@ -111,8 +111,8 @@ test('información, historia e impacto reales: límites, errores por campo y rev
 
     // BG-19: historia e indicadores con unidad y meta.
     const storyBody = {
-      problem: 'Problema', solution: 'Solución', beneficiaries: '120 familias',
-      expectedResults: 'Resultados esperados',
+      problem: 'Problema comunitario de ensayo', solution: 'Solución comunitaria de ensayo', beneficiaries: '120 familias de la comunidad',
+      expectedResults: 'Resultados esperados en la comunidad',
       indicators: [{ name: 'Familias atendidas', description: '', unit: 'familias', baselineValue: 0, targetValue: 120 }]
     }
     assert.equal((await call(`campaigns/drafts/${draft.id}/story`, creator.cookie, 'PUT', storyBody)).status, 200)
@@ -143,7 +143,7 @@ test('información, historia e impacto reales: límites, errores por campo y rev
     assert.equal(review.status, 'DRAFT')
     assert.equal(review.general.title, `General ${suffix}`)
     assert.equal(review.general.location.locality, 'La Paz')
-    assert.equal(review.story.beneficiaries, '120 familias')
+    assert.equal(review.story.beneficiaries, '120 familias de la comunidad')
     assert.equal(review.indicators[0]!.targetValue, 120)
     assert.equal(review.indicators[0]!.achievedValue, null)
     assert.equal(review.raisedAmount, null, 'Un borrador no ha recaudado nada.')

@@ -28,6 +28,7 @@
 .fieldError { color: var(--color-danger); font-size: 13px; margin: 0; }
 .message { display: flex; gap: 12px; padding: 16px; border-radius: var(--radius-md); border: 1px solid currentColor; font-size: 14px; }
 .message p { margin: 4px 0 0; }
+.messageBody { margin-top: 4px; }
 .state { padding: 40px 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); text-align: center; }
 .state h3 { margin: 14px 0 8px; font-size: 18px; }
 .state p { color: var(--color-muted); max-width: 480px; margin: 0 auto 20px; }
@@ -50,3 +51,8 @@
 .skeletonBody { padding: 20px; display: grid; gap: 18px; }
 .skeletonImage { height: auto; aspect-ratio: 1.8; border-radius: 0; }
 .short { width: 60%; }
+.phoneFields { min-width: 0; margin: 0; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.phoneFields legend { font-weight: 600; padding-inline: 6px; }
+.phoneFields > p { margin: 0 0 12px; }
+.phoneRow { display: grid; grid-template-columns: minmax(170px, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+@media (max-width: 600px) { .phoneRow { grid-template-columns: 1fr; } }

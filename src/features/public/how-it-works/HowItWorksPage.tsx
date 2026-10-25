@@ -4,8 +4,8 @@ import styles from '../public.module.css'
 const steps = [
   ['Descubre proyectos', 'Explora iniciativas de distintas comunidades. Busca por tema, ubicación o modalidad y encuentra una causa que te interese.'],
   ['Conoce la campaña', 'Revisa su historia, la meta, el impacto esperado y la información del creador. Consulta sus señales de confianza antes de decidir.'],
-  ['Apoya una iniciativa', 'Elige la campaña que deseas impulsar. En esta muestra, el botón de apoyo te lleva al acceso; no se procesa ningún pago.'],
-  ['Acompaña el avance', 'Vuelve al detalle público para consultar la recaudación y las actualizaciones que comparta el creador.'],
+  ['Apoya una iniciativa', 'Elige la campaña que deseas impulsar. Esta etapa permite consultar su información; los aportes y pagos se habilitarán posteriormente.'],
+  ['Acompaña el avance', 'Vuelve al detalle público para consultar la recaudación. El seguimiento mediante actualizaciones del creador se incorporará en una etapa posterior.'],
   ['Consulta los resultados', 'Revisa las novedades y el impacto comunicado. Los objetivos publicados no equivalen a resultados ya alcanzados.']
 ]
 export function HowItWorksPage() {

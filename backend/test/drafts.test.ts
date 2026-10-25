@@ -13,7 +13,7 @@ const stored: Draft = {
   id: 'draft-1', title: 'Campaña', summary: null, campaignType: 'DONATION',
   categoryId: null, organizationId: null, status: 'DRAFT', builderStep: 2, updatedAt: new Date()
 }
-const input: DraftInput = { title: ' Campaña ', summary: ' Resumen ', campaignType: 'DONATION', categoryId: null, organizationId: null }
+const input: DraftInput = { title: ' Campaña ', summary: ' Resumen de campaña ', campaignType: 'DONATION', categoryId: null, organizationId: null }
 
 function build(overrides: Partial<DraftRepository> = {}, manages = true) {
   const saved: { input: DraftInput; step: number }[] = []
@@ -46,19 +46,20 @@ test('BG-18 CA 3: se avanza de uno en uno y se retrocede libremente', () => {
   assert.equal(allowsStepMove(7, 8), false, 'No se pasa del último.')
 })
 
-test('solo el borrador admite edición por el asistente', () => {
+test('borrador y cambios solicitados admiten edición; el resto permanece bloqueado', () => {
   assert.equal(allowsBuilderEditing('DRAFT'), true)
+  assert.equal(allowsBuilderEditing('CHANGES_REQUESTED'), true)
   for (const status of ['IN_REVIEW', 'APPROVED', 'PUBLISHED', 'CLOSED', 'CANCELLED']) {
     assert.equal(allowsBuilderEditing(status), false, status)
   }
 })
 
 test('normaliza y valida los datos del borrador', () => {
-  assert.deepEqual(normalizeDraft(input), { title: 'Campaña', summary: 'Resumen', campaignType: 'DONATION', categoryId: null, organizationId: null })
-  assert.equal(isValidTitle('x'), true)
+  assert.deepEqual(normalizeDraft(input), { title: 'Campaña', summary: 'Resumen de campaña', campaignType: 'DONATION', categoryId: null, organizationId: null })
+  assert.equal(isValidTitle('x'), false)
   assert.equal(isValidTitle('   '.trim()), false)
   assert.equal(isValidTitle('x'.repeat(201)), false)
-  assert.equal(isValidSummary(''), true)
+  assert.equal(isValidSummary(''), false)
   assert.equal(isValidSummary('x'.repeat(500)), true)
   assert.equal(isValidSummary('x'.repeat(501)), false)
 })
@@ -75,7 +76,7 @@ test('la propiedad y la posición se comprueban antes de guardar', async () => {
   const result = await drafts.save('own', stored.id, input, 3)
   assert.equal(result.builderStep, 3)
   assert.equal(result.title, 'Campaña')
-  assert.deepEqual(saved, [{ input: { ...input, title: 'Campaña', summary: 'Resumen' }, step: 3 }])
+  assert.deepEqual(saved, [{ input: { ...input, title: 'Campaña', summary: 'Resumen de campaña' }, step: 3 }])
 })
 
 test('no se adopta una organización ajena ni una categoría retirada', async () => {

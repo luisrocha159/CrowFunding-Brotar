@@ -1,0 +1,2440 @@
+{
+  "version": "sprint3-demo-0.10",
+  "scope": "API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/access/permissions",
+      "controller": "RolesController",
+      "handler": "capabilities",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/access/roles",
+      "controller": "RolesController",
+      "handler": "current",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/audit",
+      "controller": "AuditController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "audit.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-closure",
+      "controller": "AdminClosureController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.closure.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-closure/:id",
+      "controller": "AdminClosureController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.closure.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/campaign-closure/:id/actions",
+      "controller": "AdminClosureController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.closure.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-closure/:id/documents/:fileId",
+      "controller": "AdminClosureController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.closure.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-cycle",
+      "controller": "AdministrativeCycleController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-cycle/:id",
+      "controller": "AdministrativeCycleController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/campaign-cycle/:id/actions",
+      "controller": "AdministrativeCycleController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.manage"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/campaigns/:id/decision",
+      "controller": "AdministrativeReviewController",
+      "handler": "decide",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.review.decide"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaigns/:id/detail",
+      "controller": "AdministrativeReviewController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.review.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/campaigns/:id/publish",
+      "controller": "AdministrativeReviewController",
+      "handler": "publish",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.publish"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaigns/review",
+      "controller": "CampaignReviewQueueController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.review.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaigns/review/:id",
+      "controller": "CampaignReviewQueueController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.review.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/disputes",
+      "controller": "AdministrativeDisputes",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/disputes/:id",
+      "controller": "AdministrativeDisputes",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/disputes/:id/actions",
+      "controller": "AdministrativeDisputes",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/disputes/:id/evidence/:fileId",
+      "controller": "AdministrativeDisputes",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/disputes/:id/messages",
+      "controller": "AdministrativeDisputes",
+      "handler": "message",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/demo/currencies",
+      "controller": "DemoReconciliationController",
+      "handler": "currencies",
+      "guards": [
+        "DemoEnabledGuard",
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/demo/expire",
+      "controller": "DemoReconciliationController",
+      "handler": "expire",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/demo/pending",
+      "controller": "DemoReconciliationController",
+      "handler": "pending",
+      "guards": [
+        "DemoEnabledGuard",
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/demo/reconciliations",
+      "controller": "DemoReconciliationController",
+      "handler": "list",
+      "guards": [
+        "DemoEnabledGuard",
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/demo/reconciliations",
+      "controller": "DemoReconciliationController",
+      "handler": "create",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/demo/reconciliations/:id",
+      "controller": "DemoReconciliationController",
+      "handler": "detail",
+      "guards": [
+        "DemoEnabledGuard",
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/demo/reconciliations/:id/close",
+      "controller": "DemoReconciliationController",
+      "handler": "close",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/demo/reconciliations/:id/items/:itemId/resolve",
+      "controller": "DemoReconciliationController",
+      "handler": "resolve",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/disbursements",
+      "controller": "AdministrativeDisbursementController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/disbursements/:id",
+      "controller": "AdministrativeDisbursementController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/disbursements/:id/actions",
+      "controller": "AdministrativeDisbursementController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/disbursements/campaigns/:id/destination",
+      "controller": "AdministrativeDisbursementController",
+      "handler": "destination",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/disbursements/campaigns/:id/destination/review",
+      "controller": "AdministrativeDisbursementController",
+      "handler": "review",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/payments",
+      "controller": "FinanceController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/payments/export",
+      "controller": "FinanceController",
+      "handler": "export",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/refunds",
+      "controller": "RefundAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/finance/refunds/:id",
+      "controller": "RefundAdministrationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/finance/refunds/:id/actions",
+      "controller": "RefundAdministrationController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/support-cases",
+      "controller": "SupportAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/support-cases/:id",
+      "controller": "SupportAdministrationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/actions",
+      "controller": "SupportAdministrationController",
+      "handler": "action",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/assignment",
+      "controller": "SupportAdministrationController",
+      "handler": "assign",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/support-cases/:id/evidence/:fileId",
+      "controller": "SupportAdministrationController",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/messages",
+      "controller": "SupportAdministrationController",
+      "handler": "message",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/users",
+      "controller": "CreatorAdministrationController",
+      "handler": "find",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "creator.provision"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/users/:id/creator",
+      "controller": "CreatorAdministrationController",
+      "handler": "grant",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "creator.provision"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/users/:id/responsibilities",
+      "controller": "StaffAdministrationController",
+      "handler": "change",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "roles.manage"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/verifications",
+      "controller": "VerificationReviewController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "verification.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/verifications/:id",
+      "controller": "VerificationReviewController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "verification.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/verifications/:id/documents/:fileId",
+      "controller": "VerificationReviewController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "verification.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/verifications/:id/review",
+      "controller": "VerificationReviewController",
+      "handler": "decide",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "verification.review"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/administration/dashboard",
+      "controller": "AdministrativeDashboardController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "dashboard.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/administration/parties",
+      "controller": "PartyAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/administration/parties/organizations/:id",
+      "controller": "PartyAdministrationController",
+      "handler": "organization",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/email-availability",
+      "controller": "RegistrationController",
+      "handler": "checkEmail",
+      "guards": [
+        "RegistrationLimitGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "controller": "SessionController",
+      "handler": "login",
+      "guards": [
+        "LoginLimitGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "controller": "SessionController",
+      "handler": "logout",
+      "guards": [
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "controller": "SessionController",
+      "handler": "me",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/password/recovery",
+      "controller": "PasswordRecoveryController",
+      "handler": "request",
+      "guards": [
+        "RegistrationLimitGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/password/reset",
+      "controller": "PasswordRecoveryController",
+      "handler": "reset",
+      "guards": [
+        "RegistrationLimitGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "controller": "RegistrationController",
+      "handler": "create",
+      "guards": [
+        "RegistrationLimitGuard"
+      ],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/accountability",
+      "controller": "ProgressController",
+      "handler": "accountability",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/progress",
+      "controller": "ProgressController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/:id/progress",
+      "controller": "ProgressController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/updates",
+      "controller": "ProgressController",
+      "handler": "updates",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/updates/:updateId",
+      "controller": "ProgressController",
+      "handler": "update",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/:id/updates/:updateId",
+      "controller": "ProgressController",
+      "handler": "saveUpdate",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/creator-dashboard",
+      "controller": "ProgressController",
+      "handler": "dashboard",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts",
+      "controller": "DraftController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/campaigns/drafts",
+      "controller": "DraftController",
+      "handler": "create",
+      "guards": [
+        "CampaignWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id",
+      "controller": "DraftController",
+      "handler": "find",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id",
+      "controller": "DraftController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/budget",
+      "controller": "SectionsController",
+      "handler": "budget",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/budget",
+      "controller": "SectionsController",
+      "handler": "saveBudget",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/cover",
+      "controller": "CoverDraftController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/campaigns/drafts/:id/cover",
+      "controller": "CoverDraftController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/funding",
+      "controller": "SectionsController",
+      "handler": "funding",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/funding",
+      "controller": "SectionsController",
+      "handler": "saveFunding",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/gallery",
+      "controller": "GalleryController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/gallery",
+      "controller": "GalleryController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/general",
+      "controller": "GeneralController",
+      "handler": "readGeneral",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/general",
+      "controller": "GeneralController",
+      "handler": "saveGeneral",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/modality",
+      "controller": "ModalityController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/modality",
+      "controller": "ModalityController",
+      "handler": "change",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/plan",
+      "controller": "SectionsController",
+      "handler": "plan",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/plan",
+      "controller": "SectionsController",
+      "handler": "savePlan",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/review",
+      "controller": "GeneralController",
+      "handler": "review",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/rewards",
+      "controller": "SectionsController",
+      "handler": "rewards",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/rewards",
+      "controller": "SectionsController",
+      "handler": "saveRewards",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/section-catalogs",
+      "controller": "SectionsController",
+      "handler": "catalogs",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/story",
+      "controller": "GeneralController",
+      "handler": "readStory",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/drafts/:id/story",
+      "controller": "GeneralController",
+      "handler": "saveStory",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/drafts/:id/submission",
+      "controller": "SubmissionController",
+      "handler": "review",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/campaigns/drafts/:id/submission",
+      "controller": "SubmissionController",
+      "handler": "submit",
+      "guards": [
+        "CampaignWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER",
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/mine",
+      "controller": "ProjectsController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/mine/:id",
+      "controller": "ProjectsController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/campaigns/mine/:id/discard",
+      "controller": "ProjectsController",
+      "handler": "discard",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/public",
+      "controller": "PublicCampaignController",
+      "handler": "list",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/public/:id/gallery",
+      "controller": "PublicGalleryController",
+      "handler": "read",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/public/:id/updates",
+      "controller": "ProgressController",
+      "handler": "publicUpdates",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/public/:slug",
+      "controller": "PublicCampaignController",
+      "handler": "find",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/catalogs/admin/categories",
+      "controller": "CategoryAdminController",
+      "handler": "list",
+      "guards": [
+        "CatalogReadGuard",
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": [
+        "catalog.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/catalogs/admin/categories",
+      "controller": "CategoryAdminController",
+      "handler": "create",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "catalog.manage"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/catalogs/admin/categories/:id",
+      "controller": "CategoryAdminController",
+      "handler": "update",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "catalog.manage"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/catalogs/admin/categories/:id/state",
+      "controller": "CategoryAdminController",
+      "handler": "setState",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "catalog.manage"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/catalogs/admin/settings",
+      "controller": "SettingController",
+      "handler": "list",
+      "guards": [
+        "CatalogReadGuard",
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": [
+        "catalog.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/catalogs/admin/settings/:key",
+      "controller": "SettingController",
+      "handler": "read",
+      "guards": [
+        "CatalogReadGuard",
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": [
+        "catalog.read"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/catalogs/admin/settings/:key",
+      "controller": "SettingController",
+      "handler": "write",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "ADMIN"
+      ],
+      "permissions": [
+        "catalog.manage"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/catalogs/categories",
+      "controller": "CategoryController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/catalogs/categories/:id",
+      "controller": "CategoryController",
+      "handler": "find",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/contacts",
+      "controller": "ContactsController",
+      "handler": "status",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/contacts/email/confirm",
+      "controller": "ContactsController",
+      "handler": "confirm",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/contacts/email/preferences",
+      "controller": "ContactsController",
+      "handler": "preference",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/contacts/email/request",
+      "controller": "ContactsController",
+      "handler": "request",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/contacts/notifications",
+      "controller": "ContactsController",
+      "handler": "notices",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/contacts/notifications/:id/read",
+      "controller": "ContactsController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/contributions",
+      "controller": "ContributionController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/contributions/:id",
+      "controller": "ContributionController",
+      "handler": "own",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/demo-payments/:id",
+      "controller": "DemoPaymentsController",
+      "handler": "ticket",
+      "guards": [
+        "DemoEnabledGuard",
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/demo-payments/:id/simulate",
+      "controller": "DemoPaymentsController",
+      "handler": "simulate",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/demo-payments/checkout",
+      "controller": "DemoPaymentsController",
+      "handler": "checkout",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/demo-payments/contributions/:id/retry",
+      "controller": "DemoPaymentsController",
+      "handler": "retry",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/files",
+      "controller": "FileController",
+      "handler": "upload",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/files/:id",
+      "controller": "FileController",
+      "handler": "delete",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/:id",
+      "controller": "FileController",
+      "handler": "privateFile",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/public/:id",
+      "controller": "FileController",
+      "handler": "publicFile",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/live",
+      "controller": "HealthController",
+      "handler": "live",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/ready",
+      "controller": "HealthController",
+      "handler": "ready",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/bookmarks",
+      "controller": "BookmarkController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/bookmarks/:id",
+      "controller": "BookmarkController",
+      "handler": "state",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/bookmarks/:id/:kind",
+      "controller": "BookmarkController",
+      "handler": "set",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/bookmarks/updates",
+      "controller": "BookmarkController",
+      "handler": "updates",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/campaign-closure/:id",
+      "controller": "OwnClosureController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/campaign-closure/:id/actions",
+      "controller": "OwnClosureController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/campaign-closure/:id/documents/:fileId",
+      "controller": "OwnClosureController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/campaign-cycle",
+      "controller": "OwnCycleController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/campaign-cycle/:id",
+      "controller": "OwnCycleController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/campaign-cycle/:id/actions",
+      "controller": "OwnCycleController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/contributions",
+      "controller": "ContributionController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/contributions/:id",
+      "controller": "ContributionController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/contributions/:id/receipt",
+      "controller": "ContributionController",
+      "handler": "receipt",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disbursements",
+      "controller": "OwnDisbursementController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disbursements/:id",
+      "controller": "OwnDisbursementController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/disbursements/campaigns/:id",
+      "controller": "OwnDisbursementController",
+      "handler": "request",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disbursements/campaigns/:id/destination",
+      "controller": "OwnDisbursementController",
+      "handler": "destination",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/disbursements/campaigns/:id/destination",
+      "controller": "OwnDisbursementController",
+      "handler": "save",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.manage.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disputes",
+      "controller": "OwnDisputes",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/disputes",
+      "controller": "OwnDisputes",
+      "handler": "request",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disputes/:id",
+      "controller": "OwnDisputes",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/disputes/:id/evidence/:fileId",
+      "controller": "OwnDisputes",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/disputes/:id/messages",
+      "controller": "OwnDisputes",
+      "handler": "message",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/organizations",
+      "controller": "OrganizationManagementController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/organizations/:id",
+      "controller": "OrganizationManagementController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/refunds",
+      "controller": "OwnRefundController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/refunds",
+      "controller": "OwnRefundController",
+      "handler": "request",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/refunds/:id",
+      "controller": "OwnRefundController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/simulations",
+      "controller": "SimulationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/simulations",
+      "controller": "SimulationController",
+      "handler": "create",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/simulations/:id",
+      "controller": "SimulationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/simulations/:id",
+      "controller": "SimulationController",
+      "handler": "transition",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/sponsor-summary",
+      "controller": "ContributionController",
+      "handler": "summary",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/support-cases",
+      "controller": "SupportCaseController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/support-cases",
+      "controller": "SupportCaseController",
+      "handler": "create",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/support-cases/:id",
+      "controller": "SupportCaseController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/support-cases/context",
+      "controller": "SupportCaseController",
+      "handler": "context",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/support-options/:id",
+      "controller": "SimulationController",
+      "handler": "options",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/verifications",
+      "controller": "VerificationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/verifications",
+      "controller": "VerificationController",
+      "handler": "start",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/verifications/:id",
+      "controller": "VerificationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/verifications/:id",
+      "controller": "VerificationController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/verifications/:id/documents/:fileId",
+      "controller": "VerificationController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/verifications/payout-accounts",
+      "controller": "VerificationController",
+      "handler": "payouts",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/verifications/types",
+      "controller": "VerificationController",
+      "handler": "types",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizations",
+      "controller": "OrganizationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizations",
+      "controller": "OrganizationController",
+      "handler": "create",
+      "guards": [
+        "OrganizationLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizations/:id",
+      "controller": "OrganizationController",
+      "handler": "find",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizations/:id/membership",
+      "controller": "OrganizationController",
+      "handler": "membership",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizations/types",
+      "controller": "OrganizationController",
+      "handler": "types",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/profile",
+      "controller": "ProfileController",
+      "handler": "read",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/profile",
+      "controller": "ProfileController",
+      "handler": "save",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/verification-badges/campaigns/:id",
+      "controller": "VerificationBadgeController",
+      "handler": "read",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    }
+  ]
+}

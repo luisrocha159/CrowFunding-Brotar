@@ -44,7 +44,7 @@ test('registro HTTP real: persistencia atómica, duplicados, teléfono y rollbac
     assert.match(secret.passwordHash, /^scrypt\$16384\$8\$5\$/)
     assert.notEqual(secret.passwordHash, input.password)
     assert.equal((await post({ ...input, email: emails[0]!.toUpperCase() })).status, 409)
-    const race = { ...input, email: emails[1], phoneCountryCode: '+591', phoneNumber: `9${Date.now()}` }
+    const race = { ...input, email: emails[1], phoneCountryCode: '+591', phoneNumber: `9${String(Date.now()).slice(-7)}` }
     const responses = await Promise.all([post(race), post(race)])
     assert.deepEqual(responses.map(item => item.status).sort(), [201, 409])
     const phoneUser = await source.getRepository(UserSchema).findOneByOrFail({ email: emails[1] })

@@ -3,10 +3,12 @@ import { IsBase64, IsIn, IsMimeType, IsString, Length, MaxLength } from 'class-v
 import type { Response } from 'express'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
+import {DatabaseService} from '../../shared/infrastructure/database/database.service'
+import {auditFileRead} from '../../shared/infrastructure/database/file-read-audit'
 import { FileAccessDenied, FileInUse, FileUnavailable, Files, InvalidFileUpload, type FilePurpose, type FileVisibility } from '../application/files'
 
 const visibility: FileVisibility[] = ['PUBLIC', 'PRIVATE']
-const purpose: FilePurpose[] = ['PROFILE_AVATAR', 'ORGANIZATION_DOCUMENT', 'CAMPAIGN_PUBLIC_IMAGE']
+const purpose: FilePurpose[] = ['PROFILE_AVATAR', 'ORGANIZATION_DOCUMENT', 'CAMPAIGN_PUBLIC_IMAGE', 'VERIFICATION_DOCUMENT', 'SUPPORT_EVIDENCE', 'CLOSURE_EVIDENCE']
 
 class FileUploadDto {
   @IsIn(visibility)
@@ -38,7 +40,7 @@ function attachHeaders(response: Response, name: string, mimeType: string, size:
 
 @Controller('files')
 export class FileController {
-  constructor(private readonly files: Files) {}
+  constructor(private readonly files: Files,private readonly database:DatabaseService) {}
 
   @Post()
   @UseGuards(RoleGuard, SessionMutationGuard)
@@ -71,6 +73,7 @@ export class FileController {
   async privateFile(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Res({ passthrough: true }) response: Response) {
     try {
       const result = await this.files.privateDownload(id, request.brotarUser.id)
+      if(result.file.visibility==='PRIVATE')await auditFileRead(this.database,request.brotarUser.id,id)
       attachHeaders(response, result.file.originalName, result.file.mimeType, result.file.sizeBytes)
       return new StreamableFile(result.content)
     } catch (error) {

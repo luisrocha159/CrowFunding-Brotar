@@ -19,9 +19,11 @@ export type ProjectCardData = Readonly<{
   verified: boolean
   status: CampaignStatus
   daysRemaining: number
+  closingDateKnown?: boolean
+  currencyCode?: string
 }>
 
-/** Public demonstration data only: no identities, payments or private documents. */
+/** Información pública de campaña; nunca incluye sesiones ni documentos privados. */
 export type Project = ProjectCardData & Readonly<{
   id: string
   campaignType: CampaignType
@@ -29,6 +31,7 @@ export type Project = ProjectCardData & Readonly<{
   problem: string
   solution: string
   beneficiaries: string
+  expectedResults?: string
   impact: readonly Readonly<{ indicator: string; target: string }>[]
   creatorDescription: string
   trustSignals: readonly string[]
@@ -40,4 +43,5 @@ export type Project = ProjectCardData & Readonly<{
   imageCaption: string
   rewards?: readonly Readonly<{ id: string; title: string; description: string; minAmount: number; currency: string }>[]
   isDemo: boolean
+  acceptsContributions?:boolean
 }>

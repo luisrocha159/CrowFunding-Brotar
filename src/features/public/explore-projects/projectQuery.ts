@@ -10,7 +10,7 @@ export function normalizeSearch(value: string): string {
 }
 
 export function getProjectFilterOptions(source: readonly Project[]) {
-  const unique = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, 'es'))
+  const unique = (values: string[]) => [...new Set(values.filter(value => value.trim()))].sort((a, b) => a.localeCompare(b, 'es'))
   return {
     categories: unique(source.map(project => project.category)),
     locations: unique(source.map(project => project.location)),
@@ -36,9 +36,12 @@ export function queryProjects(source: readonly Project[], query: ProjectQuery = 
     if (sort === 'featured') order = Number(b.featured) - Number(a.featured)
     if (sort === 'ending-soon') {
       order = Number(b.status === 'active') - Number(a.status === 'active')
-      if (!order && a.status === 'active' && b.status === 'active') order = a.daysRemaining - b.daysRemaining
+      if (!order && a.status === 'active' && b.status === 'active') {
+        order = Number(a.closingDateKnown === false) - Number(b.closingDateKnown === false)
+        if (!order && a.closingDateKnown !== false && b.closingDateKnown !== false) order = a.daysRemaining - b.daysRemaining
+      }
     }
-    return order || a.id.localeCompare(b.id)
+    return order || (sort === 'featured' ? 0 : a.id.localeCompare(b.id))
   })
   const pageSize = Number.isFinite(query.pageSize) ? Math.min(24, Math.max(1, Math.floor(query.pageSize!))) : 6
   const total = filtered.length

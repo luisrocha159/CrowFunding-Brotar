@@ -1,4 +1,5 @@
 import { FileAccessDenied, FileUnavailable, type AuthorizedFileReader } from '../../files/application/files'
+import { textError } from '../../campaigns/domain/input-policy'
 
 export interface CampaignCoverDraft {
   campaignId: string
@@ -26,7 +27,7 @@ export class CampaignCoverDrafts {
 
   async save(ownerUserId: string, campaignId: string, fileId: string, altText: string): Promise<CampaignCoverDraft> {
     const text = altText.trim()
-    if (text.length < 10 || text.length > 180) throw new InvalidCampaignCover()
+    if (textError(text, 10, 180)) throw new InvalidCampaignCover()
     try {
       const uploaded = await this.files.privateDownload(fileId, ownerUserId)
       if (uploaded.file.ownerUserId !== ownerUserId) throw new FileAccessDenied()

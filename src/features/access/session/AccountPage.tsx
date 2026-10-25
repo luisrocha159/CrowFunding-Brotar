@@ -5,6 +5,7 @@ import { Message } from '../../../shared/components/Feedback'
 import { AccessShell } from '../AccessComponents'
 import { currentUser, logout, SessionError, type CurrentUser } from './sessionClient'
 import { ProfileForm } from './ProfileForm'
+import {ContactPanel} from './ContactPanel'
 import { AccountRoles } from '../../organizations/AccountRoles'
 import styles from '../access.module.css'
 
@@ -38,9 +39,12 @@ export function AccountPage() {
     {status === 'error' && <><Message tone="error" title="No se pudo comprobar la sesión">Comprueba que la API y la base estén disponibles. No se mostrará información privada sin validación.</Message><Button onClick={() => { setStatus('loading'); setRetry(value => value + 1) }}>Reintentar</Button></>}
     {status === 'ready' && user && <section aria-label="Información de mi cuenta">
       <h2>Hola, {user.firstName}</h2><dl className={styles.accountSummary}><dt>Nombre</dt><dd>{user.firstName} {user.lastName}</dd><dt>Correo</dt><dd>{user.email}</dd><dt>Estado</dt><dd>{user.status === 'PENDING_VERIFICATION' ? 'Acceso básico disponible · verificación pendiente' : 'Cuenta activa'}</dd></dl>
+      <div className={styles.actions}><ButtonLink variant="secondary" to="/panel-patrocinador">Mi panel de apoyos</ButtonLink><ButtonLink variant="secondary" to="/mi-verificacion">Mi verificación</ButtonLink><ButtonLink variant="secondary" to="/mis-incidencias">Mis incidencias</ButtonLink></div>
+      <ButtonLink variant="secondary" to="/mis-guardados">Mis campañas guardadas y novedades</ButtonLink>
       {user.status === 'PENDING_VERIFICATION' && <p className={styles.accountHint}>Puedes usar las funciones básicas. Esto todavía no verifica tu identidad ni habilita pagos o publicación.</p>}
+      <ContactPanel />
       <ProfileForm onExpired={() => { setUser(null); setStatus('anonymous') }} onSaved={profile => setUser(current => current ? { ...current, firstName: profile.firstName, lastName: profile.lastName } : null)} />
-      <details className={styles.accountAdvanced}><summary>Opciones para iniciativas y permisos</summary><p>Si quieres preparar una campaña o registrar una organización, puedes iniciar un borrador. Tu rol básico no equivale a ser una organización verificada ni a tener una campaña publicada.</p><AccountRoles /><ButtonLink variant="secondary" to="/crear-campana">Ver mis borradores</ButtonLink></details>
+      <details className={styles.accountAdvanced}><summary>Opciones para iniciativas y permisos</summary><p>Si quieres preparar una campaña o registrar una organización, puedes iniciar un borrador. Tu rol básico no equivale a ser una organización verificada ni a tener una campaña publicada.</p><AccountRoles /><ButtonLink variant="secondary" to="/panel-creador">Panel del creador</ButtonLink><ButtonLink variant="secondary" to="/crear-campana">Ver mis borradores</ButtonLink></details>
       {logoutError && <Message tone="error" title="No pudimos confirmar el cierre">Reintenta. No se considera cerrada la sesión hasta que el servidor la revoque.</Message>}
       <div className={styles.actions}><ButtonLink variant="secondary" to="/explorar">Explorar proyectos</ButtonLink><Button loading={closing} loadingLabel="Cerrando sesión…" onClick={async () => {
         if (closing) return

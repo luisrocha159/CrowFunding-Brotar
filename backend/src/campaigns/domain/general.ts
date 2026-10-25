@@ -4,6 +4,8 @@
  * campaign_location.locality varchar(160), country_code char(2).
  * El asistente los muestra para que el creador los vea antes de escribir.
  */
+import { MINIMUMS, textError } from './input-policy'
+
 export const LIMITS = {
   title: 200,
   summary: 500,
@@ -64,5 +66,15 @@ export function validateGeneral(input: GeneralInput): Record<string, string> {
   if ([...locality].length > LIMITS.locality) errors.locality = `La localidad admite hasta ${LIMITS.locality} caracteres.`
   if ([...addressLine].length > LIMITS.addressLine) errors.addressLine = `La dirección admite hasta ${LIMITS.addressLine} caracteres.`
   if ([...reference].length > LIMITS.reference) errors.reference = `La referencia admite hasta ${LIMITS.reference} caracteres.`
+  for (const [field, value] of Object.entries({ title: input.title, summary: input.summary, locality, addressLine, reference })) {
+    if (value.includes('\u0000')) errors[field] = 'El campo contiene un carácter de control no admitido.'
+  }
+  for (const [field, value, min, max, optional] of [
+    ['title', input.title, MINIMUMS.title, 200, false], ['summary', input.summary, MINIMUMS.summary, 500, false],
+    ['locality', locality, 2, 160, false], ['addressLine', addressLine, 5, 500, true], ['reference', reference, 5, 500, true]
+  ] as const) {
+    const error = textError(value, min, max, optional)
+    if (error) errors[field] = error
+  }
   return errors
 }

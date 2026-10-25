@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { getPublicCampaign, listPublicCampaigns } from './campaignsApi'
 import type { Project } from '../../shared/types/project'
 
 type Resource = { key: string; status: 'ready' | 'error'; projects: readonly Project[] }
 
 export function useProjectResource({ featured = false, slug }: { featured?: boolean; slug?: string } = {}) {
-  const [params, setParams] = useSearchParams()
   const [attempt, setAttempt] = useState(0)
   const [resource, setResource] = useState<Resource | null>(null)
   const key = JSON.stringify([featured, slug, attempt])
@@ -23,8 +21,6 @@ export function useProjectResource({ featured = false, slug }: { featured?: bool
   }, [key, featured, slug])
 
   function retry() {
-    const next = new URLSearchParams(params)
-    setParams(next, { replace: true, preventScrollReset: true })
     setAttempt(value => value + 1)
   }
 

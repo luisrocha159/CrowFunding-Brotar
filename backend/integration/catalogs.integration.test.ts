@@ -10,6 +10,9 @@ import { readEnvironment } from '../src/config/environment'
 import { createDataSource } from '../src/shared/infrastructure/database/data-source'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { UserSchema } from '../src/users/infrastructure/persistence/user.schemas'
+import { Categories } from '../src/catalogs/application/categories'
+import { TypeormCategoryRepository } from '../src/catalogs/infrastructure/typeorm-category.repository'
+import { DatabaseService } from '../src/shared/infrastructure/database/database.service'
 import { readTestDatabaseTarget } from './database-target'
 
 test('catálogos reales: edición autorizada, referencias protegidas y parámetros no acordados', { timeout: 90000 }, async () => {
@@ -20,7 +23,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
 
   const { container } = readTestDatabaseTarget(config)
   const admin = (sql: string) => execFileSync('docker',
-    ['exec', '-i', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],
+    ['exec', '-i', container, 'psql', '-X', '-t', '-A', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],
     { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 10000 })
 
   const source = createDataSource(config)
@@ -28,6 +31,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
   const password = randomBytes(24).toString('hex')
   const ids: string[] = []
   const campaignId = randomUUID()
+  const alertCaseId = randomUUID()
   const app = await NestFactory.create(AppModule, { logger: false })
   configureHttp(app, readEnvironment({ NODE_ENV: 'test' }))
   await app.listen(0, '127.0.0.1')
@@ -50,9 +54,29 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
 
   try {
     await source.initialize()
+    const settingsBefore = await source.query('SELECT count(*)::text AS n FROM system_setting') as { n: string }[]
     const plain = await register('simple')
     const manager = await register('admin')
     admin(`INSERT INTO user_role(user_id, role_id) SELECT '${manager.id}', id FROM role WHERE code='ADMIN';`)
+
+    assert.equal((await call('catalogs/admin/categories', plain.cookie)).status, 403)
+    assert.equal((await call('catalogs/admin/settings', plain.cookie)).status, 403)
+    const initialSettings=await (await call('catalogs/admin/settings', manager.cookie)).json() as {key:string;value:unknown}[]
+    assert.deepEqual(initialSettings.map(row=>row.key),['support.first_response_hours','support.escalation_hours'])
+    assert.ok(initialSettings.every(row=>typeof row.value==='number'))
+    const responseKey='support.first_response_hours'
+    for(const invalid of [0,49,1.5,'24',true,null])assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:invalid})).status,400)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,plain.cookie,'PUT',{value:24})).status,403)
+    admin(`INSERT INTO support_case(id,user_id,subject,description,created_at) VALUES('${alertCaseId}','${manager.id}','DEMO prueba de alerta','Caso sintético para verificar consumo de parámetro',now()-interval '36 hours');`)
+    const alertsBefore=await (await call('administration/dashboard',manager.cookie)).json() as {supportAlerts:{firstResponseDue:number}}
+    assert.equal(typeof alertsBefore.supportAlerts?.firstResponseDue,'number')
+    const changed=await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:24});assert.equal(changed.status,200)
+    const alertsAfter=await (await call('administration/dashboard',manager.cookie)).json() as {supportAlerts:{firstResponseDue:number}}
+    assert.equal(alertsAfter.supportAlerts.firstResponseDue,alertsBefore.supportAlerts.firstResponseDue+1,'El panel consume el parámetro persistido, no una constante.')
+    admin(`DELETE FROM support_case WHERE id='${alertCaseId}';`)
+    assert.equal((await changed.json() as {value:number}).value,24)
+    assert.equal(JSON.parse(admin(`SELECT count(*)::int FROM audit_log WHERE entity_name='system_setting' AND actor_user_id='${manager.id}' AND new_values->>'key'='${responseKey}';`).toString().trim()),1)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:initialSettings[0]!.value})).status,200)
 
     // CA 1: la edición exige ADMIN, comprobado en la API y no ocultando el formulario.
     const draft = { slug: `cat-${suffix}`, name: `Categoría ${suffix}`, description: 'Prueba', displayOrder: 5 }
@@ -64,6 +88,19 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     const category = await created.json() as { id: string; slug: string; isActive: boolean; parentId: string | null }
     assert.equal(category.slug, `cat-${suffix}`)
     assert.equal(category.isActive, true)
+    const edited = await call(`catalogs/admin/categories/${category.id}`, manager.cookie, 'PUT', { ...draft, name: `Editada ${suffix}` })
+    assert.equal(edited.status, 200)
+    assert.equal((await edited.json() as { name: string }).name, `Editada ${suffix}`)
+    const firstAudit = JSON.parse(admin(`SELECT coalesce(json_agg(json_build_object('actor',actor_user_id,'action',action,'oldName',old_values->>'name','newName',new_values->>'name') ORDER BY id),'[]'::json) FROM audit_log WHERE entity_name='category' AND entity_id='${category.id}';`).toString().trim()) as { actor: string; action: string; oldName: string | null; newName: string }[]
+    assert.deepEqual(firstAudit, [
+      { actor: manager.id, action: 'CREATE', oldName: null, newName: draft.name },
+      { actor: manager.id, action: 'UPDATE', oldName: draft.name, newName: `Editada ${suffix}` }
+    ])
+    // Una auditoría que falla (actor inexistente) revierte también la categoría.
+    const unauditedSlug = `rollback-${suffix}`
+    const service = new Categories(new TypeormCategoryRepository(app.get(DatabaseService)))
+    await assert.rejects(() => service.create({ ...draft, slug: unauditedSlug, parentId: null }, randomUUID()))
+    assert.deepEqual(await source.query('SELECT id FROM category WHERE slug=$1', [unauditedSlug]), [])
 
     // Identificador repetido: conflicto, no una segunda categoría.
     assert.equal((await call('catalogs/admin/categories', manager.cookie, 'POST', draft)).status, 409)
@@ -84,6 +121,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
       { slug: `hija-${suffix}`, name: `Hija ${suffix}`, description: '', displayOrder: 1, parentId: category.id })
     assert.equal(child.status, 201)
     const childCategory = await child.json() as { id: string }
+    assert.equal((await call(`catalogs/admin/categories/${category.id}`, manager.cookie, 'PUT', { ...draft, parentId: childCategory.id })).status, 400, 'No admite ciclos entre categorías.')
     assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, manager.cookie, 'PUT', { isActive: false })).status, 409)
 
     assert.equal((await call(`catalogs/admin/categories/${childCategory.id}/state`, manager.cookie, 'PUT', { isActive: false })).status, 200)
@@ -98,29 +136,42 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
 
     admin(`DELETE FROM campaign WHERE id='${campaignId}';`)
     assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, manager.cookie, 'PUT', { isActive: false })).status, 200)
+    assert.equal((await call(`catalogs/admin/categories/${childCategory.id}/state`, manager.cookie, 'PUT', { isActive: true })).status, 400, 'No reactiva una hija con padre inactivo.')
     // Desactivada deja de aparecer en el catálogo público, sin borrarse.
     assert.equal((await (await call('catalogs/categories', plain.cookie)).json() as { id: string }[])
       .some((row) => row.id === category.id), false)
 
-    // CA 2: ningún parámetro está acordado todavía; D02 y D10 siguen abiertas.
+    // CA 2: las claves fuera del acuerdo DEMO siguen rechazándose.
     const rejected = await call(`catalogs/admin/settings/campaign.max_goal`, manager.cookie, 'PUT', { value: 1000 })
     assert.equal(rejected.status, 400)
     assert.match((await rejected.json() as { message: string }).message, /D02 y D10/)
     const settings: { n: string }[] = await source.query('SELECT count(*)::text AS n FROM system_setting')
-    assert.equal(settings[0]!.n, '0', 'No se escribió ningún parámetro de negocio.')
+    assert.equal(settings[0]!.n, settingsBefore[0]!.n, 'No se escribió ningún parámetro de negocio.')
+
+    const auditor = await register('auditor')
+    admin(`INSERT INTO user_role(user_id, role_id) SELECT '${auditor.id}', id FROM role WHERE code='AUDITOR';`)
+    assert.equal((await call('catalogs/admin/categories', auditor.cookie)).status, 200)
+    assert.equal((await (await call('catalogs/admin/settings', auditor.cookie)).json() as unknown[]).length,2)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,auditor.cookie,'PUT',{value:24})).status,403)
+    assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, auditor.cookie, 'PUT', { isActive: true })).status, 403)
 
     // CA 3: el auditor no edita el catálogo aunque acumule ADMIN.
     admin(`INSERT INTO user_role(user_id, role_id) SELECT '${manager.id}', id FROM role WHERE code='AUDITOR';`)
     assert.equal((await call('catalogs/admin/categories', manager.cookie, 'POST',
       { ...draft, slug: `auditor-${suffix}` })).status, 403)
     assert.equal((await call('catalogs/admin/categories', manager.cookie)).status, 200, 'El auditor conserva la lectura.')
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:24})).status,403)
+    assert.equal((await call(`catalogs/admin/categories/${category.id}`, manager.cookie, 'PUT', draft)).status, 403)
+    assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, manager.cookie, 'PUT', { isActive: true })).status, 403)
   } finally {
     await app.close()
     try {
-      admin(`DELETE FROM campaign WHERE id='${campaignId}';
+      admin(`DELETE FROM support_case WHERE id='${alertCaseId}'; DELETE FROM audit_log WHERE entity_name='category' AND entity_id IN (SELECT id FROM category WHERE slug LIKE '%-${suffix}');
+        DELETE FROM campaign WHERE id='${campaignId}';
         DELETE FROM category WHERE slug LIKE '%-${suffix}' OR slug='cat-${suffix}';`)
       for (const id of ids) {
         assert.match(id, /^[a-f0-9-]{36}$/)
+        admin(`DELETE FROM audit_log WHERE entity_name='system_setting' AND actor_user_id='${id}';`)
         if (source.isInitialized) await source.getRepository(UserSchema).delete({ id })
       }
     } finally { if (source.isInitialized) await source.destroy() }

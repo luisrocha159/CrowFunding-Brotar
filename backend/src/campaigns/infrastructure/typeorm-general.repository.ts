@@ -3,6 +3,7 @@ import { DatabaseService } from '../../shared/infrastructure/database/database.s
 import type { EntityManager } from 'typeorm'
 import type { GeneralInput, GeneralRepository, Indicator, IndicatorInput, StoryInput, StorySummary } from '../application/general'
 import { DraftNotEditable } from '../application/drafts'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 const EMPTY_STORY: StoryInput = { problem: '', solution: '', beneficiaries: '', expectedResults: '' }
 
@@ -10,11 +11,11 @@ const EMPTY_STORY: StoryInput = { problem: '', solution: '', beneficiaries: '', 
 export class TypeormGeneralRepository implements GeneralRepository {
   constructor(private readonly database: DatabaseService) {}
 
-  async readGeneral(campaignId: string): Promise<GeneralInput> {
+  async readGeneral(campaignId: string, manager = this.database.connection().manager): Promise<GeneralInput> {
     const rows: {
       title: string; summary: string | null; categoryId: string | null
       countryCode: string | null; locality: string | null; addressLine: string | null; reference: string | null
-    }[] = await this.database.connection().query(
+    }[] = await manager.query(
       `SELECT c.title, c.summary, c.category_id AS "categoryId",
               l.country_code AS "countryCode", l.locality, l.address_line AS "addressLine", l.reference
          FROM public.campaign c
@@ -33,7 +34,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
 
   async countryExists(code: string): Promise<boolean> {
     const rows: { code: string }[] = await this.database.connection().query(
-      'SELECT code FROM public.country WHERE code = $1', [code])
+      'SELECT code FROM public.country WHERE code = $1 AND is_active=true', [code])
     return rows.length > 0
   }
 
@@ -49,7 +50,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
 
   private async lockDraft(manager: EntityManager, campaignId: string, creatorUserId: string): Promise<void> {
     const rows: unknown[] = await manager.query(`SELECT id FROM public.campaign
-      WHERE id=$1 AND creator_user_id=$2 AND status='DRAFT' AND deleted_at IS NULL FOR UPDATE`, [campaignId, creatorUserId])
+      WHERE id=$1 AND creator_user_id=$2 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL FOR UPDATE`, [campaignId, creatorUserId])
     if (!rows.length) throw new DraftNotEditable()
   }
 
@@ -60,7 +61,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
       // El estado se reafirma en el WHERE: no se edita una campaña que dejó de ser borrador.
       await manager.query(
         `UPDATE public.campaign SET title = $2, summary = $3, category_id = $4, updated_at = now()
-          WHERE id = $1 AND creator_user_id = $5 AND status = 'DRAFT' AND deleted_at IS NULL`,
+          WHERE id = $1 AND creator_user_id = $5 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL`,
         [campaignId, input.title, input.summary || null, input.categoryId, creatorUserId])
       // campaign_location tiene campaign_id como clave primaria: una fila por campaña.
       await manager.query(
@@ -70,15 +71,16 @@ export class TypeormGeneralRepository implements GeneralRepository {
            locality = EXCLUDED.locality, address_line = EXCLUDED.address_line, reference = EXCLUDED.reference`,
         [campaignId, input.location.countryCode, input.location.locality || null,
           input.location.addressLine || null, input.location.reference || null])
+      await recordAudit(manager,creatorUserId,'UPDATE','campaign',campaignId)
     })
   }
 
-  async readStory(campaignId: string): Promise<StorySummary> {
+  async readStory(campaignId: string, manager = this.database.connection().manager): Promise<StorySummary> {
     const stories: { problem: string | null; solution: string | null; beneficiaries: string | null; expectedResults: string | null }[] =
-      await this.database.connection().query(
+      await manager.query(
         `SELECT problem, solution, beneficiaries, expected_results AS "expectedResults"
            FROM public.campaign_story WHERE campaign_id = $1`, [campaignId])
-    const indicators: Indicator[] = await this.database.connection().query(
+    const indicators: Indicator[] = await manager.query(
       `SELECT id, name, COALESCE(description, '') AS description, COALESCE(unit, '') AS unit,
               baseline_value::float8 AS "baselineValue", target_value::float8 AS "targetValue",
               achieved_value::float8 AS "achievedValue", display_order AS "displayOrder"
@@ -119,6 +121,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
           [campaignId, indicator.name, indicator.description || null, indicator.unit || null,
             indicator.baselineValue, indicator.targetValue, index])
       }
+      await recordAudit(manager,creatorUserId,'UPDATE','campaign',campaignId)
     })
   }
 }

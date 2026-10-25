@@ -14,7 +14,7 @@ import { readEnvironment } from '../src/config/environment'
 const valid = { firstName: ' María ', lastName: " D'Ávila ", email: ' TEST@example.invalid ', password: 'frase de prueba de registro', demoConsent: true }
 let received: NewUser | undefined
 let duplicate = false
-const useCase = new RegisterUser({ create: async input => {
+const useCase = new RegisterUser({ emailExists: async () => duplicate, create: async input => {
   if (duplicate) throw new RegistrationConflict()
   received = input
   return { id: '00000000-0000-4000-8000-000000000001', status: 'PENDING_VERIFICATION' }

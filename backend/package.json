@@ -9,16 +9,17 @@
     "pnpm": "11.19.0"
   },
   "scripts": {
-    "dev": "pnpm run build && node scripts/dev.mjs",
+    "dev": "tsc -p tsconfig.build.json && node scripts/dev.mjs",
     "build": "tsc -p tsconfig.build.json",
     "start": "node --env-file-if-exists=.env dist/main.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint src test integration --max-warnings 0",
     "test": "tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
+    "test:local-admin": "node --test scripts/grant-local-admin.test.mjs",
     "test:integration": "tsc -p tsconfig.test.json && node --env-file-if-exists=.env --test --test-concurrency=1 dist-test/integration/*.test.js",
     "migrate": "node scripts/migrate.mjs",
     "drill:recovery": "node scripts/drill-recovery.mjs",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
+    "check": "node scripts/check.mjs"
   },
   "dependencies": {
     "@nestjs/common": "12.0.3",

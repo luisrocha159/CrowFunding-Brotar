@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { BASIC_ACCESS_STATUSES } from '../application/basic-access'
 import type { PasswordRecoveryRepository } from '../application/password-recovery'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormPasswordRecoveryRepository implements PasswordRecoveryRepository {
@@ -47,6 +48,8 @@ export class TypeormPasswordRecoveryRepository implements PasswordRecoveryReposi
         UPDATE public.user_token SET revoked_at=clock_timestamp()
         WHERE user_id=$1 AND revoked_at IS NULL AND used_at IS NULL
           AND (token_type='SESSION' OR token_type='PASSWORD_RESET') AND id<>$2`, [token.userId, token.id])
+      await setAuditActor(manager,token.userId)
+      await recordAudit(manager,token.userId,'UPDATE','app_user',token.userId)
       return true
     })
   }

@@ -18,7 +18,7 @@ export function databaseOptions(config: DatabaseConfig): DataSourceOptions {
     migrations: [],
     logging: false,
     connectTimeoutMS: 3000,
-    extra: { max: 5, idleTimeoutMillis: 30000, statement_timeout: 5000 },
+    extra: { max: 5, idleTimeoutMillis: 30000, statement_timeout: 5000, options: '-c pg_trgm.similarity_threshold=0.3' },
     invalidWhereValuesBehavior: { null: 'throw', undefined: 'throw' }
   }
 }

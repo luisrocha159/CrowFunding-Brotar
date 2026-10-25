@@ -7,10 +7,11 @@ import { getProgressPercentage } from '../utils/project'
 
 export type { ProjectCardData } from '../types/project'
 
-const amount = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 })
+const amount = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 2 })
 
 export function ProjectCard({ project }: { project: ProjectCardData }) {
   const progress = getProgressPercentage(project)
+  const currency = !project.currencyCode || project.currencyCode === 'BOB' ? 'Bs' : project.currencyCode
   return <article className={styles.card}>
     <img className={styles.cardImage} src={project.image} alt={project.imageAlt} width={768} height={427} loading="lazy" />
     <div className={styles.cardBody}>
@@ -23,9 +24,9 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
       <p className={styles.cardDescription}>{project.summary}</p>
       <p className={styles.cardCreator}>{project.creator} · {project.location}</p>
       <ProgressBar value={progress} label={`Recaudación de ${project.name}`} />
-      <p className={styles.cardNumbers}><span><strong>Bs {amount.format(project.raised)}</strong> de Bs {amount.format(project.goal)}</span><strong>{Math.round(progress)} %</strong></p>
+      <p className={styles.cardNumbers}><span><strong>{currency} {amount.format(project.raised)}</strong> de {currency} {amount.format(project.goal)}</span><strong>{Math.round(progress)} %</strong></p>
       <div className={styles.cardBottom}>
-        <span>{project.status === 'active' ? `${Math.max(0, project.daysRemaining)} días restantes` : 'Recaudación cerrada'}</span>
+        <span>{project.status === 'active' ? project.closingDateKnown === false ? 'Fecha de cierre por definir' : `${Math.max(0, project.daysRemaining)} días restantes` : 'Recaudación cerrada'}</span>
         <Link to={`/proyectos/${encodeURIComponent(project.slug)}`} aria-label={`Ver detalle de ${project.name}`}>Ver detalle →</Link>
       </div>
     </div>

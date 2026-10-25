@@ -7,7 +7,7 @@
 - `RicardoDev`, `AlisonDev`, `SantiagoDev`: ramas personales existentes; no crear variantes que solo cambien mayúsculas.
 - Flujo: rama personal → Pull Request a `DEV` → revisión y pruebas → Pull Request de `DEV` a `main`.
 
-La integración actual del Sprint 1 se publica en `DEV`. `main` y las ramas personales no se actualizan automáticamente: cada integrante debe incorporar `origin/DEV` en su propia rama, con su trabajo guardado, usando el procedimiento siguiente. No se fuerza ni sobreescribe el trabajo remoto de nadie. Esta convención no configura protecciones de GitHub; el propietario deberá establecerlas si corresponde.
+La base integrada de los Sprints 1 y 2 se publica en `DEV`. `main` y las ramas personales no se actualizan automáticamente: cada integrante debe incorporar `origin/DEV` en su propia rama, con su trabajo guardado, usando el procedimiento siguiente. No se fuerza ni sobreescribe el trabajo remoto de nadie. Esta convención no configura protecciones de GitHub; el propietario deberá establecerlas si corresponde.
 
 ## Primera vez: cada persona elige SOLO su rama
 
@@ -36,6 +36,22 @@ git switch --track origin/RicardoDev
 
 Si la rama ya existe localmente, usar `git switch AlisonDev`, `git switch SantiagoDev` o `git switch RicardoDev` en lugar de `--track`. Revisar `git branch --show-current` antes de editar.
 
+## Actualizar una copia existente sin perder trabajo
+
+1. Guarda tus cambios propios en un commit revisado; comprueba `git status`. No uses `reset --hard`, `clean -fd` ni sobrescribas archivos para hacer desaparecer conflictos.
+2. Para actualizar la integración local, con el árbol limpio:
+
+```powershell
+git fetch origin
+git switch DEV
+git pull --ff-only origin DEV
+```
+
+Si `--ff-only` se detiene, la rama tiene commits divergentes: no fuerces el pull ni el push. Inspecciona `git log --oneline --left-right DEV...origin/DEV` y coordina la integración.
+
+3. Para seguir en tu rama personal, usa el bloque de la sección siguiente: incorpora `origin/DEV` con merge, no reemplaces la rama con DEV.
+4. Reinstala dependencias congeladas en cada directorio y aplica las nuevas migraciones a tu base existente según README §21. No copies ningún `.env` ajeno ni repitas la restauración SQL para actualizar.
+
 ## Antes de cada tarea
 
 1. Abrir su tarjeta de Trello; comprobar responsable, criterios, dependencias y verificación pendiente.
@@ -59,7 +75,7 @@ Desde la raíz:
 ```powershell
 bun run check
 cd backend
-pnpm run check
+corepack pnpm run check
 ```
 
 Si cambia persistencia/API, ejecutar también las pruebas de integración locales indicadas en el README. Registrar qué pruebas pasaron y cuáles no se pudieron ejecutar.
@@ -106,7 +122,9 @@ Ricardo coordina el PR `DEV → main` cuando el incremento integrado esté proba
 
 ## Contratos para evitar esperas y conflictos
 
-Reparto aprobado: Alison 4 tareas y Santiago 7. Ver [asignación](docs/asignacion-sprint-1.md).
+**Sprint 3 vigente:** Ricardo 18 tareas, Santiago 9 y Alison 9. Ver [reparto, dependencias y cierre del MVP](docs/plan-sprint-3-cierre-mvp-2026-10-15.md). Cada responsable entrega las pruebas de su módulo; Ricardo coordina integración y aceptación, no sustituye las pruebas ajenas. Acordar rutas, DTO, estados, permisos y errores antes de editar contratos compartidos.
+
+El siguiente reparto es un **antecedente del Sprint 1**, no la asignación actual: Alison 4 tareas y Santiago 7. Ver [asignación histórica](docs/asignacion-sprint-1.md).
 
 - Alison puede iniciar acceso y archivos; Santiago puede iniciar migraciones, permisos y categorías.
 - Antes de portada/borrador, acordar en un PR/documento pequeño: identificación del borrador, propiedad, contrato de carga, referencia del archivo, errores y guardado/reemplazo. Es una coordinación técnica, no permiso para inventar reglas del cliente.
@@ -118,9 +136,9 @@ No editar simultáneamente routers, contratos compartidos o configuración sin a
 
 ## Base de datos, secretos y archivos
 
-Usar la base local oficial V2 de cada persona. Nunca compartir `.env`, contraseñas, tokens, dumps ni datos personales en Git/Trello. No publicar el SQL recibido con sus datos iniciales.
+Usar la base local oficial V2 de cada persona. Nunca compartir `.env`, contraseñas, tokens, dumps ni datos personales en Git/Trello. El SQL oficial revisado de estructura y catálogos se distribuye como `infra/postgres-v2/official-schema.sql`; no sustituirlo por un backup de una base poblada.
 
-No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. Las migraciones y su recuperación siguen en S1-10; coordinar el mecanismo antes de modificar el esquema. Una propuesta de migración debe explicar compatibilidad y recuperación sobre copia aislada.
+No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. La entrega DEV del 16/10 tiene siete migraciones; el avance local S3 de RicardoDev añade cuatro (once en total). Seguir `infra/postgres-v2/MIGRACIONES.md` y README §24–26. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos de S3 están en `docs/contratos-sprint-3.md`. Auditar en la misma transacción con contexto local de actor; no registrar cuerpos, contraseñas, tokens, documentos ni payloads del proveedor. No conceder UPDATE/DELETE de `audit_log` a la aplicación ni retroatribuir actores a registros heredados.
 
 No versionar `node_modules`, `dist`, `dist-test`, cobertura o temporales. Conservar los dos lockfiles y usar el gestor correspondiente. No actualizar dependencias sin necesidad y sin pruebas.
 

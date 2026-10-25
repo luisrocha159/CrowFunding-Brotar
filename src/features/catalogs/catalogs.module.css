@@ -1,0 +1,23 @@
+.stack { display: grid; gap: var(--space-5); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.form, .settings, .confirmation { padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.form h2, .settings h2 { margin-top: 0; font: 600 1.2rem/1.5 var(--font-heading); }
+.fields { min-width: 0; display: grid; gap: var(--space-4); border: 0; padding: 0; margin: 0 0 var(--space-5); }
+.formRow { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: var(--space-4); }
+.list { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
+.category { display: flex; align-items: flex-start; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.details { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.title h3 { font: 600 1rem/1.5 var(--font-heading); margin: 0; }
+.badge { padding: var(--space-1) var(--space-2); font-size: .8rem; border-radius: var(--radius-sm); background: var(--color-soft); }
+.details p { margin: var(--space-2) 0 0; color: var(--color-muted); }
+.description { white-space: pre-wrap; }
+.settings p { color: var(--color-muted); }
+.settings pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.settings > div { display: grid; gap: var(--space-4); }
+.parameter { display: grid; gap: var(--space-3); min-width: 0; overflow-wrap: anywhere; }
+.parameter h3, .parameter p { margin: 0; }
+.parameter > button { justify-self: start; }
+.acknowledgement { display: flex; align-items: flex-start; gap: var(--space-2); min-height: 44px; padding-block: var(--space-2); cursor: pointer; }
+.acknowledgement input { width: 20px; height: 20px; flex: 0 0 auto; margin: 0; }
+@media (max-width: 760px) { .category { flex-direction: column; } .formRow { grid-template-columns: minmax(0, 1fr); } .form, .settings, .confirmation, .category { padding: var(--space-4); } }
