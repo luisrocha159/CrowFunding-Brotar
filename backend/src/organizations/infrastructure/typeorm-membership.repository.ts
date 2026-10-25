@@ -13,7 +13,7 @@ export class TypeormMembershipRepository implements MembershipRepository {
          FROM public.organization_member m
          JOIN public.organization o ON o.id = m.organization_id
         WHERE m.user_id = $1 AND m.organization_id = $2
-          AND m.left_at IS NULL AND m.joined_at <= now() AND o.deleted_at IS NULL`,
+          AND (m.left_at IS NULL OR m.left_at>clock_timestamp()) AND m.joined_at <= now() AND o.deleted_at IS NULL`,
       [userId, organizationId])
     return rows[0]?.organizationRole ?? null
   }

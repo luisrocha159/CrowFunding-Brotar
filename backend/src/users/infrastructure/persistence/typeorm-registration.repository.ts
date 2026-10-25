@@ -4,6 +4,7 @@ import { QueryFailedError } from 'typeorm'
 import { DatabaseService } from '../../../shared/infrastructure/database/database.service'
 import { RegistrationConflict, type NewUser, type RegistrationResult, type UserRegistrationRepository } from '../../application/register-user'
 import { UserProfileSchema, UserSchema } from './user.schemas'
+import {recordAudit,setAuditActor} from '../../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormRegistrationRepository implements UserRegistrationRepository {
@@ -25,6 +26,8 @@ export class TypeormRegistrationRepository implements UserRegistrationRepository
         const assigned: { id: string }[] = await manager.query(`INSERT INTO public.user_role(user_id, role_id)
           SELECT $1, id FROM public.role WHERE code='REGISTERED_USER' AND is_internal=false RETURNING id`, [id])
         if (assigned.length !== 1) throw new Error('Catálogo de rol básico no disponible.')
+        await setAuditActor(manager,id)
+        await recordAudit(manager,id,'CREATE','app_user',id)
       })
       // Solo asigna el rol básico. No activa ni verifica ni concede roles privilegiados.
       return { id, status: 'PENDING_VERIFICATION' }

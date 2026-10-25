@@ -11,6 +11,11 @@ import { TypeormSubmissionRepository } from './typeorm-submission.repository'
 import { TypeormProjectRepository } from './typeorm-project.repository'
 import type { DuplicateReviewInput } from '../domain/duplication'
 import { identityForCampaign } from './initiative-identity'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
+import {identityReady,independentActor} from '../../campaign-lifecycle/infrastructure/eligibility'
+import {transactionAccess} from '../../roles/infrastructure/transaction-access'
+import {isDemoEnabled} from '../../demo-payments/domain/demo'
+import {ReviewInvalid} from '../domain/administrative-review'
 
 @Injectable()
 export class TypeormAdministrativeRepository implements AdministrativeRepository {
@@ -92,6 +97,7 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       await manager.query(`UPDATE public.campaign SET status=$2::campaign_status,
         approved_at=CASE WHEN $2='APPROVED' THEN now() ELSE approved_at END,updated_at=now() WHERE id=$1`, [id, input.decision])
       await this.reason(manager, id, actorId, 'IN_REVIEW', input.decision, input.comment || 'Campaña aprobada por administración', input.expectedRound)
+      await recordAudit(manager,actorId,input.decision==='APPROVED'?'APPROVE':input.decision==='REJECTED'?'REJECT':'STATUS_CHANGE','campaign',id)
       return { id, status: input.decision, round: input.expectedRound }
     })
   }
@@ -99,9 +105,19 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
     return this.database.connection().transaction(async manager => {
       await this.lock(manager, id, 'APPROVED', expectedRound, 'APPROVED')
       await this.complete(manager, id, actorId, expectedRound, 'PUBLISH', duplicateReview)
+      // Los controles DEMO son adicionales al contrato S2; nunca habilitan publicación real.
+      if(!isDemoEnabled(process.env))throw new ReviewInvalid('Publicación requiere el entorno DEMO explícito. Producción, correo y legal siguen pendientes.')
+      {
+        await transactionAccess(manager,actorId,'campaign.publish')
+        const [c]=await manager.query('SELECT id,creator_user_id,organization_id,currency_code,status FROM public.campaign WHERE id=$1',[id])
+        await independentActor(manager,actorId,c)
+        try{await identityReady(manager,c)}catch(error){if(error instanceof Error)throw new ReviewInvalid(error.message);throw error}
+        await transactionAccess(manager,actorId,'campaign.publish')
+      }
       await this.actor(manager, actorId)
       await manager.query("UPDATE public.campaign SET status='PUBLISHED',published_at=now(),updated_at=now() WHERE id=$1", [id])
       await this.reason(manager, id, actorId, 'APPROVED', 'PUBLISHED', 'Publicación administrativa explícita', expectedRound)
+      await recordAudit(manager,actorId,'STATUS_CHANGE','campaign',id)
       return { id, status: 'PUBLISHED', round: expectedRound }
     })
   }

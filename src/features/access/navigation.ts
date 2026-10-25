@@ -11,8 +11,19 @@ export function publicContinuation(raw: string | null): string {
  * No concede acceso: la API continúa exigiendo sesión, rol y propiedad.
  */
 export function authenticatedContinuation(raw: string | null): string {
-  if (raw && (['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/campanas', '/administracion/usuarios'].includes(raw)
-    || /^\/(mis-proyectos|administracion\/campanas)\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw)
+  if(raw && (/^\/(mis-disputas|administracion\/disputas)(?:\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$/.test(raw) || /^\/mis-disputas\/nueva\?incidencia=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw)))return raw
+  if(raw && (/^\/(mis-devoluciones|administracion\/devoluciones)(?:\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$/.test(raw) || /^\/mis-devoluciones\/nueva\?pago=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw)))return raw
+  if(raw && /^\/administracion\/verificaciones(?:\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$/.test(raw))return raw
+  if(raw && (/^\/apoyo-demo(?:\?(?:pago|seleccion)=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$/.test(raw)))return raw
+  if (raw && (['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/campanas', '/administracion/usuarios', '/administracion/finanzas', '/administracion/conciliacion', '/administracion/auditoria', '/administracion', '/administracion/catalogos', '/administracion/personas', '/panel-creador', '/panel-patrocinador', '/mi-verificacion', '/mis-guardados', '/mis-aportes', '/mis-incidencias', '/mis-incidencias/nueva', '/simulacion-apoyo'].includes(raw)
+    || /^\/(mis-proyectos|administracion\/(campanas|conciliacion))\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw)
+    || /^\/mis-proyectos\/[a-f0-9-]{36}\/(avances|rendicion)$/.test(raw)
+    || /^\/mis-aportes\/[a-f0-9-]{36}(?:\/comprobante)?$/.test(raw)
+    || /^\/mis-incidencias\/[a-f0-9-]{36}$/.test(raw)
+    || /^\/mis-guardados\?vista=(FAVORITE|FOLLOW|UPDATES)(?:&pagina=\d{1,6})?$/.test(raw)
+    || /^\/mis-incidencias\/nueva\?contributionId=[a-f0-9-]{36}$/.test(raw)
+    || /^\/simulacion-apoyo\?id=[a-f0-9-]{36}$/.test(raw)
+    || /^\/(simulacion-apoyo|mis-incidencias\/nueva)\?campaignId=[a-f0-9-]{36}(?:&contributionId=[a-f0-9-]{36})?$/.test(raw)
     || /^\/(crear-campana|mi-campana\/portada)\?borrador=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(raw))) return raw
   return publicContinuation(raw)
 }

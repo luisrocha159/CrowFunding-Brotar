@@ -3,7 +3,9 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
-import { FileInUse, type FileDownload, type FileStorage, type FileUploadInput, type StoredFile } from '../application/files'
+import { FileInUse, FileUnavailable, type FileDownload, type FileStorage, type FileUploadInput, type StoredFile } from '../application/files'
+import {transactionRegisteredAccess} from '../../roles/infrastructure/transaction-access'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 
 // Binarios locales, metadatos/propiedad en file_asset de la base oficial.
 @Injectable()
@@ -23,10 +25,15 @@ export class TypeormFileStorage implements FileStorage {
       await mkdir(dirname(target), { recursive: true })
       await writeFile(temp, content, { flag: 'wx' })
       await rename(temp, target)
-      await this.database.connection().query(`INSERT INTO public.file_asset
+      await this.database.connection().transaction(async manager=>{
+      await transactionRegisteredAccess(manager,ownerUserId)
+      await setAuditActor(manager,ownerUserId)
+      await manager.query(`INSERT INTO public.file_asset
         (id,storage_key,file_name,mime_type,size_bytes,checksum,scope,uploaded_by,uploaded_at)
         VALUES($1,$2,$3,$4,$5,$6,$7::file_scope,$8,$9)`,
       [id,key,file.originalName,file.mimeType,file.sizeBytes,file.sha256,file.visibility,ownerUserId,file.createdAt])
+      await recordAudit(manager,ownerUserId,'CREATE','file_asset',id)
+      })
       return file
     } catch (error) {
       await Promise.all([rm(temp, { force: true }), rm(target, { force: true })]).catch(() => undefined)
@@ -39,10 +46,12 @@ export class TypeormFileStorage implements FileStorage {
       scope AS visibility,file_name AS "originalName",mime_type AS "mimeType",size_bytes::float8 AS "sizeBytes",
       checksum AS sha256,uploaded_at AS "createdAt" FROM public.file_asset WHERE id=$1 AND deleted_at IS NULL`, [id]) as (Omit<StoredFile, 'purpose' | 'createdAt'> & { key: string; createdAt: Date })[]
     const row = rows[0]
-    if (!row || !/^(PROFILE_AVATAR|ORGANIZATION_DOCUMENT|CAMPAIGN_PUBLIC_IMAGE)\/[a-f0-9-]{36}\.bin$/.test(row.key)) return null
+    if (!row || !/^(PROFILE_AVATAR|ORGANIZATION_DOCUMENT|CAMPAIGN_PUBLIC_IMAGE|VERIFICATION_DOCUMENT|SUPPORT_EVIDENCE|CLOSURE_EVIDENCE)\/[a-f0-9-]{36}\.bin$/.test(row.key)) return null
     try {
       const { key, createdAt, ...metadata } = row
-      return { file: { ...metadata, createdAt: createdAt.toISOString(), purpose: key.split('/')[0] as StoredFile['purpose'] }, content: await readFile(join(this.root, key)) }
+      const content=await readFile(join(this.root,key))
+      if(content.length!==metadata.sizeBytes || createHash('sha256').update(content).digest('hex')!==metadata.sha256)throw new FileUnavailable()
+      return { file: { ...metadata, createdAt: createdAt.toISOString(), purpose: key.split('/')[0] as StoredFile['purpose'] }, content }
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
       throw error
@@ -54,13 +63,19 @@ export class TypeormFileStorage implements FileStorage {
     return this.database.connection().transaction(async manager => {
       const rows: { id: string }[] = await manager.query('SELECT id FROM public.file_asset WHERE id=$1 AND uploaded_by=$2 AND deleted_at IS NULL FOR UPDATE', [id, ownerUserId])
       if (!rows.length) return false
+      await transactionRegisteredAccess(manager,ownerUserId)
       const used: { used: boolean }[] = await manager.query(`SELECT
         EXISTS(SELECT 1 FROM public.campaign WHERE cover_file_id=$1) OR
         EXISTS(SELECT 1 FROM public.file_attachment WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM public.verification_document WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM brotar_extension.support_case_evidence WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM brotar_extension.campaign_reward_evidence WHERE file_id=$1) OR
         EXISTS(SELECT 1 FROM public.user_profile WHERE avatar_file_id=$1) AS used`, [id])
       if (used[0]?.used) throw new FileInUse()
       // Baja lógica: no inventa un plazo de retención ni elimina evidencias de forma irreversible.
       await manager.query('UPDATE public.file_asset SET deleted_at=now() WHERE id=$1', [id])
+      await setAuditActor(manager,ownerUserId)
+      await recordAudit(manager,ownerUserId,'DELETE','file_asset',id)
       return true
     })
   }

@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import assert from 'node:assert/strict'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -10,7 +10,7 @@ import { AppModule } from '../src/app.module'
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
 import { readEnvironment } from '../src/config/environment'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
-import { ContributionLedger, type VerifiedPaymentEvent } from '../src/contributions/infrastructure/contribution-ledger'
+import { ContributionLedger, type ContributionPage, type OwnContribution, type VerifiedPaymentEvent } from '../src/contributions/infrastructure/contribution-ledger'
 import { LedgerConflict, LedgerInvalid } from '../src/contributions/domain/payment'
 import { ACCESS_POLICY, effectivePermissions } from '../src/roles/domain/access-policy'
 import { readTestDatabaseTarget } from './database-target'
@@ -72,6 +72,10 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     const input={ campaignId,rewardId:null,providerId,amount:'0.30',currencyCode:'BOB',requestKey:randomUUID() }
     const [a,b]=await Promise.all([ledger.start(owner.id,input),ledger.start(owner.id,input)])
     assert.equal(a.id,b.id); assert.equal(a.amount,'0.30'); assert.equal(a.paymentStatus,'INITIATED')
+    assert.equal(sql(`SELECT provider_payload->>'requestHash' FROM payment WHERE id='${a.paymentId}'`),
+      createHash('sha256').update(JSON.stringify([campaignId,null,'0.30','BOB',providerId])).digest('hex'),'Mantener compatibles las claves internas anteriores al consentimiento explícito DEMO.')
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${a.id}' AND action='CREATE' AND actor_user_id='${owner.id}'`),'1','El reintento no duplica la auditoría del aporte.')
+    assert.equal(sql(`SELECT changed_by FROM status_history WHERE entity_type='PAYMENT' AND entity_id='${a.paymentId}' AND from_status IS NULL`),owner.id,'El alta del intento conserva al usuario autenticado, no al proveedor; no se inventa un trigger para contribution.')
     const raised=()=>sql(`SELECT amount_raised FROM v_campaign_funding WHERE campaign_id='${campaignId}'`)
     assert.equal(raised(),'0.00')
     await assert.rejects(ledger.start(owner.id,{...input,amount:'0.31'}),LedgerConflict)
@@ -93,6 +97,8 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     const confirmed={...event,eventId:randomUUID(),state:'CONFIRMED' as const,externalReference:`charge-${suffix}`,feeAmount:'0.01'}
     const confirmations=await Promise.all([ledger.applyVerifiedEvent(confirmed),ledger.applyVerifiedEvent(confirmed)])
     assert.deepEqual(confirmations.map(x=>x.replayed).sort(),[false,true]); assert.equal(raised(),'0.30')
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${a.paymentId}' AND action='PAYMENT_EVENT' AND actor_user_id IS NULL AND actor_role='SYSTEM'`),'2','Dos eventos distintos, no dos confirmaciones por reintento; sin actor humano inventado.')
+    assert.equal(sql(`SELECT count(*) FROM status_history WHERE entity_id='${a.paymentId}' AND from_status IS NOT NULL AND changed_by IS NOT NULL`),'0','Los avisos internos no heredan al aportante de una conexión reutilizada.')
     assert.deepEqual(await ledger.applyVerifiedEvent(event),{status:'CONFIRMED',replayed:true},'Repetir un aviso viejo devuelve el estado vigente, no PENDING histórico.')
     assert.equal(sql(`SELECT net_amount FROM payment WHERE id='${a.paymentId}'`),'0.29')
     await assert.rejects(ledger.applyVerifiedEvent({...confirmed,amount:'0.31'}),LedgerConflict)
@@ -105,6 +111,30 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     const expired=await ledger.start(owner.id,{...input,requestKey:randomUUID()})
     await ledger.applyVerifiedEvent({...event,paymentId:expired.paymentId,eventId:randomUUID(),state:'EXPIRED'})
     await assert.rejects(ledger.applyVerifiedEvent({...confirmed,paymentId:expired.paymentId,eventId:randomUUID(),externalReference:'late'}),LedgerConflict)
+    // El mismo aporte conserva ambos intentos. La clave repetida no genera un tercero.
+    const retryKey=randomUUID()
+    const [retried,replayed]=await Promise.all([ledger.retry(owner.id,failed.id,retryKey),ledger.retry(owner.id,failed.id,retryKey)])
+    assert.equal(retried.id,failed.id); assert.equal(retried.paymentId,replayed.paymentId); assert.notEqual(retried.paymentId,failed.paymentId)
+    assert.equal(retried.status,'PENDING'); assert.equal(retried.paymentStatus,'INITIATED')
+    assert.equal(sql(`SELECT status FROM payment WHERE id='${failed.paymentId}'`),'FAILED')
+    assert.equal(sql(`SELECT count(*) FROM payment WHERE contribution_id='${failed.id}'`),'2')
+    await assert.rejects(ledger.retry(owner.id,expired.id,retryKey),LedgerConflict)
+    await assert.rejects(ledger.retry(outsider.id,failed.id,randomUUID()),LedgerConflict)
+    await assert.rejects(ledger.retry(owner.id,failed.id,randomUUID()),LedgerConflict,'No hay dos intentos abiertos para un aporte.')
+    await assert.rejects(ledger.retry(owner.id,a.id,randomUUID()),LedgerConflict,'Un aporte confirmado nunca se reabre.')
+    const overdue=await ledger.start(owner.id,{...input,requestKey:randomUUID()})
+    sql(`UPDATE contribution SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${overdue.id}';`)
+    assert.equal(await ledger.expireDue(),1); assert.equal(await ledger.expireDue(),0)
+    assert.equal((await ledger.own(owner.id,overdue.id))!.status,'EXPIRED')
+    assert.equal(sql(`SELECT count(*) FROM payment_event WHERE payment_id='${overdue.paymentId}' AND event_type='demo.reservation_expired'`),'1')
+    await assert.rejects(ledger.applyVerifiedEvent({...confirmed,paymentId:overdue.paymentId,eventId:randomUUID(),externalReference:'late-maintenance'}),LedgerConflict)
+    const reopened=await ledger.retry(owner.id,overdue.id,randomUUID()); assert.equal(reopened.status,'PENDING')
+    sql(`UPDATE campaign SET ends_at=now()+interval '10 minutes' WHERE id='${campaignId}'`)
+    const endingSoon=await ledger.start(owner.id,{...input,requestKey:randomUUID()})
+    assert.equal(sql(`SELECT c.expires_at=ca.ends_at FROM contribution c JOIN campaign ca ON ca.id=c.campaign_id WHERE c.id='${endingSoon.id}'`),'t','La reserva nunca se prolonga más allá del fin de campaña.')
+    sql(`UPDATE campaign SET ends_at=now()+interval '1 day' WHERE id='${campaignId}'`)
+    await assert.rejects(ledger.start(auditor.id,{...input,requestKey:randomUUID()}),LedgerConflict,'AUDITOR tampoco escribe invocando el núcleo directamente.')
+    for (const limit of [0,501,1.5,NaN]) await assert.rejects(ledger.expireDue(limit),LedgerInvalid)
     const reused=await ledger.start(owner.id,{...input,requestKey:randomUUID()})
     await assert.rejects(ledger.applyVerifiedEvent({...confirmed,paymentId:reused.paymentId,eventId:randomUUID()}),LedgerConflict)
     assert.equal((await ledger.own(owner.id,reused.id))!.paymentStatus,'INITIATED','Conflicto revierte también el estado del pago/aporte.')
@@ -127,6 +157,63 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     sql(`UPDATE contribution SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${next.id}';`)
     await assert.rejects(ledger.applyVerifiedEvent({...confirmed,paymentId:next.paymentId,eventId:randomUUID(),amount:'1.00',externalReference:'expired-hold'}),LedgerConflict)
     assert.ok((await ledger.start(owner.id,{...limited,requestKey:randomUUID()})).id,'La reserva vencida libera el cupo sin borrar historial.')
+    // Historial propio: incluye registros sin intento, pero no inventa un pago ni confirma un aporte.
+    const historicalIds=Array.from({length:3},()=>randomUUID())
+    const foreign=await ledger.start(outsider.id,{...input,requestKey:randomUUID()})
+    const latestPayment=randomUUID()
+    sql(`INSERT INTO contribution(id,campaign_id,user_id,amount,currency_code)
+      VALUES ${historicalIds.map(id=>`('${id}','${campaignId}','${owner.id}',0.30,'BOB')`).join(',')};
+      INSERT INTO payment(id,contribution_id,provider_id,idempotency_key,amount,currency_code,attempt_number,status)
+      VALUES('${latestPayment}','${reused.id}','${providerId}','${randomUUID()}',0.30,'BOB',2,'FAILED');
+      UPDATE contribution SET created_at=date_trunc('second',now())-interval '3 hours'+interval '0.123456 seconds'
+      WHERE user_id='${owner.id}' AND campaign_id IN ('${campaignId}','${rewardCampaign}');`)
+    const latest=await (await call(`contributions/${reused.id}`,owner.cookie)).json() as OwnContribution
+    assert.equal(latest.paymentId,latestPayment); assert.equal(latest.paymentStatus,'FAILED')
+    const noAttempt=await (await call(`contributions/${historicalIds[0]}`,owner.cookie)).json() as OwnContribution
+    assert.equal(noAttempt.paymentId,null); assert.equal(noAttempt.paymentStatus,null); assert.equal(noAttempt.expiresAt,null)
+    assert.equal(noAttempt.status,'PENDING','Ausencia de intento no se disfraza como confirmación/fallo.')
+    const empty=await call('contributions',accounts.FINANCE!.cookie)
+    assert.equal(empty.status,200); assert.deepEqual(await empty.json(),{items:[],nextCursor:null})
+    assert.equal((await call('contributions')).status,401)
+    for (const query of ['limit=0','limit=51','limit=1.5','limit=1e1','limit=01','limit=1&limit=2',
+      'cursor=','cursor=no-uuid',`cursor=${a.id}&cursor=${b.id}`,'userId='+outsider.id,'status=CONFIRMED']) {
+      assert.equal((await call(`contributions?${query}`,owner.cookie)).status,400,query)
+    }
+    const unavailable=[]
+    for (const id of [foreign.id,randomUUID()]) {
+      const invalid=await call(`contributions?cursor=${id}`,owner.cookie)
+      assert.equal(invalid.status,400); unavailable.push(await invalid.json())
+    }
+    assert.deepEqual(unavailable[0],unavailable[1],'Cursor ajeno e inexistente no revelan pertenencia.')
+    const expected=sql(`SELECT id FROM contribution WHERE user_id='${owner.id}' ORDER BY created_at DESC,id DESC`).split('\n')
+    const firstResponse=await call('contributions?limit=2',owner.cookie)
+    assert.equal(firstResponse.status,200); assert.equal(firstResponse.headers.get('cache-control'),'no-store')
+    let page=await firstResponse.json() as ContributionPage
+    assert.equal(page.items.length,2); assert.ok(page.nextCursor)
+    const found=page.items.map(item=>item.id)
+    // Una inserción posterior no desplaza páginas como sucedería al usar OFFSET.
+    const inserted=await ledger.start(owner.id,{...input,requestKey:randomUUID()})
+    while (page.nextCursor) {
+      const response=await call(`contributions?limit=2&cursor=${page.nextCursor}`,owner.cookie)
+      assert.equal(response.status,200); page=await response.json() as ContributionPage
+      found.push(...page.items.map(item=>item.id))
+      assert.ok(found.length<=expected.length,'La paginación debe avanzar sin repetirse.')
+    }
+    assert.deepEqual(found,expected,'Timestamps iguales con microsegundos no omiten ni duplican filas.')
+    assert.equal(new Set(found).size,found.length); assert.equal(found.includes(foreign.id),false)
+    const refreshed=await (await call('contributions?limit=50',owner.cookie)).json() as ContributionPage
+    assert.equal(refreshed.items[0]!.id,inserted.id); assert.equal(refreshed.nextCursor,null)
+    const allowed=['amount','campaignId','createdAt','currencyCode','expiresAt','id','paymentId','paymentStatus','reference','reservationExpired','status'].sort()
+    for (const item of refreshed.items) {
+      assert.deepEqual(Object.keys(item).sort(),allowed)
+      assert.match(item.createdAt,/^\d{4}-\d{2}-\d{2}T/)
+      assert.match(item.amount,/^\d+\.\d{2}$/)
+    }
+    assert.equal((await ledger.listOwn(owner.id,2,expected.at(-1))).nextCursor,null)
+    for (const limit of [0,51,1.5,NaN,Infinity]) await assert.rejects(ledger.listOwn(owner.id,limit),LedgerInvalid)
+    sql(`UPDATE user_role SET revoked_at=clock_timestamp() WHERE user_id='${accounts.FINANCE!.id}'
+      AND role_id=(SELECT id FROM role WHERE code='REGISTERED_USER');`)
+    assert.equal((await call('contributions',accounts.FINANCE!.cookie)).status,403,'El historial vuelve a autorizar cada lectura.')
     sql(`UPDATE campaign SET status='CANCELLED' WHERE id='${campaignId}';`)
     await assert.rejects(ledger.start(owner.id,{...input,requestKey:randomUUID()}),LedgerConflict)
     sql(`UPDATE payment_provider SET is_sandbox=false WHERE id='${providerId}';`)
@@ -138,6 +225,8 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     assert.match(recovery,/"payments": [1-9]/)
     assert.match(recovery,/"refunds": 1/)
     assert.match(recovery,/"disputes": 1/)
+    assert.match(recovery,/"auditLogs": [1-9]/)
+    assert.match(recovery,/"statusHistory": [1-9]/)
   } finally {
     await app.close()
     sql(`DELETE FROM dispute WHERE campaign_id IN ('${campaignId}','${rewardCampaign}');

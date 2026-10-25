@@ -17,6 +17,7 @@ export function canAccess(access: AccessPermissions | null, permission: string):
     permission.endsWith('.read') || permission.endsWith('.read.own'))
 }
 export function useAccessPermissions() {
+  const [revision,setRevision] = useState(0)
   const [access,setAccess] = useState<AccessPermissions | null>(null)
   const [error,setError] = useState(false)
   useEffect(() => {
@@ -24,6 +25,6 @@ export function useAccessPermissions() {
     void myPermissions(controller.signal).then(result => { if (!controller.signal.aborted) setAccess(result) })
       .catch(() => { if (!controller.signal.aborted) setError(true) })
     return () => controller.abort()
-  },[])
-  return { access,error,can: (permission: string) => canAccess(access,permission) }
+  },[revision])
+  return { access,error,can: (permission: string) => canAccess(access,permission),refresh:()=>{setAccess(null);setError(false);setRevision(n=>n+1)} }
 }

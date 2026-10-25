@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import type { Draft, DraftInput, DraftRepository } from '../application/drafts'
 import { DraftNotEditable, DraftRetryConflict } from '../application/drafts'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 const SELECT = `SELECT id, title, summary, campaign_type AS "campaignType", category_id AS "categoryId",
   organization_id AS "organizationId", funding_model AS "fundingModel", status, builder_step AS "builderStep", updated_at AS "updatedAt"
@@ -61,6 +62,7 @@ export class TypeormDraftRepository implements DraftRepository {
       const rows = (Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result) as Draft[]
       const draft = rows[0]
       if (!draft) throw new Error('No se pudo confirmar el borrador.')
+      await recordAudit(manager,actorId,campaignId===null?'CREATE':'UPDATE','campaign',draft.id)
       if (requestKey) await manager.query('INSERT INTO brotar_extension.request_idempotency(actor_id,request_key,request_hash,campaign_id) VALUES($1,$2,$3,$4)', [actorId, requestKey, requestHash, draft.id])
       return draft
     })

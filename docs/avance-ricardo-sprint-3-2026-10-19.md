@@ -2,6 +2,10 @@
 
 Fecha: 19/10/2026. Rama local: `RicardoDev`, actualizada por avance rápido desde `origin/DEV` (`99d70d7`). Este incremento no está publicado ni se han modificado tarjetas de Trello. Las tres tareas siguen **en curso**: este documento distingue una base ejecutable de su cierre global.
 
+Actualización posterior del mismo día: [S3-06, consulta financiera](cierre-s3-06-finanzas-2026-10-19.md), incorpora una décima migración y tiene cierre técnico propio con 351 casos vigentes. Las tablas de resultados de este documento conservan los cortes iniciales de nueve migraciones y 344/345 casos. No sumar ni confundir esos cortes con la evidencia posterior; S3-16/02/18 siguen en curso.
+
+El [avance posterior de auditoría S3-15/16/18](avance-auditoria-s3-15-16-18-2026-10-19.md) incorpora la undécima migración y contrato 0.3. Sus resultados y límites son el corte más reciente; este documento conserva la evidencia del inicio, no las cifras actuales ni el cierre de esas historias.
+
 ## 1. S3-16 — permisos por responsabilidad
 
 ### Implementado en esta base
@@ -38,7 +42,7 @@ Los eventos financieros son de inserción/lectura para `brotar_app`, no edición
 
 No hay proveedor real conectado. El núcleo solo acepta proveedores activos sandbox y rechaza producción. No existe POST público de creación ni de confirmación/webhook. El método interno `applyVerifiedEvent` no autentica firmas por llamarse así: el adaptador futuro debe verificar al proveedor antes de invocarlo. Las pruebas inyectan eventos sintéticos; **no acreditan un cobro externo válido**.
 
-`GET /api/contributions/:id` sí está implementado: solo propietario con sesión y permiso, importes como cadenas, fechas ISO/null y sin payloads/referencias privadas. Un UUID ajeno e inexistente comparten 404. Una reserva vencida se comunica explícitamente; no se finge que el proveedor haya notificado expiración.
+`GET /api/contributions/:id` y `GET /api/contributions` sí están implementados: solo propietario con sesión y permiso, importes como cadenas, fechas ISO/null y sin payloads/referencias privadas. Un UUID ajeno e inexistente comparten 404 en detalle. Una reserva vencida se comunica explícitamente; no se finge que el proveedor haya notificado expiración.
 
 ### Evidencia y pendientes de cierre
 
@@ -50,7 +54,7 @@ El ensayo verifica céntimos, estados, transacciones, reintentos simultáneos, u
 
 ### Implementado en esta base
 
-[Contratos 0.1](contratos-sprint-3.md) especifica capacidades, lectura propia de aportes, formatos decimales, enums, errores y separación entre métodos internos y rutas públicas. El frontend valida respuestas y no importa clases del backend. Las escrituras públicas y sus listados/paginación no se presentan como terminados.
+[Contratos 0.2](contratos-sprint-3.md) especifica capacidades, lectura propia paginada de aportes, formatos decimales, enums, errores y separación entre métodos internos y rutas públicas. El frontend valida capacidades y no importa clases del backend. Las escrituras públicas y los listados de otros módulos no se presentan como terminados.
 
 Dos migraciones nuevas elevan el total de siete a nueve, sin tocar `official-schema.sql`, crear tablas oficiales nuevas ni activar sincronización del ORM. La API comprueba los objetos del incremento para readiness. Una referencia de cobro repetida previa hace fallar el índice: no se borra dinero/datos para instalar.
 
@@ -131,3 +135,26 @@ SRP/DRY: política de importes/estados pura en `contributions/domain/payment.ts`
 Contratos pequeños y verificables: el módulo de aportes expone crear internamente, aplicar evento interno y consultar propio; conserva bloqueo, reintentos y invariantes dentro del módulo. No se añadieron envoltorios que solo deleguen ni nuevos frameworks. Esta separación no prueba por sí sola todos los principios SOLID ni sustituye una revisión del diseño final.
 
 **Conclusión:** base técnica iniciada y verificable; no hay habilitación de dinero real, aprobación definitiva de D06 ni cierre de estas tres tareas o del MVP completo.
+
+## 6. Segundo bloque local — historial propio para integración
+
+Se añadió `GET /api/contributions`, con sesión y permiso persistido, filtro de propietario invariable y páginas de 1–50 registros (20 por defecto). El cursor es un UUID del propio usuario; un marcador ajeno e inexistente tienen el mismo error. Se rechazan campos/arrays/parámetros adicionales. La consulta SQL parametrizada conserva microsegundos y usa `created_at,id` como orden total: no emplea OFFSET ni fechas redondeadas del navegador. No requiere nuevas dependencias, cuentas, proveedores ni migraciones.
+
+Listado y detalle comparten la proyección privada y el último intento por número. Incluyen `createdAt` ISO y conservan aportes históricos sin pago con `paymentId/paymentStatus=null`; no se ocultan filas ni se inventan estados. El núcleo que crea un intento sigue devolviendo un identificador de pago no nulo; se sustituyó su aserción ciega por una comprobación explícita de recuperación.
+
+Este contrato permite avanzar al historial de Alison sin desarrollar su pantalla ni cerrarle su tarea. La prueba PostgreSQL/HTTP cubre paginación de varias páginas, fechas empatadas con microsegundos, inserción entre páginas, fin de listado, vacío real, selección del último intento, registros sin intento, no-store, proyección exacta sin secretos, cursor ajeno/inexistente, entradas inválidas y revocación del permiso entre lecturas. Se amplió el caso integrado existente; las aserciones nuevas no se cuentan como pruebas independientes.
+
+La primera tabla de verificación conserva los resultados del primer bloque. Esta ampliación se comprobó nuevamente:
+
+| Ejecución del segundo bloque | Resultado |
+| --- | --- |
+| `bun run check` en la copia de trabajo | Lint, tipos, 163 pruebas y compilación aprobados; persiste el aviso de bundle de 528.35 kB |
+| `corepack pnpm run check` en backend de trabajo | Lint, tipos, 152 pruebas, 8 ADMIN local y compilación aprobados |
+| Compilación de aplicación y tests en QA | Correcta; los cuatro archivos de código/tests modificados coinciden por hash con trabajo |
+| Integración dirigida de aportes en QA | 1/1 aprobada, con las nuevas aserciones del historial y recuperación con datos ficticios |
+| Suite completa PostgreSQL/HTTP en QA, con `DB_TEST_RESTART=true` | 22/22 aprobadas, sin fallos ni omitidas; incluye recuperación, nueve migraciones y persistencia después de reiniciar PostgreSQL |
+| `git diff --check` y hash del SQL oficial | Sin errores de espacio; SHA-256 oficial sin cambios |
+
+Total vigente: **345 casos automatizados distintos** (163 frontend + 152 backend + 8 ADMIN local + 22 PostgreSQL). La ejecución dirigida no se suma otra vez. No se modificaron dependencias ni lockfiles: se reutilizó la copia aislada instalada en el primer bloque, no se declara una nueva instalación desde cero en esta ampliación. Los registros sintéticos se limpiaron por sus propios IDs; se detuvo solo el contenedor de ensayo conservando volumen y respaldos. La base original no recibió escrituras ni migraciones.
+
+Sigue local en RicardoDev, sin push ni cambios en DEV/Trello. Checkout, proveedor verificado y tareas completas S3-16/02/18 permanecen pendientes; las comprobaciones de API no equivalen a una pantalla de historial integrada ni a una prueba con un proveedor real.

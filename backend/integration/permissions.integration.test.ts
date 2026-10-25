@@ -111,18 +111,18 @@ test('permisos y pertenencia reales: denegaciones en API, auditor en lectura y c
 
     admin(`DELETE FROM user_role WHERE user_id='${creator.id}' AND role_id IN (SELECT id FROM role WHERE code IN ('AUDITOR','ADMIN'));`)
 
-    // CA 2: la matriz provisional se instala por migración; un usuario básico solo lee sus aportes.
+    // CA 2: permisos propios de aportes; escritura DEMO sigue supeditada a bandera/entorno/sesión.
     const { TypeormPermissionRepository } = await import('../src/roles/infrastructure/typeorm-permission.repository')
     const repository = new TypeormPermissionRepository({ connection: () => source } as never)
-    assert.deepEqual(await repository.granted(creator.id), ['contribution.read.own'])
+    assert.deepEqual(await repository.granted(creator.id), ['contribution.read.own','contribution.write.own'])
 
     // Con una concesión de prueba el mecanismo sí resuelve, y se retira al terminar.
     admin(`INSERT INTO permission(code, resource, action, description)
       VALUES('${permissionCode}','prueba','read','Permiso temporal de esta prueba');
       INSERT INTO role_permission(role_id, permission_id)
       SELECT r.id, p.id FROM role r, permission p WHERE r.code='REGISTERED_USER' AND p.code='${permissionCode}';`)
-    assert.deepEqual(await repository.granted(creator.id), ['contribution.read.own',permissionCode].sort())
-    assert.deepEqual(await repository.granted(outsider.id), ['contribution.read.own',permissionCode].sort())
+    assert.deepEqual(await repository.granted(creator.id), ['contribution.read.own','contribution.write.own',permissionCode].sort())
+    assert.deepEqual(await repository.granted(outsider.id), ['contribution.read.own','contribution.write.own',permissionCode].sort())
 
     // Un rol caducado deja de conceder su permiso: se lee de la base en cada petición.
     admin(`UPDATE user_role SET granted_at=now()-interval '2 days', expires_at=now()-interval '1 day' WHERE user_id='${creator.id}';`)

@@ -14,6 +14,7 @@ import { readEnvironment } from '../src/config/environment'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { readTestDatabaseTarget } from './database-target'
 import type { AdministrativeDetail } from '../src/campaigns/application/administrative-review'
+import {approveDemoIdentity,removeDemoIdentityFixtures} from './demo-identity-fixture'
 
 test('semejanzas PostgreSQL/HTTP: nombres repetidos, aviso privado, decisión libre, UUID/slug únicos y envíos paralelos', { timeout: 120000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -24,7 +25,8 @@ test('semejanzas PostgreSQL/HTTP: nombres repetidos, aviso privado, decisión li
   const suffix = randomUUID().slice(0, 8), category = randomUUID(), expense = randomUUID()
   const users: string[] = [], fileIds: string[] = []
   const root = await mkdtemp(join(tmpdir(), 'brotar-duplicate-test-'))
-  const originalRoot = process.env.FILE_STORAGE_DIR, originalPublication = process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED
+  const originalRoot = process.env.FILE_STORAGE_DIR, originalPublication = process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED,originalDemo=process.env.DEMO_PAYMENTS_ENABLED
+  process.env.DEMO_PAYMENTS_ENABLED='true'
   process.env.FILE_STORAGE_DIR = root; process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED = 'true'
   let app: INestApplication | undefined
   let url = ''
@@ -58,6 +60,7 @@ test('semejanzas PostgreSQL/HTTP: nombres repetidos, aviso privado, decisión li
     app.use((request: object, _response: unknown, next: () => void) => { Object.defineProperty(request, 'ip', { value: `fixture-duplicate-${suffix}` }); next() })
     await app.listen(0, '127.0.0.1'); url = await app.getUrl()
     const a = await account('primero', 'CREATOR'), b = await account('segundo', 'CREATOR'), admin = await account('administrador', 'ADMIN')
+    await approveDemoIdentity(call,a.cookie,admin.cookie);await approveDemoIdentity(call,b.cookie,admin.cookie)
     sql(`INSERT INTO category(id,slug,name) VALUES('${category}','dup-${suffix}','Categoría de ensayo');
       INSERT INTO expense_category(id,code,name) VALUES('${expense}','dup-${suffix}','Gasto de ensayo');`)
     const make = async (owner: typeof a, title: string, history = story, schedule = plan) => {
@@ -126,11 +129,13 @@ test('semejanzas PostgreSQL/HTTP: nombres repetidos, aviso privado, decisión li
     assert.equal(sql(`SELECT count(*) FROM campaign WHERE id IN ('${one.id}','${two.id}') AND status='IN_REVIEW';`), '2')
   } finally {
     await app?.close()
+    removeDemoIdentityFixtures(sql,users)
     for (const id of users) sql(`DELETE FROM audit_log WHERE actor_user_id='${id}'; DELETE FROM status_history WHERE entity_type='CAMPAIGN' AND entity_id IN (SELECT id FROM campaign WHERE creator_user_id='${id}');
       DELETE FROM campaign WHERE creator_user_id='${id}'; DELETE FROM file_asset WHERE uploaded_by='${id}'; DELETE FROM app_user WHERE id='${id}';`)
     sql(`DELETE FROM category WHERE id='${category}'; DELETE FROM expense_category WHERE id='${expense}';`)
     for (const id of fileIds) await rm(join(root, 'CAMPAIGN_PUBLIC_IMAGE', `${id}.bin`), { force: true })
     if (originalRoot === undefined) delete process.env.FILE_STORAGE_DIR; else process.env.FILE_STORAGE_DIR = originalRoot
     if (originalPublication === undefined) delete process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED; else process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED = originalPublication
+    if(originalDemo===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=originalDemo
   }
 })

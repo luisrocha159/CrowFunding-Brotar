@@ -2,6 +2,12 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { accessHref, authenticatedContinuation, existingSessionDestination, publicContinuation } from '../src/features/access/navigation'
 
+test('continuaciones de Sprint 3 permanecen locales y conservan contexto permitido', () => {
+  const id = '11111111-1111-4111-8111-111111111111'
+  for (const route of ['/panel-creador', '/panel-patrocinador', '/mi-verificacion', '/administracion/catalogos', '/administracion/personas', '/mis-incidencias/nueva', `/mis-proyectos/${id}/avances`, `/mis-proyectos/${id}/rendicion`, `/mis-aportes/${id}/comprobante`, `/simulacion-apoyo?id=${id}`, `/mis-incidencias/nueva?contributionId=${id}`, '/mis-guardados?vista=UPDATES']) assert.equal(authenticatedContinuation(route), route)
+  for (const route of ['//evil.invalid/panel-creador', '/mis-incidencias/nueva?redirect=https://evil.invalid', '/administracion/personas?token=secret']) assert.equal(authenticatedContinuation(route), '/explorar')
+})
+
 const id = '11111111-1111-4111-8111-111111111111'
 
 test('con sesión confirmada, login/registro vuelven a Mi cuenta y no a otro acceso', () => {
@@ -12,7 +18,7 @@ test('con sesión confirmada, login/registro vuelven a Mi cuenta y no a otro acc
 })
 
 test('mantiene el destino público o privado autorizado, sin conceder roles', () => {
-  for (const route of ['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/usuarios', '/administracion/campanas', `/mis-proyectos/${id}`, `/administracion/campanas/${id}`, `/crear-campana?borrador=${id}`, `/mi-campana/portada?borrador=${id}`, '/proyectos/camp-11111111-1111-4111-8111-111111111111']) {
+  for (const route of ['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/usuarios', '/administracion/campanas', '/administracion/finanzas', '/administracion/conciliacion', '/administracion/auditoria', `/administracion/conciliacion/${id}`, `/mis-proyectos/${id}`, `/administracion/campanas/${id}`, `/crear-campana?borrador=${id}`, `/mi-campana/portada?borrador=${id}`, '/proyectos/camp-11111111-1111-4111-8111-111111111111']) {
     assert.equal(authenticatedContinuation(route), route)
     assert.equal(existingSessionDestination(new URLSearchParams({ continuar: route, perfil: 'creador' })), route)
   }

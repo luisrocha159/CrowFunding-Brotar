@@ -45,3 +45,19 @@ test('archivos separa acceso público y privado por dueño', async () => {
   await f.files.delete(privateFile.id, 'owner')
   await assert.rejects(f.files.privateDownload(privateFile.id, 'owner'), FileUnavailable)
 })
+
+test('documentos de verificación y soporte permanecen privados y solo del titular', async () => {
+  for (const purpose of ['VERIFICATION_DOCUMENT', 'SUPPORT_EVIDENCE']) {
+    const f = storage()
+    const file = await f.files.upload('owner', { ...input, purpose: purpose as FileUploadInput['purpose'], visibility: 'PRIVATE' })
+    assert.equal(file.purpose, purpose)
+    await assert.rejects(f.files.publicDownload(file.id), FileUnavailable)
+    await assert.rejects(f.files.privateDownload(file.id, 'other'), FileAccessDenied)
+    if (purpose === 'VERIFICATION_DOCUMENT') {
+      await assert.rejects(f.files.privateDownload(file.id, 'owner'), FileAccessDenied)
+      assert.equal((await f.files.verificationDownload(file.id, 'owner')).file.id, file.id)
+      await assert.rejects(f.files.verificationDownload(file.id, 'other'), FileAccessDenied)
+    }
+    await assert.rejects(f.files.upload('owner', { ...input, purpose: purpose as FileUploadInput['purpose'], visibility: 'PUBLIC' }), InvalidFileUpload)
+  }
+})

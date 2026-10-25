@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import type { CampaignType, FundingModel, ModalityRepository } from '../application/modality'
 import { DraftNotEditable } from '../application/drafts'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormModalityRepository implements ModalityRepository {
@@ -26,6 +27,7 @@ export class TypeormModalityRepository implements ModalityRepository {
           WHERE id = $2 AND creator_user_id = $1 AND status IN ('DRAFT','CHANGES_REQUESTED') AND deleted_at IS NULL RETURNING id`,
         [creatorUserId, id, campaignType, fundingModel])
       if (result[1] !== 1) throw new DraftNotEditable()
+      await recordAudit(manager,creatorUserId,'UPDATE','campaign',id)
     })
   }
 }

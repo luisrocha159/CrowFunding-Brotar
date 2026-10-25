@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { ProjectConflict, ProjectMissing, type ProjectDetail, type ProjectRepository, type ProjectSummary } from '../application/projects'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 const SUMMARY = `SELECT c.id, c.title, c.summary, c.status, cat.name AS "categoryName",
   c.goal_amount::text AS "goalAmount", c.currency_code AS "currencyCode",
@@ -61,6 +62,7 @@ export class TypeormProjectRepository implements ProjectRepository {
         WHERE id=$1 AND creator_user_id=$2 AND status='DRAFT' AND deleted_at IS NULL`, [id, userId])
       await manager.query(`INSERT INTO public.status_history(entity_type,entity_id,from_status,to_status,changed_by,reason,metadata)
         VALUES('CAMPAIGN',$1,'DRAFT','DRAFT',$2,'Borrador descartado por su creador','{"action":"DISCARD_DRAFT"}'::jsonb)`, [id, userId])
+      await recordAudit(manager,userId,'DELETE','campaign',id)
     })
   }
 }

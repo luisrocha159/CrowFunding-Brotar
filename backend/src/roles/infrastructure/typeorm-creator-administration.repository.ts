@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { canEnableCreator, CreatorGrantConflict, CreatorGrantDenied, ManagedUserMissing, type CreatorAdministrationRepository, type ManagedUser } from '../application/creator-administration'
+import { setAuditActor } from '../../shared/infrastructure/database/audit'
 
 const USER = `SELECT u.id,u.email::text AS email,concat_ws(' ',p.first_name,p.last_name) AS name,u.status,
-  (u.locked_until IS NOT NULL AND u.locked_until>now()) AS locked,
+  (u.locked_until IS NOT NULL AND u.locked_until>clock_timestamp()) AS locked,
   ARRAY(SELECT r.code::text FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id
-    WHERE ur.user_id=u.id AND ur.revoked_at IS NULL AND ur.granted_at<=now()
-    AND (ur.expires_at IS NULL OR ur.expires_at>now()) ORDER BY r.code) AS roles
+    WHERE ur.user_id=u.id AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp()
+    AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()) ORDER BY r.code) AS roles
   FROM public.app_user u LEFT JOIN public.user_profile p ON p.user_id=u.id`
 
 @Injectable()
@@ -34,9 +35,10 @@ export class TypeormCreatorAdministrationRepository implements CreatorAdministra
       const existing: { id: string }[] = await manager.query('SELECT id FROM public.user_role WHERE user_id=$1 AND role_id=$2 AND revoked_at IS NULL', [userId, roles[0].id])
       // Una concesión vencida/futura requiere revisión, no reactivación silenciosa.
       if (existing.length) throw new CreatorGrantConflict()
+      await setAuditActor(manager,actorId)
       const [grant]: { id: string }[] = await manager.query('INSERT INTO public.user_role(user_id,role_id,granted_by) VALUES($1,$2,$3) RETURNING id', [userId, roles[0].id, actorId])
       await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,description,new_values)
-        VALUES($1,'ADMIN','CREATE','user_role',$2,$3,jsonb_build_object('userId',$4::text,'role','CREATOR','provisional',true,'verificationChanged',false))`,
+        VALUES($1,'ADMIN','CREATE','user_role',$2,$3,jsonb_build_object('source','APPLICATION','result','APPLIED','userId',$4::text,'role','CREATOR','provisional',true,'verificationChanged',false))`,
       [actorId, grant!.id, reason, userId])
       // Ni contraseña ni estado ni KYC se modifican. Auditoría y rol se confirman juntos.
       return { ...result, created: true }

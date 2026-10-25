@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SessionError } from '../../shared/api/sessionError'
-import { enableCreator, findManagedUser, type ManagedUser } from './creatorAdministrationClient'
+import { changeResponsibility, enableCreator, findManagedUser, type ManagedUser, type StaffRole } from './creatorAdministrationClient'
 import { myRoles } from './organizationsClient'
 
 export function useCreatorAdministration() {
@@ -32,9 +32,9 @@ export function useCreatorAdministration() {
     catch (cause) {
       if (controller.signal.aborted) return
       if (cause instanceof SessionError && cause.status === 401) setAnonymous(true)
-      setError(cause instanceof SessionError && cause.status === 403 ? 'Se requiere un administrador vigente. El rol Auditor no puede habilitar cuentas.'
+      setError(cause instanceof SessionError && cause.status === 403 ? 'Se requiere ADMIN vigente sin AUDITOR y no puedes modificar tus propias responsabilidades.'
         : cause instanceof SessionError && cause.status === 404 ? 'No se encontró la cuenta. Comprueba el correo y que ya esté registrada.'
-        : cause instanceof SessionError && cause.status === 409 ? 'La cuenta no admite esta habilitación. Consulta de nuevo su estado y roles; no se reactivan concesiones vencidas o futuras.'
+        : cause instanceof SessionError && cause.status === 409 ? 'La cuenta no admite el cambio. Comprueba su estado, motivo y roles; revoca expresamente concesiones futuras o vencidas antes de volver a conceder.'
         : cause instanceof SessionError && cause.status === 400 ? 'Revisa el correo, el motivo y la confirmación.'
         : 'No se confirmó la operación. Busca de nuevo la cuenta para comprobar sus roles antes de repetir. Verifica la API y las migraciones.')
     } finally { if (request.current === controller) request.current = null; if (!controller.signal.aborted) setBusy(false) }
@@ -53,5 +53,17 @@ export function useCreatorAdministration() {
       setNotice(result.created ? 'CREATOR habilitado provisionalmente. La acción quedó registrada; no se verificó identidad ni KYC.' : 'La cuenta ya tenía CREATOR vigente; no se duplicó la concesión.')
     })
   }
-  return { user, busy, error, notice, anonymous, access, retryAccess: () => { setAccess('checking'); setRetry(value => value + 1) }, find, grant }
+  async function changeStaff(role: StaffRole, operation: 'GRANT' | 'REVOKE', reason: string) {
+    if (!user) return
+    const target = user
+    await run(async signal => {
+      const result = await changeResponsibility(target.id, role, operation, reason, signal)
+      const refreshed = await findManagedUser(target.email, signal)
+      if (!signal.aborted) {
+        setUser(refreshed)
+        setNotice(result.changed ? `Responsabilidad ${role} ${operation === 'GRANT' ? 'concedida' : 'revocada'} y auditada.` : 'El estado solicitado ya estaba aplicado. No se duplicó la operación.')
+      }
+    })
+  }
+  return { user, busy, error, notice, anonymous, access, retryAccess: () => { setAccess('checking'); setRetry(value => value + 1) }, find, grant, changeStaff }
 }

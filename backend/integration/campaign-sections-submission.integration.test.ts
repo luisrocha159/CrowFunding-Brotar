@@ -15,6 +15,7 @@ import { readDatabaseConfig } from '../src/shared/infrastructure/database/databa
 import { readTestDatabaseTarget } from './database-target'
 import type { CampaignSubmission } from '../src/campaigns/application/submission'
 import type { AdministrativeDetail } from '../src/campaigns/application/administrative-review'
+import {approveDemoIdentity,removeDemoIdentityFixtures} from './demo-identity-fixture'
 type SubmissionReport = Awaited<ReturnType<CampaignSubmission['review']>>
 
 test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobación privada, publicación y rechazo', { timeout: 120000 }, async () => {
@@ -29,7 +30,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
   const users: string[] = [], files: string[] = []
   const root = await mkdtemp(join(tmpdir(), 'brotar-santiago-test-'))
   const originalRoot = process.env.FILE_STORAGE_DIR
-  const originalPublication = process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED
+  const originalPublication = process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED,originalDemo=process.env.DEMO_PAYMENTS_ENABLED
+  process.env.DEMO_PAYMENTS_ENABLED='true'
   process.env.FILE_STORAGE_DIR = root
   process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED = 'true' // Política provisional de entrega autorizada; solo fixtures tienen ADMIN.
   const password = ` Ñ y acentos: ${randomBytes(24).toString('hex')} `
@@ -90,6 +92,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     // Roles de cuentas efímeras, no provisión de roles del producto ni resolución de D06.
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${creator.id}',id FROM role WHERE code='CREATOR';
       INSERT INTO user_role(user_id,role_id) SELECT '${admin.id}',id FROM role WHERE code='ADMIN';`)
+    await approveDemoIdentity(call,creator.cookie,admin.cookie)
     assert.equal((await call(`${path}/submission`, other.cookie, {})).status, 403)
     const incomplete = await call(`${path}/submission`, creator.cookie, {})
     assert.equal(incomplete.status, 422)
@@ -221,6 +224,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(sql(`SELECT reviewer_user_id FROM campaign_review WHERE campaign_id='${id}' AND round=1;`), admin.id)
     assert.equal(sql(`SELECT reason FROM status_history WHERE entity_id='${id}' AND to_status='CHANGES_REQUESTED';`), changes.comment)
     assert.equal(sql(`SELECT changed_by FROM status_history WHERE entity_id='${id}' AND to_status='CHANGES_REQUESTED';`), admin.id)
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND actor_user_id='${creator.id}' AND action='STATUS_CHANGE' AND new_values->>'result'='APPLIED'`),'1','El envío simultáneo solo confirma una auditoría de envío.')
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND actor_user_id='${admin.id}' AND action='STATUS_CHANGE' AND new_values->>'result'='APPLIED'`),'1','La decisión simultánea solo confirma una auditoría; los fallos previos no se presentan como éxito.')
     const observed = await (await call(`${path}/submission`, creator.cookie)).json() as SubmissionReport
     assert.equal(observed.observations[0]!.message, 'Aclara el problema')
     assert.equal((await call(`${path}/story`, creator.cookie, { ...story, problem: 'Problema comunitario corregido' }, 'PUT')).status, 200)
@@ -256,6 +261,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     const publication = await Promise.all([call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 3 }), call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 3 })])
     assert.deepEqual(publication.map(response => response.status).sort(), [200, 409])
     assert.equal(sql(`SELECT count(*) FROM status_history WHERE entity_id='${id}' AND to_status='PUBLISHED' AND changed_by='${admin.id}';`), '1')
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND action='APPROVE' AND actor_user_id='${admin.id}' AND new_values->>'result'='APPLIED'`),'1','Aprobar se registra una vez y separado de publicar.')
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND action='STATUS_CHANGE' AND actor_user_id='${admin.id}' AND new_values->>'result'='APPLIED'`),'3','Dos correcciones y una publicación; las carreras rechazadas no añaden acciones aplicadas.')
     const history = await (await call(`campaigns/mine/${id}`, creator.cookie)).json() as { history: { toStatus: string; reason: string }[] }
     assert.deepEqual(history.history.map(event => event.toStatus), ['DRAFT','IN_REVIEW','CHANGES_REQUESTED','IN_REVIEW','CHANGES_REQUESTED','IN_REVIEW','APPROVED','PUBLISHED'])
     assert.equal(history.history.at(-1)!.reason, 'Publicación administrativa explícita')
@@ -279,6 +286,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal((await call(`${rejectedAdmin}/decision`, admin.cookie, rejection)).status, 200)
     assert.equal(sql(`SELECT status FROM campaign WHERE id='${rejectedDraft.id}';`), 'REJECTED')
     assert.equal(sql(`SELECT reason FROM status_history WHERE entity_id='${rejectedDraft.id}' AND to_status='REJECTED';`), rejection.comment)
+    assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${rejectedDraft.id}' AND action='REJECT' AND actor_user_id='${admin.id}' AND new_values='{"result":"APPLIED","source":"APPLICATION"}'::jsonb`),'1','El rechazo se audita sin copiar su motivo libre.')
     const rejectionDetail = await (await call(`campaigns/mine/${rejectedDraft.id}`, creator.cookie)).json() as { status: string; history: { reason: string }[] }
     assert.equal(rejectionDetail.status, 'REJECTED'); assert.equal(rejectionDetail.history.at(-1)!.reason, rejection.comment)
     for (const operation of [`${rejectedPath}/submission`, `${rejectedAdmin}/publish`]) assert.equal((await call(operation, operation.includes('admin/') ? admin.cookie : creator.cookie, operation.includes('admin/') ? { confirmed: true, expectedRound: 1 } : {})).status, 409)
@@ -290,6 +298,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal((await (await call(`campaigns/public/${slug}`)).json() as { rewards: unknown[] }).rewards.length, 0, 'El público no ve recompensas inaplicables a donación.')
   } finally {
     await app?.close()
+    removeDemoIdentityFixtures(sql,users)
     for (const id of users) sql(`DELETE FROM status_history WHERE entity_type='CAMPAIGN' AND entity_id IN (SELECT id FROM campaign WHERE creator_user_id='${id}');
       DELETE FROM campaign WHERE creator_user_id='${id}'; DELETE FROM file_asset WHERE uploaded_by='${id}'; DELETE FROM app_user WHERE id='${id}';`)
     sql(`DELETE FROM category WHERE id='${category}'; DELETE FROM expense_category WHERE id='${expense}';`)
@@ -298,5 +307,6 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     else process.env.FILE_STORAGE_DIR = originalRoot
     if (originalPublication === undefined) delete process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED
     else process.env.CAMPAIGN_ADMIN_PUBLICATION_ENABLED = originalPublication
+    if(originalDemo===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=originalDemo
   }
 })

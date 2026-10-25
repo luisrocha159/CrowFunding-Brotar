@@ -10,10 +10,12 @@ import { CreatorAdministration } from './application/creator-administration'
 import { TypeormCreatorAdministrationRepository } from './infrastructure/typeorm-creator-administration.repository'
 import { CreatorAdministrationController } from './infrastructure/creator-administration.controller'
 import { SessionMutationGuard } from '../auth/infrastructure/http/session-http'
+import { StaffAdministration } from './infrastructure/staff-administration'
+import { StaffAdministrationController } from './infrastructure/staff-administration.controller'
 @Module({
-  imports: [AuthModule, DatabaseModule], controllers: [RolesController, CreatorAdministrationController],
+  imports: [AuthModule, DatabaseModule], controllers: [RolesController, CreatorAdministrationController, StaffAdministrationController],
   providers: [
-    RoleGuard, TypeormRoleRepository, TypeormPermissionRepository,
+    RoleGuard, TypeormRoleRepository, TypeormPermissionRepository, StaffAdministration,
     SessionMutationGuard, TypeormCreatorAdministrationRepository,
     { provide: CreatorAdministration, inject: [TypeormCreatorAdministrationRepository], useFactory: (repository: TypeormCreatorAdministrationRepository) => new CreatorAdministration(repository) },
     { provide: RoleAccess, inject: [TypeormRoleRepository], useFactory: (repository: TypeormRoleRepository) => new RoleAccess(repository) },

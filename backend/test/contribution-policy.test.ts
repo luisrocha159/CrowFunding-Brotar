@@ -9,6 +9,21 @@ import { RoleAccess } from '../src/roles/application/roles'
 import { PermissionAccess } from '../src/roles/application/permissions'
 import { money, decimal, nextPaymentState, LedgerConflict, LedgerInvalid } from '../src/contributions/domain/payment'
 import { ACCESS_POLICY, effectivePermissions } from '../src/roles/domain/access-policy'
+import { plainToInstance } from 'class-transformer'
+import { validate } from 'class-validator'
+import { ContributionPageDto } from '../src/contributions/contributions.module'
+
+test('S3-18: consulta propia acotada, sin convertir fracciones, arrays ni filtros de otro usuario', async () => {
+  const options={whitelist:true,forbidNonWhitelisted:true}
+  for (const input of [{},{limit:'1'},{limit:'50',cursor:'11111111-1111-4111-8111-111111111111'}]) {
+    assert.equal((await validate(plainToInstance(ContributionPageDto,input),options)).length,0)
+  }
+  for (const input of [{limit:'0'},{limit:'51'},{limit:'1.5'},{limit:'1e1'},{limit:'01'},{limit:' 2'},
+    {limit:2},{limit:['1','2']},{cursor:''},{cursor:['11111111-1111-4111-8111-111111111111']},
+    {cursor:'no-uuid'},{userId:'ajeno'},{status:'CONFIRMED'}]) {
+    assert.ok((await validate(plainToInstance(ContributionPageDto,input),options)).length>0,JSON.stringify(input))
+  }
+})
 
 test('S3-02: céntimos exactos y límites numeric(14,2), sin convertir números o redondear datos inválidos', () => {
   assert.equal(decimal(money('0.10')+money('0.20')),'0.30')

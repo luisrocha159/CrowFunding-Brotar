@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join,resolve,relative,isAbsolute } from 'node:path'
 import { parseEnv } from 'node:util'
 import { randomBytes } from 'node:crypto'
 import { isDeepStrictEqual } from 'node:util'
@@ -28,8 +28,12 @@ const SOURCE_DATABASE = 'brotar_db'
 const CONTAINER_DUMP = `/tmp/${DRILL_DATABASE}.dump`
 
 const keepCopy = process.argv.includes('--keep')
+const withFiles = process.argv.includes('--with-files')
 // Los respaldos llevan datos: fuera del repositorio y con permisos restringidos.
 const evidenceDir = process.env.BROTAR_DRILL_DIR ?? join(homedir(), 'Documents', 'brotar-privado', 'ensayos')
+const repository=resolve(fileURLToPath(new URL('../../',import.meta.url)))
+const evidenceRelative=relative(repository,resolve(evidenceDir))
+if(!evidenceRelative||(!evidenceRelative.startsWith('..')&&!isAbsolute(evidenceRelative)))throw new Error('Los respaldos deben quedar fuera del repositorio.')
 
 if (!existsSync(adminEnvFile)) {
   throw new Error('No existe infra/postgres-v2/.env. Instala la base V2 antes del ensayo.')
@@ -58,6 +62,16 @@ async function inventoryOf(database) {
     const result = await client.query(verifySql)
     return result.rows[0].json_build_object
   } finally { await client.end() }
+}
+
+async function contentFingerprints(database){
+ const client=new pg.Client({host:'127.0.0.1',port,database,user:'postgres',password:admin.POSTGRES_PASSWORD,connectionTimeoutMillis:5000})
+ try{
+  await client.connect()
+  const tables=await client.query(`SELECT format('SELECT %L AS relation,count(*)::text AS rows,md5(COALESCE(string_agg(md5(to_jsonb(t)::text),%L ORDER BY md5(to_jsonb(t)::text)),%L)) AS fingerprint FROM %I.%I t',n.nspname||'.'||c.relname,'','',n.nspname,c.relname) AS sql
+    FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname IN ('public','brotar_extension','brotar_migration') AND c.relkind='r' ORDER BY n.nspname,c.relname`)
+  return(await client.query(tables.rows.map(row=>row.sql).join(' UNION ALL ')+' ORDER BY relation')).rows
+ }finally{await client.end()}
 }
 
 const steps = []
@@ -93,9 +107,34 @@ const recordSql = `SELECT json_build_object(
   'contributions',(SELECT count(*) FROM public.contribution),
   'payments',(SELECT count(*) FROM public.payment),
   'paymentEvents',(SELECT count(*) FROM public.payment_event),
+  'demoEvents',(SELECT count(*) FROM brotar_extension.demo_event),
+  'demoCompensations',(SELECT count(*) FROM brotar_extension.demo_compensation),
+  'demoReconciliations',(SELECT count(*) FROM brotar_extension.demo_reconciliation),
+  'demoReconciliationItems',(SELECT count(*) FROM brotar_extension.demo_reconciliation_item),
   'refunds',(SELECT count(*) FROM public.refund),
   'disputes',(SELECT count(*) FROM public.dispute),
+  'refundRequests',(SELECT count(*) FROM brotar_extension.demo_refund),
+  'refundDecisions',(SELECT count(*) FROM brotar_extension.demo_refund_event),
+  'disputeHolds',(SELECT COALESCE(jsonb_agg(jsonb_build_array(dispute_id,financial_hold,hold_amount,resolution_code,recommended_amount,linked_refund_id,version) ORDER BY dispute_id),'[]'::jsonb) FROM brotar_extension.demo_dispute),
+  'disputeDecisions',(SELECT count(*) FROM brotar_extension.demo_dispute_event),
+  'disputeMessages',(SELECT count(*) FROM brotar_extension.demo_dispute_message),
+  'supportMessages',(SELECT count(*) FROM public.support_case_message),
+  'campaignCycles',(SELECT count(*) FROM brotar_extension.campaign_cycle),
+    'campaignFinalReports',(SELECT count(*) FROM brotar_extension.campaign_final_report),
+    'campaignRewardEvidence',(SELECT count(*) FROM brotar_extension.campaign_reward_evidence),
+  'campaignCycleEvents',(SELECT count(*) FROM brotar_extension.campaign_cycle_event),
+  'demoDestinations',(SELECT count(*) FROM brotar_extension.demo_destination),
+  'demoDestinationEvents',(SELECT count(*) FROM brotar_extension.demo_destination_event),
+  'disbursements',(SELECT count(*) FROM public.disbursement),
+  'demoDisbursements',(SELECT count(*) FROM brotar_extension.demo_disbursement),
+  'demoDisbursementEvents',(SELECT count(*) FROM brotar_extension.demo_disbursement_event),
+  'verifications',(SELECT count(*) FROM public.verification),
+  'verificationRevisions',(SELECT count(*) FROM brotar_extension.verification_revision),
   'permissions',(SELECT count(*) FROM public.role_permission),
+  'auditLogs',(SELECT count(*) FROM public.audit_log),
+  'statusHistory',(SELECT count(*) FROM public.status_history),
+  'auditMonthly',(SELECT COALESCE(jsonb_agg(jsonb_build_object('month',a.month_utc::text,'action',a.action,'count',a.event_count::text)
+    ORDER BY a.month_utc,a.action),'[]'::jsonb) FROM brotar_extension.audit_monthly a),
   'initiatives',(SELECT count(*) FROM brotar_extension.initiative),
   'stages',(SELECT count(*) FROM brotar_extension.initiative_stage),
   'identities',(SELECT count(*) FROM brotar_extension.campaign_identity),
@@ -104,6 +143,7 @@ const recordSql = `SELECT json_build_object(
   'migrations',(SELECT count(*) FROM brotar_migration.schema_migration_brotar))::text`
 const records = database => JSON.parse(inContainer(['psql','-U','postgres','-d',database,'-X','-At','-v','ON_ERROR_STOP=1','-c',recordSql], 'records'))
 const beforeRecords = records(DRILL_DATABASE)
+const beforeContents=await contentFingerprints(DRILL_DATABASE)
 steps.push('historial de migraciones y extensión recuperados')
 
 const migrateOutput = execFileSync('node', [
@@ -111,6 +151,7 @@ const migrateOutput = execFileSync('node', [
 ], { timeout: 120000, encoding: 'utf8' }).trim()
 steps.push('migraciones aplicadas sobre la copia')
 if (!isDeepStrictEqual(beforeRecords, records(DRILL_DATABASE))) throw new Error('El up de la copia alteró los registros recuperados inesperadamente.')
+if(!isDeepStrictEqual(beforeContents,await contentFingerprints(DRILL_DATABASE)))throw new Error('El up alteró el contenido de la copia recuperada aunque los conteos coincidan.')
 steps.push('conteos de datos y control conservados después de up')
 
 // 6. Migrar no debe alterar el esquema oficial de la copia.
@@ -130,6 +171,18 @@ const evidencePath = join(evidenceDir, `brotar-drill-${stamp}.dump`)
 execFileSync('docker', [...compose, 'cp', `postgres:${CONTAINER_DUMP}`, evidencePath], { timeout: 120000 })
 steps.push('evidencia conservada')
 
+let recoveredFiles={enabled:false}
+if(withFiles){
+ const client=new pg.Client({host:'127.0.0.1',port,database:DRILL_DATABASE,user:'postgres',password:admin.POSTGRES_PASSWORD,connectionTimeoutMillis:5000})
+ try{
+  await client.connect()
+  const files=await client.query(`SELECT storage_key AS key,checksum AS sha256,size_bytes::text AS bytes FROM public.file_asset WHERE deleted_at IS NULL ORDER BY id`)
+  const {recoverLocalFiles}=await import('../dist/files/infrastructure/recovery.js')
+  recoveredFiles={enabled:true,...recoverLocalFiles(files.rows,process.env.FILE_STORAGE_DIR??join(process.cwd(),'private','files'),join(evidenceDir,`files-${stamp}`))}
+  steps.push('binarios activos recuperados y verificados contra SHA-256 de la copia de base de datos')
+ }finally{await client.end()}
+}
+
 if (!keepCopy) {
   inContainer(['psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c',
     `DROP DATABASE IF EXISTS ${DRILL_DATABASE}`], 'cleanup')
@@ -142,6 +195,9 @@ console.log(JSON.stringify({
   migration: migrateOutput,
   inventory: restored,
   recoveredRecords: beforeRecords,
+  recoveredFiles,
+  restoredTablesVerified:beforeContents.length,
+  restoredContentsUnchangedAfterUp:true,
   evidenceBytes: statSync(evidencePath).size,
   steps
 }, null, 2))

@@ -5,6 +5,7 @@ import { Message } from '../../shared/components/Feedback'
 import { AdministrativeNavigation } from '../campaigns/AdministrativeNavigation'
 import styles from '../campaigns/projects.module.css'
 import { useCreatorAdministration } from './useCreatorAdministration'
+import { StaffResponsibilitiesForm } from './StaffResponsibilitiesForm'
 
 export function CreatorAdministrationPage() {
   const data = useCreatorAdministration()
@@ -14,10 +15,10 @@ export function CreatorAdministrationPage() {
   if (data.anonymous) return <Navigate replace to="/iniciar-sesion?continuar=%2Fadministracion%2Fusuarios" />
   const user = data.user
   return <div className={styles.adminLayout}><AdministrativeNavigation /><section className={styles.content}>
-    <header className={styles.heading}><div><h1>Habilitar creadores</h1><p>Asignación manual provisional por un administrador.</p></div></header>
-    <Message tone="warning" title="Mecanismo provisional · KYC pendiente">Esta acción permite enviar campañas a revisión. No verifica correo, identidad o empresa, no publica campañas y no concede ADMIN. Se revisará cuando los líderes definan las reglas de KYC y acceso.</Message>
+    <header className={styles.heading}><div><h1>Creadores y responsabilidades</h1><p>Gestión manual por un administrador con motivo y confirmación.</p></div></header>
+    <Message tone="warning" title="Permisos no equivalen a verificación">Habilitar CREATOR permite enviar campañas a revisión. No verifica correo, identidad o empresa ni publica campañas. La matriz de responsabilidades es el criterio del equipo para este MVP de pruebas; la integración KYC/KYB sigue pendiente.</Message>
     {data.access === 'checking' && <p role="status">Comprobando permisos administrativos…</p>}
-    {data.access === 'forbidden' && <Message tone="warning" title="Acceso restringido">Solo ADMIN vigente puede habilitar creadores. Auditor se mantiene en lectura.</Message>}
+    {data.access === 'forbidden' && <Message tone="warning" title="Acceso restringido">Solo ADMIN vigente puede gestionar creadores y responsabilidades. Auditor se mantiene en lectura.</Message>}
     {data.access === 'error' && <><Message tone="error" title="No se pudieron comprobar los permisos">Comprueba la API e inténtalo de nuevo.</Message><Button onClick={data.retryAccess}>Reintentar</Button></>}
     {data.access === 'ready' && <form onSubmit={event => { event.preventDefault(); setConfirmed(false); setReason(''); void data.find(email) }}>
       <label className={styles.search}>Correo de la cuenta registrada<input type="email" required maxLength={254} autoComplete="off" value={email} disabled={data.busy} onChange={event => setEmail(event.target.value)} /></label>
@@ -37,6 +38,7 @@ export function CreatorAdministrationPage() {
             <Button type="submit" disabled={!confirmed || !reason.trim()} loading={data.busy} loadingLabel="Habilitando…">Habilitar como creador · provisional</Button>
           </fieldset>
         </form>}
+      <StaffResponsibilitiesForm key={user.id} user={user} busy={data.busy} change={data.changeStaff} />
     </section>}
     <p><ButtonLink variant="tertiary" to="/administracion/campanas">Volver a revisión de campañas</ButtonLink></p>
   </section></div>

@@ -1,6 +1,10 @@
 # Brotar · Base integrada del equipo
 
-> **Avance local de Sprint 3 · 19/10/2026 · RicardoDev:** se inició S3-16, el núcleo sandbox de S3-02 y la base de S3-18. Este incremento requiere **nueve migraciones**; ver sección 24 y [contratos de integración](docs/contratos-sprint-3.md). No conecta un proveedor ni habilita cobros reales. La entrega remota DEV del 16/10 y sus comprobaciones se conservan como antecedente; este avance no está publicado todavía.
+> **Versión vigente · 24/10/2026 · RicardoDev:** corte integrado DEMO con ciclo, desembolsos, cierre, auditoría/permisos y **correo operativo**. Requiere **29 migraciones**, aplicadas por el comando habitual. Seguir §3 y §34–36, que actualizan los cortes históricos siguientes. Destino de esta entrega: RicardoDev; **DEV conserva Sprint 2**. Legal definitivo, módulos generales del equipo y aceptación global del MVP siguen pendientes. Las credenciales son locales y no vienen en el clon.
+
+> **Avance local de Sprint 3 · 21/10/2026 · RicardoDev:** API de aportes, simulador y conciliación exclusivamente DEMO, además de responsabilidades/auditoría. Requiere **catorce migraciones**; ver §24–28, [contratos 0.5](docs/contratos-sprint-3.md) y [reglas del MVP de pruebas](docs/decisiones/ADR-012-reglas-mvp-pruebas.md). No hay dinero real. Pantallas de Alison, correo, KYC/KYB e integración completa siguen pendientes. Este avance no está publicado.
+
+Lectura disponible para integrar «Mis aportes»: `GET /api/contributions` paginado y `GET /api/contributions/:id`, siempre propios y autenticados. Contrato 0.3: conserva último intento o null si aún no existe, importes como texto y fechas ISO; no contiene checkout ni una pantalla de historial terminada. Finanzas añade `/administracion/finanzas`, exclusivamente de consulta, con filtros, totales y CSV (sección 25); auditoría añade `/administracion/auditoria`, con consulta restringida y dos orígenes separados (sección 26).
 
 **Infraestructura vigente: `infra/postgres-v2/`.** `infra/postgres/` es la versión anterior y no se usa para levantar la entrega actual. Docker ejecuta **solo PostgreSQL**; el backend NestJS y el frontend Vite se ejecutan en el equipo anfitrión. Lee la instalación desde cero de la sección 3 antes de copiar variables o arrancar la API.
 
@@ -121,7 +125,7 @@ node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **nueve migraciones de RicardoDev** conservan las siete del Sprint 2 y añaden permisos por responsabilidad e integridad de referencias de pago. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **catorce migraciones de RicardoDev** conservan las siete del Sprint 2 y añaden permisos por responsabilidad, integridad de pagos, reportes, auditoría/retención y simulador/conciliación DEMO. El simulador queda apagado por defecto y producción lo deniega (§28); no se crean pagos ni cuentas. La API no recibe UPDATE/DELETE de auditoría ni permiso para sobrescribir/borrar importes de recibos DEMO. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Las categorías adicionales se cargan automáticamente con `migrate up`, sin modificar ese SQL.
 
@@ -764,9 +768,9 @@ Para instalar desde cero, seguir la sección 3 completa; para actualizar, conser
 
 ## 24. Inicio de Sprint 3 · RicardoDev · 19/10/2026
 
-Este incremento sigue local y las tres tareas permanecen **en curso**. Ver [alcance y evidencia](docs/avance-ricardo-sprint-3-2026-10-19.md) y [contratos 0.1](docs/contratos-sprint-3.md). No modificar DEV/main ni conceder roles nuevos automáticamente para probarlo.
+Este incremento sigue local; S3-02/15/16/18 permanecen **en curso**, mientras S3-06 tiene cierre técnico propio. Ver [alcance inicial](docs/avance-ricardo-sprint-3-2026-10-19.md), [avance de auditoría](docs/avance-auditoria-s3-15-16-18-2026-10-19.md) y [contratos actuales 0.5](docs/contratos-sprint-3.md). No modificar DEV/main ni conceder roles nuevos automáticamente para probarlo.
 
-El catálogo provisional de permisos ahora distingue revisión, publicación, Finanzas, Soporte y auditoría. Las vistas consultan `/api/access/permissions`; la API aplica permisos vigentes y mantiene al auditor en lectura incluso si acumula ADMIN. Revisión permite REVIEWER, publicación continúa reservada a ADMIN y separada de aprobar. La matriz definitiva D06 y la integración de los módulos futuros siguen pendientes.
+El catálogo distingue revisión, publicación, Finanzas, Soporte y auditoría. Las vistas consultan `/api/access/permissions`; la API aplica permisos vigentes y mantiene al auditor en lectura incluso si acumula ADMIN. Revisión permite REVIEWER, publicación continúa reservada a ADMIN y separada de aprobar. El 20/10 el equipo adoptó esta matriz para el MVP; la integración de los módulos futuros sigue pendiente. La duodécima migración añade `roles.manage` para ADMIN y UPDATE únicamente de `user_role.revoked_at`; la decimotercera crea agregados de retención en `brotar_extension`, sin borrar datos ni dar DELETE de auditoría a la API. La decimocuarta añade el simulador interno y recibos/conciliaciones DEMO (§28). Los cortes anteriores conservan su evidencia histórica; los pasos operativos actuales requieren **catorce**.
 
 Para una **V2 ya instalada**, primero detener la API y guardar un respaldo completo, fuera del repositorio. Desde `backend/`, con el contenedor saludable:
 
@@ -794,8 +798,327 @@ node scripts/verify-provisional-v2.mjs
 corepack pnpm run dev
 ```
 
-Debe mostrar nueve migraciones y `pending:false`. Si ya existían referencias de pago repetidas para el mismo proveedor, la novena migración se detiene sin borrar pagos: requiere diagnóstico, no quitar el índice. Una instalación nueva sigue la sección 3 con el compilado actual y aplica las nueve automáticamente. La API no anuncia readiness para el nuevo incremento si faltan sus objetos. Reiniciar frontend desde la raíz con `bun run dev`; no copiar los puertos ni credenciales de la copia de ensayo.
+Debe mostrar **catorce migraciones** y `pending:false`. Si ya existían referencias de pago repetidas para el mismo proveedor, la novena migración se detiene sin borrar pagos: requiere diagnóstico, no quitar el índice. La décima concede únicamente SELECT de devoluciones; la undécima habilita lectura/inserción de auditoría y retira UPDATE/DELETE de `audit_log` al rol de API. La decimocuarta configura un proveedor exclusivamente DEMO y conserva recibos/conciliaciones; no crea pagos ni roles de cuentas, no habilita dinero real ni activa el simulador por defecto. Una instalación nueva sigue la sección 3 con el compilado actual y aplica las catorce automáticamente. Readiness exige las extensiones actuales y rechaza privilegios UPDATE/DELETE de tabla en `audit_log` para el rol de aplicación. Reiniciar frontend desde la raíz con `bun run dev`; no copiar los puertos ni credenciales de la copia de ensayo.
 
 Después de migrar, `corepack pnpm run drill:recovery` ensaya la restauración del estado actualizado en otra base. El script actual compara también permisos e historial: no usar ese ensayo como reemplazo del respaldo previo sobre una base que aún tenga migraciones de catálogos/permisos pendientes.
 
-El núcleo de aportes está disponible solo para integración interna de servidor y pruebas sandbox. `GET /api/contributions/:id` permite consultar el aporte propio, con importes decimales en cadenas y sin payloads privados. No existen POST públicos de creación o confirmación: completar checkout, verificar callbacks del proveedor, conciliar pagos tardíos y cumplir las verificaciones aplicables es trabajo pendiente antes de exponerlos. Un evento sintético de prueba no acredita un cobro externo.
+`GET /api/contributions?limit=20` lista los aportes propios y devuelve `items/nextCursor`; enviar ese cursor en la siguiente página hasta que sea null. `GET /api/contributions/:id` consulta su detalle. Ambas rutas exigen sesión y permiso, devuelven importes decimales en cadenas y no exponen payloads privados. Un registro histórico sin intento conserva `paymentId/paymentStatus=null`. El [contrato 0.5](docs/contratos-sprint-3.md) añade POST de ensayo separados, apagados por defecto y documentados en §28; no expone el ledger como webhook ni acredita un cobro externo. Verificaciones KYC completas, proveedor bancario real y aceptación integral no se cierran por habilitar un simulador.
+
+## 25. S3-06 · consultar operaciones financieras
+
+Pantalla: **Mi cuenta → Consultar operaciones financieras**, o `/administracion/finanzas`. Exige `finance.read`, concedido por la matriz del equipo a FINANCE, ADMIN y AUDITOR; el registro público no asigna esos roles. No se crea otra cuenta administrativa automáticamente ni se habilita operar dinero. El alcance acordado es de pruebas; no hay proveedor real autorizado.
+
+1. Instalar desde cero con sección 3, o respaldar/actualizar V2 siguiendo sección 24: **catorce migraciones**. No restaurar SQL sobre datos existentes ni borrar volúmenes.
+2. Iniciar API/frontend e ingresar con una cuenta que ya tenga el permiso autorizado. Sin sesión vuelve al login y retorna a finanzas; sin permiso muestra acceso restringido.
+3. Consultar pagos y cambiar filtros opcionales de campaña (UUID), estado del pago y rango de fechas UTC inclusive. Aplicar filtros reinicia la paginación. «Limpiar filtros» vuelve al listado general; «Actualizar desde el inicio» consulta nuevamente los datos.
+4. Revisar importes, campaña, identificador interno del patrocinador, fecha, estado del pago y estado independiente del aporte. Cada fila/tarjeta representa un **intento**, no necesariamente otro aporte ni recaudación confirmada. Un proveedor sandbox queda rotulado como prueba.
+5. Usar Página siguiente/anterior. Los totales son del filtro completo, no de la página: están agrupados por moneda y estado, con importe, comisión, neto del intento y devoluciones completadas. No sumar monedas ni considerar el neto como saldo disponible para desembolsar.
+6. «Exportar filtro a CSV» descarga todos los registros del filtro aplicado, hasta 5000. Si hay más devuelve 413 y no descarga un reporte truncado; acotar fechas/campaña. Cambios posteriores a la consulta pueden cambiar el reporte, que se calcula en su propia instantánea.
+
+API: `GET /api/admin/finance/payments` y `GET /api/admin/finance/payments/export`. Reutilizan cookie HttpOnly, permisos persistidos y `no-store`; no aceptan un rol o identidad del navegador. El CSV evita fórmulas y excluye correo, nombre personal, teléfono, documentos, referencias externas y payloads. Tratar el archivo como reporte interno; no publicarlo en Trello/Git. Estado vacío significa sin coincidencias; un error de API/base no se convierte en importes cero.
+
+Esta consulta no conecta pasarelas ni ejecuta conciliación, desembolsos, devoluciones o disputas; esas son otras tareas. Los registros de prueba no se cargan automáticamente al instalar. La [evidencia y criterios de S3-06](docs/cierre-s3-06-finanzas-2026-10-19.md) distinguen el cierre técnico de la aceptación del MVP y del proveedor.
+
+## 26. S3-15 · consultar auditoría y cambios de estado
+
+Avance local de S3-15/16/18, no cierre de las tres historias. Preparar las **catorce migraciones** actuales con sección 3 o 24. No se crean cuentas ni se conceden roles a personas y no se requiere reinstalar el SQL. Con la API y el frontend iniciados:
+
+1. Ingresar con una cuenta autorizada ADMIN o AUDITOR y entrar en **Mi cuenta → Consultar auditoría**, o `/administracion/auditoria`. El permiso vigente `audit.read` se comprueba en cada consulta. FINANCE/REVIEWER/COMPLIANCE/SUPPORT no lo reciben por tener otra responsabilidad.
+2. Seleccionar **Auditoría (audit_log)** para acciones o **Cambios de estado (status_history)** para transiciones. Son registros distintos; no se concatenan como si representaran la misma evidencia.
+3. Filtrar opcionalmente por acción, UUID de actor/objeto, entidad y fechas UTC inclusive. Aplicar o limpiar filtros reinicia las páginas. Cada página contiene hasta 25 registros; siguiente/anterior y actualizar vuelven a consultar la API.
+4. Para generar una acción real, usar otra cuenta creadora: crear y guardar un borrador; después consultar su UUID en auditoría. El descarte requiere confirmación y conserva un registro de baja lógica. En estados aparecen el alta y las transiciones oficiales, no cada modificación de texto.
+5. Revisar actor, rol registrado, fecha, objeto y resultado. Un registro antiguo sin actor permanece sin atribuir; `UNSPECIFIED` no se presenta como operación exitosa. `SYSTEM` solo identifica eventos internos nuevos con ese origen explícito; no se utiliza para rellenar autores históricos ausentes.
+
+API: `GET /api/admin/audit`, `source=AUDIT|STATUS`, `items/nextCursor` y `no-store`. Los IDs de registro son **strings bigint**, distintos de los UUID de actor/objeto. No hay exportación, borrado, acceso a documentos ni endpoints de escritura en esta consulta. El cliente no puede enviar el autor de una operación. Los errores de API no se muestran como un historial vacío.
+
+Los registros nuevos de las campañas instrumentadas y del núcleo interno sandbox se escriben en la misma transacción del negocio, con metadatos mínimos. Un reintento idempotente no duplica la acción y un rollback tampoco deja un falso éxito. La consulta excluye motivos libres, cuerpos, valores antiguos/nuevos, IP, tokens y payloads. Los respaldos y registros heredados almacenados siguen siendo privados; ocultarlos en la pantalla no los borra. La retención y matriz del equipo se adoptaron el 20/10; sigue pendiente instrumentar los módulos futuros. Ver [antecedente de auditoría](docs/avance-auditoria-s3-15-16-18-2026-10-19.md) y el incremento siguiente.
+
+## 27. Reglas del MVP y avance local del 20/10/2026
+
+Las ocho decisiones acordadas están en [ADR-012](docs/decisiones/ADR-012-reglas-mvp-pruebas.md), con una tabla que distingue implementación y pendientes. No se asigna verificación KYC por conceder roles ni se considera enviado el correo real. La publicación del Sprint 2 aún no integra los controles KYC completos: esa integración permanece pendiente junto con captura/revisión. No usar este MVP para dinero o documentos reales.
+
+### Conceder y revocar responsabilidades
+
+1. Actualizar con sección 24: respaldo, comprobaciones, catorce migraciones, preparación S2, verificación y arranque. No reinstalar el SQL sobre una base existente.
+2. Iniciar sesión con ADMIN autorizado y entrar en `/administracion/usuarios` (Creadores y responsabilidades). No se crea una cuenta nueva ni se incluyen contraseñas en el repositorio.
+3. Buscar otra cuenta ya registrada por su correo. En «Responsabilidades internas», seleccionar REVIEWER, COMPLIANCE, FINANCE, SUPPORT o AUDITOR, la acción y un motivo de 10–500 caracteres; confirmar la cuenta y aplicar.
+4. Consultar los roles que devuelve la API. Conceder dos veces el mismo rol no duplica; revocar conserva el registro y retira los permisos en la siguiente petición, sin nuevo login. Una concesión futura/vencida debe revocarse explícitamente antes de volver a conceder.
+5. ADMIN no puede cambiar sus propias responsabilidades; ADMIN se aprovisiona por el procedimiento local existente. Con AUDITOR no hay escritura aunque se acumulen otros roles. No se desbloquean cuentas ni se aprueban identidades desde esta pantalla.
+
+Contrato: `POST /api/admin/users/:id/responsibilities`; consultar [contratos 0.5](docs/contratos-sprint-3.md). Los módulos aún no implementados no aparecen por conceder su rol.
+
+### Reservas y reintentos internos
+
+`ContributionLedger.retry(actorId,contributionId,requestKey)` crea un intento nuevo del mismo aporte fallido/vencido, sin reciclar pagos, cambiar importe o reabrir un cobro confirmado. `expireDue(100)` persiste expiraciones de ensayo por lotes y registra su procedencia. Ahora disponen de invocadores HTTP **exclusivamente DEMO** (§28); no hay programador automático. Las reservas nuevas duran como máximo 30 minutos y se acortan al fin de campaña. Las confirmaciones tardías quedan en recibos para conciliación sin reactivación silenciosa. Alison integra sus pantallas contra el contrato; no exponer eventos internos como un webhook.
+
+### Retención administrativa de auditoría
+
+Desde `backend/`, con compilado actual, V2 saludable y `NODE_ENV` distinto de producción:
+
+```powershell
+# Solo informa; no elimina ni modifica datos.
+node scripts/audit-retention.mjs plan
+```
+
+Conserva 12 meses de detalle y retiene todo si hay trabajo/casos abiertos. El plan muestra `held`, los contadores de bloqueo y `eligible`. Solo un responsable administrativo, tras revisar el plan y en una ventana sin escrituras, puede ejecutar:
+
+```powershell
+node scripts/audit-retention.mjs apply --confirm-12-months
+```
+
+El comando crea y comprueba un respaldo completo fuera del repositorio antes de modificar datos, confirma que respaldo/conexión apuntan al mismo puerto y vuelve a verificar bloqueos en la transacción. Por defecto guarda el respaldo en `Documents/brotar-privado/retencion`; para otra ubicación privada usar `BROTAR_RETENTION_BACKUP_DIR`, siempre fuera del repositorio. Restringir el acceso a esos archivos: contienen datos personales, aunque las estadísticas no los contengan. No compartirlos por Git, Trello ni chat.
+
+Cada ejecución procesa como máximo 5000 eventos antiguos y conserva únicamente mes UTC, acción y conteo en `brotar_extension.audit_monthly`. Con `held:true` no borra nada; `processed:"0"` no significa fallo si no hay elegibles. Con escrituras simultáneas el mantenimiento falla sin aplicar y debe reintentarse en una ventana tranquila. No elimina `status_history` ni expedientes de negocio. No hay purga al instalar, al arrancar ni por HTTP. En este incremento solo se aplicó sobre datos sintéticos de QA, **no sobre la base original**.
+
+## 28. Incremento local del 21/10 · aportes y conciliación DEMO
+
+Trabajo local en **RicardoDev**, sin commit/push ni cambios en DEV/main/Trello. [Contrato HTTP DEMO 0.5](docs/contrato-pagos-demo-0.5.md): rutas, cuerpos, errores y guía para integrar las pantallas. [Evidencia y tareas pendientes](docs/avance-pagos-demo-2026-10-21.md). No se incluyen proveedor real, cuentas bancarias ni correo real.
+
+1. Seguir sección 3 para instalación nueva o sección 24 para actualización con respaldo. Deben estar aplicadas **14 migraciones** y readiness conectado; no copiar `.env.example` sobre las credenciales generadas, reinstalar SQL ni borrar volúmenes.
+2. Solo para ensayar, en la terminal `backend/`, establecer `$env:DEMO_PAYMENTS_ENABLED='true'` y `$env:NODE_ENV='development'`, luego `corepack pnpm run dev`. La bandera es false por defecto; producción siempre bloquea las rutas. Para desactivar, quitar/cambiar la variable y reiniciar.
+3. Usar una sesión registrada y una campaña publicada. POST `/api/demo-payments/checkout` valida monto/moneda/modalidad/cupo y consentimiento DEMO; devuelve aporte y boleto no pagable. Importes son cadenas decimales y requestKey UUID v4 estable por operación. Todavía no se conectan los formularios de Alison a estas rutas.
+4. El titular puede GET `/api/demo-payments/:paymentId`, simular un resultado con POST `/:paymentId/simulate` y reintentar el mismo aporte fallido/vencido con POST `/contributions/:contributionId/retry`. Los cuerpos exactos están en el contrato. No aceptar dinero real ni reemplazar `BROTAR-DEMO:<uuid>` por un QR bancario.
+5. FINANCE vigente puede expirar reservas con POST `/api/admin/finance/demo/expire`, crear/consultar lotes en `/api/admin/finance/demo/reconciliations`, resolver ítems y cerrar lotes. ADMIN/AUDITOR pueden leer; no operar como Finanzas. ADMIN concede FINANCE a otra cuenta mediante responsabilidades existentes, sin modificar la base manualmente.
+6. Una confirmación tardía devuelve `processing: NEEDS_REVIEW` y conserva el aviso, sin sumar dinero ni reabrir el intento. Finanzas puede registrar una compensación **de prueba** de recibos inequívocos sin confirmación interna, nunca de su propio aporte; no genera una devolución bancaria ni altera `refund`. No se cierra un lote con diferencias sin resolver ni se sobrescriben sus totales brutos históricos.
+
+La API rechaza campos adicionales, importes no decimales/moneda incorrecta, acciones ajenas, permisos revocados y más de 20 escrituras/minuto por cuenta/IP. Una repetición no confirma dos veces ni duplica compensaciones. No hay temporizadores ni borrados ocultos. Los avisos pendientes retienen el detalle de auditoría; el respaldo/restauración incluye los nuevos registros.
+
+Estas capacidades son backend de ensayo; **no cierran** por sí solas las pantallas/checkout integral, comprobante visual, conciliación completa del producto, KYC/KYB, desembolsos, devoluciones de aportes confirmados, correo ni aceptación del MVP. No se añade dependencia nueva ni se modifica el SQL oficial.
+
+## 29. Incremento local del 22/10 · pantalla de conciliación DEMO
+
+Esta sección amplía la conciliación de §28, sin publicar cambios en DEV. Mantiene **14 migraciones**; no necesita otro SQL, dependencia, cuenta predeterminada ni credencial compartida. No altera el alcance pendiente de checkout/pagos visuales de Alison, identidad de Santiago ni correo real.
+
+1. Preparar o actualizar con §3/24 y habilitar el simulador en el backend como indica §28. Mantener `NODE_ENV=development/test`; nunca utilizar dinero real.
+2. ADMIN concede FINANCE a otra cuenta desde **Creadores y responsabilidades**, con motivo y confirmación. El propio ADMIN y Auditor pueden consultar, pero no operar; Auditor no escribe aunque acumule FINANCE.
+3. Entrar con la cuenta autorizada y abrir **Mi cuenta → Conciliación DEMO**, o `/administracion/conciliacion`. Seleccionar fechas UTC reales (hasta 31 días inclusive) y una moneda del catálogo de PostgreSQL. No se mezclan monedas ni se cargan registros ficticios al instalar.
+4. **Consultar pendientes** muestra intentos iniciados/pendientes y avisos que requieren revisión, según la fecha de creación del intento. Son datos vigentes, no ingresos confirmados. La paginación es independiente del historial de lotes.
+5. FINANCE puede **Crear lote del período**. Contrasta confirmaciones internas y primera observación de recibos confirmados DEMO. El corte muestra ambos importes, diferencia con signo, referencias, estado interno vigente y clasificación original. El historial de lotes conserva todas las fechas/monedas; el filtro de pendientes no lo oculta.
+6. En una diferencia, indicar acción, motivo de 20–500 caracteres y confirmación. **Contrastar evidencia actual** solo resuelve si los datos realmente coinciden. **Compensación DEMO** solo se ofrece para recibos inequívocos sin confirmación interna; el servidor rechaza al propio titular, referencias ambiguas e importes incompatibles. Modificar motivo o acción reinicia la confirmación. No altera `refund`, resta dinero inexistente ni envía transferencias.
+7. **Cerrar lote revisado** exige referencias coincidentes/resueltas y revalidación del servidor. No existe «ignorar diferencia» ni edición de importes. Un lote cerrado conserva su corte e historial; para nuevas observaciones, crear otro. Consultar o compensar no convierte la diferencia bruta original en saldo desembolsable.
+8. El mantenimiento de **reservas vencidas** exige otra confirmación: procesa hasta 100 intentos DEMO, en todas las fechas/monedas, no solo el filtro visible. No confirma cobros ni registra devoluciones. Puede repetirse sin duplicar vencimientos.
+9. Ante un error de red, usar **Actualizar estado** antes de repetir. Crear un lote conserva la clave del mismo intento mientras permanece el formulario; reintentar ese envío no duplica el lote. Una nueva operación intencional puede producir otro corte histórico sin duplicar ingresos. Una revocación devuelve 403 y retira los datos; volver a iniciar sesión no devuelve permisos revocados.
+
+Contrato ampliado y límites en [pagos DEMO 0.5](docs/contrato-pagos-demo-0.5.md). [Cierre técnico S3-07](docs/cierre-s3-07-conciliacion-2026-10-23.md): criterios y evidencia de implementación/pruebas del 22/10, registrados el 23/10. S3-06 y S3-07 quedan cerradas técnicamente en local; no implica publicación en DEV ni aceptación global del MVP.
+
+## 30. Integración local del 23/10 · RicardoDev + SantiagoDev
+
+Esta es la versión local vigente de Sprint 3. Las secciones 28/29 conservan su corte histórico: donde indican 14 migraciones o pantallas aún no integradas, aplicar esta actualización. No está publicada en DEV y no equivale al cierre completo del MVP. Correo real y textos legales definitivos siguen pendientes.
+
+- Se incorporó SantiagoDev `a504e43` preservando el trabajo previo de Ricardo. Incluye galería, guardadas/seguimiento, selección simulada, panel/historial/comprobantes propios, captura sintética de identidad, avances y consultas de administración/rendición. Las consultas no implementan automáticamente los flujos de aprobación, desembolso o resolución.
+- Instalación nueva: seguir §3 con su configuración generada. Actualización: seguir §24 con respaldo y compilación actual. Desde `backend/`, el orden sigue siendo `corepack pnpm install --frozen-lockfile`, `corepack pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/prepare-sprint2.mjs`, `node scripts/migrate.mjs status`, `node scripts/verify-provisional-v2.mjs`, y luego `corepack pnpm run dev`. Docker/PostgreSQL debe estar saludable antes de migrar; no usar la contraseña de ejemplo ni reinstalar la línea base sobre un volumen existente.
+- El estado actualizado tiene **20 migraciones sin pendientes**. Las cinco nuevas de Santiago y el acuerdo DEMO se aplican con el comando habitual, no con SQL escondido. Se conservan las cinco categorías provisionales automáticas, permisos y datos existentes. No se reemplaza ninguna política activa previa ni configuración de parámetros existente.
+- Para pagos de prueba, habilitar `DEMO_PAYMENTS_ENABLED=true` y `NODE_ENV=development` en el backend, como §28. Entrar con una cuenta registrada, abrir una campaña publicada y vigente, seleccionar apoyo en `/simulacion-apoyo?campaignId=<UUID>`, guardar selección y elegir **Continuar al checkout DEMO integrado**. Revisar resumen/corrección, confirmar expresamente y crear intento. `/apoyo-demo?pago=<UUID>` muestra un QR ilustrativo **no escaneable ni pagable**, estado persistido y resultados sintéticos. Reintentar un fallo conserva el aporte, no reutiliza el intento anterior. Confirmación pendiente de revisión no suma recaudación.
+- Desde el intento se accede al historial y al comprobante privado; el panel separa importes reales de **DEMO integrados**. Los ensayos de `support_simulation` no crean aportes ni se suman como ingresos. No se muestran datos bancarios ni se solicita una tarjeta.
+- En `/mi-verificacion`, las políticas `mvp-demo-1.0-20261023` solo admiten campos que empiezan por DEMO/PRUEBA y respaldos sintéticos privados. En producción no se habilitan. Capturar/enviar no aprueba identidad ni autoriza publicación/desembolso. Si existe una política previa activa, no se sustituye: revisar su propósito antes de usarla. No cargar documentos reales.
+- En `/administracion/catalogos`, ADMIN puede editar dos metas enteras acordadas (primera respuesta 1–48 h, inicial 48; escalamiento 72–720 h, inicial 120), con confirmación y auditoría transaccional. AUDITOR consulta y nunca escribe, aunque también tenga ADMIN. El resumen administrativo consume estos valores para contadores de atención; no envía correos, asigna casos ni resuelve incidencias.
+
+Decisiones y criterios completos: [ADR-013](docs/decisiones/ADR-013-definiciones-integracion-mvp-demo.md). Los acuerdos son internos del equipo para pruebas; no una aprobación legal, bancaria o del cliente. No introducir dinero, identidades reales ni credenciales compartidas.
+
+## 31. Revisión de identidad, devoluciones y disputas · local 23/10
+
+Esta actualización conserva los pasos de instalación de §3 y actualización con respaldo de §24. **No reinstalar SQL, borrar volúmenes ni copiar credenciales de otra máquina.** La base original no fue usada para pruebas de escritura: se ensayó en una copia aislada con datos sintéticos. El código y la documentación permanecen locales en RicardoDev, sin commit/push.
+
+Con Docker/PostgreSQL V2 saludable y configuración local ya generada, desde `backend/`:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run check
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+$env:NODE_ENV='development'
+$env:DEMO_PAYMENTS_ENABLED='true'
+corepack pnpm run dev
+```
+
+El estado esperado es **24 migraciones, sin pendientes**. La preparación conserva categorías/configuración existente; no hay SQL adicional escondido. Para una actualización, respaldar antes de `up`. La API no migra al arrancar; readiness devuelve 503 si faltan las tablas/permisos requeridos. En otra terminal, desde la raíz del frontend, conservar el procedimiento y comando Vite de §3/4. La bandera DEMO no habilita producción, banco, envío de correo ni documentos reales.
+
+### Recorridos por responsabilidad
+
+1. **Identidad (S2-08):** titular envía un expediente sintético en `/mi-verificacion`; COMPLIANCE o ADMIN abre `/administracion/verificaciones`, filtra persona/organización/estado, consulta documentos privados y comienza revisión. Para aprobar debe revisar todos los documentos actuales y escribir motivo/confirmación. También puede rechazar o pedir información; la corrección del titular conserva versiones. No se permite autoaprobación ni revisar expedientes vinculados a la propia organización. Una aprobación DEMO no activa cuentas, concede roles, acepta textos legales ni equivale a identidad real. El distintivo público, cuando corresponde, está expresamente rotulado como DEMO.
+2. **Devolución (S3-09):** titular consulta un pago DEMO confirmado en `/mis-aportes`, solicita un importe positivo en «Solicitar devolución DEMO» y consulta `/mis-devoluciones`. FINANCE usa `/administracion/devoluciones`: autorizar y completar son acciones separadas. También puede rechazar o registrar fallo. El titular ve estados e historial. Se comprueba lo pagado, ya devuelto, reservado y comprometido; no se opera una devolución propia ni de la campaña propia. ADMIN/AUDITOR solo consultan.
+3. **Disputa (S3-11):** titular registra una incidencia de su aporte y elige «Abrir disputa DEMO»; selecciona uno de sus pagos confirmados, describe el reclamo y confirma. En `/administracion/disputas`, SUPPORT asume el expediente, ajusta prioridad, pide información, responde, escala y resuelve con motivo. Las notas internas no se entregan al titular; este consulta/responde en `/mis-disputas`. Se conserva evidencia privada e historial paginado. ADMIN/AUDITOR consultan; FINANCE no decide disputas por tener su rol financiero.
+4. **Resolución financiera (S3-02):** recomendar devolución no crea ni ejecuta una salida. Se mantiene reserva; el titular solicita exactamente el importe recomendado, que pasa al flujo de FINANCE. Rechazo/fallo financiero devuelve la reserva a la disputa para revisión/reintento. No se cierra el expediente con obligación pendiente. Tras devolución completada, SUPPORT puede cerrar. Resolver sin devolución no resta recaudación.
+
+Para asignar COMPLIANCE, FINANCE o SUPPORT a **otra cuenta existente**, ADMIN usa `/administracion/usuarios`; no es necesario editar la base ni compartir una cuenta privilegiada. AUDITOR impone solo lectura incluso combinado con otro rol. Las revocaciones y vencimientos se comprueban en cada operación y nuevamente tras esperar bloqueos.
+
+La recaudación sigue saliendo de la vista oficial: confirmaciones históricas menos devoluciones completadas. Una devolución parcial mantiene el aporte confirmado; la total deja aporte/pago REFUNDED. Una disputa pendiente deja pago DISPUTED sin inventar pérdida de dinero. Avisos antiguos no reabren ni desconfirman estas operaciones; referencias o importes incompatibles se rechazan. No se reponen cupos de recompensa automáticamente por devolver un aporte.
+
+Los nuevos POST de casos requieren sesión, origen/cabecera de mutación, tipos/longitudes, confirmación, control de versión o clave idempotente según el contrato; límite compartido de 20 escrituras/minuto por cuenta/IP. Ante fallo de red, consultar estado antes de repetir. No se ejecutan devoluciones, purgas, correos o migraciones en segundo plano al iniciar.
+
+Implementación, contratos, evidencias y límites: [cierre de las cuatro tareas](docs/cierre-cuatro-tareas-ricardo-2026-10-23.md). Las tareas ajenas/dependientes, correo real y legal permanecen abiertas; esto no declara terminado todo Sprint 3 ni todo el MVP.
+
+## 32. Ciclo de campaña y desembolsos DEMO · RicardoDev local · 24/10
+
+Esta sección sustituye **solo el número de migraciones/alcance vigente** de §30–31. Para una copia nueva seguir §3; para una V2 existente, respaldar según §24, sin restaurar la línea base encima ni borrar volúmenes. Docker ejecuta PostgreSQL; API y frontend siguen en el anfitrión. No copiar `.env`, contraseñas ni bases QA de otra instalación.
+
+Con la configuración local generada y PostgreSQL saludable, desde `backend/`:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run check
+node scripts/migrate.mjs up
+node scripts/prepare-sprint2.mjs
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+$env:NODE_ENV='development'
+$env:DEMO_PAYMENTS_ENABLED='true'
+# Solo si se demostrará publicación administrativa, conforme a §16:
+$env:CAMPAIGN_ADMIN_PUBLICATION_ENABLED='true'
+corepack pnpm run dev
+```
+
+En otra terminal, desde la raíz del frontend:
+
+```powershell
+bun install --frozen-lockfile
+bun run dev
+```
+
+El estado esperado es **26 migraciones, ninguna pendiente**. Las nuevas son `CampaignLifecycle1792713600005` y `DemoDisbursements1792713600006`. Readiness devuelve 503 si faltan sus tablas/permisos. `up` repetido no recrea tablas ni cambia categorías o configuración. Arrancar no migra, no vence campañas automáticamente ni mueve dinero. Las secciones antiguas de 7/14/20/24 migraciones conservan sus fechas, no son comandos alternativos.
+
+### Recorrido nuevo
+
+1. Preparar cuentas sintéticas independientes: CREATOR, ADMIN y FINANCE; COMPLIANCE/ADMIN revisa KYC/KYB. AUDITOR nunca escribe aunque también tenga otra responsabilidad. ADMIN no obtiene FINANCE automáticamente.
+2. Enviar/revisar campaña como antes. Publicar ahora comprueba KYC DEMO aprobado y vigente, política/documentos actuales y, para organización, KYB y representación vigentes. No permite autopublicarse. Sin modo DEMO explícito no habilita una publicación real; correo/legal siguen pendientes.
+3. Creador: **Mis proyectos → Ciclo y desembolsos**, `/mis-campanas/ciclo`. ADMIN: **Ciclo de campañas DEMO**, `/administracion/ciclo-campanas`. Cada detalle muestra estado, versión, resultado, fondos, condiciones de cierre e historial paginado.
+4. La recaudación termina por fecha, no por alcanzar antes la meta. ADMIN pulsa **Finalizar recaudación vencida**, con motivo/confirmación. Se vencen reservas DEMO vencidas (hasta 500; más requieren mantenimiento por lotes). Intentos abiertos o conciliaciones sin resolver impiden fijar resultado. Todo-o-nada sin meta genera obligación de devolver; flexible con fondos permite ejecución. No crea un desembolso ni devolución por sí solo.
+5. ADMIN ajeno al beneficiario inicia ejecución cuando corresponde. El creador abre **Destino y desembolsos DEMO** y registra solo referencia con letras `DEMO-HUERTO` y titular `DEMO Huerto Ñandú`. No se admiten números de cuenta ni datos bancarios. FINANCE consulta la campaña desde `/administracion/desembolsos?campana=<UUID>` y verifica o rechaza el destino; necesita identidad aplicable vigente y no puede revisar el propio destino.
+6. El creador solicita importe exacto, motivo y fecha opcional no pasada (Bolivia). La campaña debe estar en ejecución y el destino aprobado. Solicitar reserva el bruto; no significa transferir. Se descuentan devoluciones, disputas y otros desembolsos comprometidos del saldo disponible. Solo BOB/moneda persistida de campaña, sin conversión; comisiones de ensayo cero.
+7. FINANCE independiente: **Autorizar → Iniciar procesamiento DEMO → Completar DEMO**, o rechazar/fallar según estado. Fechas futuras no se procesan antes de tiempo. Solo completar produce `DEMO-DISBURSEMENT:<UUID>`. Se conservan solicitante, autorizador, ejecutor, importes y destino histórico. Cambiar destino lo devuelve a pendiente y no modifica operaciones anteriores; con operaciones activas debe resolverlas primero.
+8. Creador puede solicitar cancelación; mientras está pendiente se bloquean nuevos aportes. ADMIN acepta o rechaza con motivo. Sin fondos liberados, cancelar deja exigibles las devoluciones correspondientes. Con fondos ya desembolsados se abre un caso de soporte y la campaña no se cancela ficticiamente. La atención general de ese caso sigue el contrato de soporte pendiente; no devuelve dinero automáticamente.
+9. Cerrar exige obligaciones resueltas y saldo coherente. Todo-o-nada fallido/cancelado debe devolver todos los fondos; una campaña ejecutada requiere hitos/actividades completos, recompensas cumplidas y rendición final independiente aprobada, con evidencia privada, gastos coherentes y remanentes resueltos (saldo cero). **La captura/revisión de rendición y cumplimiento de recompensas siguen pendientes de sus módulos**; si faltan, se muestra el bloqueo y no se ofrece un cierre falso.
+10. Un fallo de red no es éxito. Consultar estado/historial antes de repetir; el mismo envío conserva clave idempotente, una versión anterior devuelve 409 y permisos revocados/vencidos devuelven 403. No se edita ni elimina el historial desde la API.
+
+Contrato, comprobaciones y límites: [ciclo y desembolsos](docs/ciclo-y-desembolsos-demo-2026-10-24.md). S3-15/16/18 incorporan estos módulos, pero sus tarjetas globales no se cierran automáticamente mientras falten rendición, recompensas, representación y atención general. Correo y legal continúan pendientes; no hay proveedor bancario ni dinero real. Los cambios permanecen locales en RicardoDev.
+
+## 33. Preparación mínima de cierre S3-23 · RicardoDev local · 24/10
+
+Esta sección amplía §32: la rendición final, el cumplimiento mínimo de recompensas y la resolución de incidencias no financieras necesarios para cerrar **ya disponen de operaciones reales de interfaz/API/BD**. No se reemplazan por datos aprobados a mano. Los módulos generales de informes periódicos, logística, administración/representación y soporte completo continúan en las tareas de sus responsables.
+
+En una instalación nueva seguir primero §3. En una V2 existente: respaldar, mantener su `.env` generado y contenedor propio; **no restaurar de nuevo el SQL oficial ni borrar volúmenes**. Desde `backend/`:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run build
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+node scripts/prepare-sprint2.mjs
+$env:NODE_ENV='development'
+$env:DEMO_PAYMENTS_ENABLED='true'
+corepack pnpm run dev
+```
+
+Estado esperado: **27 migraciones, ninguna pendiente**. La nueva es `CampaignClosure1792800000000`; el API no migra al arrancar. Si ya está corriendo, reiniciarlo después de actualizar. La preparación conserva categorías, cuentas y configuración; no crea rendiciones, recompensas cumplidas ni incidencias resueltas. En otra terminal, desde la raíz, mantener `bun install --frozen-lockfile` y `bun run dev`, con el proxy/backend de §3/4. No copiar puertos ni `.env` del entorno QA a la base original.
+
+### Recorrido mínimo para cerrar
+
+1. Completar aporte, fin de recaudación, inicio de ejecución y desembolso DEMO según §32. Mantener cuentas de creador, FINANCE y administración/revisión independientes; añadir SUPPORT si hay incidencias. No asignar todas las responsabilidades a la misma cuenta para saltarse la separación de funciones.
+2. Creador: **Ciclo y desembolsos → Preparar cierre**, `/mis-proyectos/:id/cierre`. Registrar actividades/hitos completos en **Avances**, con fechas reales no futuras.
+3. Si existen recompensas exigibles, registrar cada cumplimiento DEMO con evidencia privada y fecha real. No se pide entrega para donaciones ni para aportes completamente devueltos; una devolución parcial no exime automáticamente la recompensa.
+4. SUPPORT: **Preparar cierres DEMO**, `/administracion/cierre-campanas`. Resolver incidencias no financieras con motivo. Disputas/devoluciones conservan sus módulos y permisos; este paso no mueve fondos.
+5. Creador presenta rendición final: período de ejecución, resultados, variaciones y gastos positivos con categoría activa/evidencia propia. Gastos deben sumar exactamente desembolsos completados; el servidor calcula importes derivados y moneda. No escribir saldo cero a mano.
+6. ADMIN/REVIEWER independiente revisa la rendición y documentos: aprobar o solicitar correcciones con motivo. Mientras está enviada no se edita. Corregir conserva la anterior y crea otra versión; solo la última puede aprobarse. Cambiar avances después de revisar invalida el cierre.
+7. ADMIN abre **Ver bloqueos y decidir el ciclo**. Si no hay obligaciones, diferencias, resultados/recompensas ni rendición pendientes, aparece **Cerrar campaña**. Se revalida en servidor, persiste CLOSED y su historial; no queda edición/reapertura terminal desde esta pantalla.
+
+Las evidencias `CLOSURE_EVIDENCE` son privadas y se descargan por su vínculo autorizado. SUPPORT/FINANCE no heredan comprobantes por consultar requisitos; un archivo enlazado no se elimina. Cada acción requiere motivo, consentimiento DEMO, versión y clave idempotente. Un error de red exige consultar estado, no asumir éxito.
+
+Cancelar con fondos ya desembolsados sigue escalando: resolver una incidencia no recupera el dinero ni permite una cancelación ficticia. No se incorpora cierre forzado, proveedor bancario, correo ni aprobación legal. [Contrato, validaciones y pruebas de S3-23](docs/cierre-s3-23-2026-10-24.md).
+
+## 34. Auditoría, permisos y contratos integrados · RicardoDev local · 24/10
+
+Este corte transversal fue comprobado con **28 migraciones**; el incremento de correo de §36 añade la 29 y conserva los flujos anteriores. S3-15/S3-16/S3-18 integran las operaciones disponibles; S3-17 de Santiago se conserva y revalida. [Criterios, evidencia y límites del corte anterior](docs/cierre-transversal-s3-15-18-2026-10-24.md). Los módulos generales pendientes del equipo y los textos legales definitivos siguen separados.
+
+**Instalación nueva:** seguir §3, que instala la base oficial, genera `.env` local y aplica el registro completo de migraciones y categorías. **V2 ya instalada:** respaldar primero; desde `backend`, con su `.env` generado para ese contenedor, ejecutar:
+
+```powershell
+corepack pnpm install --frozen-lockfile
+corepack pnpm run build
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+node scripts/prepare-sprint2.mjs
+node scripts/check-http-contracts.mjs
+```
+
+`status` debe mostrar **29 migraciones y ninguna pendiente** en esta rama. No restaurar el SQL oficial encima de una V2 existente ni copiar `.env` de otra computadora. La migración 28 agrega `parties.read`/`dashboard.read` y la 29 configura la persistencia del correo; no crean usuarios ADMIN ni cambian responsables. `health/ready` devuelve 503 si faltan migraciones o concesiones de la matriz, incluso si PostgreSQL responde.
+
+Reiniciar el backend después de migrar, manteniendo las banderas DEMO indicadas en §32/33 para sus recorridos. En otra terminal, raíz del frontend: `bun install --frozen-lockfile` y `bun run dev`. Usar el proxy/origen de §3/4; cambiar el puerto del frontend exige actualizar su origen autorizado. No se habilitan pagos reales.
+
+**Comprobación de desarrollo:** `corepack pnpm run check` en backend y `bun run check` en raíz. El check de backend comprueba también el [inventario de rutas HTTP](docs/contratos-http-sprint3.json), sin conectar a la base. Si cambia una ruta o autorización, revisar el contrato y cliente antes de regenerarlo con `node scripts/check-http-contracts.mjs --write`; no regenerarlo para ocultar un fallo.
+
+**Ensayo de recuperación:** desde backend compilado, con Docker respondiendo y configuración de migración local preparada, ejecutar `node scripts/drill-recovery.mjs --with-files`. Conserva dump y archivos recuperados fuera del repositorio, en la carpeta privada indicada por el resultado (`BROTAR_DRILL_DIR` permite elegir otra carpeta fuera de Git). `FILE_STORAGE_DIR` debe apuntar al almacén de esa misma instalación; por defecto, `backend/private/files`. Recupera los binarios activos usando tamaño/SHA-256 de la base restaurada; si falta/cambia alguno, falla. El modo sin `--with-files` verifica solo la base. La copia temporal de BD se retira al superar el ensayo; `--keep` la conserva para inspección. Los archivos recuperados y el dump contienen datos privados: no se suben al repositorio. Las integraciones con escritura se ejecutan únicamente en una copia aislada preparada para QA.
+
+Recorrido corto:
+
+1. Cuenta normal → Mi cuenta: editar perfil válido; comprobar que persiste al recargar.
+2. AUDITOR (también con ADMIN) → Mi cuenta: datos en lectura; API deniega PATCH y las demás mutaciones de negocio. Ingreso/salida y recuperación de credenciales siguen disponibles.
+3. ADMIN → Catálogos: categorías/referencias y dos parámetros tipados de soporte. AUDITOR consulta sin edición. Roles revocados/vencidos no conservan permiso por su sesión anterior.
+4. ADMIN/AUDITOR → Auditoría: filtrar objeto/actor, fechas y acción; distinguir auditoría de historial de estados. No se exponen cuerpos, tokens ni documentos privados.
+5. FINANCE → Operaciones → Exportar: CSV autorizado y evento EXPORT mínimo. ADMIN por sí solo consulta y no opera dinero; SUPPORT no aprueba identidad ni hereda documentos privados por ver un caso.
+
+Las nuevas integraciones de representación, soporte general e informes del equipo deben conservar esta matriz, añadir su auditoría en la misma transacción y superar otra vez el check/integraciones. El cierre transversal de este corte no certifica esas funcionalidades aún pendientes ni la aceptación global S3-21. Todo este incremento sigue local en RicardoDev, sin publicar en DEV.
+
+## 35. Correo Gmail autorizado · configuración local
+
+Se reutiliza Nodemailer y el adaptador de recuperación existente. No se instalan dependencias nuevas ni se versionan credenciales. Cada instalación configura su propio `backend/.env`, generado durante la preparación de V2; no copiar el `.env` de otro equipo ni convertir `backend/.env.example` en archivo de secretos.
+
+En `backend/.env` completar estos campos con una cuenta autorizada:
+
+```dotenv
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu-cuenta@gmail.com
+SMTP_FROM=tu-cuenta@gmail.com
+SMTP_PASSWORD=
+PASSWORD_RESET_LOCAL_FILE=false
+PUBLIC_WEB_ORIGIN=http://127.0.0.1:5173
+```
+
+Pegar la **contraseña de aplicación de Google**, nunca la contraseña normal de la cuenta. Google requiere verificación en dos pasos para crearla: [ayuda oficial](https://support.google.com/accounts/answer/185833?hl=es). La aplicación admite los cuatro grupos copiados con espacios y los normaliza exclusivamente para Gmail; no modifica las contraseñas de los usuarios de Brotar ni las claves de otros servidores. Para este remitente, `SMTP_FROM` debe coincidir con `SMTP_USER`.
+
+Se utiliza TLS obligatorio y certificados verificados: [SMTP de Gmail](https://developers.google.com/workspace/gmail/imap/imap-smtp). El puerto 587 utiliza STARTTLS; también se admite 465 con conexión TLS inicial. No desactivar certificados, activar logs SMTP ni poner credenciales en variables VITE, argumentos de terminal, capturas o archivos compartidos.
+
+`PUBLIC_WEB_ORIGIN` debe ser el origen real del frontend. Si se usa otro puerto, actualizarlo y autorizar ese mismo origen en `CORS_ORIGINS`; reiniciar el backend al cambiar el `.env`. Un enlace hacia 127.0.0.1 sirve en la computadora donde está ejecutándose esa instalación, no como dirección pública para otros dispositivos. Cambiar al remitente real no publica la aplicación en Internet.
+
+Desde `backend`, compilar y verificar conexión/autenticación **sin enviar mensajes**:
+
+```powershell
+corepack pnpm run build
+node --env-file-if-exists=.env scripts/check-mail.mjs
+```
+
+Para solicitar una prueba que se envía únicamente a la propia dirección de `SMTP_USER`, sin tokens ni datos de otros usuarios:
+
+```powershell
+node --env-file-if-exists=.env scripts/check-mail.mjs --send-self-test
+```
+
+El diagnóstico comparte transporte con la recuperación: no muestra claves ni respuestas privadas del proveedor. Una configuración incompleta o un buzón TXT todavía activo falla explícitamente. Una prueba SMTP aceptada no confirma recepción: comprobar bandeja/spam. Después, iniciar la API y solicitar Recuperar acceso desde la interfaz con una cuenta registrada cuya bandeja se controle. La respuesta HTTP no publica el enlace ni certifica entrega; el mensaje recibido contiene el enlace temporal existente, válido una hora y de uso único. La API mantiene su respuesta uniforme para evitar distinguir cuentas por fallos del proveedor.
+
+**Comprobación del 24/10/2026:** el usuario confirmó la recepción de la prueba inicial. Después se ensayó con Gmail y BD QA aislada la recuperación completa, revocación de sesión, rechazo de contraseña anterior, enlace de uso único, verificación de correo y aviso de estado; se comprobaron mensajes en INBOX. [Evidencia y límites](docs/correo-operativo-2026-10-24.md). Legal y la integración global del alcance pendiente del equipo continúan abiertos.
+
+## 36. Verificación y avisos · instalar/actualizar RicardoDev
+
+Después de la preparación de §3 o la actualización con respaldo de §34, comprobar **29 migraciones y ninguna pendiente**. La 29 prepara la cola y los contactos sin cargar datos manualmente ni alterar el SQL oficial. Reiniciar la API. Un `.env` de otro equipo no sustituye la preparación del contenedor propio.
+
+**Para el correo real**, configurar §35. Si el responsable entrega por un canal privado el archivo de solo correo, guardarlo fuera del repositorio y, desde `backend` ya compilado/con su `.env` generado, importar:
+
+```powershell
+node scripts/mail-config.mjs --import "$env:LOCALAPPDATA\Brotar\mail-transfer\brotar-gmail-20261024.env"
+node --env-file-if-exists=.env scripts/check-mail.mjs
+# Prueba explícita solo a la misma cuenta remitente:
+node --env-file-if-exists=.env scripts/check-mail.mjs --send-self-test
+corepack pnpm run dev
+```
+
+El responsable puede generar ese archivo con `node scripts/mail-config.mjs --export "RUTA_ABSOLUTA_FUERA_DEL_REPO.env"`, en una carpeta privada ya existente y un archivo nuevo. El importador conserva DB/puerto/contraseña del contenedor propio. **Git contiene el código y las instrucciones, no la contraseña Gmail**; clonar la rama por sí solo no habilita un remitente. Nunca subir el archivo privado a Trello/Git ni ponerlo en variables `VITE_*`. Cambiar `PUBLIC_WEB_ORIGIN` y CORS si la UI utiliza otro origen/puerto; la clave privada no se necesita en frontend.
+
+**Mi cuenta → Correo y notificaciones** permite solicitar un enlace de 30 minutos y de un uso. Debe confirmarse con la sesión del mismo titular. El enlace usa fragmento y se retira de la barra al abrirlo; no lo consume un simple GET. Iniciar sesión en otra pestaña si hace falta y volver al enlace original. Reenvíos: un minuto de espera y hasta cinco/hora; pedir uno nuevo anula los anteriores. Verificar correo no aprueba identidad, teléfono, organización ni roles.
+
+Una vez verificado, el titular puede activar los avisos opcionales de **próximos** cambios registrados de campaña, verificación, pagos/devoluciones/desembolsos DEMO, disputas y recompensas. Los avisos privados se consultan en Mi cuenta (últimos 50); el correo no incluye motivos/documentos privados. El backend activo procesa cada 15 segundos; la cola persiste y reintenta hasta tres veces, con cinco minutos de espera. Una baja de suscripción o dirección cambiada cancela el envío pendiente. “Aceptado por el servidor de correo” no acredita lectura/recepción. No se reenvía el historial anterior a la instalación. Ver [ADR-014](docs/decisiones/ADR-014-correo-operativo-mvp.md) para destinatarios y límites de entrega.
+
+Sin SMTP los avisos en Brotar conservan su utilidad, pero no se puede acreditar posesión de correo por un TXT. El teléfono continúa opcional y sin verificación SMS. Legal definitivo y módulos pendientes de los compañeros permanecen abiertos. S1-12 tiene cierre técnico; S3-26 conserva el cierre global pendiente del alcance legal/integrado. S3-19/S3-21 no se cierran por pasar esta regresión. Publicar RicardoDev no modifica DEV.

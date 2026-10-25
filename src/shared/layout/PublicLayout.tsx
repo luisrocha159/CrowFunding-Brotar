@@ -59,7 +59,7 @@ export function PublicLayout() {
           </form>
           {user ? <details className={styles.accountMenu} ref={accountMenu}>
             <summary aria-label={`Cuenta de ${user.firstName}`}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" /></svg><span>{user.firstName}</span></summary>
-            <nav aria-label="Opciones de mi cuenta"><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/explorar">Explorar proyectos</Link></nav>
+            <nav aria-label="Opciones de mi cuenta"><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/mis-guardados">Guardadas y novedades</Link><Link to="/explorar">Explorar proyectos</Link></nav>
           </details> : checking ? <span className={styles.sessionLoading} role="status">Comprobando cuenta…</span>
             : <Link className={styles.login} to={unavailable ? '/mi-cuenta' : '/iniciar-sesion'}>{unavailable ? 'Comprobar mi cuenta' : 'Iniciar sesión'}</Link>}
           <ButtonLink to="/crear-campana">Crear proyecto</ButtonLink>
@@ -71,7 +71,7 @@ export function PublicLayout() {
           }
         }}>
           <summary>Menú</summary>
-          <nav aria-label="Navegación móvil"><PublicNavigation /><Link to="/explorar/buscar">Buscar proyectos</Link>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil · {user.firstName}</Link><Link to="/crear-campana">Mis borradores</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : <Link to={unavailable ? '/mi-cuenta' : '/iniciar-sesion'}>{unavailable ? 'Comprobar mi cuenta' : 'Iniciar sesión'}</Link>}<ButtonLink to="/crear-campana">Crear proyecto</ButtonLink></nav>
+          <nav aria-label="Navegación móvil"><PublicNavigation /><Link to="/explorar/buscar">Buscar proyectos</Link>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil · {user.firstName}</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/mis-guardados">Guardadas y novedades</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : <Link to={unavailable ? '/mi-cuenta' : '/iniciar-sesion'}>{unavailable ? 'Comprobar mi cuenta' : 'Iniciar sesión'}</Link>}<ButtonLink to="/crear-campana">Crear proyecto</ButtonLink></nav>
         </details>
       </div>
     </header>
@@ -80,7 +80,7 @@ export function PublicLayout() {
       <div className={styles.footerGrid}>
         <div><Brand inverse /><p className={styles.footerIntro}>Plataforma boliviana de crowdfunding para proyectos con impacto social, ambiental y productivo.</p></div>
         <nav aria-label="Plataforma"><h2>Plataforma</h2><Link to="/explorar">Explorar proyectos</Link><Link to="/como-funciona">Cómo funciona</Link><Link to="/para-creadores">Para creadores</Link></nav>
-        <nav aria-label="Cuenta"><h2>Tu cuenta</h2>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : unavailable ? <Link to="/mi-cuenta">Comprobar mi cuenta</Link> : <><Link to="/iniciar-sesion">Iniciar sesión</Link><Link to="/registro">Crear una cuenta</Link><Link to="/recuperar-contrasena">Recuperar acceso</Link></>}</nav>
+        <nav aria-label="Cuenta"><h2>Tu cuenta</h2>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/mis-guardados">Guardadas y novedades</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : unavailable ? <Link to="/mi-cuenta">Comprobar mi cuenta</Link> : <><Link to="/iniciar-sesion">Iniciar sesión</Link><Link to="/registro">Crear una cuenta</Link><Link to="/recuperar-contrasena">Recuperar acceso</Link></>}</nav>
         <div><h2>Crezcamos juntos</h2><p>Cada iniciativa es una oportunidad para transformar nuestro entorno.</p><Link to="/para-creadores">Conoce cómo empezar →</Link></div>
       </div>
       <div className={styles.footerBottom}>© {new Date().getFullYear()} Brotar. Todos los derechos reservados.</div>

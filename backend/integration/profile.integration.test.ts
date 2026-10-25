@@ -39,6 +39,8 @@ test('perfil real: acceso propio, validación, persistencia, teléfono y conserv
       for (const id of ids) {
         await manager.getRepository(UserSchema).insert({ id, email: email(id), passwordHash, status: id === ids[0] ? 'PENDING_VERIFICATION' : 'ACTIVE' })
         await manager.getRepository(UserProfileSchema).insert({ userId: id, firstName: 'Original', lastName: 'Prueba', bio: 'Se conserva', city: 'Cochabamba' })
+        // El fixture debe representar una cuenta registrada, igual que el contrato de alta pública.
+        await manager.query(`INSERT INTO public.user_role(user_id,role_id) SELECT $1,id FROM public.role WHERE code='REGISTERED_USER'`,[id])
       }
     })
     assert.equal((await read()).status, 401)

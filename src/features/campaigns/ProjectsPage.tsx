@@ -19,6 +19,7 @@ export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary
       {canContinueProject(project.status) && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Continuar borrador</ButtonLink>}
       {project.status === 'CHANGES_REQUESTED' && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Corregir campaña</ButtonLink>}
       <ButtonLink variant="secondary" to={`/mis-proyectos/${encodeURIComponent(project.id)}`}>Ver detalle</ButtonLink>
+      {['APPROVED','PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CANCELLED','CLOSED'].includes(project.status) && <ButtonLink variant="secondary" to={`/mis-campanas/ciclo/${encodeURIComponent(project.id)}`}>Ciclo y desembolsos</ButtonLink>}
       {canContinueProject(project.status) && <Button variant="tertiary" onClick={() => onDiscard(project)}>Descartar</Button>}
     </div>
   </article>)}</div>

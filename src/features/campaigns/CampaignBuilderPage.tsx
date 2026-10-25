@@ -6,6 +6,7 @@ import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
 import { Message } from '../../shared/components/Feedback'
 import { CoverDraftEditor } from '../campaign-drafts/CoverDraftPage'
+import { GalleryEditor } from '../campaign-drafts/GalleryEditor'
 import { CampaignSectionsEditor } from './CampaignSectionsEditor'
 import { CampaignSubmissionPanel } from './CampaignSubmissionPanel'
 import { CampaignModalityGuide } from './CampaignModalityGuide'
@@ -359,7 +360,7 @@ export function CampaignBuilderPage() {
       </form>}
 
       {current !== null && <section aria-label="Asistente de campaña">
-        <fieldset disabled={saving === 'saving'} onChange={() => { if (saving === 'saved') setSaving('idle') }} style={{ border: 0, padding: 0, margin: 0 }}>
+        <fieldset disabled={saving === 'saving'} onChange={() => { if (saving === 'saved') setSaving('idle') }} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, overflowWrap: 'anywhere' }}>
         <h2>{current.title}</h2>
         <p>Identificador: <code>{current.id}</code>. El nombre puede coincidir con el de otras campañas.</p>
         <p role="status">Paso {step + 1} de {total}: {stepNames[step]} · {statusNames[current.status] ?? current.status}</p>
@@ -495,7 +496,7 @@ export function CampaignBuilderPage() {
           </form>
         </section>}
 
-        {step === 3 && editable && <CoverDraftEditor key={current.id} campaignId={current.id} />}
+        {step === 3 && editable && <><CoverDraftEditor key={current.id} campaignId={current.id} /><GalleryEditor key={`gallery-${current.id}`} campaignId={current.id} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} /></>}
         {step >= 4 && step <= 6 && <CampaignSectionsEditor key={current.id} id={current.id} step={step} editable={editable} campaignType={current.campaignType} externalErrors={fieldErrors} onFieldsEdited={() => setFieldErrors({})} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} />}
         {step === 7 && <CampaignSubmissionPanel key={current.id} id={current.id} categories={categories} onGoTo={move} onBusyChange={setSectionBusy} onStatusChange={status => {
           setCurrent(previous => previous ? { ...previous, status } : previous)

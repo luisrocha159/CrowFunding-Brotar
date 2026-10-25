@@ -15,6 +15,7 @@ export class TypeormPublicCampaignRepository implements PublicCampaignRepository
              c.campaign_type AS "campaignType", c.status, c.goal_amount::text AS goal,
              f.amount_raised::text AS raised, c.currency_code AS "currencyCode",
              c.published_at AS "publishedAt", c.ends_at AS "endsAt",
+             (c.status='PUBLISHED' AND (c.starts_at IS NULL OR c.starts_at<=clock_timestamp()) AND (c.ends_at IS NULL OR c.ends_at>clock_timestamp()) AND NOT EXISTS(SELECT 1 FROM brotar_extension.campaign_cycle cycle WHERE cycle.campaign_id=c.id AND cycle.cancel_requested_by IS NOT NULL)) AS "acceptsContributions",
              fa.id AS "imageId", '/api/files/public/' || fa.id AS "imageUrl",
              COALESCE(NULLIF(a.caption, ''), 'Portada de ' || c.title) AS "imageAlt",
              COALESCE(cs.long_description, cs.problem, '') AS description,
@@ -40,7 +41,7 @@ export class TypeormPublicCampaignRepository implements PublicCampaignRepository
         LEFT JOIN public.file_attachment a ON a.campaign_id=c.id AND a.file_id=fa.id AND a.attachment_role='COVER'
         LEFT JOIN public.campaign_story cs ON cs.campaign_id = c.id
         JOIN public.v_campaign_funding f ON f.campaign_id = c.id
-       WHERE c.status = 'PUBLISHED' AND c.deleted_at IS NULL ${slug === undefined ? '' : 'AND c.slug = $1'}
+       WHERE c.published_at IS NOT NULL AND c.status IN ('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED') AND c.deleted_at IS NULL ${slug === undefined ? '' : 'AND c.slug = $1'}
        ORDER BY c.published_at DESC NULLS LAST, c.id`, slug === undefined ? [] : [slug])
   }
 }

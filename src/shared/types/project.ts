@@ -43,4 +43,5 @@ export type Project = ProjectCardData & Readonly<{
   imageCaption: string
   rewards?: readonly Readonly<{ id: string; title: string; description: string; minAmount: number; currency: string }>[]
   isDemo: boolean
+  acceptsContributions?:boolean
 }>

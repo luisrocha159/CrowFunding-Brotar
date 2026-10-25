@@ -21,7 +21,8 @@ function id(value: unknown): string { const result = text(value); return uuid.te
 
 // Adaptación del mapeo de Alison: datos incompletos no se convierten en cifras o permisos ficticios.
 export function mapPublicCampaign(value: unknown): Project {
-  if (!object(value) || value.status !== 'PUBLISHED') invalid()
+  if (!object(value) || !['PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED'].includes(String(value.status))) invalid()
+  if(value.acceptsContributions!==undefined&&typeof value.acceptsContributions!=='boolean')invalid()
   const name = text(value.name), slug = text(value.slug), imageId = id(value.imageId)
   if (!name.trim() || !slug.trim() || slug.length > 220 || [...slug].some(character => character.charCodeAt(0) < 32 || character === '/' || character === '\\')) invalid()
   const publishedAt = date(value.publishedAt, true), endsAt = date(value.endsAt, true)
@@ -39,7 +40,9 @@ export function mapPublicCampaign(value: unknown): Project {
   return {
     id: id(value.id), slug, name, summary: text(value.summary), category: text(value.category),
     creator: text(value.creator), location: text(value.location), image: `/api/files/public/${imageId}`, imageAlt: text(value.imageAlt),
-    goal: money(value.goal, true), raised: money(value.raised), currencyCode: currency(value.currencyCode), verified: false, status: 'active',
+    goal: money(value.goal, true), raised: money(value.raised), currencyCode: currency(value.currencyCode), verified: false, status: value.status==='CANCELLED'?'cancelled':value.status==='PUBLISHED' && (!endsAt || Date.parse(endsAt)>Date.now())?'active':'finished',
+    acceptsContributions:value.acceptsContributions as boolean|undefined,
+    statusReason:({FUNDING_ENDED:'Recaudación finalizada',IN_EXECUTION:'En ejecución',CLOSED:'Campaña cerrada',CANCELLED:'Campaña cancelada'} as Record<string,string>)[String(value.status)]??(value.acceptsContributions===false?'Aportes no disponibles en este momento':undefined),
     daysRemaining: endsAt ? Math.max(0, Math.ceil((Date.parse(endsAt) - Date.now()) / 86400000)) : 0, closingDateKnown: !!endsAt,
     campaignType: types[value.campaignType]!, description: text(value.description), problem: text(value.problem),
     solution: text(value.solution), beneficiaries: text(value.beneficiaries), expectedResults: text(value.expectedResults),
