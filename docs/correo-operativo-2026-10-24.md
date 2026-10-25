@@ -49,6 +49,10 @@ Se arrancó exclusivamente el contenedor original V2, verificando proyecto y pub
 
 ## Publicación y pendientes
 
-Destino autorizado: **RicardoDev**, con README y migraciones. DEV se conserva como entrega de Sprint 2. La contraseña de aplicación no se incluye en Git; existe una exportación privada de solo los campos de correo para traslado controlado, y un importador que conserva la configuración PostgreSQL propia del receptor.
+Publicado y verificado en **RicardoDev**, con README y migraciones: [commit de código 74dcd94](https://github.com/luisrocha159/CrowFunding-Brotar/commit/74dcd94c73f2442adb1c0381fe13146a6f183f4c). DEV se conserva como entrega de Sprint 2. La contraseña de aplicación no se incluye en Git; existe una exportación privada de solo los campos de correo para traslado controlado, y un importador que conserva la configuración PostgreSQL propia del receptor.
 
 S1-12: cierre técnico de recuperación real. S3-26: bloque de correo implementado; tarjeta integral en curso por legal/revalidación del alcance restante. S3-19 y S3-21: QA/aceptación global pendientes, igual que las funciones generales no entregadas por Santiago/Alison. S1-11/legal, SMS y una eventual entrega en DEV no se dan por completados con este push.
+
+## Sincronización de Trello comprobada
+
+Se releyeron las 18 tarjetas de Ricardo después de actualizarlas, conservando responsables e historias: **14 cierres técnicos**, **2 en curso** (S3-19 y S3-26) y **2 pendientes** (S3-20 y S3-21). Las seis que aún tenían lista/marca anterior —S1-12, S3-08, S3-15, S3-16, S3-18 y S3-23— pasan a Terminadas con el alcance técnico y los límites explícitos. Las ocho ya terminadas reciben evidencia de publicación. S3-26 pasa de bloqueada por correo a En curso por el alcance legal/integrado restante. S3-20 conserva pendiente la entrega general en DEV; no se cierra por publicar esta rama. No se modificaron las tarjetas de Santiago/Alison.

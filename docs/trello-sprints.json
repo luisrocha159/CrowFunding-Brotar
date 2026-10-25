@@ -1,6 +1,6 @@
 {
   "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
-  "planVersion": "2.4",
+  "planVersion": "2.10",
   "organizationDate": "2026-10-15",
   "lists": [
     {
@@ -14,6 +14,10 @@
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
       "name": "SPRINT 3 · Planificado · cierre integral MVP"
+    },
+    {
+      "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6adb78d49ab6a94a202e7b0e",
+      "name": "SPRINT 3 · En curso · integración local"
     },
     {
       "id": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7a0c3d6d59cfa52e96",
@@ -191,14 +195,19 @@
       "taskId": "S1-12",
       "sprint": 3,
       "size": "L",
-      "state": "Bloqueada por decisión o canal externo",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-11"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6813eab9dbac72930191",
       "url": "https://trello.com/c/Y6mwzal0",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico: Gmail autorizado con TLS, recepción comprobada, recuperación HTTP → correo → reset → login nuevo, token temporal de un uso, rechazo de reutilización y revocación de sesión previa. Clave exclusivamente local; importador privado de solo correo y README actualizados.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S1-13",
@@ -401,7 +410,7 @@
       "taskId": "S2-08",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-43",
@@ -409,7 +418,12 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab684c9d3313701af4a55a",
       "url": "https://trello.com/c/iN5WZPEd",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico DEMO local: colas persona/organización, revisión privada, documentos, decisiones motivadas/versionadas con responsable/fecha, sin autoaprobación y distintivos públicos mínimos. No aprueba identidad real ni legal, no concede roles ni habilita desembolsos.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S2-09",
@@ -551,14 +565,19 @@
       "taskId": "S2-19",
       "sprint": 3,
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-36"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab685d7ad79ee368df1195",
       "url": "https://trello.com/c/jn96M3kd",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico DEMO: resumen/corrección, privacidad interna y contacto por cuenta, consentimiento, intento, resultado/reintento e historial. Sin correo verificado ni logística.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S2-20",
@@ -595,27 +614,37 @@
       "taskId": "S3-01",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-38"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688812eaccdbcf03b19a",
       "url": "https://trello.com/c/003Q6udE",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico del alcance DEMO autorizado: simulador interno, recibos/confirmaciones durables, boleto e imagen QR ilustrativa no pagables y flujo integrado. No es proveedor bancario externo.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-02",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-39"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab688a58a27482fb55a14f",
       "url": "https://trello.com/c/ONoYcbCB",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico del núcleo DEMO: importes/cupos/idempotencia y estados enlazados con devoluciones/disputas/ciclo; avisos tardíos no duplican ni reabren pagos. Recaudación oficial menos devoluciones completadas. Sin proveedor bancario real.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-03",
@@ -660,53 +689,73 @@
       "taskId": "S3-06",
       "sprint": 3,
       "size": "M",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-45"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68918860cf733f9a6209",
       "url": "https://trello.com/c/YyzU54ve",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico previo preservado y revalidado: interfaz de operaciones, filtros, totales y CSV seguro con permisos; no mueve fondos.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-07",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-46"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689289af108a54259431",
       "url": "https://trello.com/c/JWVj9Mjh",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico previo preservado y revalidado: conciliación DEMO, pendientes/referencias/diferencias, resolución/compensación sin ingreso y cierre protegido.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-08",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-47"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab6894c599a27b0e9510c4",
       "url": "https://trello.com/c/Bl3KhxK4",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Implementado alcance DEMO local: destino ficticio revisado, solicitud propia, autorización/proceso/resultado por FINANCE independiente, bruto/costos cero/neto, fechas, referencias únicas, saldo/reservas e idempotencia. No es transferencia bancaria ni cierre de rendición.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-09",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-48"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689622427465e06b41d0",
       "url": "https://trello.com/c/TPFXEeaS",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico DEMO local: solicitud propia, autorización/resultado separados por FINANCE, total/parcial, saldo/reservas, idempotencia y trazabilidad. Rechazo/fallo no resta ingresos; sin dinero real ni correo.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-10",
@@ -725,14 +774,19 @@
       "taskId": "S3-11",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-50"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689817e78aa1faef8af3",
       "url": "https://trello.com/c/IyIZIgso",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico DEMO local: bandeja/prioridad/asignación SUPPORT, mensajes privados/compartidos, solicitud de información, escalamiento, resolución/reapertura/cierre con versión e historial. Recomendar no mueve dinero; la devolución se autoriza aparte por FINANCE.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-12",
@@ -779,20 +833,25 @@
       "taskId": "S3-15",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-56"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab689e25f2f4be5ffdf668",
       "url": "https://trello.com/c/sLKDJe4q",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico transversal del corte integrado: decisiones/operaciones existentes, registro/sesión/perfil, captura KYC, organizaciones, archivos, guardados, avances, simulaciones, ciclo/rendición/desembolsos y soporte mínimo auditados. READ privado/EXPORT mínimos; actor local, rollback, privacidad y retención DEMO comprobados. Las funciones generales todavía no construidas no se aceptan por anticipado.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-16",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-12",
@@ -801,7 +860,12 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a0d366704e1235d764",
       "url": "https://trello.com/c/hNo1pl1D",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico transversal del corte integrado: responsabilidades, pertenencia y separación de funciones de las API actuales; AUDITOR también en perfil, concesiones residuales sin ampliar matriz, revalidación tras bloqueos y caducidad, permisos explícitos de consultas y navegación. Matriz de nueve perfiles y negativas HTTP aprobadas. Nuevas funciones del equipo deben pasar otra vez estas garantías.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-17",
@@ -820,7 +884,7 @@
       "taskId": "S3-18",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-59",
@@ -829,13 +893,18 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a383b2db481d2588b8",
       "url": "https://trello.com/c/rNXI5zUy",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico transversal del corte integrado: contratos 0.9, 169 rutas comprobadas, clientes/API coordinados, privacidad por caso, 28 migraciones no destructivas, readiness de matriz y recuperación aislada de datos/binarios con integridad. La suite final completa y la instalación desde SQL oficial pasan; funciones futuras requieren nueva integración S3-19/S3-21, no se consideran desarrolladas.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-19",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "En curso",
       "owner": "Ricardo",
       "stories": [
         "BG-04",
@@ -843,7 +912,12 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a40dd2fef9df30b944",
       "url": "https://trello.com/c/Uvg6Lvlq",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6adb78d49ab6a94a202e7b0e",
+      "complete": false,
+      "executionNote": "En curso: QA del incremento aprobado; no se certifican pantallas/operaciones todavía no implementadas.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-20",
@@ -856,7 +930,12 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a6428254631773d80d",
       "url": "https://trello.com/c/91EYkwLi",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
+      "complete": false,
+      "executionNote": "Pendiente de entrega general del MVP/DEV: documentación y publicación del corte disponible en RicardoDev autorizadas el 24/10, sin incorporar funciones todavía pendientes del equipo ni certificar aceptación global.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-21",
@@ -869,13 +948,18 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6aab68a8b38e9ac82af14180",
       "url": "https://trello.com/c/S2ULIrQD",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
+      "complete": false,
+      "executionNote": "Pendiente: recorrido integral de todo el MVP cuando existan sus módulos restantes.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-26",
       "sprint": 3,
       "size": "L",
-      "state": "Bloqueada por decisión o canal externo",
+      "state": "En curso",
       "owner": "Ricardo",
       "stories": [
         "BG-10",
@@ -887,7 +971,12 @@
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6ad0ecbcfcea651c7ee4c75e",
       "url": "https://trello.com/c/id2SPfjB",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6adb78d49ab6a94a202e7b0e",
+      "complete": false,
+      "executionNote": "En curso global; bloque de correo implementado y probado: posesión de dirección propia, caducidad/uso único/titular, reenvío limitado, sin conceder roles, preferencias y notificaciones de estados con cola/reintentos. Gmail real y recepción comprobados. Teléfono opcional sin canal SMS ni distintivo falso. Mantiene legal definitivo y revalidación con los módulos restantes del equipo pendientes; no cerrar la tarjeta integral.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     },
     {
       "taskId": "S3-22",
@@ -933,14 +1022,19 @@
       "taskId": "S3-23",
       "sprint": 3,
       "size": "L",
-      "state": "Pendiente",
+      "state": "Cierre técnico documentado",
       "owner": "Ricardo",
       "stories": [
         "BG-32"
       ],
       "cardId": "ari:cloud:trello::card/workspace/69a518cbd4b16dc1b329ae7f/6ad0f06d2363d86f81966bc7",
       "url": "https://trello.com/c/hNfXRXun",
-      "checklistId": null
+      "checklistId": null,
+      "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+      "complete": true,
+      "executionNote": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
+      "verifiedAt": "2026-10-24",
+      "sourceCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c"
     }
   ],
   "storyCards": [
@@ -1581,8 +1675,134 @@
     }
   },
   "executionUpdate": {
+    "date": "2026-10-24",
+    "branch": "RicardoDev",
+    "codeCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c",
+    "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
+    "verified": true,
+    "source": "correo-operativo-2026-10-24.md",
+    "scope": "Código publicado solo en RicardoDev. Cierre técnico del corte existente; no aceptación externa ni cierre de módulos de compañeros. No se publican credenciales.",
+    "tasks": [
+      {
+        "taskId": "S1-12",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S2-08",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S2-19",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-01",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-02",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-06",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-07",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-08",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-09",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-11",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-15",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-16",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-18",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-23",
+        "state": "Cierre técnico documentado",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6ad174246796c98add0dfd3f",
+        "complete": true
+      },
+      {
+        "taskId": "S3-26",
+        "state": "En curso",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6adb78d49ab6a94a202e7b0e",
+        "complete": false
+      },
+      {
+        "taskId": "S3-19",
+        "state": "En curso",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6adb78d49ab6a94a202e7b0e",
+        "complete": false
+      },
+      {
+        "taskId": "S3-20",
+        "state": "Pendiente",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
+        "complete": false
+      },
+      {
+        "taskId": "S3-21",
+        "state": "Pendiente",
+        "listId": "ari:cloud:trello::list/workspace/69a518cbd4b16dc1b329ae7f/6aaa0d7dba705b756985911e",
+        "complete": false
+      }
+    ]
+  },
+  "previousExecutionUpdate": {
     "date": "2026-10-15",
     "evidence": "plan-sprint-3-cierre-mvp-2026-10-15.md",
     "note": "Captura de listas y asignaciones, no auditoría de checklists ni aceptación funcional."
+  },
+  "ricardoDevDelivery": {
+    "date": "2026-10-24",
+    "branch": "RicardoDev",
+    "codeCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c",
+    "evidence": "correo-operativo-2026-10-24.md",
+    "devChanged": false
   }
 }

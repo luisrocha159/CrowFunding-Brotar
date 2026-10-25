@@ -3,7 +3,7 @@
   "localProgressSprint3": {
     "date": "2026-10-24",
     "branch": "RicardoDev",
-    "published": false,
+    "published": true,
     "verification": "24/10: 218 frontend + 215 backend + 8 ADMIN local + 38 integración = 479 casos distintos aprobados. Regresión completa final con reinicio: 38/38, sin fallos/omitidas. Comprobación específica posterior de estado READ y correo; 175 rutas, 29 migraciones. Dependencias frozen-lockfile y builds desde árbol limpio aprobados, Express explícito. Gmail real: recuperación/reset/login/revocación, verificación propia y aviso; recepción en INBOX. Original respaldado/migrado a 29 y readiness comprobado. No certifica funciones pendientes del equipo ni aceptación global.",
     "evidence": "correo-operativo-2026-10-24.md",
     "previousEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
@@ -75,7 +75,14 @@
       "S3-18",
       "S1-12"
     ],
-    "scope": "22 alcances técnicos implementados de 36 en este corte de pruebas, 14 abiertos/parciales. Ricardo: 14 de sus 18 con cierre técnico, 2 en curso (S3-19 y S3-26) y 2 pendientes (S3-20 y S3-21). Incluye arrastres. Correo implementado no equivale a legal aprobado ni al cierre global de las tareas integrales de compañeros."
+    "scope": "22 alcances técnicos implementados de 36 en este corte de pruebas, 14 abiertos/parciales. Ricardo: 14 de sus 18 con cierre técnico, 2 en curso (S3-19 y S3-26) y 2 pendientes (S3-20 y S3-21). Incluye arrastres. Correo implementado no equivale a legal aprobado ni al cierre global de las tareas integrales de compañeros.",
+    "publication": {
+      "date": "2026-10-24",
+      "branch": "RicardoDev",
+      "codeCommit": "74dcd94c73f2442adb1c0381fe13146a6f183f4c",
+      "trelloVerified": true,
+      "devUnchanged": "99d70d7168654881b05ba4505ac3e0a4a0797e42"
+    }
   },
   "delivery": {
     "date": "2026-10-16",
@@ -87,10 +94,11 @@
   "cutoff": "2026-10-15",
   "status": "Sprint 2 implementado en su alcance técnico; Sprint 3 reúne el cierre integral del MVP. 64 historias, 67 tareas únicas; S1-11 y S1-12 se arrastran sin duplicarse. Capacidad, fechas, proveedores y aprobaciones aplicables siguen pendientes.",
   "trelloSync": {
-    "date": "2026-10-15",
+    "date": "2026-10-24",
     "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
     "mapping": "trello-sprints.json",
-    "verification": "plan-sprint-3-cierre-mvp-2026-10-15.md"
+    "verification": "correo-operativo-2026-10-24.md",
+    "scope": "18 tarjetas de Ricardo comprobadas: 14 cierres técnicos, 2 en curso y 2 pendientes. Legal y trabajo restante del equipo sin cerrar."
   },
   "totalStories": 64,
   "totalTasks": 67,
