@@ -19,6 +19,7 @@ export function ProjectsList({ projects, onDiscard }: { projects: ProjectSummary
       {canContinueProject(project.status) && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Continuar borrador</ButtonLink>}
       {project.status === 'CHANGES_REQUESTED' && <ButtonLink variant="secondary" to={`/crear-campana?borrador=${encodeURIComponent(project.id)}`}>Corregir campaña</ButtonLink>}
       <ButtonLink variant="secondary" to={`/mis-proyectos/${encodeURIComponent(project.id)}`}>Ver detalle</ButtonLink>
+      {['APPROVED','PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CANCELLED','CLOSED'].includes(project.status) && <ButtonLink variant="secondary" to={`/mis-campanas/ciclo/${encodeURIComponent(project.id)}`}>Ciclo y desembolsos</ButtonLink>}
       {canContinueProject(project.status) && <Button variant="tertiary" onClick={() => onDiscard(project)}>Descartar</Button>}
     </div>
   </article>)}</div>
@@ -46,7 +47,7 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
       </header>
       <p><ButtonLink to={id ? back : '/mi-cuenta'} variant="tertiary">{id ? 'Volver a la lista' : 'Volver a mi cuenta'}</ButtonLink></p>
       {data.state === 'loading' && <p role="status" aria-busy="true">Consultando campañas…</p>}
-      {data.state === 'forbidden' && <Message tone="warning" title="Acceso no disponible">Necesitas el rol {admin ? 'Administrador' : 'Creador'} vigente. No puedes asignártelo desde esta pantalla.</Message>}
+      {data.state === 'forbidden' && <Message tone="warning" title="Acceso no disponible">{admin ? 'Necesitas permiso vigente de lectura de revisiones.' : 'Necesitas el rol Creador vigente.'} No puedes asignártelo desde esta pantalla.</Message>}
       {data.state === 'missing' && <Message tone="warning" title="Proyecto no disponible">No pertenece a tu cuenta, fue descartado o dejó de estar en revisión.</Message>}
       {data.state === 'error' && <><Message tone="error" title="No se pudieron consultar las campañas">Comprueba la API y PostgreSQL. Un error no se muestra como una lista vacía.</Message><Button onClick={data.refresh}>Reintentar</Button></>}
       {data.notice && <Message tone={data.discardError ? 'error' : 'success'} title={data.notice} />}

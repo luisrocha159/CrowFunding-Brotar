@@ -1,5 +1,55 @@
 # Control de cambios de PostgreSQL
 
+## Registro actual de RicardoDev · 24/10/2026
+
+La rama incluye **29 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. Ver [correo operativo](../../docs/correo-operativo-2026-10-24.md).
+
+## Corte transversal local · 24/10/2026 · 28 migraciones
+
+28. `IntegratedAccess1792800000001`: permisos explícitos para consultas administrativas existentes. Aplicar con el `up` habitual, después de compilar; no repetir el SQL oficial sobre V2 ni eliminar historial. `status` debe mostrar las 28 y ninguna pendiente. README principal §34 y [evidencia transversal](../../docs/cierre-transversal-s3-15-18-2026-10-24.md). Los apartados inferiores conservan su fecha histórica. Correo/legal y publicación siguen pendientes.
+
+## Versión local vigente · 24/10/2026 · 27 migraciones
+
+27. `CampaignClosure1792800000000`: vínculos de informe final/huella de ejecución y evidencia privada de recompensas en `brotar_extension`, dos permisos de cierre y escritura limitada en las tablas oficiales reutilizadas. No añade tablas a `public`, no inserta aprobaciones ni ejecuta dinero. Preserva historial, sin reversión destructiva automática. Seguir README §33; respaldo → compilar → `migrate up` → `migrate status` → verificación/preparación → reinicio de API. [Contrato de cierre mínimo](../../docs/cierre-s3-23-2026-10-24.md). Los cortes siguientes son históricos.
+
+## Versión local vigente · 24/10/2026 · 26 migraciones
+
+Sobre las veinticuatro del corte anterior se añaden:
+
+| Orden | Migración | Efecto |
+| --- | --- | --- |
+| 25 | CampaignLifecycle1792713600005 | Ciclo/transiciones, historial, versiones y permisos de consulta/gestión. |
+| 26 | DemoDisbursements1792713600006 | Destinos ficticios, revisión, solicitudes y estados/eventos de desembolsos DEMO. |
+
+Seguir README principal §32: respaldo → compilar backend → `node scripts/migrate.mjs up` → `node scripts/migrate.mjs status` → verificación/preparación documentada → reiniciar API. No restaurar el SQL oficial sobre una base existente. Las migraciones no crean pagos ni activan dinero real; no tienen reversión automática destructiva. El ensayo aislado registró 26 aplicadas y ninguna pendiente, conservando el inventario oficial. [Alcance y resultados](../../docs/ciclo-y-desembolsos-demo-2026-10-24.md). Los cortes siguientes se conservan como antecedentes.
+
+## Versión local vigente · 23/10/2026 · 24 migraciones
+
+Sobre las veinte del corte integrado se añaden:
+
+| Orden | Migración | Efecto |
+| --- | --- | --- |
+| 21 | VerificationReview1792713600001 | `verification.read` para COMPLIANCE/ADMIN, revisión documental y versiones REVIEW. |
+| 22 | DemoRefunds1792713600002 | Solicitud/idempotencia e historial de devoluciones DEMO, unicidad y UPDATE limitado. |
+| 23 | DemoObligationRead1792713600003 | Lectura de desembolsos para no comprometer dos veces los fondos; unicidad de referencia limitada al modo DEMO. |
+| 24 | DemoDisputes1792713600004 | Reservas de disputas, enlace a devolución y mensajes/decisiones trazables; permisos de atención limitados. |
+
+No asignan roles a cuentas ni insertan operaciones financieras. No cambian el SQL oficial, enums oficiales adicionales ni el inventario de 59 tablas de `public`; los metadatos viven en `brotar_extension`. Los historiales de decisión/mensajes son de inserción/lectura para la API, no inmunes al administrador de PostgreSQL. Readiness comprueba la disponibilidad de esta versión. `drill:recovery` incluye reservas/enlaces/versiones de disputa, devoluciones, mensajes y revisiones de identidad. El `down` no elimina datos automáticamente.
+
+Seguir README principal §31. `up` se repite sin duplicar migraciones; conservar configuración/catálogos y respaldar antes de actualizar. Las secciones siguientes conservan sus fechas históricas.
+
+## Incremento local de Sprint 3 · 21/10/2026
+
+Secuencia vigente: **catorce migraciones**. `DemoPayments1792540800000` añade proveedor interno exclusivamente DEMO, permiso contribution.write.own y cuatro tablas en `brotar_extension` para recibos, compensaciones y metadatos de conciliación. Reutiliza reconciliation/reconciliation_item oficiales. La API no puede sobrescribir importes/referencias de recibos ni borrar compensaciones. La bandera DEMO está apagada por defecto y producción la deniega. No crea cuentas, pagos ni un proveedor bancario. No modifica el SQL oficial ni su inventario de 59 tablas. Si ya existe un proveedor con el mismo código y configuración incompatible, falla sin reconvertirlo. README §24/28 y contrato DEMO 0.5 explican instalación y uso.
+
+## Antecedentes del 20 y 19 de octubre
+
+El incremento del 20/10 añadió `StaffResponsibilities1792454400000` (ADMIN recibe `roles.manage`, API puede actualizar solo `user_role.revoked_at`) y `AuditRetention1792454400001` (agregados mes/acción/conteo en `brotar_extension`, sin acceso de API ni purga). Ese corte tuvo **trece migraciones**. No conceden responsabilidades a cuentas ni borran auditoría automáticamente. Mantenimiento administrativo manual con respaldo: README §27 y ADR-012. El listado siguiente conserva las cuatro migraciones incorporadas el 19/10, más las siete anteriores.
+
+`RicardoDev` añade cuatro migraciones a las siete del corte anterior: `ResponsibilityPermissions1792368000000` puebla una matriz provisional de permisos sin asignar roles a cuentas; `ContributionIntegrity1792368000001` crea unicidad de referencia de cobro por proveedor y concede acceso técnico limitado a las tablas oficiales de aportes/pagos/eventos y sus secuencias; `FinancialRead1792368000002` concede únicamente SELECT de `refund` para la consulta financiera S3-06; `AuditRead1792368000003` concede SELECT/INSERT de `audit_log`, USAGE de su secuencia y SELECT de `status_history`, retirando UPDATE/DELETE de `audit_log` a `brotar_app`. No inserta proveedores, no modifica el SQL oficial ni añade tablas en `public`. Ante duplicados existentes, el índice falla y preserva los datos para diagnóstico.
+
+El corte del 20/10 tenía trece migraciones; el actual requiere **catorce**, sin restaurar de nuevo una base instalada. Los `down` rechazan retirar integridad/permisos automáticamente. Ver README §24–28 y [contratos S3](../../docs/contratos-sprint-3.md). `drill:recovery` incluye conteos de aportes, pagos, eventos, devoluciones, disputas, permisos, `audit_log`, `status_history` y los nuevos recibos/compensaciones/conciliaciones DEMO, además del historial de migraciones y el inventario; se ejecuta en una copia aislada. El administrador de PostgreSQL conserva capacidad de mantenimiento; la restricción de edición/borrado de auditoría corresponde al rol de API, no equivale a almacenamiento criptográficamente inmutable. El UPDATE de columnas de revisión de `status_history` se mantiene para el flujo existente.
+
 ## Línea base registrada
 
 `baseline.json` identifica por SHA-256 el SQL oficial instalado, el inventario esperado y el ajuste de permisos E07. La API conserva `synchronize=false`, `dropSchema=false` y `migrationsRun=false`. El instalador restaura únicamente si el esquema está vacío; al repetirlo reconoce una línea base completa y conserva los datos. Nunca aplicar el SQL inicial sobre datos existentes ni forzar la restauración sobre un esquema parcial.

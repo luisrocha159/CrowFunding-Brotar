@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
-import { SupportForbidden, SupportMissing, type SupportContext, type SupportDetail, type SupportPage, type SupportReceipt, type SupportRepository, type SupportSummary } from '../application/support-cases'
+import { SupportCampaignClosed, SupportForbidden, SupportMissing, type SupportContext, type SupportDetail, type SupportPage, type SupportReceipt, type SupportRepository, type SupportSummary } from '../application/support-cases'
 import { SupportConflict, supportFingerprint, type SupportInput } from '../domain/support-case'
 
 type SummaryRow = Omit<SupportSummary, 'createdAt' | 'updatedAt'> & { createdAt: Date; updatedAt: Date }
@@ -76,6 +76,10 @@ export class SupportCaseRepository implements SupportRepository {
       }
       const context = await this.authorizedContext(manager, userId, input.campaignId, input.contributionId)
       if (!context) throw new SupportMissing()
+      // Serialize with campaign closure; do not introduce an unresolved obligation after terminal close.
+      const [campaign]=await manager.query('SELECT id,status FROM public.campaign WHERE id=$1 FOR UPDATE',[context.campaignId])
+      if(!campaign)throw new SupportMissing()
+      if(campaign.status==='CLOSED')throw new SupportCampaignClosed()
       if (input.evidenceFileIds.length) {
         const files: { id: string }[] = await manager.query(`SELECT id FROM public.file_asset WHERE id=ANY($1::uuid[]) AND uploaded_by=$2 AND scope='PRIVATE'
           AND storage_key LIKE 'SUPPORT_EVIDENCE/%' AND deleted_at IS NULL ORDER BY id FOR UPDATE`, [input.evidenceFileIds, userId])
@@ -91,7 +95,7 @@ export class SupportCaseRepository implements SupportRepository {
         VALUES($1,$2,$3,$4,$5)`, [created.id, userId, context.contributionId, input.requestId, fingerprint])
       for (const [index, fileId] of input.evidenceFileIds.entries()) await manager.query(`INSERT INTO brotar_extension.support_case_evidence(case_id,file_id,display_order) VALUES($1,$2,$3)`, [created.id, fileId, index])
       await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,new_values)
-        VALUES($1,'REGISTERED_USER','CREATE','support_case',$2,$3::jsonb)`, [userId, created.id, JSON.stringify({ status: created.status, category: input.category, campaignId: context.campaignId, contributionId: context.contributionId, evidenceCount: input.evidenceFileIds.length })])
+        VALUES($1,'REGISTERED_USER','CREATE','support_case',$2,$3::jsonb)`, [userId, created.id, JSON.stringify({ source:'APPLICATION',result:'APPLIED',status: created.status, category: input.category, campaignId: context.campaignId, contributionId: context.contributionId, evidenceCount: input.evidenceFileIds.length })])
       return { ...created, createdAt: created.createdAt.toISOString() }
     })
   }

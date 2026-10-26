@@ -10,7 +10,7 @@ const projection = `c.id,c.reference_code AS reference,c.amount::text,c.currency
     'slug',CASE WHEN ca.deleted_at IS NULL AND ca.status='PUBLISHED' THEN ca.slug ELSE NULL END,
     'status',CASE WHEN ${publicHistory} THEN ca.status::text ELSE 'UNAVAILABLE' END) AS campaign,
   COALESCE((SELECT jsonb_agg(jsonb_build_object('id',p.id,'amount',p.amount::text,'currency',p.currency_code,
-    'status',p.status,'method',pm.name,'sandbox',pp.is_sandbox,'createdAt',p.created_at,'confirmedAt',p.confirmed_at)
+    'status',p.status,'method',pm.name,'sandbox',pp.is_sandbox,'demo',pp.code='BROTAR_INTERNAL_DEMO' AND pp.is_sandbox,'createdAt',p.created_at,'confirmedAt',p.confirmed_at)
     ORDER BY p.attempt_number,p.id) FROM public.payment p JOIN public.payment_provider pp ON pp.id=p.provider_id
     LEFT JOIN public.payment_method pm ON pm.id=p.payment_method_id WHERE p.contribution_id=c.id),'[]'::jsonb) AS payments`
 type ItemRow = Omit<ContributionItem, 'createdAt' | 'confirmedAt' | 'receiptAvailable'> & { createdAt: Date; confirmedAt: Date | null }
@@ -69,6 +69,13 @@ export class TypeormContributionRepository implements ContributionRepository {
       (SELECT count(*)::int FROM public.support_case WHERE user_id=$1 AND status NOT IN ('RESOLVED','CLOSED')) AS "openSupportCases",
       (SELECT count(*)::int FROM public.dispute d JOIN public.contribution c ON c.id=d.contribution_id WHERE c.user_id=$1 AND d.status NOT IN ('RESOLVED','CLOSED')) AS "openDisputes",
       (SELECT count(*)::int FROM public.refund r JOIN public.contribution c ON c.id=r.contribution_id WHERE c.user_id=$1 AND r.status IN ('REQUESTED','PROCESSING')) AS "pendingRefunds"`, [userId]) as Pick<SponsorSummary, 'sandboxPaymentCount' | 'favorites' | 'following' | 'openSupportCases' | 'openDisputes' | 'pendingRefunds'>[]
-    return { ...counts[0]!, statusCounts, totals, ...activity[0]! }
+    const demoTotals=await manager.query(`SELECT p.currency_code AS currency,sum(p.amount)::numeric(18,2)::text AS "grossConfirmed",
+      sum(COALESCE(r.amount,0))::numeric(18,2)::text AS refunded,
+      COALESCE(sum(p.amount) FILTER(WHERE p.status='DISPUTED'),0)::numeric(18,2)::text AS disputed
+      FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id JOIN public.payment_provider pp ON pp.id=p.provider_id
+      LEFT JOIN LATERAL(SELECT sum(amount) AS amount FROM public.refund WHERE payment_id=p.id AND status='REFUNDED')r ON true
+      WHERE c.user_id=$1 AND p.confirmed_at IS NOT NULL AND pp.code='BROTAR_INTERNAL_DEMO' AND pp.is_sandbox
+      GROUP BY p.currency_code ORDER BY p.currency_code`,[userId]) as SponsorSummary['totals']
+    return { ...counts[0]!, statusCounts, totals, demoTotals, ...activity[0]! }
   }
 }

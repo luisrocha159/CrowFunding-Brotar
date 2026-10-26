@@ -16,7 +16,7 @@ test('S2-16 consulta pública exige publicación, portada pública válida y exc
   await repository.list(); await repository.list("campaña' OR true --")
   assert.deepEqual(seen[0]!.params, []); assert.deepEqual(seen[1]!.params, ["campaña' OR true --"])
   assert.ok(!seen[1]!.sql.includes("campaña' OR true --"))
-  assert.match(seen[0]!.sql, /c\.status = 'PUBLISHED' AND c\.deleted_at IS NULL/)
+  assert.match(seen[0]!.sql, /c\.published_at IS NOT NULL AND c\.status IN \('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED'\) AND c\.deleted_at IS NULL/)
   assert.match(seen[0]!.sql, /fa\.scope = 'PUBLIC'/)
   assert.match(seen[0]!.sql, /v_campaign_funding/)
   assert.match(seen[0]!.sql, /expected_results/)

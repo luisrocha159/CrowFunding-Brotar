@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, Header, Injectable, Req, SetMetadata, UnauthorizedException, type CanActivate, type ExecutionContext } from '@nestjs/common'
+import { Controller, ForbiddenException, Get, Header, Injectable, Req, SetMetadata, UnauthorizedException, UseGuards, type CanActivate, type ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request } from 'express'
 import { Sessions, SessionMissing, type CurrentUser } from '../../auth/application/sessions'
@@ -7,6 +7,7 @@ import { RoleAccess } from '../application/roles'
 import { PermissionAccess } from '../application/permissions'
 import { hasRequiredRoles } from '../domain/role'
 import { deniesMutation } from '../domain/responsibility'
+import { effectivePermissions } from '../domain/access-policy'
 
 const ROLE_REQUIREMENTS = 'brotar.requiredRoles'
 const PERMISSION_REQUIREMENTS = 'brotar.requiredPermissions'
@@ -32,11 +33,10 @@ export class RoleGuard implements CanActivate {
     if (deniesMutation(current.map((role) => role.code), request.method)) {
       throw new ForbiddenException('El rol auditor se mantiene en lectura.')
     }
-    const required = this.reflector.getAllAndOverride<string[]>(ROLE_REQUIREMENTS, [context.getHandler(), context.getClass()]) ?? []
-    if (!hasRequiredRoles(current, required)) throw new ForbiddenException('Tu cuenta no tiene el rol requerido.')
-
-    // El catálogo de permisos se puebla con D06; hasta entonces exigirlos deniega, que es el lado seguro.
+    const required = this.reflector.getAllAndOverride<string[]>(ROLE_REQUIREMENTS, [context.getHandler(), context.getClass()])
     const permissions = this.reflector.getAllAndOverride<string[]>(PERMISSION_REQUIREMENTS, [context.getHandler(), context.getClass()])
+    if (required === undefined && permissions === undefined) throw new ForbiddenException('La operación no declara autorización.')
+    if (required !== undefined && !hasRequiredRoles(current, required)) throw new ForbiddenException('Tu cuenta no tiene el rol requerido.')
     if (permissions !== undefined && !await this.permissions.allows(request.brotarUser.id, permissions)) {
       throw new ForbiddenException('Tu cuenta no tiene el permiso requerido.')
     }
@@ -45,7 +45,13 @@ export class RoleGuard implements CanActivate {
 }
 @Controller('access')
 export class RolesController {
-  constructor(private readonly sessions: Sessions, private readonly access: RoleAccess) {}
+  constructor(private readonly sessions: Sessions, private readonly access: RoleAccess, private readonly permissions: PermissionAccess) {}
+  @Get('permissions') @Header('Cache-Control', 'no-store') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
+  async capabilities(@Req() request: AuthenticatedRequest) {
+    const roles = await this.access.current(request.brotarUser.id)
+    const readOnly = roles.some(role => role.code === 'AUDITOR')
+    return { permissions: effectivePermissions(await this.permissions.granted(request.brotarUser.id), readOnly), readOnly }
+  }
   @Get('roles') @Header('Cache-Control', 'no-store')
   async current(@Req() request: Request) {
     try {

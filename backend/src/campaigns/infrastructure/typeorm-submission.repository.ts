@@ -10,6 +10,7 @@ import { validatePlan, validateBudget, validateFunding, validateRewards, validat
 import { TypeormGeneralRepository } from './typeorm-general.repository'
 import { TypeormSectionsRepository } from './typeorm-sections.repository'
 import { campaignDuplicateReport } from './campaign-duplicates'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormSubmissionRepository implements SubmissionRepository {
@@ -82,6 +83,7 @@ export class TypeormSubmissionRepository implements SubmissionRepository {
       await manager.query(`UPDATE public.campaign SET status='IN_REVIEW',submitted_at=now(),updated_at=now() WHERE id=$1`, [id])
       await manager.query(`INSERT INTO public.campaign_review(campaign_id,round,decision)
         SELECT $1,COALESCE(max(round),0)+1,'PENDING'::review_decision FROM public.campaign_review WHERE campaign_id=$1`, [id])
+      await recordAudit(manager,userId,'STATUS_CHANGE','campaign',id)
     })
   }
 }

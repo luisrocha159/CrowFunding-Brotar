@@ -14,7 +14,7 @@ function summary(value: unknown): VerificationSummary {
 }
 function documents(value: unknown): value is VerificationDocument[] { return Array.isArray(value) && value.every(doc => object(doc) && strings(doc,['fileId','documentTypeId','label','originalName']) && (doc.reviewNotes===null || typeof doc.reviewNotes==='string') && (doc.isValid===null || typeof doc.isValid==='boolean')) }
 function stringMap(value: unknown): boolean { return object(value) && Object.values(value).every(item => typeof item==='string') }
-function detail(value: unknown): VerificationDetail {
+export function verificationDetailFrom(value: unknown): VerificationDetail {
   summary(value)
   if (!object(value) || typeof value.version!=='string' || !stringMap(value.fields) || !documents(value.documents) || !Array.isArray(value.history) || !Array.isArray(value.revisions)
     || !value.history.every(event => object(event) && strings(event,['status','at']) && (event.reason===null || typeof event.reason==='string'))
@@ -23,6 +23,7 @@ function detail(value: unknown): VerificationDetail {
     || !(value.policy===null || (object(value.policy) && approvedPolicy(value.policy as unknown as VerificationType['policy'])))) throw new SessionError(0)
   return value as unknown as VerificationDetail
 }
+const detail=verificationDetailFrom
 async function read(path: string, signal?: AbortSignal) { return readJson(await requestApi(path,{ signal })) }
 function array<T>(value: unknown, parse: (value: unknown) => T): T[] { if (!Array.isArray(value)) throw new SessionError(0); return value.map(parse) }
 export async function verificationTypes(signal?: AbortSignal): Promise<VerificationType[]> {

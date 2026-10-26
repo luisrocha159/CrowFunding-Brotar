@@ -3,6 +3,7 @@ import { DatabaseService } from '../../shared/infrastructure/database/database.s
 import type { EntityManager } from 'typeorm'
 import type { GeneralInput, GeneralRepository, Indicator, IndicatorInput, StoryInput, StorySummary } from '../application/general'
 import { DraftNotEditable } from '../application/drafts'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 const EMPTY_STORY: StoryInput = { problem: '', solution: '', beneficiaries: '', expectedResults: '' }
 
@@ -70,6 +71,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
            locality = EXCLUDED.locality, address_line = EXCLUDED.address_line, reference = EXCLUDED.reference`,
         [campaignId, input.location.countryCode, input.location.locality || null,
           input.location.addressLine || null, input.location.reference || null])
+      await recordAudit(manager,creatorUserId,'UPDATE','campaign',campaignId)
     })
   }
 
@@ -119,6 +121,7 @@ export class TypeormGeneralRepository implements GeneralRepository {
           [campaignId, indicator.name, indicator.description || null, indicator.unit || null,
             indicator.baselineValue, indicator.targetValue, index])
       }
+      await recordAudit(manager,creatorUserId,'UPDATE','campaign',campaignId)
     })
   }
 }

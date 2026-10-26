@@ -3,6 +3,8 @@ import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import { randomUUID,randomBytes } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
+import {readFileSync,writeFileSync} from 'node:fs'
+import {join} from 'node:path'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from '../src/app.module'
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
@@ -30,17 +32,20 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
     }
     assert.equal((await request('me/verifications')).status,401)
     const types=await (await request('me/verifications/types',cookies[0])).json() as VerificationType[];const type=types.find(type=>type.code==='KYC_IDENTITY')!;assert.ok(type)
-    // Nunca reemplaza un acuerdo real. Este test requiere una instalación sin política KYC activa.
-    assert.equal(type.policy,null,'Hay una política real activa; no usar este fixture sobre ella.')
-    assert.equal((await request('me/verifications',cookies[0],'POST',{verificationTypeId:type.id})).status,409)
+    // La instalación nueva trae una política sintética; nunca se reemplaza un acuerdo real.
+    if(type.policy)assert.match(type.policy.version,/^mvp-demo-/,'No probar expedientes sobre una política real.')
+    if(!type.policy)assert.equal((await request('me/verifications',cookies[0],'POST',{verificationTypeId:type.id})).status,409)
     const policy={version:`test-${suffix}`,treatmentNotice:'SOLO DATOS SINTÉTICOS DE PRUEBA',evidenceReference:'integration-fixture-not-approved-policy',approvedBy:'test-fixture',approvedAt:new Date().toISOString(),fields:[{key:'name',label:'Nombre de prueba',required:true,maxLength:120}],documents:[{documentTypeId,label:'Respaldo sintético',required:true}],requiresAcceptance:true}
-    admin(`INSERT INTO public.document_type(id,code,name,applies_to) VALUES('${documentTypeId}','test-${suffix}','Documento sintético','USER'); INSERT INTO brotar_extension.verification_policy(verification_type_id,version,definition,is_active) VALUES('${type.id}','${policy.version}','${JSON.stringify(policy)}'::jsonb,true);`);policyType=type.id
+    const activePolicy=type.policy??policy
+    if(!type.policy){admin(`INSERT INTO public.document_type(id,code,name,applies_to) VALUES('${documentTypeId}','test-${suffix}','Documento sintético','USER'); INSERT INTO brotar_extension.verification_policy(verification_type_id,version,definition,is_active) VALUES('${type.id}','${policy.version}','${JSON.stringify(policy)}'::jsonb,true);`);policyType=type.id}
     const started=await request('me/verifications',cookies[0],'POST',{verificationTypeId:type.id});assert.equal(started.status,201);let detail=await started.json() as VerificationDetail
     const repeated=await request('me/verifications',cookies[0],'POST',{verificationTypeId:type.id});assert.equal((await repeated.json() as VerificationDetail).id,detail.id)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[1])).status,404)
     const upload=async(cookie:string)=>{const result=await request('files',cookie,'POST',{purpose:'VERIFICATION_DOCUMENT',visibility:'PRIVATE',originalName:'synthetic.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nsynthetic').toString('base64')});assert.equal(result.status,201);const id=(await result.json() as {id:string}).id;files.push(id);return id}
     const ownFile=await upload(cookies[0]!);const foreignFile=await upload(cookies[1]!)
-    const body=(fileId:string)=>({expectedVersion:detail.version,policyVersion:policy.version,fields:{name:'Prueba'},documents:[{documentTypeId,fileId}],accepted:true,submit:true})
+    const body=(fileId:string)=>({expectedVersion:detail.version,policyVersion:activePolicy.version,fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,'DEMO Prueba'])),documents:[{documentTypeId:activePolicy.documents[0]!.documentTypeId,fileId}],accepted:true,submit:true})
+    assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),policyVersion:'obsolete'})).status,409)
+    if(type.policy)assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,'Dato no sintético']))})).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',body(foreignFile))).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),fields:{name:'Prueba',bankAccount:'not-accepted'}})).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),accepted:false})).status,400)
@@ -54,6 +59,8 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
     assert.equal((await request(`files/${ownFile}`,cookies[0])).status,403,'El titular descarga por el expediente, no por la ruta genérica.')
     assert.equal((await request(`me/verifications/${detail.id}/documents/${ownFile}`,cookies[1])).status,404)
     assert.equal((await request(`me/verifications/${detail.id}/documents/${ownFile}`,cookies[0])).status,200)
+    const ownPath=join(process.env.FILE_STORAGE_DIR??join(process.cwd(),'private','files'),'VERIFICATION_DOCUMENT',ownFile+'.bin'),original=readFileSync(ownPath)
+    try{writeFileSync(ownPath,Buffer.alloc(original.length));assert.equal((await request(`me/verifications/${detail.id}/documents/${ownFile}`,cookies[0])).status,404,'Tamaño idéntico con hash alterado no entrega un documento KYC ni devuelve un error SQL.')}finally{writeFileSync(ownPath,original)}
     assert.equal((await request(`files/${ownFile}`,cookies[0],'DELETE')).status,409)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),expectedVersion:oldVersion})).status,409)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',body(ownFile))).status,400)

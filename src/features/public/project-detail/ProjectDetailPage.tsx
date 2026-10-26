@@ -10,6 +10,7 @@ import { useProjectResource } from '../useProjectResource'
 import { PublicGallery } from '../../campaign-drafts/PublicGallery'
 import { PublicUpdates } from '../../campaign-progress/UpdateCards'
 import { BookmarkActions } from '../../bookmarks/BookmarkActions'
+import {VerificationBadges} from '../../verifications/VerificationBadges'
 import shared from '../public.module.css'
 import styles from './detail.module.css'
 
@@ -24,16 +25,28 @@ export function ProjectDetailPage() {
   if (!project) return <><h1>Campaña no disponible</h1><EmptyState title="No encontramos este proyecto" description="La campaña no está publicada, no tiene una imagen pública o el enlace es incorrecto." action={<ButtonLink to="/explorar">Volver a Explorar</ButtonLink>} /></>
   const progress = getProgressPercentage(project)
   const currency = project.currencyCode === 'BOB' ? 'Bs' : project.currencyCode
-  const funding = <aside className={styles.funding} aria-label="Avance de la campaña"><h2>Avance de la campaña</h2><span className={styles.percentage}>{progress} %</span><p className={styles.small}>calculado con datos de financiación confirmados</p><ProgressBar value={progress} label={`Avance de ${project.name}`} /><dl><div><dt>Monto confirmado</dt><dd>{currency} {amount.format(project.raised)}</dd></div><div><dt>Meta de la campaña</dt><dd>{currency} {amount.format(project.goal)}</dd></div><div><dt>Modalidad</dt><dd>{campaignTypeLabels[project.campaignType]}</dd></div><div><dt>Estado</dt><dd>{project.status === 'active' ? project.closingDateKnown === false ? 'Publicada · fecha de cierre por definir' : `Publicada · ${project.daysRemaining} días restantes` : project.status === 'finished' ? 'Finalizada' : 'Cancelada'}</dd></div></dl><Message tone="info" title="Aportes">Puedes ensayar una selección de apoyo. La simulación no cobra, no reserva recompensas ni registra aportes reales.</Message><ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Simular apoyo</ButtonLink><ButtonLink variant="secondary" to="/explorar">Ver otras campañas</ButtonLink>
+  const canSupport=project.status==='active'&&project.acceptsContributions!==false
+  const funding = <aside className={styles.funding} aria-label="Avance de la campaña">
+    <h2>Avance de la campaña</h2><span className={styles.percentage}>{progress} %</span>
+    <p className={styles.small}>calculado con datos de financiación confirmados</p><ProgressBar value={progress} label={`Avance de ${project.name}`} />
+    <dl><div><dt>Monto confirmado</dt><dd>{currency} {amount.format(project.raised)}</dd></div>
+      <div><dt>Meta de la campaña</dt><dd>{currency} {amount.format(project.goal)}</dd></div>
+      <div><dt>Modalidad</dt><dd>{campaignTypeLabels[project.campaignType]}</dd></div>
+      <div><dt>Estado</dt><dd>{project.statusReason??(project.status==='active'?(project.closingDateKnown===false?'Publicada · fecha de cierre por definir':`Publicada · ${project.daysRemaining} días restantes`):project.status==='cancelled'?'Cancelada':'Recaudación finalizada')}</dd></div>
+    </dl>
+    {canSupport?<><Message tone="info" title="Aportes">Puedes ensayar una selección de apoyo. La simulación no cobra, no reserva recompensas ni registra aportes reales.</Message><ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Simular apoyo</ButtonLink></>:<p>No admite nuevos aportes en este momento. Conservamos el historial público del proyecto.</p>}
+    <ButtonLink variant="secondary" to="/explorar">Ver otras campañas</ButtonLink>
   </aside>
   return <>
     <nav className={styles.breadcrumb} aria-label="Ruta de navegación"><Link to="/explorar">Explorar proyectos</Link> / {project.name}</nav>
+    {!canSupport&&<Message tone="info" title={project.statusReason??'Recaudación finalizada'}>Se conserva la información pública y su historial. Esta campaña no admite nuevos aportes en este momento.</Message>}
     <div className={styles.layout}>
         <div className={styles.overview}>
         <div className={shared.actions}><Badge tone="success">{project.category}</Badge><Badge>{campaignTypeLabels[project.campaignType]}</Badge></div>
         <h1>{project.name}</h1><p className="lead">{project.summary}</p><p>{project.creator} · {project.location}</p>
         <figure className={styles.figure}><img className={styles.cover} src={project.image} alt={project.imageAlt} width={768} height={427} /><figcaption>{project.imageCaption}</figcaption></figure>
         <BookmarkActions campaignId={project.id} />
+        <VerificationBadges campaignId={project.id}/>
         </div>
         {funding}
         <div className={styles.story}>

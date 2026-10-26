@@ -1,7 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common'
 import { Equals, IsBoolean } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { RequirePermissions, RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { DiscardUnconfirmed, ProjectConflict, ProjectMissing, Projects } from '../application/projects'
 
 export class DiscardProjectDto { @IsBoolean() @Equals(true) confirmed!: boolean }
@@ -26,7 +26,7 @@ export class ProjectsController {
   }
 }
 /** Preparación de S2-17: solo lectura, sin botones que simulen aprobar/publicar. */
-@Controller('admin/campaigns/review') @UseGuards(RoleGuard) @RequireRoles('ADMIN')
+@Controller('admin/campaigns/review') @UseGuards(RoleGuard) @RequirePermissions('campaign.review.read')
 export class CampaignReviewQueueController {
   constructor(private readonly projects: Projects) {}
   @Get() @Header('Cache-Control', 'no-store')

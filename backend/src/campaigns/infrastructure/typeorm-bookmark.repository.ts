@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
+import {transactionRegisteredAccess} from '../../roles/infrastructure/transaction-access'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 import { BookmarkUnavailable, type BookmarkItem, type BookmarkKind, type BookmarkPage, type BookmarkRepository, type BookmarkState, type FollowedUpdate } from '../application/bookmarks'
 
 const publicHistory = "c.deleted_at IS NULL AND (c.status='PUBLISHED' OR (c.published_at IS NOT NULL AND c.status IN ('FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED')))"
@@ -23,6 +25,8 @@ export class TypeormBookmarkRepository implements BookmarkRepository {
     return this.database.connection().transaction(async manager => {
       // Bloqueo compartido por todos los tipos: dos pestañas conservan ambas elecciones.
       await manager.query('SELECT id FROM public.app_user WHERE id=$1 FOR UPDATE', [userId])
+      await transactionRegisteredAccess(manager,userId)
+      let changedId:string|undefined
       if (active) {
         const rows = await manager.query(`SELECT id FROM public.campaign WHERE id=$1
           AND status='PUBLISHED' AND deleted_at IS NULL FOR SHARE`, [id]) as unknown[]
@@ -31,12 +35,21 @@ export class TypeormBookmarkRepository implements BookmarkRepository {
           if (kind === 'FAVORITE' ? !existing.favorite : !existing.following) throw new BookmarkUnavailable()
           return existing
         }
-        await manager.query(`INSERT INTO public.campaign_bookmark(user_id,campaign_id,kind)
-          VALUES($1,$2,$3) ON CONFLICT(user_id,campaign_id,kind) DO NOTHING`, [userId, id, kind])
+        const inserted:{id:string}[]=await manager.query(`INSERT INTO public.campaign_bookmark(user_id,campaign_id,kind)
+          VALUES($1,$2,$3) ON CONFLICT(user_id,campaign_id,kind) DO NOTHING RETURNING id`, [userId, id, kind])
+        changedId=inserted[0]?.id
       } else {
-        await manager.query('DELETE FROM public.campaign_bookmark WHERE user_id=$1 AND campaign_id=$2 AND kind=$3', [userId, id, kind])
+        const result=await manager.query('DELETE FROM public.campaign_bookmark WHERE user_id=$1 AND campaign_id=$2 AND kind=$3 RETURNING id', [userId, id, kind])
+        const rows:{id:string}[]=Array.isArray(result[0])?result[0]:result
+        changedId=rows[0]?.id
       }
-      return this.readState(manager, userId, id)
+      const after=await this.readState(manager,userId,id)
+      await transactionRegisteredAccess(manager,userId)
+      if(changedId){
+        await setAuditActor(manager,userId)
+        await recordAudit(manager,userId,active?'CREATE':'DELETE','campaign_bookmark',changedId)
+      }
+      return after
     })
   }
   async list(userId: string, kind: BookmarkKind, page: number): Promise<BookmarkPage<BookmarkItem>> {

@@ -25,3 +25,15 @@ export async function enableCreator(id: string, reason: string, signal?: AbortSi
   if (result.id !== id || result.role !== 'CREATOR' || typeof result.created !== 'boolean' || result.provisional !== true) throw new SessionError(0)
   return { created: result.created }
 }
+
+export const staffRoles = ['REVIEWER', 'COMPLIANCE', 'FINANCE', 'SUPPORT', 'AUDITOR'] as const
+export type StaffRole = typeof staffRoles[number]
+export async function changeResponsibility(id: string, role: StaffRole, operation: 'GRANT' | 'REVOKE', reason: string, signal?: AbortSignal, send?: typeof fetch) {
+  const value: unknown = await readJson(await requestApi(`/api/admin/users/${encodeURIComponent(id)}/responsibilities`, {
+    method: 'POST', body: { role, operation, reason: reason.trim(), confirmed: true }, signal
+  }, send))
+  if (!value || typeof value !== 'object') throw new SessionError(0)
+  const result = value as Record<string, unknown>
+  if (result.id !== id || result.role !== role || result.operation !== operation || typeof result.changed !== 'boolean') throw new SessionError(0)
+  return { changed: result.changed }
+}

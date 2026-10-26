@@ -3,7 +3,7 @@ import { SessionError } from '../../shared/api/sessionError'
 export const contributionStatuses = ['PENDING', 'CONFIRMED', 'CANCELLED', 'EXPIRED', 'REFUNDED'] as const
 export type ContributionStatus = typeof contributionStatuses[number]
 export interface ContributionFilters { page: number; status?: string; from?: string; to?: string }
-export interface PaymentRecord { id: string; amount: string; currency: string; status: string; method: string | null; sandbox: boolean; createdAt: string; confirmedAt: string | null }
+export interface PaymentRecord { id: string; amount: string; currency: string; status: string; method: string | null; sandbox: boolean; demo?:boolean; createdAt: string; confirmedAt: string | null }
 export interface ContributionItem {
   id: string; reference: string; amount: string; currency: string; status: ContributionStatus; createdAt: string; confirmedAt: string | null
   campaign: { id: string; title: string; slug: string | null; status: string }; payments: PaymentRecord[]; receiptAvailable: boolean
@@ -18,6 +18,7 @@ export interface ContributionDetail extends ContributionItem {
 export interface SponsorSummary {
   contributionCount: number; campaignsSupported: number; statusCounts: { status: ContributionStatus; count: number }[]
   totals: { currency: string; grossConfirmed: string; refunded: string; disputed: string }[]
+  demoTotals?: { currency: string; grossConfirmed: string; refunded: string; disputed: string }[]
   sandboxPaymentCount: number; favorites: number; following: number; openSupportCases: number; openDisputes: number; pendingRefunds: number
 }
 export interface Receipt {
@@ -34,7 +35,7 @@ const count = (v: unknown) => Number.isSafeInteger(v) && Number(v) >= 0
 const oneOf = (v: unknown, options: readonly string[]) => typeof v === 'string' && options.includes(v)
 function payment(v: unknown): v is PaymentRecord {
   return object(v) && text(v.id) && decimal(v.amount) && currency(v.currency) && oneOf(v.status, ['INITIATED', 'PENDING', 'CONFIRMED', 'FAILED', 'EXPIRED', 'REFUNDED', 'DISPUTED']) &&
-    (v.method === null || text(v.method)) && typeof v.sandbox === 'boolean' && date(v.createdAt) && nullableDate(v.confirmedAt)
+    (v.method === null || text(v.method)) && typeof v.sandbox === 'boolean' && (v.demo===undefined || typeof v.demo==='boolean') && date(v.createdAt) && nullableDate(v.confirmedAt)
 }
 function contribution(v: unknown): v is ContributionItem {
   if (!object(v) || !text(v.id) || !text(v.reference) || !decimal(v.amount) || !currency(v.currency) || !oneOf(v.status, contributionStatuses) || !date(v.createdAt) || !nullableDate(v.confirmedAt) ||
@@ -57,6 +58,7 @@ export function sponsorSummaryFrom(v: unknown): SponsorSummary {
   if (!object(v) || !['contributionCount', 'campaignsSupported', 'sandboxPaymentCount', 'favorites', 'following', 'openSupportCases', 'openDisputes', 'pendingRefunds'].every(key => count(v[key])) ||
     !Array.isArray(v.statusCounts) || !v.statusCounts.every(row => object(row) && oneOf(row.status, contributionStatuses) && count(row.count)) ||
     !Array.isArray(v.totals) || !v.totals.every(row => object(row) && currency(row.currency) && decimal(row.grossConfirmed) && decimal(row.refunded) && decimal(row.disputed))) throw new SessionError(0)
+  if(v.demoTotals!==undefined && (!Array.isArray(v.demoTotals) || !v.demoTotals.every(row=>object(row) && currency(row.currency) && decimal(row.grossConfirmed) && decimal(row.refunded) && decimal(row.disputed))))throw new SessionError(0)
   return v as unknown as SponsorSummary
 }
 export function receiptFrom(v: unknown): Receipt {

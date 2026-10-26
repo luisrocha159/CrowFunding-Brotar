@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common'
 import { BASIC_ACCESS_STATUSES } from '../../auth/domain/basic-access'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
+import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/audit'
 import { InvalidSimulation, SimulationConflict, SimulationUnavailable, simulationTransition, validateSimulationSelection, normalizeSimulationAmount, type SimulationInput, type SupportOptions, type SupportSimulation } from '../application/support-simulation'
 
 type SimulationRow = Omit<SupportSimulation, 'createdAt' | 'updatedAt' | 'reference' | 'mode'> & { createdAt: Date; updatedAt: Date; requestId: string }
@@ -61,6 +62,8 @@ export class TypeormSimulationRepository {
       await this.authorizeWrite(manager, userId)
       const rows = await manager.query(`INSERT INTO brotar_extension.support_simulation(user_id,request_id,campaign_id,campaign_title,reward_id,reward_title,amount,currency_code,method)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING ${columns}`, [userId, input.requestId, input.campaignId, options.title, input.rewardId, selection.reward?.title ?? null, selection.amount, options.currency, input.method]) as SimulationRow[]
+      await setAuditActor(manager,userId)
+      await recordAudit(manager,userId,'CREATE','support_simulation',rows[0]!.id)
       return simulationFrom(rows[0]!)
     })
   }
@@ -76,6 +79,8 @@ export class TypeormSimulationRepository {
       await this.authorizeWrite(manager, userId)
       const [updated] = await manager.query(`UPDATE brotar_extension.support_simulation SET state=$3,version=$4,attempts=$5,updated_at=clock_timestamp()
         WHERE user_id=$1 AND id=$2 RETURNING ${columns}`, [userId, id, next.state, next.version, next.attempts]) as [SimulationRow[], number]
+      await setAuditActor(manager,userId)
+      await recordAudit(manager,userId,'STATUS_CHANGE','support_simulation',id)
       return simulationFrom(updated[0]!)
     })
   }

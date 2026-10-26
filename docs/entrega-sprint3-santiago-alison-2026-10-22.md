@@ -1,5 +1,7 @@
 # Entrega local · Sprint 3 · Santiago y Alison · 22/10/2026
 
+> Registro histórico del trabajo de Santiago. El 23/10 Ricardo integró localmente el commit remoto `a504e43` con su trabajo preservado. Los pendientes de definición funcional se resolvieron para pruebas mediante ADR-013; no todas las implementaciones pendientes se completaron por definirlas. El estado vigente se documenta en `integracion-local-sprint-3-2026-10-23.md`. Las menciones a listas vacías, ausencia de política DEMO o UI de Ricardo pendiente no describen el nuevo corte.
+
 La rama `SantiagoDev` contiene la fusión autorizada `6424a4e` de `origin/DEV` (`99d70d7`) y la implementación posterior **sin commit ni push**. Se revisaron las 18 tarjetas de ambos responsables y las 8 de Sprint 2, con sus criterios y decisiones D02–D10. No se modificó Trello.
 
 **No corresponde declarar Sprint 3 completo.** Hay seis tarjetas con alcance técnico listo para revisión, once con implementación parcial y dependencias concretas, y una bloqueada por contenido legal. Los acuerdos pendientes no aparecieron aprobados en Trello, requisitos o ADR revisados. Las políticas sintéticas utilizadas en pruebas se retiraron al finalizar; no se activaron como reglas del producto.

@@ -44,7 +44,7 @@ export function simulationSelectionError(options: SupportOptions, value: string,
   if (!options.eligible) return options.unavailableReason ?? 'La campaña no está disponible.'
   if (options.minimum && amount < cents(options.minimum)) return `El mínimo registrado es ${options.minimum} ${options.currency}.`
   const reward = options.rewards.find(item => item.id === rewardId)
-  if ((options.campaignType === 'PRESALE' && !reward) || (rewardId && !reward)) return 'Selecciona una recompensa disponible.'
+  if ((options.campaignType !== 'DONATION' && !reward) || (rewardId && (!reward || options.campaignType === 'DONATION'))) return 'Selecciona una recompensa disponible para esta modalidad.'
   if (reward && amount < cents(reward.minimum)) return `La recompensa exige al menos ${reward.minimum} ${options.currency}.`
   if (reward?.available === 0) return 'La recompensa no tiene cupo disponible.'
   return null

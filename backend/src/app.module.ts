@@ -8,12 +8,19 @@ import { CatalogsModule } from './catalogs/catalogs.module'
 import { CampaignsModule } from './campaigns/campaigns.module'
 import { FilesModule } from './files/files.module'
 import { CampaignDraftsModule } from './campaign-drafts/campaign-drafts.module'
+import { ContributionsModule } from './contributions/contributions.module'
+import { FinanceModule } from './finance/finance.module'
+import { AuditModule } from './audit/audit.module'
+import { DemoPaymentsModule } from './demo-payments/demo-payments.module'
 
 import { CampaignProgressModule } from './campaign-progress/campaign-progress.module'
-import { ContributionsModule } from './contributions/contributions.module'
 import { VerificationsModule } from './verifications/verifications.module'
-
 import { SupportCasesModule } from './support-cases/support-cases.module'
+import {RefundsModule} from './refunds/refunds.module'
+import {DisputesModule} from './disputes/disputes.module'
+import {CampaignLifecycleModule} from './campaign-lifecycle/campaign-lifecycle.module'
+import {DisbursementsModule} from './disbursements/disbursements.module'
+import {ContactsModule} from './contacts/contacts.module'
 
-@Module({ imports: [SupportCasesModule, CampaignProgressModule, ContributionsModule, VerificationsModule, HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule] })
+@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule, FinanceModule, AuditModule, DemoPaymentsModule, CampaignProgressModule, VerificationsModule, SupportCasesModule,RefundsModule,DisputesModule,CampaignLifecycleModule,DisbursementsModule,ContactsModule] })
 export class AppModule {}

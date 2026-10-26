@@ -33,7 +33,7 @@ const repository: ProjectRepository = {
       return { id: user, email: `${user}@example.invalid`, firstName: user, lastName: 'Prueba', status: 'ACTIVE' }
     } } },
     { provide: RoleAccess, useValue: new RoleAccess({ active: async user => [{ code: user === 'creator' ? 'CREATOR' : user === 'admin' ? 'ADMIN' : 'REGISTERED_USER', name: user }] }) },
-    { provide: PermissionAccess, useValue: new PermissionAccess({ granted: async () => [] }) }
+    { provide: PermissionAccess, useValue: new PermissionAccess({ granted: async user => user === 'admin' ? ['campaign.review.read'] : [] }) }
   ]
 })
 class ProjectsTestModule {}

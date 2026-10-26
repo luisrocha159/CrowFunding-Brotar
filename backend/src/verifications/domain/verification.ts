@@ -45,6 +45,7 @@ export function validateSubmission(policy: VerificationPolicy | null, input: Ver
   for (const field of policy.fields) {
     const value = input.fields[field.key] ?? ''
     if (!jsonText(value) || value.trim().length > field.maxLength || (submitting && field.required && !value.trim())) throw new InvalidVerification()
+    if(policy.version.startsWith('mvp-demo-') && value.trim() && !/^(DEMO|PRUEBA)\b/i.test(value.trim()))throw new InvalidVerification('Usa datos ficticios que comiencen con DEMO o PRUEBA.')
     fields[field.key] = value.trim()
   }
   const files = new Set<string>(); const types = new Set<string>()

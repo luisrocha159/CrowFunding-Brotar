@@ -14,4 +14,10 @@
 .description { white-space: pre-wrap; }
 .settings p { color: var(--color-muted); }
 .settings pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.settings > div { display: grid; gap: var(--space-4); }
+.parameter { display: grid; gap: var(--space-3); min-width: 0; overflow-wrap: anywhere; }
+.parameter h3, .parameter p { margin: 0; }
+.parameter > button { justify-self: start; }
+.acknowledgement { display: flex; align-items: flex-start; gap: var(--space-2); min-height: 44px; padding-block: var(--space-2); cursor: pointer; }
+.acknowledgement input { width: 20px; height: 20px; flex: 0 0 auto; margin: 0; }
 @media (max-width: 760px) { .category { flex-direction: column; } .formRow { grid-template-columns: minmax(0, 1fr); } .form, .settings, .confirmation, .category { padding: var(--space-4); } }

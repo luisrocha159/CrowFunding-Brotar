@@ -2,7 +2,7 @@ import { BadRequestException, Body, ConflictException, Controller, ForbiddenExce
 import { Type } from 'class-transformer'
 import { ArrayMaxSize, Equals, IsArray, IsBoolean, IsIn, IsInt, IsObject, IsOptional, IsString, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { RequirePermissions, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { AdministrativeReview } from '../application/administrative-review'
 import { SubmissionIncomplete } from '../application/submission'
 import { PublicationDisabled, REVIEW_SECTIONS, ReviewConflict, ReviewInvalid, ReviewMissing } from '../domain/administrative-review'
@@ -37,18 +37,21 @@ function translate(error: unknown): never {
   if (error instanceof SubmissionIncomplete) throw new UnprocessableEntityException({ message: 'La campaña tiene información faltante.', missing: error.missing })
   throw error
 }
-@Controller('admin/campaigns') @UseGuards(RoleGuard) @RequireRoles('ADMIN')
+@Controller('admin/campaigns') @UseGuards(RoleGuard)
 export class AdministrativeReviewController {
   constructor(private readonly review: AdministrativeReview) {}
   @Get(':id/detail') @Header('Cache-Control', 'no-store')
+  @RequirePermissions('campaign.review.read')
   async detail(@Param('id', new ParseUUIDPipe()) id: string) {
     try { return await this.review.detail(id) } catch (error) { translate(error) }
   }
   @Post(':id/decision') @HttpCode(200) @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
+  @RequirePermissions('campaign.review.decide')
   async decide(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: DecisionDto) {
     try { return await this.review.decide(request.brotarUser.id, id, input) } catch (error) { translate(error) }
   }
   @Post(':id/publish') @HttpCode(200) @Header('Cache-Control', 'no-store') @UseGuards(SessionMutationGuard)
+  @RequirePermissions('campaign.publish')
   async publish(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: PublishDto) {
     try { return await this.review.publish(request.brotarUser.id, id, input.expectedRound, input.duplicateReview) } catch (error) { translate(error) }
   }

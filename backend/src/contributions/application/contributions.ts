@@ -7,7 +7,7 @@ export interface ContributionItem {
   payments: PaymentRecord[]; receiptAvailable: boolean
 }
 export interface PaymentRecord {
-  id: string; amount: string; currency: string; status: string; method: string | null; sandbox: boolean; createdAt: string; confirmedAt: string | null
+  id: string; amount: string; currency: string; status: string; method: string | null; sandbox: boolean; demo?:boolean; createdAt: string; confirmedAt: string | null
 }
 export interface ContributionDetail extends ContributionItem {
   reward: { id: string; title: string } | null
@@ -19,6 +19,7 @@ export interface ContributionPage { items: ContributionItem[]; total: number; pa
 export interface SponsorSummary {
   contributionCount: number; campaignsSupported: number; statusCounts: { status: ContributionStatus; count: number }[]
   totals: { currency: string; grossConfirmed: string; refunded: string; disputed: string }[]
+  demoTotals?: { currency: string; grossConfirmed: string; refunded: string; disputed: string }[]
   sandboxPaymentCount: number; favorites: number; following: number; openSupportCases: number; openDisputes: number; pendingRefunds: number
 }
 export interface ContributionRepository {

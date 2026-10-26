@@ -5,6 +5,7 @@ import { DraftNotEditable } from '../application/drafts'
 import { SectionInvalid, type SectionsRepository } from '../application/sections'
 import { validateBudget, validatePlan, validateFunding, validateRewards, validateBudgetGoal, validateRewardFunding, type BudgetInput, type FundingInput, type PlanInput, type RewardInput } from '../domain/sections'
 import type { CampaignType } from '../domain/draft'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormSectionsRepository implements SectionsRepository {
@@ -18,6 +19,7 @@ export class TypeormSectionsRepository implements SectionsRepository {
       await manager.query('SELECT set_config($1, $2, true)', ['brotar.actor_id', userId])
       await change(manager)
       await manager.query('UPDATE public.campaign SET updated_at=now() WHERE id=$1', [id])
+      await recordAudit(manager,userId,'UPDATE','campaign',id)
     })
   }
 

@@ -2,7 +2,7 @@ import { Controller, ForbiddenException, Get, Header, Injectable, NotFoundExcept
 import { Transform } from 'class-transformer'
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
+import { RequirePermissions, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
 class PartyQuery {
   @IsIn(['USER','ORGANIZATION']) kind: 'USER'|'ORGANIZATION'='USER'
@@ -10,8 +10,8 @@ class PartyQuery {
   @Transform(({value}: {value:unknown})=>Number(value)) @IsInt() @Min(1) @Max(10000) page=1
 }
 const access = `EXISTS(SELECT 1 FROM public.app_user actor JOIN public.user_role ur ON ur.user_id=actor.id JOIN public.role r ON r.id=ur.role_id
-  WHERE actor.id=$1 AND actor.status::text=ANY($2::text[]) AND actor.deleted_at IS NULL AND (actor.locked_until IS NULL OR actor.locked_until<=now())
-  AND ur.granted_at<=now() AND ur.revoked_at IS NULL AND (ur.expires_at IS NULL OR ur.expires_at>now()) AND r.code IN ('ADMIN','AUDITOR'))`
+  WHERE actor.id=$1 AND actor.status::text=ANY($2::text[]) AND actor.deleted_at IS NULL AND (actor.locked_until IS NULL OR actor.locked_until<=clock_timestamp())
+  AND ur.granted_at<=clock_timestamp() AND ur.revoked_at IS NULL AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()) AND r.code IN ('ADMIN','AUDITOR'))`
 @Injectable()
 export class PartyAdministration {
   constructor(private readonly database: DatabaseService) {}
@@ -24,7 +24,7 @@ export class PartyAdministration {
     const query=(input.query??'').trim().replace(/[\\%_]/g,'\\$&'); const parameters=[userId,BASIC_ACCESS_STATUSES,`%${query}%`,(input.page-1)*20]
     const select=input.kind==='USER'
       ? `SELECT u.id,'USER' AS kind,concat_ws(' ',p.first_name,p.last_name) AS name,u.email::text AS contact,u.status::text AS status,
-          COALESCE((SELECT string_agg(r.code,', ' ORDER BY r.code) FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND ur.revoked_at IS NULL AND ur.granted_at<=now() AND (ur.expires_at IS NULL OR ur.expires_at>now())),'') AS detail
+          COALESCE((SELECT string_agg(r.code,', ' ORDER BY r.code) FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp() AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp())),'') AS detail
         FROM public.app_user u JOIN public.user_profile p ON p.user_id=u.id WHERE u.deleted_at IS NULL AND (concat_ws(' ',p.first_name,p.last_name) ILIKE $3 OR u.email::text ILIKE $3)`
       : `SELECT o.id,'ORGANIZATION' AS kind,o.legal_name AS name,COALESCE(o.contact_email::text,'') AS contact,o.status::text AS status,t.name AS detail
         FROM public.organization o JOIN public.organization_type t ON t.id=o.organization_type_id WHERE o.deleted_at IS NULL AND (o.legal_name ILIKE $3 OR COALESCE(o.trade_name,'') ILIKE $3)`
@@ -36,12 +36,12 @@ export class PartyAdministration {
     const organization: {id:string;name:string;status:string}[] = await this.database.connection().query(`SELECT o.id,o.legal_name AS name,o.status FROM public.organization o WHERE o.id=$3 AND o.deleted_at IS NULL AND ${access}`,[userId,BASIC_ACCESS_STATUSES,id])
     if(!organization[0])throw new NotFoundException('Organización no disponible.')
     const members: {id:string;name:string;role:string;joinedAt:string;leftAt:string|null;current:boolean}[] = await this.database.connection().query(`SELECT m.id,concat_ws(' ',p.first_name,p.last_name) AS name,m.organization_role AS role,m.joined_at AS "joinedAt",m.left_at AS "leftAt",
-      (m.left_at IS NULL AND m.joined_at<=now() AND u.deleted_at IS NULL) AS current
+      ((m.left_at IS NULL OR m.left_at>clock_timestamp()) AND m.joined_at<=clock_timestamp() AND u.deleted_at IS NULL) AS current
       FROM public.organization_member m JOIN public.app_user u ON u.id=m.user_id JOIN public.user_profile p ON p.user_id=u.id WHERE m.organization_id=$3 AND ${access} ORDER BY m.joined_at DESC,m.id LIMIT 200`,[userId,BASIC_ACCESS_STATUSES,id])
     return {...organization[0],members}
   }
 }
-@Controller('administration/parties') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
+@Controller('administration/parties') @UseGuards(RoleGuard) @RequirePermissions('parties.read')
 export class PartyAdministrationController {
   constructor(private readonly parties: PartyAdministration) {}
   @Get() @Header('Cache-Control','no-store')

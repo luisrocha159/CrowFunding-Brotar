@@ -2,7 +2,7 @@ import { BadRequestException, Body, ConflictException, Controller, ForbiddenExce
 import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
-import { SupportCases, SupportForbidden, SupportMissing } from '../application/support-cases'
+import { SupportCampaignClosed, SupportCases, SupportForbidden, SupportMissing } from '../application/support-cases'
 import { SUPPORT_CATEGORIES, SupportConflict, SupportInvalid } from '../domain/support-case'
 class SupportCreateDto {
   @IsUUID() requestId!: string
@@ -15,6 +15,7 @@ class SupportCreateDto {
   @IsBoolean() confirmed!: boolean
 }
 function translate(error: unknown): never {
+  if(error instanceof SupportCampaignClosed)throw new ConflictException('La campaña ya está cerrada. El MVP no admite añadir nuevas obligaciones a un cierre terminal; las incidencias históricas siguen consultables.')
   if (error instanceof SupportForbidden) throw new ForbiddenException('Tus permisos cambiaron. Auditor conserva solo lectura.')
   if (error instanceof SupportInvalid) throw new BadRequestException('Revisa los datos y la confirmación de la incidencia.')
   if (error instanceof SupportMissing) throw new NotFoundException('El caso, contexto o evidencia no está disponible para tu cuenta.')

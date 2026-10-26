@@ -7,6 +7,7 @@ import { administrativeDetailFrom, decideCampaign, decisionErrors, publishCampai
 import { budgetTotal } from './sectionsClient'
 import { projectStatusNames } from './projectsClient'
 import styles from './projects.module.css'
+import { useAccessPermissions } from '../access/session/accessPermissions'
 
 const decisions = { APPROVED: 'Aprobar', CHANGES_REQUESTED: 'Solicitar cambios', REJECTED: 'Rechazar' }
 const reviewDecisionNames: Readonly<Record<string, string>> = { PENDING: 'Pendiente', APPROVED: 'Aprobada', CHANGES_REQUESTED: 'Cambios solicitados', REJECTED: 'Rechazada' }
@@ -50,6 +51,7 @@ export function AdministrativeInformation({ detail }: { detail: AdministrativeDe
 }
 
 export function AdministrativeCampaignPanel({ id }: { id: string }) {
+  const permissions = useAccessPermissions()
   const [detail, setDetail] = useState<AdministrativeDetail | null>(null)
   const [decision, setDecision] = useState<Decision>('APPROVED')
   const [comment, setComment] = useState('')
@@ -75,6 +77,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
   const refresh = () => { if (active.current) return; setDetail(null); setAccess(0); setConfirmation(null); setMessage(''); setRetry(value => value + 1) }
   async function act() {
     if (!detail || !confirmation || active.current) return
+    if (!permissions.can(confirmation === 'publish' ? 'campaign.publish' : 'campaign.review.decide')) { setConfirmation(null); return }
     if (confirmation === 'decision') {
       const fields = decisionErrors(input); setErrors(fields)
       if (Object.keys(fields).length) { setConfirmation(null); return }
@@ -109,7 +112,9 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
     {!detail && !message && <p role="status">Cargando información completa…</p>}
     {detail && <><AdministrativeInformation detail={detail} />
       {detail.project.status === 'PUBLISHED' && <Link to={`/proyectos/${encodeURIComponent(detail.slug)}`}>Ver campaña pública</Link>}
-      {detail.project.status === 'IN_REVIEW' && round?.decision === 'PENDING' && <section className={styles.panel}><h2>Decidir · ronda {round.round}</h2><p>Aprobar no publica la campaña. El motivo de rechazo o cambios será visible para el creador.</p>
+      {permissions.error && <Message tone="warning" title="No se pudieron consultar tus permisos">Recarga antes de intentar una operación.</Message>}
+      {permissions.access?.readOnly && <p>Acceso de auditor: puedes consultar, pero no modificar campañas.</p>}
+      {permissions.can('campaign.review.decide') && detail.project.status === 'IN_REVIEW' && round?.decision === 'PENDING' && <section className={styles.panel}><h2>Decidir · ronda {round.round}</h2><p>Aprobar no publica la campaña. El motivo de rechazo o cambios será visible para el creador.</p>
         <fieldset className={styles.reviewForm} disabled={busy || access !== 0}>
           <label>Decisión *<select required value={decision} onChange={event => { setDecision(event.target.value as Decision); setConfirmation(null); setErrors({}) }}>{Object.entries(decisions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label>Comentario {decision === 'APPROVED' ? '(opcional)' : '*'}<textarea required={decision !== 'APPROVED'} minLength={5} maxLength={10000} onBlur={() => setErrors(previous => ({ ...previous, comment: decisionErrors(input).comment ?? '' }))} value={comment} aria-invalid={Boolean(errors.comment)} aria-describedby="review-comment-error" onChange={event => { setComment(event.target.value); setConfirmation(null) }} /></label>
@@ -118,7 +123,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
           <Button disabled={decision === 'APPROVED' && detail.missing.length > 0} onClick={() => { const fields = decisionErrors(input); setErrors(fields); if (!Object.keys(fields).length) setConfirmation('decision') }}>{decisions[decision]}</Button>
         </fieldset>
       </section>}
-      {detail.project.status === 'APPROVED' && <section className={styles.panel}><h2>Publicación</h2><p>La campaña está aprobada pero aún es privada. Publicarla la hará visible en Explorar.</p>{detail.publicationEnabled ? <Button disabled={busy || access !== 0 || detail.missing.length > 0 || round?.decision !== 'APPROVED'} onClick={() => setConfirmation('publish')}>Publicar campaña</Button> : <Message tone="warning" title="Publicación deshabilitada">Falta habilitar la configuración acordada para D05.</Message>}</section>}
+      {detail.project.status === 'APPROVED' && <section className={styles.panel}><h2>Publicación</h2><p>La campaña está aprobada pero aún es privada. Publicarla la hará visible en Explorar.</p>{!permissions.can('campaign.publish') ? <p>No tienes permiso vigente para publicar.</p> : detail.publicationEnabled ? <Button disabled={busy || access !== 0 || detail.missing.length > 0 || round?.decision !== 'APPROVED'} onClick={() => setConfirmation('publish')}>Publicar campaña</Button> : <Message tone="warning" title="Publicación deshabilitada">Falta habilitar la configuración acordada para D05.</Message>}</section>}
       {confirmation && <section className={styles.panel} role="region" aria-label="Confirmación de operación"><h3>Confirmar {confirmation === 'publish' ? 'publicación pública' : decisions[decision].toLowerCase()}</h3><p>Campaña: «{detail.project.title}» · ronda {round?.round}.</p><div className={styles.actions}><Button variant="secondary" disabled={busy} onClick={() => setConfirmation(null)}>Cancelar</Button><Button loading={busy} loadingLabel="Guardando…" onClick={() => { void act() }}>Confirmar operación</Button></div></section>}
     </>}
   </div>

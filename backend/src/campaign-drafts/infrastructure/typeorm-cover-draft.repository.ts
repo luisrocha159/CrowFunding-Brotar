@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { CampaignCoverUnavailable, type CampaignCoverDraft, type CoverDraftRepository } from '../application/cover-draft'
+import { recordAudit } from '../../shared/infrastructure/database/audit'
 
 @Injectable()
 export class TypeormCoverDraftRepository implements CoverDraftRepository {
@@ -30,6 +31,7 @@ export class TypeormCoverDraftRepository implements CoverDraftRepository {
       await manager.query("DELETE FROM public.file_attachment WHERE campaign_id=$1 AND attachment_role='COVER'", [input.campaignId])
       await manager.query(`INSERT INTO public.file_attachment(file_id,campaign_id,attachment_role,caption)
         VALUES($1,$2,'COVER',$3)`, [input.fileId, input.campaignId, input.altText])
+      await recordAudit(manager,input.ownerUserId,'UPDATE','campaign',input.campaignId)
     })
     return input
   }

@@ -137,6 +137,23 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
     assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
     assert.equal((await source.query('SELECT count(*)::int AS n FROM public.category WHERE is_active=true'))[0].n, 5, 'Instalación desde cero: categorías disponibles sin carga manual.')
+    const demoPolicies=await source.query("SELECT t.code FROM brotar_extension.verification_policy p JOIN public.verification_type t ON t.id=p.verification_type_id WHERE p.is_active AND p.version='mvp-demo-1.0-20261023' ORDER BY t.code")
+    assert.deepEqual(demoPolicies.map((row:{code:string})=>row.code),['KYB_LEGAL','KYB_REPRESENTATIVE','KYC_IDENTITY'],'Instalación limpia deja los tres acuerdos sintéticos, no requiere insertar políticas a mano.')
+    assert.deepEqual(await source.query("SELECT key,value FROM public.system_setting WHERE key LIKE 'support.%' ORDER BY key"),[{key:'support.escalation_hours',value:120},{key:'support.first_response_hours',value:48}])
+    await source.query("UPDATE public.system_setting SET value='24'::jsonb WHERE key='support.first_response_hours'")
+    const {MvpDemoAgreements1792713600000}=await import('../src/shared/infrastructure/database/migrations/1792713600000-MvpDemoAgreements')
+    const agreementRunner=source.createQueryRunner()
+    try{await new MvpDemoAgreements1792713600000().up(agreementRunner)}finally{await agreementRunner.release()}
+    assert.equal((await source.query("SELECT value FROM public.system_setting WHERE key='support.first_response_hours'"))[0].value,24,'Reaplicar conserva una configuración existente.')
+    assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.verification_policy WHERE version='mvp-demo-1.0-20261023'"))[0].n,3,'Reaplicar no duplica ni sustituye políticas.')
+    assert.deepEqual(await source.query(`SELECT has_table_privilege('brotar_app','public.payment_event','INSERT') AS can_append,
+      has_table_privilege('brotar_app','public.payment_event','UPDATE') AS can_edit,
+      has_table_privilege('brotar_app','public.payment_event','DELETE') AS can_delete`),
+    [{can_append:true,can_edit:false,can_delete:false}], 'El rol de API conserva el historial financiero como inserción/lectura.')
+    assert.deepEqual(await source.query(`SELECT has_table_privilege('brotar_app','public.audit_log','SELECT,INSERT') AS can_append,
+      has_table_privilege('brotar_app','public.audit_log','UPDATE') AS can_edit,
+      has_table_privilege('brotar_app','public.audit_log','DELETE') AS can_delete`),
+    [{can_append:true,can_edit:false,can_delete:false}], 'La auditoría de la aplicación solo admite lectura e inserción; no modifica el esquema oficial.')
     const { ProvisionalCatalogs1792015200000 } = await import('../src/shared/infrastructure/database/migrations/1792015200000-ProvisionalCatalogs')
     await source.query("UPDATE public.category SET name='Catálogo personalizado',is_active=false WHERE slug='medio-ambiente'")
     const catalogRunner = source.createQueryRunner()
@@ -162,6 +179,7 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     const { CampaignRejected1791244800000 } = await import('../src/shared/infrastructure/database/migrations/1791244800000-CampaignRejected')
     await assert.rejects(() => new CampaignRejected1791244800000().down(), /no elimina valores ENUM/)
     assert.equal(await source.showMigrations(), false)
+    assert.deepEqual((await source.query("SELECT code FROM public.permission WHERE code IN ('campaign.lifecycle.read','campaign.lifecycle.manage','campaign.manage.own') ORDER BY code")).map((r:{code:string})=>r.code),['campaign.lifecycle.manage','campaign.lifecycle.read','campaign.manage.own'],'Cada permiso tiene un recurso distinto; no se omiten mutaciones por una colisión resource/action.')
     const tables: { n: number }[] = await source.query(
       `SELECT count(*)::int AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
        WHERE n.nspname='public' AND c.relkind='r'`)

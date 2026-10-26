@@ -6,6 +6,13 @@ const policy: VerificationPolicy = {
   version: 'test-policy-only', treatmentNotice: 'Datos sintéticos para prueba.', evidenceReference: 'test-fixture', approvedBy: 'fixture', approvedAt: '2026-10-22T00:00:00Z',
   fields: [{ key: 'name', label: 'Nombre de prueba', required: true, maxLength: 120 }], documents: [{ documentTypeId: '9b7c8ea5-126e-47c9-883c-f7ab30b459d7', label: 'Respaldo de prueba', required: true }], requiresAcceptance: true
 }
+test('política académica DEMO solo acepta campos sintéticos explícitos, nunca sustituye la legal',()=>{
+ const demo={...policy,version:'mvp-demo-1.0-20261023'}
+ const input={policyVersion:demo.version,fields:{name:'DEMO Persona ficticia'},documents:demo.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:'06ec727d-4664-45c9-b704-01880c7a8832'})),accepted:true}
+ assert.equal(validateSubmission(demo,input).fields.name,'DEMO Persona ficticia')
+ assert.throws(()=>validateSubmission(demo,{...input,fields:{name:'Persona real'}}),InvalidVerification)
+ assert.throws(()=>validateSubmission(demo,{...input,accepted:false}),InvalidVerification)
+})
 const document = { documentTypeId: policy.documents[0]!.documentTypeId, fileId: '9b7c8ea5-126e-47c9-883c-f7ab30b459d8' }
 test('identidad: nunca acepta información con política ausente ni aprobación sin evidencia', () => {
   const input = { policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }

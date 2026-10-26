@@ -16,3 +16,6 @@
 .details dd { margin: 0; overflow-wrap: anywhere; }
 @media(max-width: 520px) { .card { padding: 18px; } .details { grid-template-columns: 1fr; gap: 4px; } .details dd { margin-bottom: 12px; } }
 @media print { .actions { display: none; } .card { break-inside: avoid; } }
+.confirmation { display:flex; align-items:flex-start; gap:var(--space-3); min-height:44px; margin-block:var(--space-4); }
+.confirmation input { flex:0 0 auto; margin-top:.35em; }
+.card figure code { overflow-wrap:anywhere; }

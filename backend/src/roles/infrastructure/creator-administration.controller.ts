@@ -2,7 +2,7 @@ import { Body, ConflictException, Controller, ForbiddenException, Get, Header, H
 import { Equals, IsBoolean, IsEmail, IsString, MaxLength } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { CreatorAdministration, CreatorGrantConflict, CreatorGrantDenied, ManagedUserMissing } from '../application/creator-administration'
-import { RequireRoles, RoleGuard, type AuthenticatedRequest } from './roles-http'
+import { RequirePermissions, RequireRoles, RoleGuard, type AuthenticatedRequest } from './roles-http'
 
 export class UserLookupDto { @IsEmail() @MaxLength(254) email!: string }
 export class EnableCreatorDto {
@@ -15,7 +15,7 @@ function translate(error: unknown): never {
   if (error instanceof CreatorGrantConflict) throw new ConflictException('No se pudo habilitar: revisa el estado, roles y motivo de la cuenta. No se reactivan concesiones vencidas o futuras.')
   throw error
 }
-@Controller('admin/users') @UseGuards(RoleGuard) @RequireRoles('ADMIN')
+@Controller('admin/users') @UseGuards(RoleGuard) @RequireRoles('ADMIN') @RequirePermissions('creator.provision')
 export class CreatorAdministrationController {
   constructor(private readonly administration: CreatorAdministration) {}
   @Get() @Header('Cache-Control', 'no-store')

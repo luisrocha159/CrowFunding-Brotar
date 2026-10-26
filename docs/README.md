@@ -1,6 +1,44 @@
 # Documentación de Brotar
 
+## Incremento de correo · RicardoDev · 24/10/2026
+
+[Flujos, contrato, pruebas y pendientes del correo](correo-operativo-2026-10-24.md) · [Reglas ADR-014](decisiones/ADR-014-correo-operativo-mvp.md) · [Configuración y traslado privado en README §35–36](../README.md). El incremento no aprueba legal ni cierra la integración/aceptación global del MVP. No buscar claves en este repositorio.
+
 Este índice separa el producto general de la entrega pública que ya puede ejecutarse. Para instalar y abrir la aplicación, utiliza el [README principal](../README.md).
+
+## Integración transversal local S3-15 a S3-18 · 24 de octubre de 2026
+
+[Criterios, implementación, pruebas y límites del corte transversal](cierre-transversal-s3-15-18-2026-10-24.md), [169 contratos HTTP comprobados](contratos-http-sprint3.json) y README §34. **28 migraciones**, RicardoDev sin publicar. S3-17 conserva autoría de Santiago y se revalida; los módulos funcionales completos de compañeros, correo y legal no se dan por terminados mediante este documento. Los apartados siguientes conservan sus cortes históricos.
+
+## Ampliación local del cierre S3-23 · 24 de octubre de 2026
+
+[Contrato mínimo, tutorial y validaciones de cierre](cierre-s3-23-2026-10-24.md). **27 migraciones**, README §33; rendición final revisada, cumplimiento con evidencia y resolución mínima de incidencias para el ciclo DEMO. No completa informes periódicos, logística, administración de terceros ni soporte general de compañeros. Sin publicación, correo real ni aprobación legal. Los cortes siguientes conservan su fecha histórica.
+
+## Integración local vigente · 23 de octubre de 2026
+
+Actualización posterior del mismo día: [cierre de S2-08, S3-09, S3-11 y S3-02](cierre-cuatro-tareas-ricardo-2026-10-23.md). **24 migraciones** y README §31 sustituyen el conteo del corte integrado anterior. Revisión sintética, devoluciones/disputas DEMO y estados enlazados; sin publicación, correo real ni aceptación legal. El informe integrado siguiente conserva su corte de 20 migraciones.
+
+[Integración de Ricardo + Santiago, evidencia y tareas](integracion-local-sprint-3-2026-10-23.md) y [ADR-013: seis acuerdos del MVP DEMO](decisiones/ADR-013-definiciones-integracion-mvp-demo.md). Veinte migraciones, checkout DEMO conectado al historial y parámetros tipados con consumidor operativo. Solo RicardoDev local, sin publicar ni modificar Trello; legal y correo reales pendientes. Los informes siguientes conservan su fecha histórica, no sustituyen el estado de este corte. README §30 contiene los pasos vigentes.
+
+## Cierre local de S3-07 · registrado el 23 de octubre de 2026
+
+[Conciliación DEMO: criterios, implementación, pruebas y pendientes](cierre-s3-07-conciliacion-2026-10-23.md). Pantalla, API y PostgreSQL; consulta de pendientes, referencias, resolución trazable y cierre protegido. Ensayo completo/visual del 22/10: 373 casos distintos, perfiles y adaptación móvil. Mantiene catorce migraciones y no publica cambios en DEV. README §29 contiene el recorrido. S3-06 y S3-07 tienen cierre técnico local; el resto conserva sus dependencias. Las fechas de evidencia no significan que los servidores QA sigan encendidos.
+
+## Incremento local del 21 de octubre de 2026
+
+[Pagos DEMO: implementación, evidencia y pendientes](avance-pagos-demo-2026-10-21.md), [contrato HTTP DEMO 0.5](contrato-pagos-demo-0.5.md) y [contratos generales 0.5](contratos-sprint-3.md). Backend de checkout, boleto no pagable, simulación, reintentos/expiración y conciliación con compensación exclusivamente de prueba. Catorce migraciones; no hay proveedor bancario ni publicación. UI integral/QR de Alison, correo, KYC y operaciones dependientes siguen pendientes. README §28 explica el uso. Los cortes siguientes conservan su fecha histórica.
+
+## Incremento local del 20 de octubre de 2026
+
+[Reglas del MVP de pruebas y estado de aplicación](decisiones/ADR-012-reglas-mvp-pruebas.md), [contratos vigentes 0.4](contratos-sprint-3.md) y [evidencia del incremento](avance-reglas-ricardo-2026-10-20.md). Gestión de responsabilidades, reintentos/expiración internos y mantenimiento manual de retención, con trece migraciones. README §27 explica los pasos. Todo permanece en RicardoDev sin publicar; correo y módulos dependientes no se cierran. Los cortes anteriores conservan sus resultados históricos.
+
+## Avance local de Ricardo · Sprint 3 · 19/10/2026
+
+[S3-15/16/18: avance de auditoría, demostración y límites](avance-auditoria-s3-15-16-18-2026-10-19.md). Consulta restringida de acciones y estados, instrumentación transaccional de campañas/núcleo sandbox, contrato 0.3 y once migraciones. No se cierran estas tres historias ni se publica el incremento. README §26 explica el recorrido.
+
+[S3-06: consulta financiera completa y demostración](cierre-s3-06-finanzas-2026-10-19.md). Pantalla, filtros, totales por moneda/estado y CSV seguro con permisos, sin mover dinero. Su corte de cierre técnico registró 351 casos, diez migraciones y regresión con reinicio; el avance de auditoría enlazado arriba conserva el corte posterior. La aceptación global y las otras tareas siguen pendientes. README §25 explica el recorrido.
+
+[S3-16/S3-02/base S3-18: implementación y evidencia inicial](avance-ricardo-sprint-3-2026-10-19.md) y [contratos 0.3 para el equipo](contratos-sprint-3.md). Permisos por responsabilidad, núcleo sandbox interno y lectura propia paginada de aportes; no hay proveedor conectado ni cobros reales. Las tres tareas iniciales siguen en curso. El plan y el mapa de Trello conservan su captura de reparto del 15/10; no sustituyen la evidencia técnica del avance local.
 
 ## Entrega actualizada de DEV · 16/10/2026
 
@@ -104,6 +142,8 @@ Estos archivos corresponden al prototipo histórico de la experiencia del creado
 - [Explicativo del Equipo 2 — PDF histórico](entregables/historico-equipo-2/04_Documento_Explicativo_Equipo_2_Brotar.pdf).
 
 ## Cómo abrir los archivos
+
+Incremento local vigente del Sprint 3: [ciclo y desembolsos DEMO](ciclo-y-desembolsos-demo-2026-10-24.md), con contratos, recorridos, validaciones y dependencias explícitas; instalación en README principal §32. Requiere 26 migraciones, no está publicado y no cierra correo/legal ni módulos pendientes de compañeros.
 
 Para el Sprint 2 vigente: [guía de demostración y tareas](../output/pdf/Guia_Demostracion_y_Estudio_Sprint_2_Brotar.pdf), [principios/patrones para defensa](../output/pdf/Informe_Principios_y_Patrones_Sprint_2_Brotar.pdf) y [tutorial de siete flujos paso a paso](../output/pdf/Tutorial_Paso_a_Paso_Flujos_Sprint_2_Brotar.pdf). Los PDF conservan el corte local del 05/10/2026; se incluyen en la [entrega integrada de DEV](entrega-dev-sprint-2-2026-10-05.md). La aceptación externa sigue pendiente. No reemplazan las guías históricas del Sprint 1.
 

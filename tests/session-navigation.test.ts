@@ -18,7 +18,7 @@ test('con sesión confirmada, login/registro vuelven a Mi cuenta y no a otro acc
 })
 
 test('mantiene el destino público o privado autorizado, sin conceder roles', () => {
-  for (const route of ['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/usuarios', '/administracion/campanas', `/mis-proyectos/${id}`, `/administracion/campanas/${id}`, `/crear-campana?borrador=${id}`, `/mi-campana/portada?borrador=${id}`, '/proyectos/camp-11111111-1111-4111-8111-111111111111']) {
+  for (const route of ['/mi-cuenta', '/mis-organizaciones', '/crear-campana', '/mis-proyectos', '/administracion/usuarios', '/administracion/campanas', '/administracion/finanzas', '/administracion/conciliacion', '/administracion/auditoria', `/administracion/conciliacion/${id}`, `/mis-proyectos/${id}`, `/administracion/campanas/${id}`, `/crear-campana?borrador=${id}`, `/mi-campana/portada?borrador=${id}`, '/proyectos/camp-11111111-1111-4111-8111-111111111111']) {
     assert.equal(authenticatedContinuation(route), route)
     assert.equal(existingSessionDestination(new URLSearchParams({ continuar: route, perfil: 'creador' })), route)
   }

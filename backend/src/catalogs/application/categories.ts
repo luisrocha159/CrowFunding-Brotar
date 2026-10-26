@@ -1,5 +1,5 @@
 import { allowsDeactivation, isSelfReference, isValidSlug, normalizeCategory, type Category, type CategoryInput } from '../domain/category'
-import { AGREED_SETTINGS, isAgreedSetting, isValidSettingKey } from '../domain/setting'
+import { AGREED_SETTINGS, isAgreedSetting, isValidSettingKey, isValidSettingValue } from '../domain/setting'
 export type { Category, CategoryInput } from '../domain/category'
 
 export class CategoryInvalid extends Error {}
@@ -10,6 +10,7 @@ export class CategoryParentUnavailable extends Error {}
 export class CategoryInUse extends Error {}
 /** El parámetro no está entre los acordados; ver D02 y D10. */
 export class SettingNotAgreed extends Error {}
+export class SettingValueInvalid extends Error {}
 
 export interface CategoryUsage { campaigns: number; activeChildren: number }
 
@@ -102,7 +103,7 @@ export class Categories {
 
 /**
  * Parámetros de negocio. Solo claves acordadas, registrando quién modifica (BG-55 CA 2).
- * Mientras AGREED_SETTINGS esté vacía toda escritura se rechaza; poblarla depende de D02 y D10.
+ * ADR-013 admite dos objetivos de atención DEMO; toda clave restante se rechaza.
  */
 export class Settings {
   constructor(private readonly repository: SettingRepository) {}
@@ -122,6 +123,7 @@ export class Settings {
 
   async write(key: string, value: unknown, updatedBy: string) {
     this.check(key)
+    if(!isValidSettingValue(key,value))throw new SettingValueInvalid()
     return this.repository.write(key, value, updatedBy)
   }
 }

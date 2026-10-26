@@ -31,6 +31,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
   const password = randomBytes(24).toString('hex')
   const ids: string[] = []
   const campaignId = randomUUID()
+  const alertCaseId = randomUUID()
   const app = await NestFactory.create(AppModule, { logger: false })
   configureHttp(app, readEnvironment({ NODE_ENV: 'test' }))
   await app.listen(0, '127.0.0.1')
@@ -60,7 +61,22 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
 
     assert.equal((await call('catalogs/admin/categories', plain.cookie)).status, 403)
     assert.equal((await call('catalogs/admin/settings', plain.cookie)).status, 403)
-    assert.deepEqual(await (await call('catalogs/admin/settings', manager.cookie)).json(), [])
+    const initialSettings=await (await call('catalogs/admin/settings', manager.cookie)).json() as {key:string;value:unknown}[]
+    assert.deepEqual(initialSettings.map(row=>row.key),['support.first_response_hours','support.escalation_hours'])
+    assert.ok(initialSettings.every(row=>typeof row.value==='number'))
+    const responseKey='support.first_response_hours'
+    for(const invalid of [0,49,1.5,'24',true,null])assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:invalid})).status,400)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,plain.cookie,'PUT',{value:24})).status,403)
+    admin(`INSERT INTO support_case(id,user_id,subject,description,created_at) VALUES('${alertCaseId}','${manager.id}','DEMO prueba de alerta','Caso sintético para verificar consumo de parámetro',now()-interval '36 hours');`)
+    const alertsBefore=await (await call('administration/dashboard',manager.cookie)).json() as {supportAlerts:{firstResponseDue:number}}
+    assert.equal(typeof alertsBefore.supportAlerts?.firstResponseDue,'number')
+    const changed=await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:24});assert.equal(changed.status,200)
+    const alertsAfter=await (await call('administration/dashboard',manager.cookie)).json() as {supportAlerts:{firstResponseDue:number}}
+    assert.equal(alertsAfter.supportAlerts.firstResponseDue,alertsBefore.supportAlerts.firstResponseDue+1,'El panel consume el parámetro persistido, no una constante.')
+    admin(`DELETE FROM support_case WHERE id='${alertCaseId}';`)
+    assert.equal((await changed.json() as {value:number}).value,24)
+    assert.equal(JSON.parse(admin(`SELECT count(*)::int FROM audit_log WHERE entity_name='system_setting' AND actor_user_id='${manager.id}' AND new_values->>'key'='${responseKey}';`).toString().trim()),1)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:initialSettings[0]!.value})).status,200)
 
     // CA 1: la edición exige ADMIN, comprobado en la API y no ocultando el formulario.
     const draft = { slug: `cat-${suffix}`, name: `Categoría ${suffix}`, description: 'Prueba', displayOrder: 5 }
@@ -125,7 +141,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     assert.equal((await (await call('catalogs/categories', plain.cookie)).json() as { id: string }[])
       .some((row) => row.id === category.id), false)
 
-    // CA 2: ningún parámetro está acordado todavía; D02 y D10 siguen abiertas.
+    // CA 2: las claves fuera del acuerdo DEMO siguen rechazándose.
     const rejected = await call(`catalogs/admin/settings/campaign.max_goal`, manager.cookie, 'PUT', { value: 1000 })
     assert.equal(rejected.status, 400)
     assert.match((await rejected.json() as { message: string }).message, /D02 y D10/)
@@ -135,7 +151,8 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     const auditor = await register('auditor')
     admin(`INSERT INTO user_role(user_id, role_id) SELECT '${auditor.id}', id FROM role WHERE code='AUDITOR';`)
     assert.equal((await call('catalogs/admin/categories', auditor.cookie)).status, 200)
-    assert.deepEqual(await (await call('catalogs/admin/settings', auditor.cookie)).json(), [])
+    assert.equal((await (await call('catalogs/admin/settings', auditor.cookie)).json() as unknown[]).length,2)
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,auditor.cookie,'PUT',{value:24})).status,403)
     assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, auditor.cookie, 'PUT', { isActive: true })).status, 403)
 
     // CA 3: el auditor no edita el catálogo aunque acumule ADMIN.
@@ -143,16 +160,18 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     assert.equal((await call('catalogs/admin/categories', manager.cookie, 'POST',
       { ...draft, slug: `auditor-${suffix}` })).status, 403)
     assert.equal((await call('catalogs/admin/categories', manager.cookie)).status, 200, 'El auditor conserva la lectura.')
+    assert.equal((await call(`catalogs/admin/settings/${responseKey}`,manager.cookie,'PUT',{value:24})).status,403)
     assert.equal((await call(`catalogs/admin/categories/${category.id}`, manager.cookie, 'PUT', draft)).status, 403)
     assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, manager.cookie, 'PUT', { isActive: true })).status, 403)
   } finally {
     await app.close()
     try {
-      admin(`DELETE FROM audit_log WHERE entity_name='category' AND entity_id IN (SELECT id FROM category WHERE slug LIKE '%-${suffix}');
+      admin(`DELETE FROM support_case WHERE id='${alertCaseId}'; DELETE FROM audit_log WHERE entity_name='category' AND entity_id IN (SELECT id FROM category WHERE slug LIKE '%-${suffix}');
         DELETE FROM campaign WHERE id='${campaignId}';
         DELETE FROM category WHERE slug LIKE '%-${suffix}' OR slug='cat-${suffix}';`)
       for (const id of ids) {
         assert.match(id, /^[a-f0-9-]{36}$/)
+        admin(`DELETE FROM audit_log WHERE entity_name='system_setting' AND actor_user_id='${id}';`)
         if (source.isInitialized) await source.getRepository(UserSchema).delete({ id })
       }
     } finally { if (source.isInitialized) await source.destroy() }

@@ -42,6 +42,8 @@
 .confirmation input { flex: 0 0 auto; margin-top: .3em; }
 .reviewForm textarea, .reviewForm select { width: 100%; box-sizing: border-box; padding: var(--space-3); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); font: inherit; }
 .reviewForm textarea { min-height: 110px; resize: vertical; }
+.staffForm { margin-top: var(--space-7); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.staffForm legend { padding-bottom: var(--space-3); font-weight: 600; }
 .reviewForm [aria-invalid="true"] { border-color: var(--color-danger, #a52a2a); }
 .dialog { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); max-width: min(90vw, 520px); color: var(--color-text); }
 .dialog::backdrop { background: rgb(20 32 26 / 45%); }

@@ -2,9 +2,11 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
+import {ownerAccess} from '../../campaign-lifecycle/infrastructure/eligibility'
+import {recordAudit} from '../../shared/infrastructure/database/audit'
 import type { ProgressInput, UpdateInput } from '../domain/progress'
-const currentOwner = `c.creator_user_id=$2 AND c.deleted_at IS NULL AND (c.organization_id IS NULL OR EXISTS (
-  SELECT 1 FROM public.organization_member om WHERE om.organization_id=c.organization_id AND om.user_id=$2 AND om.left_at IS NULL AND om.joined_at<=now() AND EXISTS(SELECT 1 FROM public.organization o WHERE o.id=om.organization_id AND o.deleted_at IS NULL) AND om.organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN')))`
+const currentOwner = `c.deleted_at IS NULL AND ((c.organization_id IS NULL AND c.creator_user_id=$2) OR EXISTS (
+  SELECT 1 FROM public.organization_member om JOIN public.organization o ON o.id=om.organization_id WHERE om.organization_id=c.organization_id AND om.user_id=$2 AND (om.left_at IS NULL OR om.left_at>clock_timestamp()) AND om.joined_at<=clock_timestamp() AND o.deleted_at IS NULL AND o.status NOT IN ('SUSPENDED','CLOSED') AND om.organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN')))`
 const editable = ['PUBLISHED', 'FUNDING_ENDED', 'IN_EXECUTION']
 interface Campaign { id: string; title: string; status: string; currency: string | null }
 interface ActualRow { id: string; name: string; responsibleName: string; status: string; progressPercent: number; plannedStartOn: string | null; plannedEndOn: string | null; actualStartOn: string | null; actualEndOn: string | null }
@@ -17,6 +19,9 @@ export class ProgressRepository {
   private async owner(manager: EntityManager, userId: string, id: string, lock = false): Promise<Campaign> {
     const rows = await manager.query(`SELECT c.id,c.title,c.status,c.currency_code AS currency FROM public.campaign c WHERE c.id=$1 AND ${currentOwner}${lock ? ' FOR UPDATE OF c' : ''}`, [id, userId]) as Campaign[]
     if (lock) {
+      const [subject]=await manager.query('SELECT id,creator_user_id,organization_id,currency_code,status FROM public.campaign WHERE id=$1',[id])
+      if(!subject)throw new NotFoundException('Proyecto no disponible.')
+      await ownerAccess(manager,userId,subject)
       const actor = await manager.query(`SELECT r.code FROM public.app_user u JOIN public.user_role ur ON ur.user_id=u.id JOIN public.role r ON r.id=ur.role_id WHERE u.id=$1 AND u.status::text=ANY($2::text[]) AND u.deleted_at IS NULL AND (u.locked_until IS NULL OR u.locked_until<=now()) AND ur.granted_at<=clock_timestamp() AND ur.revoked_at IS NULL AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()) FOR SHARE OF u`, [userId, BASIC_ACCESS_STATUSES]) as {code:string}[]
       if (!actor.some(r => r.code==='CREATOR') || actor.some(r => r.code==='AUDITOR')) throw new ForbiddenException('Tu acceso cambió. Actualiza la sesión.')
       const access = await manager.query(`SELECT c.id FROM public.campaign c WHERE c.id=$1 AND ${currentOwner}`, [id,userId]) as unknown[]
@@ -44,7 +49,7 @@ export class ProgressRepository {
       for (const key of ['activities', 'milestones'] as const) for (const row of input[key]) await m.query(`UPDATE public.${key === 'activities' ? 'campaign_activity' : 'milestone'} SET responsible_name=$3,status=$4,progress_percent=$5,actual_start_on=$6,actual_end_on=$7,updated_at=clock_timestamp() WHERE campaign_id=$1 AND id=$2`, [id, row.id, row.responsibleName.trim(), row.status, row.progressPercent, row.actualStartOn, row.actualEndOn])
       for (const row of input.indicators) await m.query('UPDATE public.campaign_impact_indicator SET achieved_value=$3 WHERE campaign_id=$1 AND id=$2', [id, row.id, row.achievedValue])
       const after = await this.state(m, campaign)
-      await m.query(`INSERT INTO public.audit_log(actor_user_id,action,entity_name,entity_id,description,old_values,new_values) VALUES($1,'UPDATE','campaign_progress',$2,'Registro de avance real',$3::jsonb,$4::jsonb)`, [userId, id, JSON.stringify(before), JSON.stringify(after)])
+      await recordAudit(m,userId,'UPDATE','campaign_progress',id)
       return after
     })
   }
@@ -97,7 +102,7 @@ export class ProgressRepository {
     await m.query(`UPDATE public.file_attachment SET attachment_role='UPDATE_EVIDENCE_ARCHIVED' WHERE campaign_update_id=$1 AND attachment_role='UPDATE_EVIDENCE'`, [updateId])
     for (const [index, row] of input.images.entries()) await m.query(`INSERT INTO public.file_attachment(file_id,campaign_update_id,attachment_role,caption,display_order) VALUES($1,$2,'UPDATE_EVIDENCE',$3,$4)`, [row.fileId, updateId, row.caption.trim(), index])
     if (input.publish) await m.query('INSERT INTO brotar_extension.update_progress(update_id,data) VALUES($1,$2::jsonb)', [updateId, JSON.stringify(await this.state(m, campaign))])
-    await m.query(`INSERT INTO public.audit_log(actor_user_id,action,entity_name,entity_id,description) VALUES($1,$2,'campaign_update',$3,$4)`, [userId, current ? 'UPDATE' : 'CREATE', updateId, input.publish ? 'Publicación de novedad y resultados' : 'Borrador de novedad'])
+    await recordAudit(m,userId,current?'UPDATE':'CREATE','campaign_update',updateId)
     return (await this.updateRows(m, id, false, updateId))[0]
   }) }
   async dashboard(userId: string) {

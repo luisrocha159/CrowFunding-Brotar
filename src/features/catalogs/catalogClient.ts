@@ -33,3 +33,8 @@ export async function saveCategory(id: string | null, input: CategoryInput, sign
 export async function setCategoryActive(id: string, isActive: boolean, signal?: AbortSignal, send: typeof fetch = fetch): Promise<Category> {
   return categoryFrom(await readJson(await requestApi(`/api/catalogs/admin/categories/${encodeURIComponent(id)}/state`, { method: 'PUT', body: { isActive }, signal }, send)))
 }
+export async function saveSetting(key: string,value: number,signal?: AbortSignal): Promise<AgreedSetting> {
+  const row=await readJson(await requestApi(`/api/catalogs/admin/settings/${encodeURIComponent(key)}`,{method:'PUT',body:{value},signal}))
+  if(!object(row) || row.key!==key || row.value!==value || typeof row.updatedBy!=='string' || typeof row.updatedAt!=='string' || !Number.isFinite(Date.parse(row.updatedAt)))throw new SessionError(0)
+  return row as unknown as AgreedSetting
+}

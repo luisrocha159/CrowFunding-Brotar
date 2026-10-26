@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
+import {transactionAccess} from '../../roles/infrastructure/transaction-access'
+import {setAuditActor} from '../../shared/infrastructure/database/audit'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { CategorySlugTaken, type Category, type CategoryInput, type CategoryRepository, type CategoryUsage, type SettingRepository } from '../application/categories'
 
@@ -25,8 +27,10 @@ export class TypeormCategoryRepository implements CategoryRepository {
   }
 
   private async audit(actorId: string, action: 'CREATE' | 'UPDATE' | 'STATUS_CHANGE', previous: Category | null, current: Category): Promise<void> {
+    await transactionAccess(this.manager!,actorId,'catalog.manage')
+    await setAuditActor(this.manager!,actorId)
     await this.connection().query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,old_values,new_values)
-      VALUES($1,'ADMIN',$2::audit_action,'category',$3,$4::jsonb,$5::jsonb)`,
+      VALUES($1,'ADMIN',$2::audit_action,'category',$3,$4::jsonb,$5::jsonb || jsonb_build_object('source','APPLICATION','result','APPLIED'))`,
     [actorId, action, current.id, previous ? JSON.stringify(previous) : null, JSON.stringify(current)])
   }
 
@@ -117,9 +121,16 @@ export class TypeormSettingRepository implements SettingRepository {
   }
 
   async write(key: string, value: unknown, updatedBy: string) {
-    // updated_by deja constancia de quién modificó el parámetro (BG-55 CA 2).
+    return this.database.connection().transaction(async manager=>{
+    const [actor]=await manager.query(`SELECT u.id FROM public.app_user u WHERE u.id=$1 AND u.deleted_at IS NULL
+      AND u.status IN ('ACTIVE','PENDING_VERIFICATION') AND (u.locked_until IS NULL OR u.locked_until<=clock_timestamp())
+      AND EXISTS(SELECT 1 FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id JOIN public.role_permission rp ON rp.role_id=r.id JOIN public.permission p ON p.id=rp.permission_id
+        WHERE ur.user_id=u.id AND r.code='ADMIN' AND p.code='catalog.manage' AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp() AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()))
+      AND NOT EXISTS(SELECT 1 FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.code='AUDITOR' AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp() AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp())) FOR SHARE OF u`,[updatedBy])
+    if(!actor)throw new ForbiddenException('La administración vigente debe confirmar el cambio.')
+    await manager.query('SELECT set_config($1,$2,true)',['brotar.actor_id',updatedBy])
     const rows: { key: string; value: unknown; updatedBy: string | null; updatedAt: Date }[] =
-      await this.database.connection().query(
+      await manager.query(
         `INSERT INTO public.system_setting(key, value, updated_by, updated_at)
          VALUES($1, $2::jsonb, $3, now())
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value,
@@ -128,6 +139,9 @@ export class TypeormSettingRepository implements SettingRepository {
         [key, JSON.stringify(value), updatedBy])
     const written = rows[0]
     if (!written) throw new Error('No se pudo confirmar el parámetro.')
+    await transactionAccess(manager,updatedBy,'catalog.manage')
+    await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,new_values) VALUES($1,'ADMIN','UPDATE','system_setting',jsonb_build_object('key',$2::text,'result','APPLIED','source','APPLICATION'))`,[updatedBy,key])
     return written
+    })
   }
 }

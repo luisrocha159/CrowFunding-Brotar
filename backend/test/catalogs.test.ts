@@ -4,7 +4,7 @@ import { allowsDeactivation, isSelfReference, isValidSlug, normalizeCategory } f
 import { AGREED_SETTINGS, isAgreedSetting, isValidSettingKey } from '../src/catalogs/domain/setting'
 import {
   Categories, CategoryInUse, CategoryInvalid, CategoryParentUnavailable, CategorySlugTaken,
-  Settings, SettingNotAgreed, type Category, type CategoryRepository, type CategoryUsage
+  Settings, SettingNotAgreed, SettingValueInvalid, type Category, type CategoryRepository, type CategoryUsage
 } from '../src/catalogs/application/categories'
 
 const base: Category = {
@@ -78,8 +78,7 @@ test('rechaza datos inválidos, identificadores repetidos y padres no disponible
 })
 
 test('solo se gestionan parámetros acordados y se registra quién modifica', async () => {
-  // Vacía a propósito: poblarla exige D02 y D10.
-  assert.deepEqual(AGREED_SETTINGS, [])
+  assert.deepEqual(AGREED_SETTINGS, ['support.first_response_hours', 'support.escalation_hours'])
   assert.equal(isAgreedSetting('campaign.max_goal'), false)
   assert.equal(isValidSettingKey('campaign.max_goal'), true)
   assert.equal(isValidSettingKey('Campaign.Max'), false)
@@ -95,6 +94,26 @@ test('solo se gestionan parámetros acordados y se registra quién modifica', as
   await assert.rejects(() => settings.write('campaign.max_goal', 100, 'admin-1'), SettingNotAgreed)
   await assert.rejects(() => settings.read('campaign.max_goal'), SettingNotAgreed)
   assert.equal(recorded, null, 'Una clave no acordada no llega al repositorio.')
+  for(const invalid of [0,49,1.5,'24',null,{},true]) await assert.rejects(()=>settings.write('support.first_response_hours',invalid,'admin-1'),SettingValueInvalid)
+  for(const invalid of [71,721,100.1,'120']) await assert.rejects(()=>settings.write('support.escalation_hours',invalid,'admin-1'),SettingValueInvalid)
+  assert.equal((await settings.write('support.first_response_hours',24,'admin-1')).value,24)
+  assert.deepEqual(recorded,{key:'support.first_response_hours',updatedBy:'admin-1'})
+})
+test('categorías: rechaza ciclos de varios niveles y reactivación con padre inactivo', async () => {
+  const parent = { ...base, id: 'parent', parentId: base.id }
+  const leaf = { ...base, id: 'leaf', parentId: parent.id }
+  const categories = new Categories(repositoryWith({ find: async id => [base, parent, leaf].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => categories.update(base.id, { ...input, parentId: leaf.id }, 'admin-1'), CategoryInvalid)
+  const inactiveParent = { ...base, id: 'retired', isActive: false }
+  const inactiveChild = { ...base, id: 'child', parentId: inactiveParent.id, isActive: false }
+  const retired = new Categories(repositoryWith({ find: async id => [inactiveParent, inactiveChild].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => retired.setActive(inactiveChild.id, true, 'admin-1'), CategoryParentUnavailable)
+})
+test('parámetros: listar solo consulta las claves acordadas', async () => {
+  const queried:string[]=[]
+  const settings = new Settings({ read: async key => { queried.push(key);return null }, write: async () => { throw new Error('No debe escribir') } })
+  assert.deepEqual((await settings.list()).map(row=>row.key),AGREED_SETTINGS)
+  assert.deepEqual(queried,AGREED_SETTINGS)
 })
 
 
@@ -107,10 +126,4 @@ test('categorías: rechaza ciclos de varios niveles y reactivación con padre in
   const inactiveChild = { ...base, id: 'child', parentId: inactiveParent.id, isActive: false }
   const retired = new Categories(repositoryWith({ find: async id => [inactiveParent, inactiveChild].find(row => row.id === id) ?? null }))
   await assert.rejects(() => retired.setActive(inactiveChild.id, true, 'admin-1'), CategoryParentUnavailable)
-})
-
-
-test('parámetros: listar claves acordadas no consulta ni filtra valores desconocidos', async () => {
-  const settings = new Settings({ read: async () => { throw new Error('No debe leer claves no aprobadas') }, write: async () => { throw new Error('No debe escribir') } })
-  assert.deepEqual(await settings.list(), [])
 })

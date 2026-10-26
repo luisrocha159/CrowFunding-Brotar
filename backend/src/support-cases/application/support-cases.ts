@@ -1,6 +1,7 @@
 import { normalizeSupportInput, supportId, supportPage, SupportInvalid, type SupportInput, type SupportStatus } from '../domain/support-case'
 export class SupportMissing extends Error {}
 export class SupportForbidden extends Error {}
+export class SupportCampaignClosed extends Error {}
 export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null }
 export interface SupportSummary { id: string; reference: string; category: string | null; subject: string; status: SupportStatus; createdAt: string; updatedAt: string; campaignId: string | null; contributionId: string | null }
 export interface SupportDetail extends SupportSummary { description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }

@@ -6,8 +6,10 @@ import { Message } from '../../../shared/components/Feedback'
 import { readProfile, saveProfile, validateProfile, type Profile, type ProfileInput } from './profileClient'
 import { notifySessionChanged, SessionError } from './sessionClient'
 import styles from '../access.module.css'
+import {useAccessPermissions} from './accessPermissions'
 
 export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onSaved: (profile: Profile) => void }) {
+  const {access,error:accessError,refresh}=useAccessPermissions()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [values, setValues] = useState<ProfileInput>({ firstName: '', lastName: '', phoneCountryCode: '', phoneNumber: '' })
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileInput, string>>>({})
@@ -34,6 +36,9 @@ export function ProfileForm({ onExpired, onSaved }: { onExpired: () => void; onS
   }
   if (status === 'loading') return <p role="status">Cargando perfil…</p>
   if (status === 'load-error' || !profile) return <><Message tone="error" title="No se pudo cargar el perfil">Revisa la conexión e inténtalo nuevamente.</Message><Button onClick={() => { setStatus('loading'); setRetry(value => value + 1) }}>Reintentar perfil</Button></>
+  if(accessError)return <><Message tone="error" title="No se pudieron comprobar tus permisos">Recarga los permisos antes de editar el perfil.</Message><Button onClick={refresh}>Reintentar permisos</Button></>
+  if(!access)return <p role="status">Comprobando permisos del perfil…</p>
+  if(access.readOnly)return <section><h3>Datos básicos</h3><p>Auditoría: perfil de solo lectura.</p><dl><dt>Nombre</dt><dd>{profile.firstName} {profile.lastName}</dd><dt>Correo</dt><dd>{profile.email}</dd><dt>Teléfono</dt><dd>{profile.phoneCountryCode} {profile.phoneNumber||'Sin teléfono'}</dd></dl></section>
   return <form className={styles.form} aria-label="Editar mi perfil" noValidate onSubmit={async event => {
     event.preventDefault()
     if (saving.current) return

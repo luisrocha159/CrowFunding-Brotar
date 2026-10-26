@@ -4,7 +4,9 @@ import { ArrayMaxSize, IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUUI
 import type { Response } from 'express'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
-import { Files } from '../../files/application/files'
+import { Files,FileUnavailable,FileAccessDenied } from '../../files/application/files'
+import {DatabaseService} from '../../shared/infrastructure/database/database.service'
+import {auditFileRead} from '../../shared/infrastructure/database/file-read-audit'
 import { Verifications } from '../application/verifications'
 import { InvalidVerification, VerificationConflict, VerificationForbidden, VerificationPolicyUnavailable, VerificationUnavailable } from '../domain/verification'
 class StartVerificationDto {
@@ -25,10 +27,12 @@ class SaveVerificationDto {
 }
 @Controller('me/verifications') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
 export class VerificationController {
-  constructor(private readonly cases: Verifications, private readonly files: Files) {}
+  constructor(private readonly cases: Verifications, private readonly files: Files,private readonly database:DatabaseService) {}
   private async execute<T>(operation: () => Promise<T>): Promise<T> {
     try { return await operation() }
     catch (error) {
+      if(error instanceof FileUnavailable)throw new NotFoundException('Documento privado no disponible o sin integridad confirmada.')
+      if(error instanceof FileAccessDenied)throw new ForbiddenException('No puedes consultar este documento.')
       if (error instanceof VerificationForbidden) throw new ForbiddenException('Tu cuenta no permite esta operación.')
       if (error instanceof VerificationUnavailable) throw new NotFoundException('Verificación no disponible.')
       if (error instanceof VerificationConflict) throw new ConflictException('El caso cambió. Recarga su estado antes de corregirlo.')
@@ -54,6 +58,7 @@ export class VerificationController {
     return this.execute(async () => {
       const owner = await this.cases.documentOwner(request.brotarUser.id, id, fileId)
       const file = await this.files.verificationDownload(fileId, owner)
+      await auditFileRead(this.database,request.brotarUser.id,fileId)
       response.setHeader('Content-Type', file.file.mimeType)
       response.setHeader('Content-Length', file.file.sizeBytes)
       response.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(file.file.originalName)}`)

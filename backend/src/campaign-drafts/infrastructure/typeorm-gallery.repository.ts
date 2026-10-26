@@ -30,7 +30,7 @@ export class TypeormGalleryRepository implements GalleryRepository {
   async readPublic(id: string): Promise<Omit<Gallery, 'revision'>> {
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
       const rows = await manager.query(`SELECT video_url AS "videoUrl" FROM public.campaign
-        WHERE id=$1 AND status='PUBLISHED' AND deleted_at IS NULL`, [id]) as { videoUrl: string | null }[]
+        WHERE id=$1 AND published_at IS NOT NULL AND status IN ('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED') AND deleted_at IS NULL`, [id]) as { videoUrl: string | null }[]
       if (!rows[0]) throw new GalleryUnavailable()
       return { videoUrl: rows[0].videoUrl, images: await this.images(manager, id) }
     })

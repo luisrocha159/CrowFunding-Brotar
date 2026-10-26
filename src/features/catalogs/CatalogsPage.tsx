@@ -9,6 +9,7 @@ import { CategoryList } from './CategoryList'
 import type { Category } from './catalogClient'
 import { useCatalogs } from './useCatalogs'
 import styles from './catalogs.module.css'
+import { SettingEditor } from './SettingEditor'
 
 export function CatalogsPage() {
   const data = useCatalogs()
@@ -39,7 +40,7 @@ export function CatalogsPage() {
       <CategoryList categories={data.categories} editable={editable} busy={data.busy || Boolean(editing) || Boolean(stateTarget)} onEdit={setEditing} onState={setStateTarget} />
       <section className={styles.settings}><h2>Parámetros acordados</h2>
         {data.settings.length === 0 ? <p>No hay parámetros de negocio aprobados para administrar. Las decisiones sobre categorías, reglas, límites y vistas siguen pendientes en D02 y D10. Los costos requieren además D04.</p>
-          : <dl>{data.settings.map(setting => <div key={setting.key}><dt>{setting.key}</dt><dd><pre>{JSON.stringify(setting.value, null, 2)}</pre>{setting.updatedAt ? `Actualizado: ${new Date(setting.updatedAt).toLocaleString('es')}` : 'Sin valor registrado'}</dd></div>)}</dl>}
+          : <div>{data.settings.map(setting => <SettingEditor key={`${setting.key}:${setting.updatedAt}`} setting={setting} editable={editable} onSaved={reload} />)}</div>}
       </section>
     </>}
   </section></div>
