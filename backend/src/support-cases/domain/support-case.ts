@@ -9,6 +9,13 @@ export type SupportStatus = 'OPEN' | 'IN_PROGRESS' | 'AWAITING_RESPONSE' | 'RESO
 export class SupportInvalid extends Error {}
 export class SupportConflict extends Error {}
 export interface SupportInput { requestId: string; campaignId: string | null; contributionId: string | null; category: SupportCategory; subject: string; description: string; evidenceFileIds: string[]; confirmed: true }
+export interface SupportReply { requestId: string; body: string }
+export function normalizeSupportReply(value: unknown): SupportReply {
+  if (!value || typeof value !== 'object') throw new SupportInvalid()
+  const input = value as Record<string, unknown>
+  if (!supportId(input.requestId) || typeof input.body !== 'string' || textError(input.body,20,5000)) throw new SupportInvalid()
+  return { requestId: input.requestId.toLowerCase(), body: input.body.trim() }
+}
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export function supportId(value: unknown): value is string { return typeof value === 'string' && uuid.test(value) }
 export function normalizeSupportInput(value: unknown): SupportInput {

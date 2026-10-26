@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common'
+import { createHash } from 'node:crypto'
+import {recordSupportNotice} from './support-mail'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
@@ -6,7 +8,7 @@ import { SupportCampaignClosed, SupportForbidden, SupportMissing, type SupportAd
 import { transactionAccess } from '../../roles/infrastructure/transaction-access'
 import { recordAudit, setAuditActor } from '../../shared/infrastructure/database/audit'
 import type { SupportStatus } from '../domain/support-case'
-import { SupportConflict, supportFingerprint, type SupportInput } from '../domain/support-case'
+import { SupportConflict, supportFingerprint, type SupportInput, type SupportReply } from '../domain/support-case'
 
 type SummaryRow = Omit<SupportSummary, 'createdAt' | 'updatedAt'> & { createdAt: Date; updatedAt: Date }
 const projection = `s.id,s.case_number AS reference,s.category,s.subject,s.status,s.created_at AS "createdAt",s.updated_at AS "updatedAt",s.campaign_id AS "campaignId",x.contribution_id AS "contributionId"`
@@ -34,7 +36,8 @@ export class SupportCaseRepository implements SupportRepository {
   }
   async detail(userId: string, id: string): Promise<SupportDetail | null> {
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
-      const rows: (SummaryRow & { description: string })[] = await manager.query(`SELECT ${projection},s.description FROM public.support_case s
+      const rows: (SummaryRow & { description: string; replyAllowed: boolean })[] = await manager.query(`SELECT ${projection},s.description,
+        s.status IN ('OPEN','IN_PROGRESS','AWAITING_RESPONSE') AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id) AS "replyAllowed" FROM public.support_case s
         LEFT JOIN brotar_extension.support_case_context x ON x.case_id=s.id WHERE s.user_id=$1 AND s.id=$2`, [userId, id])
       const row = rows[0]
       if (!row) return null
@@ -45,7 +48,7 @@ export class SupportCaseRepository implements SupportRepository {
       const messages: (Omit<SupportDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT m.id,m.body,m.created_at AS "createdAt",
         CASE WHEN m.author_user_id=$1 THEN 'you' ELSE 'support' END AS "from" FROM public.support_case_message m
         JOIN public.support_case s ON s.id=m.support_case_id WHERE s.user_id=$1 AND s.id=$2 AND m.is_internal=false ORDER BY m.created_at,m.id`, [userId, id])
-      return { ...summary(row), description: row.description, evidence, messages: messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() })) }
+      return { ...summary(row), replyAllowed: row.replyAllowed, description: row.description, evidence, messages: messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() })) }
     })
   }
   context(userId: string, campaignId: string | null, contributionId: string | null): Promise<SupportContext | null> {
@@ -131,8 +134,9 @@ export class SupportCaseRepository implements SupportRepository {
         AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`, [id])
       const row = rows[0]
       if (!row) return null
-      const messages: (Omit<SupportAdminDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT id,body,created_at AS "createdAt"
-        FROM public.support_case_message WHERE support_case_id=$1 AND NOT is_internal ORDER BY created_at,id`, [id])
+      const messages: (Omit<SupportAdminDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT msg.id,msg.body,msg.created_at AS "createdAt",
+        CASE WHEN msg.author_user_id=s.user_id THEN 'reporter' ELSE 'support' END AS "from"
+        FROM public.support_case_message msg JOIN public.support_case s ON s.id=msg.support_case_id WHERE s.id=$1 AND NOT msg.is_internal ORDER BY msg.created_at,msg.id`, [id])
       const events: (Omit<SupportAdminDetail['events'][number], 'recordedAt'> & { recordedAt: Date })[] = await manager.query(`SELECT previous_status AS "previousStatus",status,reason,recorded_at AS "recordedAt"
         FROM brotar_extension.support_case_event WHERE case_id=$1 ORDER BY recorded_at,id`, [id])
       const evidence = await manager.query(`SELECT f.id AS "fileId",f.file_name AS name,f.mime_type AS "mimeType"
@@ -142,19 +146,29 @@ export class SupportCaseRepository implements SupportRepository {
       return { ...summary(row), description: row.description, messages: messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() })), events: events.map(event => ({ ...event, recordedAt: event.recordedAt.toISOString() })), evidence }
     })
   }
-  async adminMessage(actor: string, id: string, body: string): Promise<void> {
+  async adminMessage(actor: string, id: string, body: string, requestId: string): Promise<void> {
+    const hash=createHash('sha256').update(JSON.stringify([id.toLowerCase(),body,'staff'])).digest('hex')
     await this.database.connection().transaction(async manager => {
+      await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`support-reply:${actor}:${requestId}`])
       await transactionAccess(manager, actor, 'support.resolve')
-      const rows = await manager.query(`SELECT s.id,s.status FROM public.support_case s WHERE s.id=$1 AND s.status NOT IN ('RESOLVED','CLOSED')
+      const rows = await manager.query(`SELECT s.id,s.status FROM public.support_case s WHERE s.id=$1
         AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id) FOR UPDATE`, [id]) as { id: string; status: SupportStatus }[]
       const row = rows[0]
       if (!row) throw new SupportMissing()
-      await manager.query('INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false)', [id, actor, body])
+      await transactionAccess(manager,actor,'support.resolve')
+      await this.assertGeneralCase(manager,id)
+      const [previous]=await manager.query('SELECT case_id,request_hash FROM brotar_extension.support_reply_request WHERE user_id=$1 AND request_id=$2',[actor,requestId])
+      if(previous){if(previous.case_id!==id.toLowerCase()||previous.request_hash!==hash)throw new SupportConflict();return}
+      if(['RESOLVED','CLOSED'].includes(row.status))throw new SupportMissing()
+      await setAuditActor(manager,actor)
+      const [message]=await manager.query('INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false) RETURNING id', [id, actor, body])
+      await manager.query('INSERT INTO brotar_extension.support_reply_request(user_id,request_id,request_hash,case_id,message_id) VALUES($1,$2,$3,$4,$5)',[actor,requestId,hash,id,message.id])
       if (row.status === 'OPEN' || row.status === 'AWAITING_RESPONSE') {
         await manager.query(`UPDATE public.support_case SET status='IN_PROGRESS',updated_at=clock_timestamp() WHERE id=$1`, [id])
         await manager.query(`INSERT INTO brotar_extension.support_case_event(case_id,actor_user_id,previous_status,status,reason)
           VALUES($1,$2,$3::support_case_status,'IN_PROGRESS','Se envió una respuesta compartida al titular.')`, [id,actor,row.status])
       }
+      await recordSupportNotice(manager,id,actor,'MESSAGE')
       await setAuditActor(manager, actor)
       await recordAudit(manager, actor, 'UPDATE', 'support_case', id)
       await transactionAccess(manager, actor, 'support.resolve')
@@ -169,12 +183,14 @@ export class SupportCaseRepository implements SupportRepository {
         OPEN: ['IN_PROGRESS'], IN_PROGRESS: ['AWAITING_RESPONSE','RESOLVED'], AWAITING_RESPONSE: ['IN_PROGRESS','RESOLVED'], RESOLVED: ['CLOSED'], CLOSED: []
       }
       if (!current) throw new SupportMissing()
+      await this.assertGeneralCase(manager,id)
       if (!allowed[current].includes(status)) throw new SupportConflict()
       await manager.query(`UPDATE public.support_case SET status=$2::support_case_status,updated_at=clock_timestamp(),
         resolved_at=CASE WHEN $2='RESOLVED' THEN clock_timestamp() ELSE resolved_at END,
         closed_at=CASE WHEN $2='CLOSED' THEN clock_timestamp() ELSE closed_at END WHERE id=$1`, [id,status])
       await manager.query(`INSERT INTO brotar_extension.support_case_event(case_id,actor_user_id,previous_status,status,reason)
         VALUES($1,$2,$3::support_case_status,$4::support_case_status,$5)`, [id,actor,current,status,reason])
+      await recordSupportNotice(manager,id,actor,'STATUS')
       await setAuditActor(manager, actor)
       await recordAudit(manager, actor, 'STATUS_CHANGE', 'support_case', id)
       await transactionAccess(manager, actor, 'support.resolve')
@@ -187,6 +203,7 @@ export class SupportCaseRepository implements SupportRepository {
         AND s.status NOT IN ('RESOLVED','CLOSED') AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id) FOR UPDATE`, [id]) as { assignedTo: string | null }[]
       const target = cases[0]
       if (!target) throw new SupportMissing()
+      await this.assertGeneralCase(manager,id)
       if (assignee && !(await manager.query(`SELECT u.id FROM public.app_user u WHERE u.id=$1 AND ${availableSupport} FOR SHARE OF u`, [assignee])).length) throw new SupportMissing()
       await manager.query('UPDATE public.support_case SET assigned_to=$2,updated_at=clock_timestamp() WHERE id=$1', [id,assignee])
       await setAuditActor(manager, actor)
@@ -204,5 +221,33 @@ export class SupportCaseRepository implements SupportRepository {
       if (!rows[0]) throw new SupportMissing()
       return rows[0].uploadedBy
     })
+  }
+  async reply(userId: string, id: string, input: SupportReply): Promise<void> {
+    const fingerprint=createHash('sha256').update(JSON.stringify([id.toLowerCase(),input.body,'owner'])).digest('hex')
+    await this.database.connection().transaction(async manager => {
+      await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`support-reply:${userId}:${input.requestId}`])
+      await this.assertWriter(manager,userId)
+      const [row]: {status: SupportStatus}[] = await manager.query(`SELECT s.status FROM public.support_case s WHERE s.id=$1 AND s.user_id=$2
+        AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id) FOR UPDATE`,[id,userId])
+      if(!row)throw new SupportMissing()
+      await this.assertWriter(manager,userId)
+      await this.assertGeneralCase(manager,id)
+      const [previous]: {case_id: string; request_hash: string}[] = await manager.query('SELECT case_id,request_hash FROM brotar_extension.support_reply_request WHERE user_id=$1 AND request_id=$2',[userId,input.requestId])
+      if(previous){if(previous.case_id!==id.toLowerCase()||previous.request_hash!==fingerprint)throw new SupportConflict();return}
+      if(row.status==='CLOSED'||row.status==='RESOLVED')throw new SupportConflict()
+      await setAuditActor(manager,userId)
+      const [message]: {id: string}[] = await manager.query('INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false) RETURNING id',[id,userId,input.body])
+      await manager.query(`INSERT INTO brotar_extension.support_reply_request(user_id,request_id,request_hash,case_id,message_id) VALUES($1,$2,$3,$4,$5)`,[userId,input.requestId,fingerprint,id,message!.id])
+      await manager.query(`UPDATE public.support_case SET status=CASE WHEN status='AWAITING_RESPONSE' THEN 'IN_PROGRESS'::support_case_status ELSE status END,updated_at=clock_timestamp() WHERE id=$1`,[id])
+      if(row.status==='AWAITING_RESPONSE')await manager.query(`INSERT INTO brotar_extension.support_case_event(case_id,actor_user_id,previous_status,status,reason)
+        VALUES($1,$2,'AWAITING_RESPONSE','IN_PROGRESS','Se recibió una respuesta del titular; continuar la atención.')`,[id,userId])
+      await this.assertWriter(manager,userId)
+      await recordAudit(manager,userId,'CREATE','support_case',id)
+    })
+  }
+  private async assertGeneralCase(manager:EntityManager,id:string){
+    // Un subquery del SELECT FOR UPDATE conserva la instantánea previa a la espera.
+    // El creador de disputas usa el mismo bloqueo del caso: leer otra vez después de adquirirlo.
+    if((await manager.query('SELECT 1 FROM public.dispute WHERE support_case_id=$1',[id])).length)throw new SupportMissing()
   }
 }

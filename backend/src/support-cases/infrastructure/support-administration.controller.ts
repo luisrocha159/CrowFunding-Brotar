@@ -10,7 +10,7 @@ import { RequirePermissions, RoleGuard, type AuthenticatedRequest } from '../../
 import { SupportCases, SupportMissing } from '../application/support-cases'
 import { SupportConflict, SupportInvalid, type SupportStatus } from '../domain/support-case'
 
-class StaffMessageDto { @IsString() @Length(1, 5000) body!: string }
+class StaffMessageDto { @IsString() @Length(1, 5000) body!: string; @IsUUID() requestId!: string }
 class SupportActionDto {
   @IsIn(['IN_PROGRESS','AWAITING_RESPONSE','RESOLVED','CLOSED']) status!: SupportStatus
   @IsString() @Length(10, 500) reason!: string
@@ -41,7 +41,7 @@ export class SupportAdministrationController {
 
   @Post(':id/messages') @HttpCode(200) @RequirePermissions('support.resolve') @UseGuards(SessionMutationGuard, CaseWriteLimitGuard) @Header('Cache-Control', 'private, no-store')
   async message(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: StaffMessageDto) {
-    await run(() => this.cases.adminMessage(request.brotarUser.id, id, input.body))
+    await run(() => this.cases.adminMessage(request.brotarUser.id, id, input.body,input.requestId))
     return { ok: true }
   }
 

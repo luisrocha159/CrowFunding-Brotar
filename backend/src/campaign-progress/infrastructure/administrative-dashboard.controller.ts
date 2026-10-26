@@ -14,7 +14,8 @@ export class AdministrativeDashboardController {
     const has = (permission: string) => granted.has(permission)
     const readOnly = roles.some(r => r.code === 'AUDITOR')
     return this.database.connection().transaction('REPEATABLE READ', async m => {
-      const result: Record<string, unknown> = { readOnly }
+      const [snapshot]: {asOf: Date}[] = await m.query('SELECT transaction_timestamp() AS "asOf"')
+      const result: Record<string, unknown> = { readOnly, asOf: snapshot!.asOf.toISOString() }
       if (has('campaign.review.read') || has('campaign.lifecycle.read') || roles.some(r => r.code === 'ADMIN')) result.campaigns = await m.query('SELECT status,count(*)::int AS count FROM public.campaign WHERE deleted_at IS NULL GROUP BY status ORDER BY status') as { status: string; count: number }[]
       if (has('catalog.read')) result.catalogs = (await m.query('SELECT count(*) FILTER(WHERE is_active)::int AS active,count(*) FILTER(WHERE NOT is_active)::int AS inactive FROM public.category') as { active: number; inactive: number }[])[0]
       if (has('parties.read')) result.parties = (await m.query(`SELECT (SELECT count(*)::int FROM public.app_user WHERE deleted_at IS NULL) AS users,(SELECT count(*)::int FROM public.organization WHERE deleted_at IS NULL) AS organizations`) as { users: number; organizations: number }[])[0]
@@ -25,6 +26,23 @@ export class AdministrativeDashboardController {
         FROM public.support_case s WHERE s.status NOT IN ('RESOLVED','CLOSED') AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`))[0]
       if (has('verification.read')) result.identityAlerts = (await m.query(`SELECT count(*) FILTER(WHERE status IN ('PENDING','IN_REVIEW'))::int AS "awaitingReview",
         count(*) FILTER(WHERE status='REQUIRES_INFO')::int AS "requiresInformation" FROM public.verification`))[0]
+      if (has('finance.read')) result.financeAlerts = (await m.query(`SELECT
+        (SELECT count(*)::int FROM public.payment) AS "paymentsTotal",
+        (SELECT count(*)::int FROM public.payment WHERE status IN ('INITIATED','PENDING')) AS "paymentsPending",
+        (SELECT count(*)::int FROM public.payment WHERE status IN ('INITIATED','PENDING') AND expires_at<=now()) AS "paymentsOverdue",
+        (SELECT count(DISTINCT payment_id)::int FROM brotar_extension.demo_event WHERE processing IN ('RECEIVED','NEEDS_REVIEW')) AS "paymentsNeedingReview",
+        (SELECT count(*)::int FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation x ON x.reconciliation_id=r.id WHERE r.status<>'CLOSED') AS "reconciliationOpen",
+        (SELECT count(*)::int FROM public.reconciliation_item i JOIN brotar_extension.demo_reconciliation x ON x.reconciliation_id=i.reconciliation_id JOIN public.reconciliation r ON r.id=i.reconciliation_id WHERE r.status<>'CLOSED' AND i.status NOT IN ('MATCHED','RESOLVED')) AS "reconciliationUnresolved",
+        (SELECT count(*)::int FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id WHERE d.status='PENDING') AS "disbursementsPending",
+        (SELECT count(*)::int FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id WHERE d.status='APPROVED') AS "disbursementsApproved",
+        (SELECT count(*)::int FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id WHERE d.status='PROCESSING') AS "disbursementsProcessing",
+        (SELECT count(*)::int FROM public.refund r JOIN brotar_extension.demo_refund x ON x.refund_id=r.id WHERE r.status='REQUESTED') AS "refundsRequested",
+        (SELECT count(*)::int FROM public.refund r JOIN brotar_extension.demo_refund x ON x.refund_id=r.id WHERE r.status='PROCESSING') AS "refundsProcessing"`))[0]
+      if (has('support.read')) result.disputeAlerts = (await m.query(`SELECT
+        count(*) FILTER(WHERE d.status NOT IN ('RESOLVED','CLOSED'))::int AS open,
+        count(*) FILTER(WHERE d.status='AWAITING_RESPONSE')::int AS "awaitingResponse",
+        count(*) FILTER(WHERE d.status='ESCALATED')::int AS escalated
+        FROM public.dispute d JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id`))[0]
       if (has('campaign.closure.read')) {
         result.accountabilityAlerts = (await m.query(`WITH current_reports AS (
           SELECT status FROM public.accountability_report WHERE NOT is_final UNION ALL

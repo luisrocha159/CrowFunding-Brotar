@@ -2,7 +2,7 @@
 
 ## Registro actual de RicardoDev · 25/10/2026
 
-La rama incluye **31 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo; la 30 amplía la lectura del panel administrativo por responsabilidad; la 31 conserva motivos del historial de soporte. Se mantienen en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. Ver [correo operativo](../../docs/correo-operativo-2026-10-24.md).
+La rama incluye **32 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo; la 30 amplía la lectura del panel por responsabilidad; la 31 conserva el historial de soporte; la 32 añade respuestas reintentables y avisos transaccionales de soporte. Se mantienen en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. [Cierre de panel/soporte/correo](../../docs/cierre-alison-panel-soporte-correo-2026-10-25.md).
 
 ## Historial de transiciones de soporte · 25/10/2026 · 31 migraciones
 

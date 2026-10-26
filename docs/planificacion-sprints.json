@@ -1,12 +1,12 @@
 {
-  "version": "2.10",
+  "version": "2.11",
   "localProgressSprint3": {
     "date": "2026-10-25",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "25/10: 218 frontend + 216 backend + 8 ADMIN local + 39 integración = 481 casos distintos aprobados, sin fallos/omitidos. Lint/tipos/builds aprobados. 181 rutas, 31 migraciones; original respaldado, migrado y readiness comprobado. Prueba visual de SUPPORT y respuesta/historial. Sin push ni Trello; S3-25 parcial, legal y aceptación global pendientes.",
-    "evidence": "revision-integracion-alison-sprint3-2026-10-25.md",
-    "previousEvidence": "correo-operativo-2026-10-24.md",
+    "verification": "25/10: 221 frontend + 217 backend + 8 ADMIN local + 40 integración = 486 casos distintos aprobados. Regresión completa 40/40 con reinicio/recuperación e instalación desde SQL oficial; comprobación posterior del último ajuste de concurrencia: 4/4 en soporte, disputa y panel. Lint/tipos/builds aprobados. 182 rutas, 32 migraciones; original respaldado, migrado/repetible y readiness comprobado. SMTP privado: conexión/autenticación verificada, sin envío externo nuevo; cola/reintentos/destinatario con remitente sustituido. Prueba visual de respuesta obligatoria, guardado/estado y panel/enlace financiero. Sin push/Trello; legal y aceptación global pendientes.",
+    "evidence": "cierre-alison-panel-soporte-correo-2026-10-25.md",
+    "previousEvidence": "revision-integracion-alison-sprint3-2026-10-25.md",
     "rules": "decisiones/ADR-013-definiciones-integracion-mvp-demo.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
     "previousAuditEvidence": "avance-auditoria-s3-15-16-18-2026-10-19.md",
@@ -31,25 +31,25 @@
       "S3-02": "Cierre técnico del núcleo DEMO: importes/cupos/idempotencia y estados enlazados con devoluciones/disputas/ciclo; avisos tardíos no duplican ni reabren pagos. Recaudación oficial menos devoluciones completadas. Sin proveedor bancario real.",
       "S3-08": "Implementado alcance DEMO local: destino ficticio revisado, solicitud propia, autorización/proceso/resultado por FINANCE independiente, bruto/costos cero/neto, fechas, referencias únicas, saldo/reservas e idempotencia. No es transferencia bancaria ni cierre de rendición.",
       "S3-09": "Cierre técnico DEMO local: solicitud propia, autorización/resultado separados por FINANCE, total/parcial, saldo/reservas, idempotencia y trazabilidad. Rechazo/fallo no resta ingresos; sin dinero real ni correo.",
-      "S3-10": "Cierre técnico del registro local: reportes propios y de terceros sobre campañas publicadas, categorías permitidas, referencia, evidencia privada y cuota; bandeja/asignación/respuesta administrativa e historial probados. Falta respuesta del titular para conversación bidireccional y avisos de este nuevo historial; no se atribuye envío de correo de soporte.",
+      "S3-10": "Cierre técnico local: registro propio y de terceros, evidencias privadas, bandeja/asignación, conversación titular/soporte y estados/historial auditados. Respuestas idempotentes, límites Unicode/longitud, permisos tras bloqueos y exclusión de disputas incluso con conversión concurrente. Avisos internos y correo al titular con dirección verificada/preferencia, outbox transaccional y reintentos; sin exponer textos privados. Casos cerrados no reciben mensajes nuevos.",
       "S3-11": "Cierre técnico DEMO local: bandeja/prioridad/asignación SUPPORT, mensajes privados/compartidos, solicitud de información, escalamiento, resolución/reapertura/cierre con versión e historial. Recomendar no mueve dinero; la devolución se autoriza aparte por FINANCE.",
       "S3-12": "Parcial de Santiago: avances/publicación/instantáneas integrados. S3-23 añade cumplimiento mínimo DEMO con evidencia privada para cerrar; no construye logística, gestión general ni todas las operaciones de retiro/cumplimiento de su alcance.",
       "S3-13": "Parcial de Santiago: consulta histórica y rendición final mínima con gastos/evidencias, revisión independiente y correcciones por nueva versión integradas para S3-23. Informes periódicos/borradores, editor general y resolución operativa completa de remanentes siguen pendientes; no se cierra su tarjeta.",
       "S3-14": "Parcial: consultas administrativas y edición propia básica; faltan miembros/representantes, edición de terceros y restricciones.",
       "S3-15": "Cierre técnico transversal del corte integrado: decisiones/operaciones existentes, registro/sesión/perfil, captura KYC, organizaciones, archivos, guardados, avances, simulaciones, ciclo/rendición/desembolsos y soporte mínimo auditados. READ privado/EXPORT mínimos; actor local, rollback, privacidad y retención DEMO comprobados. Las funciones generales todavía no construidas no se aceptan por anticipado.",
       "S3-16": "Cierre técnico transversal del corte integrado: responsabilidades, pertenencia y separación de funciones de las API actuales; AUDITOR también en perfil, concesiones residuales sin ampliar matriz, revalidación tras bloqueos y caducidad, permisos explícitos de consultas y navegación. Matriz de nueve perfiles y negativas HTTP aprobadas. Nuevas funciones del equipo deben pasar otra vez estas garantías.",
-      "S3-18": "Cierre transversal previo revalidado para el incremento de Alison: 181 rutas comprobables, 31 migraciones aditivas, readiness de nuevos permisos/historial, acceso por responsabilidad y soporte general. Funciones futuras requieren nueva integración; no se certifica aceptación global.",
+      "S3-18": "Cierre transversal revalidado para la ampliación: contrato 0.12, 182 rutas comprobables, clientes/API coordinados y 32 migraciones no destructivas; readiness y recuperación probados. Contratos de mensajes requieren requestId y el detalle propio publica replyAllowed. Nuevos módulos posteriores requieren integración; no certifica aceptación global.",
       "S3-19": "En curso: QA del incremento aprobado; no se certifican pantallas/operaciones todavía no implementadas.",
       "S3-20": "Pendiente de entrega general del MVP/DEV: documentación y publicación del corte disponible en RicardoDev autorizadas el 24/10, sin incorporar funciones todavía pendientes del equipo ni certificar aceptación global.",
       "S3-21": "Pendiente: recorrido integral de todo el MVP cuando existan sus módulos restantes.",
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
       "S3-24": "Parcial: panel de creador integrado; faltan rendición, cumplimiento y cierre operativo completos.",
-      "S3-25": "Parcial integrado y probado: agregados por responsabilidad, identidad/soporte/rendición/cierre operativos, permisos y navegación. Faltan contadores y accesos de pagos, conciliación, desembolsos, devoluciones y disputas exigidos por su criterio; no cerrar la tarjeta completa.",
-      "S3-26": "En curso global; bloque de correo implementado y probado: posesión de dirección propia, caducidad/uso único/titular, reenvío limitado, sin conceder roles, preferencias y notificaciones de estados con cola/reintentos. Gmail real y recepción comprobados. Teléfono opcional sin canal SMS ni distintivo falso. Mantiene legal definitivo y revalidación con los módulos restantes del equipo pendientes; no cerrar la tarjeta integral.",
+      "S3-25": "Cierre técnico local: agregados reales de revisión, identidad, soporte, rendición/cierre, pagos, conciliación, desembolsos, devoluciones y disputas. Responsabilidad/privacidad de nueve perfiles, auditor en consulta, fecha de instantánea, actualización, cero/error honestos y enlaces a bandejas con filtros. Conteos por estado y pagos distintos; MATCHED no es pendiente. Operaciones económicas solo DEMO.",
+      "S3-26": "En curso global: verificación propia, preferencias y cola de correo operativas; ampliación de soporte general conectada y probada con protección de contenido, idempotencia y cancelación/reintentos. Gmail privado conserva conexión/autenticación válida. No cierra legal, SMS, funciones generales restantes ni aceptación integral del equipo.",
       "S1-11": "Pendiente por solicitud: contenido legal definitivo aprobado/versionado. Aviso sintético no es aceptación legal.",
       "S1-12": "Cierre técnico: Gmail autorizado con TLS, recepción comprobada, recuperación HTTP → correo → reset → login nuevo, token temporal de un uso, rechazo de reutilización y revocación de sesión previa. Clave exclusivamente local; importador privado de solo correo y README actualizados."
     },
-    "note": "Integración local de Alison el 25/10 sobre el corte publicado 7d48fbf; sin push, sin cambiar DEV ni Trello. Se conserva el correo privado operativo. No se acepta legal ni se cierran las tareas integrales del equipo. La publicación anterior queda en previousPublication.",
+    "note": "Ampliación local autorizada por Ricardo sobre 55959ca: completa panel y conversación/correo de soporte de Alison. Sin push ni cambios en DEV/Trello. Se conservan responsables y publicación anterior, credenciales privadas y legal pendiente. La aceptación global permanece abierta.",
     "integratedSource": "SantiagoDev a504e43ef738025920277ed6b38b25d1e120eec9, preservando snapshot local Ricardo previo",
     "completedDemoTasks": [
       "S2-01",
@@ -74,9 +74,10 @@
       "S3-16",
       "S3-18",
       "S1-12",
-      "S3-10"
+      "S3-10",
+      "S3-25"
     ],
-    "scope": "23 alcances técnicos implementados de 36; 13 abiertos/parciales. Ricardo conserva 14/18 con cierre técnico, 2 en curso y 2 pendientes. Alison: 7/9 alcances técnicos, S3-25 parcial y S1-11 legal pendiente. Registro de incidencias no equivale a conversación bidireccional completa ni aceptación global.",
+    "scope": "24 alcances técnicos implementados de 36; 12 abiertos/parciales. Ricardo conserva 14/18 con cierre técnico, 2 en curso y 2 pendientes. Alison: 8/9 alcances técnicos, únicamente S1-11 legal pendiente. No equivale al cierre integral/aceptación del MVP.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -90,6 +91,12 @@
       "base": "7d48fbf30cf9b32cb28ea09b5f261143e3801103",
       "published": false,
       "trelloChanged": false
+    },
+    "alisonCompletion": {
+      "base": "55959ca",
+      "published": false,
+      "trelloChanged": false,
+      "evidence": "cierre-alison-panel-soporte-correo-2026-10-25.md"
     }
   },
   "delivery": {

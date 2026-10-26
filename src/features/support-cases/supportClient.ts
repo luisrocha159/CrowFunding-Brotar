@@ -10,7 +10,7 @@ const CONTRIBUTION_CATEGORIES = new Set(['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST
 export const SUPPORT_STATES = { OPEN: 'Abierta', IN_PROGRESS: 'En atención', AWAITING_RESPONSE: 'Esperando respuesta', RESOLVED: 'Resuelta', CLOSED: 'Cerrada' } as const
 export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null; publicReport: boolean }
 export interface SupportSummary { id: string; reference: string; category: string | null; subject: string; status: keyof typeof SUPPORT_STATES; createdAt: string; updatedAt: string; campaignId: string | null; contributionId: string | null }
-export interface SupportDetail extends SupportSummary { description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }
+export interface SupportDetail extends SupportSummary { replyAllowed: boolean; description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }
 export interface SupportReceipt { id: string; reference: string; status: keyof typeof SUPPORT_STATES; createdAt: string }
 export interface SupportPage { items: SupportSummary[]; total: number; page: number; pageSize: 20 }
 export interface SupportDraft { category: string; subject: string; description: string; confirmed: boolean }
@@ -30,7 +30,7 @@ function summary(value: unknown): SupportSummary {
 }
 export function supportDetailFrom(value: unknown): SupportDetail {
   const base = summary(value)
-  if (!object(value) || typeof value.description !== 'string' || !Array.isArray(value.evidence) || !Array.isArray(value.messages)) throw new SessionError(0)
+  if (!object(value) || typeof value.replyAllowed!=='boolean' || typeof value.description !== 'string' || !Array.isArray(value.evidence) || !Array.isArray(value.messages)) throw new SessionError(0)
   const evidence = value.evidence.map((file: unknown) => {
     if (!object(file) || !uuid(file.fileId) || typeof file.name !== 'string' || typeof file.mimeType !== 'string') throw new SessionError(0)
     return { fileId: file.fileId, name: file.name, mimeType: file.mimeType }
@@ -39,7 +39,7 @@ export function supportDetailFrom(value: unknown): SupportDetail {
     if (!object(message) || !uuid(message.id) || typeof message.body !== 'string' || !date(message.createdAt) || (message.from !== 'you' && message.from !== 'support')) throw new SessionError(0)
     return { id: message.id, body: message.body, createdAt: message.createdAt, from: message.from as 'you' | 'support' }
   })
-  return { ...base, description: value.description, evidence, messages }
+  return { ...base, replyAllowed:value.replyAllowed, description: value.description, evidence, messages }
 }
 export function supportInput(draft: SupportDraft, context: SupportContext, requestId: string, evidenceFileIds: string[]) {
   const errors: Partial<Record<keyof SupportDraft, string>> = {}
@@ -71,6 +71,12 @@ export async function supportContext(campaignId: string | null, contributionId: 
 export async function createSupportCase(input: SupportInput, signal?: AbortSignal, send: typeof fetch = fetch): Promise<SupportReceipt> {
   return receipt(await readJson(await requestApi('/api/me/support-cases', { method: 'POST', body: input, signal }, send)))
 }
+export const supportReplyError=(body:string)=>textError(body,20,5000)
+export async function replySupportCase(id:string,requestId:string,body:string,signal?:AbortSignal,send:typeof fetch=fetch):Promise<void>{
+  if(!uuid(id)||!uuid(requestId)||supportReplyError(body))throw new SessionError(400)
+  const data=await readJson(await requestApi(`/api/me/support-cases/${encodeURIComponent(id)}/messages`,{method:'POST',body:{requestId,body:body.trim()},signal},send))
+  if(!object(data)||data.ok!==true)throw new SessionError(0)
+}
 export async function uploadSupportEvidence(file: File, signal?: AbortSignal, send: typeof fetch = fetch) {
   if (!file.size || file.size > FILE_LIMITS.privateDocumentBytes || !['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new SessionError(400)
   const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ''
@@ -82,6 +88,7 @@ export function supportError(error: unknown): string {
   if (status === 400) return 'Revisa el tipo, la descripción, los archivos permitidos y la confirmación.'
   if (status === 403) return 'Tu cuenta no permite esta acción. Auditor conserva solo lectura.'
   if (status === 404) return 'El caso, la campaña, el aporte o una evidencia no está disponible para tu cuenta.'
-  if (status === 409) return 'Esta solicitud ya se registró con otro contenido. Consulta tus incidencias antes de crear otra.'
+  if (status === 409) return 'El caso cambió, está resuelto o la clave identifica otro contenido. Actualiza tus incidencias antes de repetir.'
+  if (status === 429) return 'Alcanzaste el límite de solicitudes. Espera un minuto antes de reintentar.'
   return 'No se pudo confirmar la operación. Conserva los datos y reintenta; una misma solicitud no se registra dos veces.'
 }

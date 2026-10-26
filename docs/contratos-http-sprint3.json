@@ -2216,6 +2216,21 @@
       "permissions": []
     },
     {
+      "method": "POST",
+      "path": "/api/me/support-cases/:id/messages",
+      "controller": "SupportCaseController",
+      "handler": "reply",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
       "method": "GET",
       "path": "/api/me/support-cases/context",
       "controller": "SupportCaseController",

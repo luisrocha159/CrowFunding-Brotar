@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { supportInput, supportError, supportDetailFrom, readSupportCases, createSupportCase, supportContext, uploadSupportEvidence } from '../src/features/support-cases/supportClient'
+import { supportInput, supportError, supportDetailFrom, readSupportCases, createSupportCase, supportContext, uploadSupportEvidence, replySupportCase, supportReplyError } from '../src/features/support-cases/supportClient'
+import {SupportReplyForm} from '../src/features/support-cases/SupportReplyForm'
 import { SupportCaseForm } from '../src/features/support-cases/SupportCaseForm'
 import { SessionError } from '../src/shared/api/sessionError'
 const id = '9743cad9-e8e8-4c28-a6ed-8e421548d759'
@@ -19,9 +20,22 @@ test('soporte: lista solo interpreta una respuesta válida y codifica el context
   await assert.rejects(() => readSupportCases(1, undefined, (async () => Response.json([])) as typeof fetch), SessionError)
 })
 test('soporte: contrato de detalle privado rechaza fechas, estados y adjuntos malformados', () => {
-  const detail = { ...row, description: 'Reporte', evidence: [{ fileId: id, name: 'Prueba.pdf', mimeType: 'application/pdf' }], messages: [{ id, body: 'Mensaje', createdAt: row.createdAt, from: 'support' }] }
+  const detail = { ...row, replyAllowed:true, description: 'Reporte', evidence: [{ fileId: id, name: 'Prueba.pdf', mimeType: 'application/pdf' }], messages: [{ id, body: 'Mensaje', createdAt: row.createdAt, from: 'support' }] }
   assert.deepEqual(supportDetailFrom(detail), detail)
   for (const patch of [{ status: 'PAID' }, { createdAt: 'invalid' }, { evidence: [{ fileId: 'https://evil.invalid', name: 'Archivo', mimeType: 'application/pdf' }] }, { messages: [{ id, body: 'Privado', createdAt: row.createdAt, from: 'internal' }] }]) assert.throws(() => supportDetailFrom({ ...detail, ...patch }), SessionError)
+})
+
+test('respuesta propia: validación, referencia de reintento y confirmación real, sin actor ni estado del cliente',async()=>{
+  const body='Adjunto la información solicitada del niño y la campaña.'
+  assert.equal(supportReplyError(body),undefined)
+  for(const invalid of ['  ','x'.repeat(19),'x'.repeat(5001),'Mensaje con un control inválido \0','<b>Mensaje con etiquetas HTML</b>'])assert.ok(supportReplyError(invalid))
+  let calls=0
+  const send=(async(url,init)=>{calls++;assert.equal(url,`/api/me/support-cases/${id}/messages`);assert.equal(init?.method,'POST');assert.equal((init?.headers as Record<string,string>)['X-Brotar-Request'],'1');assert.deepEqual(JSON.parse(init?.body as string),{requestId:id,body});return Response.json({ok:true})}) as typeof fetch
+  await replySupportCase(id,id,` ${body} `,undefined,send);await replySupportCase(id,id,body,undefined,send);assert.equal(calls,2)
+  await assert.rejects(()=>replySupportCase(id,id,' ',undefined,send),SessionError);assert.equal(calls,2)
+  await assert.rejects(()=>replySupportCase(id,id,body,undefined,(async()=>Response.json({})) as typeof fetch),SessionError)
+  const html=renderToStaticMarkup(<SupportReplyForm id={id} onSent={()=>{}} onUnauthorized={()=>{}}/>)
+  assert.match(html,/Tu respuesta/);assert.match(html,/required/);assert.match(html,/maxLength="5000"/i);assert.match(html,/20 y 5000/)
 })
 test('soporte: POST conserva clave de reintento y valida confirmación de referencia real', async () => {
   const input = supportInput(draft, context, id, []).input

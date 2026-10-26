@@ -3,12 +3,20 @@ import {BadRequestException, HttpException, Injectable, ServiceUnavailableExcept
 import {DatabaseService} from '../shared/infrastructure/database/database.service'
 import {recordAudit,setAuditActor} from '../shared/infrastructure/database/audit'
 import {transactionRegisteredAccess} from '../roles/infrastructure/transaction-access'
+import type {EntityManager} from 'typeorm'
 import {smtpRecoveryConfig,smtpRecoveryTransport} from '../auth/infrastructure/smtp-recovery-delivery'
 
 const hash=(token:string)=>createHash('sha256').update(token).digest('hex')
+export interface ContactNotice {id:string;title:string;body:string;entityName:string;createdAt:Date;readAt:Date|null;delivery:string;attempts:number}
 const labels:Record<string,string>={CAMPAIGN:'campaña',VERIFICATION:'verificación',PAYMENT:'pago DEMO',REFUND:'devolución DEMO',DISPUTE:'reclamación',DISBURSEMENT:'desembolso DEMO',REWARD_FULFILLMENT:'recompensa'}
 const states:Record<string,string>={DRAFT:'borrador',SUBMITTED:'enviada',PENDING_REVIEW:'pendiente de revisión',IN_REVIEW:'en revisión',REQUIRES_CHANGES:'con observaciones',REQUIRES_INFO:'se requiere información',APPROVED:'aprobada',REJECTED:'rechazada',PUBLISHED:'publicada',ACTIVE:'activa',FUNDED:'meta alcanzada',SUCCESSFUL:'financiada',FAILED:'fallida',CANCELLED:'cancelada',EXPIRED:'vencida',CLOSED:'cerrada',COMPLETED:'completada',EXECUTING:'en ejecución',IN_EXECUTION:'en ejecución',PENDING:'pendiente',PROCESSING:'en proceso',CONFIRMED:'confirmado',SUCCEEDED:'completado',REFUNDED:'devuelto',REQUESTED:'solicitada',OPEN:'abierta',RESOLVED:'resuelta',FULFILLED:'cumplida'}
 export function stateNotice(entity:string,state:string){return {title:`Cambio en tu ${labels[entity]??'registro'}`,body:`Estado registrado: ${states[state]??state}. Consulta los detalles y las observaciones en Brotar. Los movimientos económicos de este MVP son simulaciones; este aviso no acredita transferencias reales.`}}
+export function supportNotice(kind:'MESSAGE'|'STATUS',status:string){
+ const names:Record<string,string>={OPEN:'abierta',IN_PROGRESS:'en atención',AWAITING_RESPONSE:'esperando tu respuesta',RESOLVED:'resuelta',CLOSED:'cerrada'}
+ return {title:kind==='MESSAGE'?'Nueva respuesta de soporte':'Cambio en tu incidencia',body:kind==='MESSAGE'
+  ?'Soporte respondió a tu incidencia. Inicia sesión en Brotar para leer el mensaje privado. Este aviso no procesa pagos ni devoluciones.'
+  :`Tu incidencia está ${names[status]??'actualizada'}. Inicia sesión en Brotar para consultar el motivo. Este aviso no procesa pagos ni devoluciones.`}
+}
 
 /** Único punto SMTP; los tests lo sustituyen sin enviar a cuentas ajenas. */
 @Injectable()
@@ -80,7 +88,7 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
   await recordAudit(m,user,'UPDATE','app_user',user)
   return {enabled}
  })}
- async notices(user:string){
+ async notices(user:string):Promise<ContactNotice[]>{
   return this.db.connection().query(`SELECT n.id,n.title,n.body,n.entity_name AS "entityName",n.created_at AS "createdAt",n.read_at AS "readAt",
    COALESCE(d.result,'IN_APP') AS "delivery",COALESCE(d.attempts,0) AS attempts FROM public.notification n LEFT JOIN brotar_extension.mail_delivery d ON d.notification_id=n.id
    WHERE n.user_id=$1 ORDER BY n.created_at DESC,n.id DESC LIMIT 50`,[user])
@@ -109,13 +117,27 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
     const notice=stateNotice(h.entity_type,h.to_status)
     const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id) VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,$4,$5) RETURNING id`,[owner.id,notice.title,notice.body,h.entity_type,h.entity_id])
     // Solo quien solicitó avisos y conserva un correo verificado. La UI sigue disponible sin SMTP.
-    await m.query(`INSERT INTO brotar_extension.mail_delivery(notification_id) SELECT $1 FROM public.app_user u JOIN brotar_extension.mail_preference p ON p.user_id=u.id
-     WHERE u.id=$2 AND u.email_verified_at IS NOT NULL AND p.verified_email=u.email AND p.enabled AND u.deleted_at IS NULL AND u.status IN ('ACTIVE','PENDING_VERIFICATION')`,[n.id,owner.id])
+    await this.queue(m,n.id,owner.id)
    }
    await m.query('INSERT INTO brotar_extension.notification_source(history_id) VALUES($1)',[h.id])
   }
-  return history.length as number
+  const pending:{id:string;recipient_user_id:string;case_id:string;kind:'MESSAGE'|'STATUS';status:string}[]=await m.query(`SELECT e.* FROM brotar_extension.support_mail_event e
+   WHERE e.processed_at IS NULL ORDER BY e.created_at,e.id LIMIT 100 FOR UPDATE OF e SKIP LOCKED`)
+  for(const event of pending){
+   let notification:string|null=null
+   const [owner]=await m.query('SELECT user_id FROM public.support_case WHERE id=$1 AND user_id=$2',[event.case_id,event.recipient_user_id])
+   if(owner){
+    const notice=supportNotice(event.kind,event.status)
+    const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id)
+     VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,'SUPPORT_CASE',$4) RETURNING id`,[owner.user_id,notice.title,notice.body,event.case_id])
+    notification=n.id;await this.queue(m,n.id,owner.user_id)
+   }
+   await m.query('UPDATE brotar_extension.support_mail_event SET notification_id=$2,processed_at=clock_timestamp() WHERE id=$1',[event.id,notification])
+  }
+  return history.length+pending.length
  })}
+ private queue(m:EntityManager,id:string,user:string){return m.query(`INSERT INTO brotar_extension.mail_delivery(notification_id) SELECT $1 FROM public.app_user u JOIN brotar_extension.mail_preference p ON p.user_id=u.id
+  WHERE u.id=$2 AND u.email_verified_at IS NOT NULL AND p.verified_email=u.email AND p.enabled AND u.deleted_at IS NULL AND u.status IN ('ACTIVE','PENDING_VERIFICATION')`,[id,user])}
  async tick(){
   if(this.working)return
   this.working=true
@@ -126,20 +148,22 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
    for(let i=0;i<10;i++){
     const lease=randomUUID()
     const next=await this.db.connection().transaction(async m=>{
-     const [row]=await m.query(`SELECT n.id,n.user_id,n.title,n.body,d.attempts FROM brotar_extension.mail_delivery d JOIN public.notification n ON n.id=d.notification_id
+     const [row]=await m.query(`SELECT n.id,n.user_id,n.title,n.body,n.entity_name,n.entity_id,d.attempts FROM brotar_extension.mail_delivery d JOIN public.notification n ON n.id=d.notification_id
       WHERE d.result IN ('QUEUED','RETRY') AND d.attempts<3 AND d.next_attempt_at<=clock_timestamp() AND (d.leased_until IS NULL OR d.leased_until<=clock_timestamp())
       ORDER BY n.created_at LIMIT 1 FOR UPDATE OF d SKIP LOCKED`)
      if(!row)return null
      const [u]=await m.query(`SELECT u.email FROM public.app_user u JOIN brotar_extension.mail_preference p ON p.user_id=u.id WHERE u.id=$1 AND u.email_verified_at IS NOT NULL
-      AND p.verified_email=u.email AND u.deleted_at IS NULL AND u.status IN ('ACTIVE','PENDING_VERIFICATION') AND (u.locked_until IS NULL OR u.locked_until<=clock_timestamp()) AND p.enabled`,[row.user_id])
+      AND p.verified_email=u.email AND u.deleted_at IS NULL AND u.status IN ('ACTIVE','PENDING_VERIFICATION') AND (u.locked_until IS NULL OR u.locked_until<=clock_timestamp()) AND p.enabled
+      AND ($2::uuid IS NULL OR EXISTS(SELECT 1 FROM public.support_case s WHERE s.id=$2 AND s.user_id=u.id))`,[row.user_id,row.entity_name==='SUPPORT_CASE'?row.entity_id:null])
      if(!u){await m.query(`UPDATE brotar_extension.mail_delivery SET result='CANCELLED' WHERE notification_id=$1`,[row.id]);return {cancelled:true} as const}
      await m.query(`UPDATE brotar_extension.mail_delivery SET lease_id=$2,leased_until=clock_timestamp()+interval '2 minutes',attempts=attempts+1 WHERE notification_id=$1`,[row.id,lease])
-     return {...row,email:u.email,cancelled:false} as {id:string;title:string;body:string;email:string;attempts:number;cancelled:false}
+     return {...row,email:u.email,cancelled:false} as {id:string;title:string;body:string;entity_name:string;entity_id:string;email:string;attempts:number;cancelled:false}
     })
     if(!next)break
     if(next.cancelled)continue
     let accepted=false
-    try{await this.sender.send(next.email,`Brotar: ${next.title}`,`${next.body}\nEntra a ${this.sender.origin()}/mi-cuenta para consultar tus notificaciones.`,next.id);accepted=true}catch{/* Se registra el resultado, nunca la respuesta SMTP ni datos del destinatario. */}
+    const path=next.entity_name==='SUPPORT_CASE'?`/mis-incidencias/${next.entity_id}`:'/mi-cuenta'
+    try{await this.sender.send(next.email,`Brotar: ${next.title}`,`${next.body}\nEntra a ${this.sender.origin()}${path} para consultar tus notificaciones.`,next.id);accepted=true}catch{/* Se registra el resultado, nunca la respuesta SMTP ni datos del destinatario. */}
     await this.db.connection().transaction(async m=>{
      const result=accepted?'SMTP_ACCEPTED':next.attempts>=2?'FAILED':'RETRY'
      await m.query(`UPDATE brotar_extension.mail_delivery SET result=$3,lease_id=NULL,leased_until=NULL,next_attempt_at=clock_timestamp()+interval '5 minutes' WHERE notification_id=$1 AND lease_id=$2`,[next.id,lease,result])

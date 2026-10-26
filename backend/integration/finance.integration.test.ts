@@ -20,7 +20,8 @@ test('S3-06 PostgreSQL/HTTP: consulta, filtros UTC, totales exactos, páginas, C
   const base=await app.getUrl(),suffix=randomUUID(),providerId=randomUUID(),campaignId=randomUUID(),usdCampaign=randomUUID(),bulkCampaign=randomUUID()
   const users: string[]=[], password=randomBytes(24).toString('hex')
   let addedUsd=false
-  const call=(path: string,cookie='',body?: unknown)=>fetch(`${base}/api/${path}`,{method:body===undefined?'GET':'POST',headers:{Cookie:cookie,'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173'},...(body===undefined?{}:{body:JSON.stringify(body)})})
+  // execFileSync bloquea el loop durante las cargas SQL: no reutilizar un socket HTTP que pudo vencer durante esa pausa.
+  const call=(path: string,cookie='',body?: unknown)=>fetch(`${base}/api/${path}`,{method:body===undefined?'GET':'POST',headers:{Connection:'close',Cookie:cookie,'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173'},...(body===undefined?{}:{body:JSON.stringify(body)})})
   async function account(role: string) {
     const email=`finance-${role.toLowerCase()}-${suffix}@example.invalid`
     const response=await call('auth/register','',{firstName:'Ensayo',lastName:'Finanzas',email,password,demoConsent:true});assert.equal(response.status,201)

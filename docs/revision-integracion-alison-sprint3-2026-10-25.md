@@ -1,5 +1,7 @@
 # Revisión e integración local de Alison · 25/10/2026
 
+> Revisión histórica de la integración `55959ca`. La ampliación posterior autorizada por Ricardo completa el panel financiero, la respuesta del titular y los avisos de soporte: [cierre y pruebas del incremento](cierre-alison-panel-soporte-correo-2026-10-25.md). Los hallazgos siguientes conservan el estado anterior para mantener trazabilidad; legal sigue pendiente.
+
 Se integra `AlisonDev` en `RicardoDev`, sin publicar ni modificar DEV o Trello. Fuente revisada: `bd4ed690fb086fb03e9403ecf4e4c971fab7bffd` (`S3-completado`). Base local: `7d48fbf30cf9b32cb28ea09b5f261143e3801103`. El mensaje del commit no constituye una certificación del Sprint 3 completo.
 
 ## Resultado funcional

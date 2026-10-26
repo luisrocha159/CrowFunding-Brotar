@@ -10,6 +10,7 @@ import {LedgerConflict,LedgerInvalid,money,totalMoney,uuid} from '../../contribu
 import {closureData,type FinalSubmission} from '../domain/closure'
 import {campaignFunds,ownerAccess,independentActor,identityReady,unsettled,type CampaignSubject} from './eligibility'
 import {closureSnapshot,executionPending,rewardOwed} from './closure-integrity'
+import {recordSupportNotice} from '../../support-cases/infrastructure/support-mail'
 interface Subject extends CampaignSubject {title:string;today:string;execution_on:string|null}
 export interface ClosureOperation {action:string;expectedVersion:number;requestKey:string;reason:string;demoConsent:true;data:Record<string,unknown>}
 @Injectable()
@@ -98,6 +99,7 @@ export class CampaignClosure {
   if(['RESOLVED','CLOSED'].includes(s.status))throw new LedgerConflict('La incidencia ya está resuelta.')
   if((await m.query('SELECT id FROM public.dispute WHERE support_case_id=$1',[id])).length)throw new LedgerConflict('La disputa financiera se atiende desde Disputas; este atajo no libera reservas ni devuelve fondos.')
   await m.query(`INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false)`,[id,actor,notes]);await m.query(`UPDATE public.support_case SET status='RESOLVED',assigned_to=$2,resolved_at=clock_timestamp(),updated_at=clock_timestamp() WHERE id=$1`,[id,actor])
+  await recordSupportNotice(m,id,actor,'STATUS')
   await recordAudit(m,actor,'STATUS_CHANGE','support_case',id)
  }
  async documentOwner(actor:string,id:string,fileId:string,admin:boolean){assertDemoEnabled();uuid(id);uuid(fileId);return this.database.connection().transaction('REPEATABLE READ',async m=>{const c=await this.subject(m,id);if(admin)await transactionAccess(m,actor,'campaign.review.read');else await ownerAccess(m,actor,c)

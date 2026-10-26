@@ -34,6 +34,8 @@ test('S3-11/S3-02 PostgreSQL/HTTP: disputa privada, respuesta, escalamiento, rec
   assert.equal((await call('me/disputes','',input)).status,401);assert.equal((await call('me/disputes',other.cookie,input)).status,404)
   for(const patch of[{description:'corto'},{assignedTo:support.id},{demoConsent:false},{description:'<script>Contenido que no aceptamos</script>'}])assert.equal((await call('me/disputes',owner.cookie,{...input,...patch})).status,400)
   const twins=await Promise.all([call('me/disputes',owner.cookie,input),call('me/disputes',owner.cookie,input)]);let d=await json<Case>(twins[0]!);assert.equal((await json<Case>(twins[1]!)).id,d.id)
+  assert.equal((await call(`me/support-cases/${report.id}/messages`,owner.cookie,{requestId:randomUUID(),body:'Intento responder por soporte general a una disputa vinculada.'})).status,404,'La respuesta general no evita el flujo financiero de disputa.')
+  assert.equal((await json<{replyAllowed:boolean}>(await call(`me/support-cases/${report.id}`,owner.cookie),200)).replyAllowed,false)
   assert.equal(sql(`SELECT status FROM payment WHERE id='${paymentId}'`),'DISPUTED');assert.equal(sql(`SELECT amount_raised FROM v_campaign_funding WHERE campaign_id='${campaignId}'`),'10.25','Disputa reserva pero no inventa devolución')
   const ledger=app.get(ContributionLedger),providerId=sql(`SELECT provider_id FROM payment WHERE id='${paymentId}'`),confirmedAt=sql(`SELECT confirmed_at FROM payment WHERE id='${paymentId}'`)
   await assert.rejects(ledger.applyVerifiedEvent({providerId,paymentId,eventId:randomUUID(),state:'CONFIRMED',amount:'10.25',currencyCode:'BOB',externalReference:'wrong-after-dispute'}),LedgerConflict,'No aceptar referencia distinta mientras el pago está disputado')

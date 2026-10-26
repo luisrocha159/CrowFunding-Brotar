@@ -77,7 +77,7 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${support.id}',id FROM role WHERE code='SUPPORT';`)
     assert.equal((await call(`admin/support-cases/${publicCase.id}`, other.cookie)).status, 403, 'El reportante externo no obtiene permiso administrativo.')
     assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`, support.cookie, { status: 'IN_PROGRESS', reason: 'breve' })).status, 400)
-    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`, support.cookie, { body: 'Revisaremos la información pública disponible.' })).status, 200)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`, support.cookie, { requestId:randomUUID(), body: 'Revisaremos la información pública disponible.' })).status, 200)
     const transitionReason = 'Se revisó la información pública disponible.'
     assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`, support.cookie, { status: 'AWAITING_RESPONSE', reason: transitionReason })).status, 200)
     const adminCase = await json<SupportAdminDetail>(await call(`admin/support-cases/${publicCase.id}`, support.cookie))
@@ -91,11 +91,11 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
     assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{})).status,400,'Omitir el campo no debe desasignar silenciosamente.')
     assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{assignedTo:support.id})).status,200)
     assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{assignedTo:null})).status,200)
-    for(const body of ['   ','Texto no válido\u0000','Texto inválido\uD800'])assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{body})).status,400)
+    for(const body of ['   ','Texto no válido\u0000','Texto inválido\uD800'])assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{requestId:randomUUID(),body})).status,400)
     assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'CLOSED',reason:transitionReason})).status,409,'No saltar la resolución previa.')
     assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'RESOLVED',reason:transitionReason})).status,200)
     assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'CLOSED',reason:transitionReason})).status,200)
-    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{body:'Respuesta posterior al cierre del expediente.'})).status,404)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{requestId:randomUUID(),body:'Respuesta posterior al cierre del expediente.'})).status,404)
     resetBudget()
     const requestId = randomUUID()
     const input = { requestId, campaignId: otherCampaign, contributionId: contribution, category: 'REFUND_REQUEST', subject: 'Consulta de devolución', description: 'Descripción privada de la incidencia', confirmed: true, evidenceFileIds: [evidence] }

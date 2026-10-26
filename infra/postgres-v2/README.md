@@ -1,4 +1,4 @@
-**Actualización local 25/10/2026:** `ResponsibilityDashboard1792800000003` conserva ADMIN/AUDITOR y concede `dashboard.read` a REVIEWER, COMPLIANCE, FINANCE y SUPPORT. No asigna roles a cuentas. Aplicar `node scripts/migrate.mjs up` tras activar la V2 existente; la instalación vigente contiene 30 migraciones.
+**Actualización local 25/10/2026:** la instalación vigente contiene **32 migraciones**, sin publicación nueva. El comando habitual `node scripts/migrate.mjs up` incorpora permisos del panel, historial, claves de respuesta y avisos de soporte. No asigna roles a cuentas ni elimina datos. [Cierre, recorridos y pruebas](../../docs/cierre-alison-panel-soporte-correo-2026-10-25.md).
 
 # PostgreSQL provisional V2 · base vigente
 

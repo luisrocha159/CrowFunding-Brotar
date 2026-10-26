@@ -44,6 +44,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AND to_regclass('brotar_extension.mail_delivery') IS NOT NULL
           AND to_regclass('brotar_extension.notification_source') IS NOT NULL
           AND to_regclass('brotar_extension.support_case_event') IS NOT NULL
+          AND to_regclass('brotar_extension.support_reply_request') IS NOT NULL
+          AND to_regclass('brotar_extension.support_mail_event') IS NOT NULL
+          AND has_table_privilege(current_user,'brotar_extension.support_reply_request','SELECT,INSERT')
+          AND has_table_privilege(current_user,'brotar_extension.support_mail_event','SELECT,INSERT')
+          AND has_column_privilege(current_user,'brotar_extension.support_mail_event','processed_at','UPDATE')
+          AND has_column_privilege(current_user,'brotar_extension.support_mail_event','notification_id','UPDATE')
           AND has_table_privilege(current_user,'brotar_extension.support_case_event','SELECT,INSERT')
           AND has_column_privilege(current_user,'public.app_user','email_verified_at','UPDATE')
           AND to_regclass('brotar_extension.demo_event') IS NOT NULL

@@ -1,5 +1,7 @@
 # S3-10 / S3-25 - corte local - 25/10/2026
 
+**Ampliación posterior de este mismo corte:** [Cierre local de panel, conversación y correo de soporte](cierre-alison-panel-soporte-correo-2026-10-25.md), contrato 0.12, 32 migraciones y 182 rutas. Completa los pendientes de panel y respuesta/correo encontrados en la revisión siguiente. Legal y aceptación integral siguen pendientes; sin push ni cambios en DEV/Trello.
+
 [Revisión de la rama de Alison e integración local](revision-integracion-alison-sprint3-2026-10-25.md): registro de incidencias comprobado; S3-25 parcial por contadores financieros pendientes. Sin push ni cambios en DEV/Trello. Los cortes históricos siguientes conservan su fecha.
 
 La implementación añade reportes de terceros sobre campañas públicas y bandeja general de soporte para casos no financieros. Los reportes de información incorrecta y aparente falta de ejecución se limitan a campañas publicadas; pagos, devoluciones y disputas financieras conservan su flujo separado. La atención usa asignación de equipo, respuestas compartidas, transiciones permitidas, auditoría y descarga de evidencias privadas solo desde el expediente autorizado.

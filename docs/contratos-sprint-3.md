@@ -1,4 +1,10 @@
-# Contratos del Sprint 3 · 0.11 · RicardoDev local
+# Contratos del Sprint 3 · 0.12 · RicardoDev local
+
+## Extensión 0.12 · Panel completo y conversación/avisos de soporte
+
+Nueva `POST /api/me/support-cases/:id/messages`: `{requestId: UUID, body: texto de 20–5000 caracteres}`; sesión/propiedad, CSRF y cuota. También `POST /api/admin/support-cases/:id/messages` requiere `requestId` junto al texto administrativo validado. Responden `{ok:true}` con 200 confirmado; 400 para campos inválidos, 404 para caso ajeno/no disponible, 409 para clave incompatible o caso resuelto/cerrado que no admite una respuesta nueva; AUDITOR no escribe. El detalle propio incorpora `replyAllowed`, y los mensajes administrativos indican `from: reporter|support` sin IDs personales. Reintento con clave/contenido iguales recupera el resultado sin duplicar mensajes ni avisos. Frontend/API deben actualizarse juntos.
+
+El resumen incorpora `asOf` ISO y, solo con sus permisos, `financeAlerts`/`disputeAlerts`. Contadores financieros reales, diferencias sin MATCHED/RESOLVED, pagos distintos por revisar y enlaces a sus colas. Los errores no se convierten en cero. Avisos de soporte transaccionales al titular mediante cola, preferencia y dirección verificada; sin cuerpo privado en el email. La resolución mínima de soporte desde cierre también genera aviso. **32 migraciones y 182 rutas HTTP comprobables**. [Flujos, reglas y pruebas](cierre-alison-panel-soporte-correo-2026-10-25.md). Legal queda pendiente; sin push. La revisión 0.11 siguiente es el antecedente y sus pendientes de panel/conversación se cubren en 0.12.
 
 ## Extensión 0.11 · Soporte general y resumen por responsabilidad
 

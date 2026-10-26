@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import {CaseWriteLimitGuard} from '../../shared/infrastructure/http/case-write-limit.guard'
@@ -15,12 +15,16 @@ class SupportCreateDto {
   @IsArray() @ArrayMaxSize(10) @ArrayUnique() @IsUUID('all', { each: true }) evidenceFileIds!: string[]
   @IsBoolean() confirmed!: boolean
 }
+class SupportReplyDto {
+  @IsUUID() requestId!: string
+  @IsString() @MaxLength(5000) body!: string
+}
 function translate(error: unknown): never {
   if(error instanceof SupportCampaignClosed)throw new ConflictException('La campaña ya está cerrada. El MVP no admite añadir nuevas obligaciones a un cierre terminal; las incidencias históricas siguen consultables.')
   if (error instanceof SupportForbidden) throw new ForbiddenException('Tus permisos cambiaron. Auditor conserva solo lectura.')
   if (error instanceof SupportInvalid) throw new BadRequestException('Revisa los datos y la confirmación de la incidencia.')
   if (error instanceof SupportMissing) throw new NotFoundException('El caso, contexto o evidencia no está disponible para tu cuenta.')
-  if (error instanceof SupportConflict) throw new ConflictException('La solicitud ya fue utilizada con otro contenido. Consulta tus incidencias antes de crear otra.')
+  if (error instanceof SupportConflict) throw new ConflictException('El caso no admite la acción o la clave ya identifica otro contenido. Actualiza tus incidencias antes de repetir.')
   throw error
 }
 @Controller('me/support-cases') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
@@ -41,5 +45,9 @@ export class SupportCaseController {
   @Post() @Header('Cache-Control', 'private, no-store') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard)
   async create(@Req() request: AuthenticatedRequest, @Body() input: SupportCreateDto) {
     try { return await this.cases.create(request.brotarUser.id, input) } catch (error) { translate(error) }
+  }
+  @Post(':id/messages') @HttpCode(200) @Header('Cache-Control', 'private, no-store') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard)
+  async reply(@Req() request: AuthenticatedRequest, @Param('id',new ParseUUIDPipe()) id: string, @Body() input: SupportReplyDto) {
+    try { return await this.cases.reply(request.brotarUser.id,id,input) } catch (error) { translate(error) }
   }
 }

@@ -5,6 +5,7 @@ import { EmptyState, Message } from '../../shared/components/Feedback'
 import { SessionError } from '../../shared/api/sessionError'
 import { myRoles } from '../organizations/organizationsClient'
 import { SupportCaseForm } from './SupportCaseForm'
+import { SupportReplyForm } from './SupportReplyForm'
 import { readSupportCases, readSupportCase, supportContext, supportError, SUPPORT_STATES, SUPPORT_TYPES, type SupportContext, type SupportDetail, type SupportPage } from './supportClient'
 import styles from './support.module.css'
 interface Loaded { key: string; editable: boolean; context: SupportContext | null; detail: SupportDetail | null; list: SupportPage | null; error: string }
@@ -15,6 +16,7 @@ export function SupportCasesPage({ create = false }: { create?: boolean }) {
   const [attempt, setAttempt] = useState(0)
   const [anonymous, setAnonymous] = useState(false)
   const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const [replied,setReplied]=useState(false)
   const campaignId = params.get('campaignId'); const contributionId = params.get('contributionId')
   const page = /^\d+$/.test(params.get('page') ?? '') ? Math.min(10000, Math.max(1, Number(params.get('page')))) : 1
   const key = `${create}:${id ?? ''}:${campaignId ?? ''}:${contributionId ?? ''}:${page}:${attempt}`
@@ -59,6 +61,7 @@ export function SupportCasesPage({ create = false }: { create?: boolean }) {
         <div className={styles.actions}><Button variant="secondary" disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) })}>Anterior</Button><span>Página {page} · {data.list.total} casos</span><Button variant="secondary" disabled={page * data.list.pageSize >= data.list.total} onClick={() => setParams({ page: String(page + 1) })}>Siguiente</Button><Button variant="tertiary" onClick={() => setAttempt(value => value + 1)}>Actualizar</Button></div>
       </>}
       {detail && <>
+        {replied&&<Message tone="success" title="Respuesta registrada">Tu mensaje se guardó. Soporte puede continuar la atención desde su bandeja.</Message>}
         <Message tone="success" title={`Reporte registrado · ${detail.reference}`}>Estado actual: {SUPPORT_STATES[detail.status]}. Esta referencia confirma la recepción del reporte.</Message>
         <article className={styles.panel}><h2>{detail.subject}</h2><p>{SUPPORT_TYPES.find(([type]) => type === detail.category)?.[1] ?? detail.category ?? 'Incidencia'}</p><p className={styles.meta}>Registrado: {new Date(detail.createdAt).toLocaleString('es')} · Actualizado: {new Date(detail.updatedAt).toLocaleString('es')}</p><p className={styles.prose}>{detail.description}</p>
           {detail.contributionId && <p><Link to={`/mis-aportes/${detail.contributionId}`}>Consultar el aporte vinculado</Link></p>}
@@ -66,6 +69,8 @@ export function SupportCasesPage({ create = false }: { create?: boolean }) {
           <h3>Evidencias privadas</h3>{detail.evidence.length ? <ul>{detail.evidence.map(file => <li key={file.fileId}><a href={`/api/files/${file.fileId}`} target="_blank" rel="noreferrer">{file.name}</a></li>)}</ul> : <p>Sin evidencias adjuntas.</p>}
         </article>
         <section className={styles.panel}><h2>Historial de mensajes</h2>{detail.messages.length ? <ol>{detail.messages.map(message => <li key={message.id}><p><strong>{message.from === 'you' ? 'Tú' : 'Soporte'}</strong> · {new Date(message.createdAt).toLocaleString('es')}</p><p className={styles.prose}>{message.body}</p></li>)}</ol> : <p>Todavía no hay mensajes de seguimiento.</p>}<p>No hay un plazo de atención confirmado. El registro del reporte no inicia una devolución ni resuelve una disputa.</p></section>
+        {data.editable&&detail.replyAllowed?<SupportReplyForm key={detail.updatedAt} id={detail.id} onUnauthorized={()=>setAnonymous(true)} onSent={()=>{setReplied(true);setAttempt(value=>value+1)}}/>:<p>Este caso está en consulta. Si tiene una disputa vinculada, responde desde su detalle; los casos resueltos o cerrados no reciben mensajes nuevos.</p>}
+        <p>Los avisos de soporte se envían por correo solo si verificaste tu dirección y activaste las notificaciones desde Mi cuenta. Tu propia respuesta no te envía un correo a ti mismo.</p>
         <div><Button variant="secondary" onClick={() => setAttempt(value => value + 1)}>Actualizar estado</Button></div>
       </>}
     </>}

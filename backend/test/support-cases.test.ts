@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { normalizeSupportInput, supportPage, SupportInvalid, supportFingerprint } from '../src/support-cases/domain/support-case'
+import { normalizeSupportInput, normalizeSupportReply, supportPage, SupportInvalid, supportFingerprint } from '../src/support-cases/domain/support-case'
 import { SupportCases, SupportMissing, type SupportRepository } from '../src/support-cases/application/support-cases'
 const campaignId = '1e36e42f-f958-4978-bd28-58dab81b6160'
 const requestId = '9743cad9-e8e8-4c28-a6ed-8e421548d759'
@@ -24,7 +24,7 @@ test('incidencias: detalle ajeno y contexto no autorizado son indisponibles', as
   const transitionReasons: string[] = []
   const repository: SupportRepository = {
     list: async (user, page) => { calls.push(`${user}:${page}`); return { items: [], page, pageSize: 20, total: 0 } },
-    detail: async () => null, context: async () => null, create: async () => { throw new Error('No debería escribir datos inválidos') },
+    detail: async () => null, context: async () => null, create: async () => { throw new Error('No debería escribir datos inválidos') }, reply:async()=>{},
     adminList: async page => ({ items: [], assignees: [], page, pageSize: 20, total: 0 }), adminDetail: async () => null,
     adminMessage: async () => {}, adminTransition: async (_actor, _id, _status, reason) => { transitionReasons.push(reason) }, adminAssign: async () => {}, adminEvidenceOwner: async () => 'owner'
   }
@@ -38,4 +38,10 @@ test('incidencias: detalle ajeno y contexto no autorizado son indisponibles', as
   assert.deepEqual(transitionReasons, ['Se revisó la información pública.'])
   assert.throws(() => cases.adminTransition('staff', campaignId, 'INVALID', 'Este motivo sería suficientemente extenso'), SupportInvalid)
   assert.throws(() => cases.adminTransition('staff', campaignId, 'RESOLVED', 'breve'), SupportInvalid)
+})
+
+test('respuesta de soporte: clave UUID y texto Unicode significativo, sin permitir controles ni HTML',()=>{
+  const body='  Envié la información del niño y la campaña; pueden continuar la revisión.  '
+  assert.deepEqual(normalizeSupportReply({requestId,body}),{requestId,body:body.trim()})
+  for(const value of [{requestId:'x',body},{requestId,body:' '.repeat(30)},{requestId,body:'x'.repeat(19)},{requestId,body:'x'.repeat(5001)},{requestId,body:'Mensaje largo con control \0 oculto'},{requestId,body:'Texto inválido con sustituto \uD800'},{requestId,body:'<script>dato privado</script>'}])assert.throws(()=>normalizeSupportReply(value),SupportInvalid)
 })
