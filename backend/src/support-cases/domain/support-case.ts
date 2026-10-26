@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto'
+import {textError} from '../../campaigns/domain/input-policy'
 
 export const SUPPORT_CATEGORIES = ['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST', 'INCORRECT_INFORMATION', 'REWARD_NOT_RECEIVED', 'PROJECT_NOT_EXECUTED', 'OTHER'] as const
 export type SupportCategory = typeof SUPPORT_CATEGORIES[number]
+/** A financial or reward claim must identify the reporter's own contribution. */
+export const SUPPORT_CATEGORIES_REQUIRING_CONTRIBUTION: readonly SupportCategory[] = ['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST', 'REWARD_NOT_RECEIVED']
 export type SupportStatus = 'OPEN' | 'IN_PROGRESS' | 'AWAITING_RESPONSE' | 'RESOLVED' | 'CLOSED'
 export class SupportInvalid extends Error {}
 export class SupportConflict extends Error {}
@@ -14,8 +17,9 @@ export function normalizeSupportInput(value: unknown): SupportInput {
   const campaignId = input.campaignId ?? null; const contributionId = input.contributionId ?? null
   if (!supportId(input.requestId) || (!campaignId && !contributionId) || (campaignId !== null && !supportId(campaignId)) || (contributionId !== null && !supportId(contributionId))
     || !SUPPORT_CATEGORIES.includes(input.category as SupportCategory) || input.confirmed !== true) throw new SupportInvalid()
-  if (typeof input.subject !== 'string' || !input.subject.trim() || input.subject.trim().length > 200 || input.subject.includes('\0')
-    || typeof input.description !== 'string' || !input.description.trim() || input.description.trim().length > 10000 || input.description.includes('\0')) throw new SupportInvalid()
+  if (SUPPORT_CATEGORIES_REQUIRING_CONTRIBUTION.includes(input.category as SupportCategory) && contributionId === null) throw new SupportInvalid()
+  if (typeof input.subject !== 'string' || textError(input.subject,5,200)
+    || typeof input.description !== 'string' || textError(input.description,20,10000)) throw new SupportInvalid()
   if (!Array.isArray(input.evidenceFileIds) || input.evidenceFileIds.length > 10 || !input.evidenceFileIds.every(supportId) || new Set(input.evidenceFileIds).size !== input.evidenceFileIds.length) throw new SupportInvalid()
   return { requestId: input.requestId, campaignId: campaignId as string | null, contributionId: contributionId as string | null, category: input.category as SupportCategory,
     subject: input.subject.trim(), description: input.description.trim(), evidenceFileIds: input.evidenceFileIds as string[], confirmed: true }

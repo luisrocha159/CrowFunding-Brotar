@@ -1,12 +1,14 @@
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
 import { uploadFile, FILE_LIMITS } from '../files/fileClient'
+import {textError} from '../../../backend/src/campaigns/domain/input-policy'
 export const SUPPORT_TYPES = [
   ['UNRECOGNIZED_PAYMENT', 'Pago no reconocido'], ['REFUND_REQUEST', 'Consulta sobre devolución'], ['INCORRECT_INFORMATION', 'Información incorrecta'],
   ['REWARD_NOT_RECEIVED', 'Recompensa no recibida'], ['PROJECT_NOT_EXECUTED', 'Proyecto aparentemente no ejecutado'], ['OTHER', 'Otra incidencia']
 ] as const
+const CONTRIBUTION_CATEGORIES = new Set(['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST', 'REWARD_NOT_RECEIVED'])
 export const SUPPORT_STATES = { OPEN: 'Abierta', IN_PROGRESS: 'En atención', AWAITING_RESPONSE: 'Esperando respuesta', RESOLVED: 'Resuelta', CLOSED: 'Cerrada' } as const
-export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null }
+export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null; publicReport: boolean }
 export interface SupportSummary { id: string; reference: string; category: string | null; subject: string; status: keyof typeof SUPPORT_STATES; createdAt: string; updatedAt: string; campaignId: string | null; contributionId: string | null }
 export interface SupportDetail extends SupportSummary { description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }
 export interface SupportReceipt { id: string; reference: string; status: keyof typeof SUPPORT_STATES; createdAt: string }
@@ -42,8 +44,10 @@ export function supportDetailFrom(value: unknown): SupportDetail {
 export function supportInput(draft: SupportDraft, context: SupportContext, requestId: string, evidenceFileIds: string[]) {
   const errors: Partial<Record<keyof SupportDraft, string>> = {}
   if (!SUPPORT_TYPES.some(([key]) => key === draft.category)) errors.category = 'Elige el tipo de incidencia.'
-  if (!draft.subject.trim() || draft.subject.trim().length > 200 || draft.subject.includes('\0')) errors.subject = 'Describe el asunto en hasta 200 caracteres válidos.'
-  if (!draft.description.trim() || draft.description.trim().length > 10000 || draft.description.includes('\0')) errors.description = 'Describe el problema en hasta 10000 caracteres válidos.'
+  if (CONTRIBUTION_CATEGORIES.has(draft.category) && !context.contributionId) errors.category = 'Para reportar pagos, devoluciones o recompensas, vincula uno de tus aportes.'
+  if (textError(draft.subject,5,200)) errors.subject = 'Escribe un asunto de 5 a 200 caracteres válidos.'
+  if (textError(draft.description,20,10000)) errors.description = 'Describe el problema en 20 a 10000 caracteres válidos.'
+  if (context.publicReport && !['INCORRECT_INFORMATION', 'PROJECT_NOT_EXECUTED'].includes(draft.category)) errors.category = 'Para reportar una campaña pública sin aporte, elige información incorrecta o problema de ejecución.'
   if (!draft.confirmed) errors.confirmed = 'Confirma los datos y la privacidad de los adjuntos.'
   return { errors, input: { ...draft, subject: draft.subject.trim(), description: draft.description.trim(), requestId, campaignId: context.campaignId, contributionId: context.contributionId, evidenceFileIds } }
 }
@@ -61,8 +65,8 @@ export async function supportContext(campaignId: string | null, contributionId: 
   if (contributionId) params.set('contributionId', contributionId)
   const data = await readJson(await requestApi(`/api/me/support-cases/context?${params}`, { signal }, send))
   if (!object(data) || !uuid(data.campaignId) || typeof data.campaignTitle !== 'string' || !(data.contributionId === null || uuid(data.contributionId))
-    || !(data.contributionReference === null || typeof data.contributionReference === 'string')) throw new SessionError(0)
-  return { campaignId: data.campaignId, campaignTitle: data.campaignTitle, contributionId: data.contributionId, contributionReference: data.contributionReference }
+    || !(data.contributionReference === null || typeof data.contributionReference === 'string') || typeof data.publicReport !== 'boolean') throw new SessionError(0)
+  return { campaignId: data.campaignId, campaignTitle: data.campaignTitle, contributionId: data.contributionId, contributionReference: data.contributionReference, publicReport: data.publicReport }
 }
 export async function createSupportCase(input: SupportInput, signal?: AbortSignal, send: typeof fetch = fetch): Promise<SupportReceipt> {
   return receipt(await readJson(await requestApi('/api/me/support-cases', { method: 'POST', body: input, signal }, send)))

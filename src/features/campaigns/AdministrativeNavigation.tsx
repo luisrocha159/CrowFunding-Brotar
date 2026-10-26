@@ -18,6 +18,7 @@ export function AdministrativeNavigation() {
     {can('campaign.closure.read') && <NavLink to="/administracion/cierre-campanas">Preparar cierres DEMO</NavLink>}
     {can('finance.read') && <NavLink to="/administracion/desembolsos">Desembolsos DEMO</NavLink>}
     {can('support.read') && <NavLink to="/administracion/disputas">Disputas DEMO</NavLink>}
+    {can('support.read') && <NavLink to="/administracion/soporte">Bandeja de soporte</NavLink>}
     {can('audit.read') && <NavLink to="/administracion/auditoria">Auditoría del sistema</NavLink>}
     {error && <p role="alert">No se pudieron consultar tus permisos. Recarga para reintentar.</p>}
     {access?.readOnly && <p>Auditoría: acceso de solo lectura.</p>}

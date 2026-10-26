@@ -526,6 +526,90 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/support-cases",
+      "controller": "SupportAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/support-cases/:id",
+      "controller": "SupportAdministrationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/actions",
+      "controller": "SupportAdministrationController",
+      "handler": "action",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/assignment",
+      "controller": "SupportAdministrationController",
+      "handler": "assign",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/support-cases/:id/evidence/:fileId",
+      "controller": "SupportAdministrationController",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/support-cases/:id/messages",
+      "controller": "SupportAdministrationController",
+      "handler": "message",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "support.resolve"
+      ]
+    },
+    {
+      "method": "GET",
       "path": "/api/admin/users",
       "controller": "CreatorAdministrationController",
       "handler": "find",
@@ -2109,6 +2193,7 @@
       "controller": "SupportCaseController",
       "handler": "create",
       "guards": [
+        "CaseWriteLimitGuard",
         "RoleGuard",
         "SessionMutationGuard"
       ],

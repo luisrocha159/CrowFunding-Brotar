@@ -2,7 +2,7 @@
 
 ## Corte integrado RicardoDev
 
-Para instalar la versión actual, seguir primero [README principal, §3 y §34–36](../README.md). Incluye 29 migraciones con categorías y persistencia del correo. Configurar cada contenedor desde cero y mantener las credenciales fuera de Git; no copiar el `.env` completo de otra máquina. Gmail, verificación de correo y avisos se documentan en esas secciones; los apartados de arranque básico que siguen no sustituyen esa preparación.
+Para instalar la versión actual, seguir primero [README principal, §3 y §34–36](../README.md). Incluye 30 migraciones con categorías, persistencia del correo y panel por responsabilidad. Configurar cada contenedor desde cero y mantener las credenciales fuera de Git; no copiar el `.env` completo de otra máquina. Gmail, verificación de correo y avisos se documentan en esas secciones; los apartados de arranque básico que siguen no sustituyen esa preparación.
 
 Backend independiente: **NestJS 12 + TypeScript + pnpm 11.19.0**, ejecutado en Node.js 24 (>=24.13.0). El frontend permanece en la raíz del repositorio y usa Bun. No hay workspace común ni lockfiles mezclados.
 

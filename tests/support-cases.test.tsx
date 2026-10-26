@@ -5,11 +5,12 @@ import { supportInput, supportError, supportDetailFrom, readSupportCases, create
 import { SupportCaseForm } from '../src/features/support-cases/SupportCaseForm'
 import { SessionError } from '../src/shared/api/sessionError'
 const id = '9743cad9-e8e8-4c28-a6ed-8e421548d759'
-const context = { campaignId: id, campaignTitle: 'Proyecto', contributionId: null, contributionReference: null }
-const draft = { category: 'INCORRECT_INFORMATION', subject: ' Datos incorrectos ', description: ' Detalle ', confirmed: true }
+const context = { campaignId: id, campaignTitle: 'Proyecto', contributionId: null, contributionReference: null, publicReport: false }
+const publicContext = { ...context, publicReport: true }
+const draft = { category: 'INCORRECT_INFORMATION', subject: ' Datos incorrectos ', description: ' Detalle suficientemente descriptivo ', confirmed: true }
 const row = { id, reference: 'BRT-S-0000001', category: 'INCORRECT_INFORMATION', subject: 'Datos', status: 'OPEN', createdAt: '2026-10-22T10:00:00.000Z', updatedAt: '2026-10-22T10:00:00.000Z', campaignId: id, contributionId: null }
 test('soporte: no envía actor, prioridad o resolución; normaliza y requiere confirmación', () => {
-  assert.deepEqual(supportInput(draft, context, id, []).input, { ...draft, requestId: id, subject: 'Datos incorrectos', description: 'Detalle', campaignId: id, contributionId: null, evidenceFileIds: [] })
+  assert.deepEqual(supportInput(draft, context, id, []).input, { ...draft, requestId: id, subject: 'Datos incorrectos', description: 'Detalle suficientemente descriptivo', campaignId: id, contributionId: null, evidenceFileIds: [] })
   for (const patch of [{ category: '' }, { subject: ' ' }, { description: 'x\0y' }, { confirmed: false }]) assert.ok(Object.keys(supportInput({ ...draft, ...patch }, context, id, []).errors).length)
 })
 test('soporte: lista solo interpreta una respuesta válida y codifica el contexto', async () => {
@@ -46,4 +47,7 @@ test('soporte: formulario requiere confirmación y no promete resolución o devo
   const html = renderToStaticMarkup(<SupportCaseForm context={context} onCreated={() => {}} onUnauthorized={() => {}} />)
   assert.match(html, /type="checkbox"/); assert.match(html, /<label[^>]*for=/); assert.match(html, /PRIVATE|privad/i)
   assert.doesNotMatch(html, /48 horas|72 horas|24 horas/)
+  const publicHtml = renderToStaticMarkup(<SupportCaseForm context={publicContext} onCreated={() => {}} onUnauthorized={() => {}} />)
+  assert.match(publicHtml, /INCORRECT_INFORMATION/); assert.match(publicHtml, /PROJECT_NOT_EXECUTED/)
+  assert.doesNotMatch(publicHtml, /UNRECOGNIZED_PAYMENT|REFUND_REQUEST|REWARD_NOT_RECEIVED|OTHER/)
 })

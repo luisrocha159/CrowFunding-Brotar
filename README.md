@@ -1,6 +1,8 @@
 # Brotar · Base integrada del equipo
 
-> **Versión vigente · 24/10/2026 · RicardoDev:** corte integrado DEMO con ciclo, desembolsos, cierre, auditoría/permisos y **correo operativo**. Requiere **29 migraciones**, aplicadas por el comando habitual. Seguir §3 y §34–36, que actualizan los cortes históricos siguientes. Destino de esta entrega: RicardoDev; **DEV conserva Sprint 2**. Legal definitivo, módulos generales del equipo y aceptación global del MVP siguen pendientes. Las credenciales son locales y no vienen en el clon.
+> **Integración local de Alison · 25/10/2026:** `AlisonDev bd4ed69` integrado sobre `RicardoDev 7d48fbf`. Reportes públicos, bandeja de soporte e historial, y resumen por responsabilidad revisados. **31 migraciones y 181 rutas**. Este incremento **no está publicado**; DEV no cambia. S3-25 sigue parcial por sus agregados financieros y legal continúa pendiente. [Revisión, correcciones y pruebas](docs/revision-integracion-alison-sprint3-2026-10-25.md).
+
+> **Versión vigente · 25/10/2026 · RicardoDev:** corte integrado DEMO con ciclo, desembolsos, cierre, auditoría/permisos y **correo operativo**. Requiere **31 migraciones**, aplicadas por el comando habitual. Seguir §3 y §34–36, que actualizan los cortes históricos siguientes. Destino de esta entrega: RicardoDev; **DEV conserva Sprint 2**. Legal definitivo, módulos generales del equipo y aceptación global del MVP siguen pendientes. Las credenciales son locales y no vienen en el clon.
 
 > **Avance local de Sprint 3 · 21/10/2026 · RicardoDev:** API de aportes, simulador y conciliación exclusivamente DEMO, además de responsabilidades/auditoría. Requiere **catorce migraciones**; ver §24–28, [contratos 0.5](docs/contratos-sprint-3.md) y [reglas del MVP de pruebas](docs/decisiones/ADR-012-reglas-mvp-pruebas.md). No hay dinero real. Pantallas de Alison, correo, KYC/KYB e integración completa siguen pendientes. Este avance no está publicado.
 
@@ -22,7 +24,7 @@ Acceso al constructor: iniciar sesión → **menú de cuenta → Mis borradores*
 
 **Recorrido vigente:** borrador → revisión → corrección → aprobación privada → publicación administrativa → consulta anónima. El [cierre técnico local](docs/cierre-tecnico-sprint-2-2026-10-05.md) conserva el ensayo anterior y la revisión de calidad; la nota de entrega registra su incorporación a DEV. No se modificó Trello ni se reemplazó el trabajo de las ramas personales.
 
-Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil y registrar una organización propia. **No es todavía todo el crowdfunding.**
+Entrega de **frontend + backend + PostgreSQL** para revisión de los líderes. Esta versión permite registrar una cuenta, iniciar y cerrar sesión, editar el perfil, registrar una organización propia, reportar incidencias públicas no financieras y revisar bandejas administrativas según responsabilidad. **No es todavía todo el crowdfunding.**
 
 [Repositorio](https://github.com/luisrocha159/CrowFunding-Brotar) · [Trello](https://trello.com/b/37xCrdes/crowudfunding) · [Documentación](docs/README.md) · [Trabajo en equipo y ramas](CONTRIBUTING.md)
 
@@ -1030,7 +1032,7 @@ Cancelar con fondos ya desembolsados sigue escalando: resolver una incidencia no
 
 ## 34. Auditoría, permisos y contratos integrados · RicardoDev local · 24/10
 
-Este corte transversal fue comprobado con **28 migraciones**; el incremento de correo de §36 añade la 29 y conserva los flujos anteriores. S3-15/S3-16/S3-18 integran las operaciones disponibles; S3-17 de Santiago se conserva y revalida. [Criterios, evidencia y límites del corte anterior](docs/cierre-transversal-s3-15-18-2026-10-24.md). Los módulos generales pendientes del equipo y los textos legales definitivos siguen separados.
+Este corte transversal fue comprobado con **28 migraciones**; el incremento de correo de §36 añadió la 29. La actualización S3-10/S3-25 de 25/10 añadió la 30; el historial de motivos de soporte añade la 31 sin reescribir casos existentes. S3-15/S3-16/S3-18 integran las operaciones disponibles; S3-17 de Santiago se conserva y revalida. [Criterios, evidencia y límites del corte anterior](docs/cierre-transversal-s3-15-18-2026-10-24.md). Los módulos generales pendientes del equipo y los textos legales definitivos siguen separados.
 
 **Instalación nueva:** seguir §3, que instala la base oficial, genera `.env` local y aplica el registro completo de migraciones y categorías. **V2 ya instalada:** respaldar primero; desde `backend`, con su `.env` generado para ese contenedor, ejecutar:
 
@@ -1044,7 +1046,7 @@ node scripts/prepare-sprint2.mjs
 node scripts/check-http-contracts.mjs
 ```
 
-`status` debe mostrar **29 migraciones y ninguna pendiente** en esta rama. No restaurar el SQL oficial encima de una V2 existente ni copiar `.env` de otra computadora. La migración 28 agrega `parties.read`/`dashboard.read` y la 29 configura la persistencia del correo; no crean usuarios ADMIN ni cambian responsables. `health/ready` devuelve 503 si faltan migraciones o concesiones de la matriz, incluso si PostgreSQL responde.
+`status` debe mostrar **31 migraciones y ninguna pendiente** en esta rama. No restaurar el SQL oficial encima de una V2 existente ni copiar `.env` de otra computadora. La migración 28 agrega `parties.read`/`dashboard.read`, la 29 configura la persistencia del correo, la 30 amplía `dashboard.read` por responsabilidad y la 31 añade historial de motivos de soporte sin alterar expedientes existentes; no asignan roles a cuentas. `health/ready` devuelve 503 si faltan migraciones o concesiones de la matriz, incluso si PostgreSQL responde.
 
 Reiniciar el backend después de migrar, manteniendo las banderas DEMO indicadas en §32/33 para sus recorridos. En otra terminal, raíz del frontend: `bun install --frozen-lockfile` y `bun run dev`. Usar el proxy/origen de §3/4; cambiar el puerto del frontend exige actualizar su origen autorizado. No se habilitan pagos reales.
 
@@ -1103,7 +1105,7 @@ El diagnóstico comparte transporte con la recuperación: no muestra claves ni r
 
 ## 36. Verificación y avisos · instalar/actualizar RicardoDev
 
-Después de la preparación de §3 o la actualización con respaldo de §34, comprobar **29 migraciones y ninguna pendiente**. La 29 prepara la cola y los contactos sin cargar datos manualmente ni alterar el SQL oficial. Reiniciar la API. Un `.env` de otro equipo no sustituye la preparación del contenedor propio.
+Después de la preparación de §3 o la actualización con respaldo de §34, comprobar **31 migraciones y ninguna pendiente**. Las migraciones 29–31 preparan persistencia del correo, acceso del panel por responsabilidad e historial de cambios de soporte, sin cargar datos manualmente ni alterar el SQL oficial. Reiniciar la API. Un `.env` de otro equipo no sustituye la preparación del contenedor propio.
 
 **Para el correo real**, configurar §35. Si el responsable entrega por un canal privado el archivo de solo correo, guardarlo fuera del repositorio y, desde `backend` ya compilado/con su `.env` generado, importar:
 

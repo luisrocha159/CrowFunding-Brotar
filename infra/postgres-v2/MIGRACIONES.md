@@ -1,8 +1,12 @@
 # Control de cambios de PostgreSQL
 
-## Registro actual de RicardoDev · 24/10/2026
+## Registro actual de RicardoDev · 25/10/2026
 
-La rama incluye **29 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. Ver [correo operativo](../../docs/correo-operativo-2026-10-24.md).
+La rama incluye **31 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo; la 30 amplía la lectura del panel administrativo por responsabilidad; la 31 conserva motivos del historial de soporte. Se mantienen en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. Ver [correo operativo](../../docs/correo-operativo-2026-10-24.md).
+
+## Historial de transiciones de soporte · 25/10/2026 · 31 migraciones
+
+31. `SupportCaseHistory1792800000004`: crea `brotar_extension.support_case_event` para conservar estado anterior/nuevo, motivo, actor y fecha; registra tanto transiciones administrativas como el cambio automático al responder al titular. Es aditiva: no modifica ni elimina casos existentes; los eventos antiguos no se inventan ni reconstruyen. `brotar_app` puede leer e insertar y no actualizar ni borrar. Aplicar con el comando `up` habitual después de respaldo y compilación; consultar `status` y reiniciar la API. El `down` no borra historial.
 
 ## Corte transversal local · 24/10/2026 · 28 migraciones
 

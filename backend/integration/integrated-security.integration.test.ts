@@ -38,7 +38,7 @@ test('S3-15/16/17/18: matriz real, perfil de auditor, permisos residuales, rollb
   const matrix:[string,string[]][]=[
    ['admin/audit',['ADMIN','AUDITOR']],['catalogs/admin/settings',['ADMIN','AUDITOR']],
    ['admin/finance/payments',['ADMIN','AUDITOR','FINANCE']],['admin/verifications',['ADMIN','COMPLIANCE']],
-   ['administration/parties',['ADMIN','AUDITOR']],['administration/dashboard',['ADMIN','AUDITOR']],
+   ['administration/parties',['ADMIN','AUDITOR']],['administration/dashboard',['ADMIN','AUDITOR','REVIEWER','COMPLIANCE','FINANCE','SUPPORT']],
    ['admin/campaign-closure',['ADMIN','AUDITOR','REVIEWER','FINANCE','SUPPORT']]
   ]
   for(const [path,allowed]of matrix){

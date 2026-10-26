@@ -4,7 +4,7 @@ import { Button } from '../../shared/components/Button'
 import { SessionError } from '../../shared/api/sessionError'
 import { usePublicSession } from '../access/session/useHeaderSession'
 import { readFollowedUpdates } from '../bookmarks/bookmarksClient'
-import { contributionStatuses, readContribution, readContributions, readReceipt, readSponsorSummary, type ContributionFilters } from './contributionsClient'
+import { contributionStatuses, readContribution, readContributions, readReceipt, readSponsorSummary, type ContributionDetail, type ContributionFilters, type Receipt } from './contributionsClient'
 import { ContributionRecord } from './ContributionRecord'
 import { dateLabel, stateLabels } from './labels'
 import styles from './contributions.module.css'
@@ -69,9 +69,29 @@ function ContributionDetail({ id }: { id: string }) {
   </section>
 }
 export function ContributionReceiptPage() { const { id = '' } = useParams(); return <ContributionSession><ReceiptDetail key={id} id={id} /></ContributionSession> }
+type ReceiptPageData = { receipt: Receipt; detail: null } | { receipt: null; detail: ContributionDetail }
+function unavailableReceiptMessage(status: string) {
+  switch (status) {
+    case 'INITIATED': return 'El intento se inició, pero aún no hay confirmación de pago. No se emite comprobante.'
+    case 'PENDING': return 'El pago está pendiente de confirmación verificable. Este intento no acredita un pago confirmado.'
+    case 'FAILED': return 'El intento falló. No se emite comprobante de pago.'
+    case 'EXPIRED': return 'El intento expiró sin confirmación. No se emite comprobante de pago.'
+    case 'REFUNDED': return 'El pago figura reembolsado. Se muestra como reembolso y no como pago vigente.'
+    case 'DISPUTED': return 'El pago está en disputa. El comprobante está bloqueado mientras se consulta el estado.'
+    default: return 'El pago figura confirmado, pero no coincide con la referencia, importe, moneda y fecha necesarios para verificar esta constancia.'
+  }
+}
 function ReceiptDetail({ id }: { id: string }) {
-  const resource = useRemote(useCallback((signal: AbortSignal) => readReceipt(id, signal), [id]))
-  return <section className={styles.layout}><Navigation /><h1>Comprobante informativo</h1>{!resource.data || resource.error ? <LoadState error={resource.error} retry={resource.retry} /> : <section className={styles.card}><p className={styles.notice}>{resource.data.sandbox ? 'SANDBOX · Comprobante de prueba. No acredita dinero real.' : 'Constancia informativa de un pago registrado. No es una factura ni un documento fiscal.'} No acredita entrega de recompensas ni transporte.</p><h2>{resource.data.campaignTitle}</h2><p className={styles.amount}>{resource.data.amount} {resource.data.currency}</p><dl className={styles.details}><dt>Aporte</dt><dd>{resource.data.reference}</dd><dt>Pago</dt><dd>{resource.data.paymentId}</dd><dt>Método</dt><dd>{resource.data.method ?? 'No registrado'}</dd><dt>Confirmado</dt><dd>{dateLabel(resource.data.confirmedAt)}</dd></dl><p>La referencia se verifica con tu sesión al consultar nuevamente este comprobante. El estado puede cambiar si existe una devolución o disputa.</p><nav className={styles.actions}><Button onClick={() => window.print()}>Imprimir o guardar PDF</Button><Button variant="secondary" onClick={resource.retry}>Verificar de nuevo</Button><Link to={`/mis-aportes/${id}`}>Volver al aporte</Link></nav></section>}</section>
+  const resource = useRemote(useCallback(async (signal: AbortSignal): Promise<ReceiptPageData> => {
+    try { return { receipt: await readReceipt(id, signal), detail: null } }
+    catch (error) {
+      if (!(error instanceof SessionError) || error.status !== 409) throw error
+      return { receipt: null, detail: await readContribution(id, signal) }
+    }
+  }, [id]))
+  const receipt = resource.data?.receipt
+  const detail = resource.data?.detail
+  return <section className={styles.layout}><Navigation /><h1>Comprobante informativo</h1>{!resource.data || resource.error ? <LoadState error={resource.error} retry={resource.retry} /> : receipt ? <section className={styles.card}><p className={styles.notice}>{receipt.sandbox ? 'SANDBOX · Comprobante de prueba. No acredita dinero real.' : 'Constancia informativa de un pago registrado. No es una factura ni un documento fiscal.'} No acredita entrega de recompensas ni transporte.</p><h2>{receipt.campaignTitle}</h2><p className={styles.amount}>{receipt.amount} {receipt.currency}</p><dl className={styles.details}><dt>Aporte</dt><dd>{receipt.reference}</dd><dt>Pago</dt><dd>{receipt.paymentId}</dd><dt>Método</dt><dd>{receipt.method ?? 'No registrado'}</dd><dt>Confirmado</dt><dd>{dateLabel(receipt.confirmedAt)}</dd></dl><p>La referencia se verifica con tu sesión al consultar nuevamente este comprobante. Si el pago se reembolsa o disputa, esta constancia deja de estar disponible.</p><nav className={styles.actions}><Button onClick={() => window.print()}>Imprimir o guardar PDF</Button><Button variant="secondary" onClick={resource.retry}>Verificar de nuevo</Button><Link to={`/mis-aportes/${id}`}>Volver al aporte</Link></nav></section> : <section className={styles.card}><p role="status">No se puede emitir una constancia para este aporte. Los estados siguientes son del registro actual; solo un pago confirmado y verificable permite obtener el comprobante informativo.</p><h2>Estado del aporte</h2><p>{stateLabels[detail!.status] ?? detail!.status} · {detail!.amount} {detail!.currency}</p><h2>Intentos de pago</h2>{detail!.payments.length ? detail!.payments.map(payment => <div key={payment.id}><h3>{stateLabels[payment.status] ?? payment.status}</h3><p>{unavailableReceiptMessage(payment.status)}</p><p>{payment.amount} {payment.currency} · {dateLabel(payment.createdAt)} · {payment.sandbox ? 'SANDBOX: prueba sin dinero real' : 'Registro de pago'}</p></div>) : <p>Aún no hay intentos de pago registrados.</p>}{detail!.refunds.length > 0 && <><h2>Devoluciones</h2>{detail!.refunds.map(refund => <p key={refund.id}>{refund.amount} {refund.currency} · {stateLabels[refund.status] ?? refund.status} · {dateLabel(refund.requestedAt)}</p>)}</>}{detail!.disputes.length > 0 && <><h2>Disputas</h2>{detail!.disputes.map(dispute => <p key={dispute.id}>{dispute.reference} · {stateLabels[dispute.status] ?? dispute.status} · {dateLabel(dispute.createdAt)}</p>)}</>}<nav className={styles.actions}><Button variant="secondary" onClick={resource.retry}>Consultar de nuevo</Button><Link to={`/mis-aportes/${id}`}>Volver al detalle del aporte</Link></nav></section>}</section>
 }
 export function SponsorDashboardPage() { return <ContributionSession><SponsorDashboard /></ContributionSession> }
 function SponsorDashboard() {

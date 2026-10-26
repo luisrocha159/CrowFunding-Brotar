@@ -1,6 +1,7 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
+import {CaseWriteLimitGuard} from '../../shared/infrastructure/http/case-write-limit.guard'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { SupportCampaignClosed, SupportCases, SupportForbidden, SupportMissing } from '../application/support-cases'
 import { SUPPORT_CATEGORIES, SupportConflict, SupportInvalid } from '../domain/support-case'
@@ -37,7 +38,7 @@ export class SupportCaseController {
   async detail(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string) {
     try { return await this.cases.detail(request.brotarUser.id, id) } catch (error) { translate(error) }
   }
-  @Post() @Header('Cache-Control', 'private, no-store') @UseGuards(SessionMutationGuard)
+  @Post() @Header('Cache-Control', 'private, no-store') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard)
   async create(@Req() request: AuthenticatedRequest, @Body() input: SupportCreateDto) {
     try { return await this.cases.create(request.brotarUser.id, input) } catch (error) { translate(error) }
   }

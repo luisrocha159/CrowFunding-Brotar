@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import assert from 'node:assert/strict'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -12,7 +12,7 @@ import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
 import { readEnvironment } from '../src/config/environment'
 import { readDatabaseConfig } from '../src/shared/infrastructure/database/database.config'
 import { readTestDatabaseTarget } from './database-target'
-import type { SupportDetail, SupportPage, SupportReceipt } from '../src/support-cases/application/support-cases'
+import type { SupportAdminDetail, SupportDetail, SupportPage, SupportReceipt } from '../src/support-cases/application/support-cases'
 
 test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y auditor sin mutación', { timeout: 90000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -22,20 +22,22 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
   const previousStorage = process.env.FILE_STORAGE_DIR
   const storage = await mkdtemp(join(tmpdir(), 'brotar-support-test-')); process.env.FILE_STORAGE_DIR = storage
   const app = await NestFactory.create(AppModule, { logger: false })
-  configureHttp(app, readEnvironment({ NODE_ENV: 'test' })); await app.listen(0, '127.0.0.1')
+  configureHttp(app, readEnvironment({ NODE_ENV: 'test' }));const fixtureIp=`support-${randomUUID()}`
+  app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:fixtureIp});next()});await app.listen(0, '127.0.0.1')
   const base = await app.getUrl()
   const users: { id: string; cookie: string }[] = [], files: string[] = []
   const campaign = randomUUID(), otherCampaign = randomUUID(), contribution = randomUUID(), organization = randomUUID(), orgCampaign = randomUUID()
   const call = (path: string, cookie = '', body?: unknown, method = body === undefined ? 'GET' : 'POST') => fetch(`${base}/api/${path}`, { method, headers: { Cookie: cookie, Origin: 'http://127.0.0.1:5173', 'Content-Type': 'application/json', 'X-Brotar-Request': '1' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
   const json = async <T>(response: Response, expected = 200): Promise<T> => { const data: unknown = await response.json(); assert.equal(response.status, expected, JSON.stringify(data)); return data as T }
+  const resetBudget=()=>sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash IN (${[`ip:${fixtureIp}`,...users.map(u=>`account:${u.id}`)].map(key=>`'${createHash('sha256').update('mvp-case-write:'+key).digest('hex')}'`).join(',')});`)
   try {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const email = `support-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
       const user = await json<{ id: string }>(await call('auth/register', '', { firstName: 'Ensayo', lastName: 'Soporte', email, password, demoConsent: true }), 201)
       const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)
       users.push({ id: user.id, cookie: login.headers.get('set-cookie')!.split(';')[0]! })
     }
-    const [owner, other] = users as [typeof users[number], typeof users[number]]
+    const [owner, other, support] = users as [typeof users[number], typeof users[number], typeof users[number]]
     sql(`INSERT INTO campaign(id,creator_user_id,slug,title,campaign_type,currency_code) VALUES
       ('${campaign}','${owner.id}','support-${campaign}','Proyecto propio','DONATION','BOB'),
       ('${otherCampaign}','${other.id}','support-${otherCampaign}','PRIVADO_NO_DIVULGAR','DONATION','BOB');
@@ -64,6 +66,37 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
       files.push(result.id); return result.id
     }
     const evidence = await upload(owner, 'SUPPORT_EVIDENCE'), foreign = await upload(other, 'SUPPORT_EVIDENCE'), wrongPurpose = await upload(owner, 'VERIFICATION_DOCUMENT')
+    sql(`UPDATE campaign SET status='PUBLISHED',goal_amount=100,published_at=now() WHERE id='${campaign}';`)
+    const publicContext = await json<{ publicReport: boolean }>(await call(`me/support-cases/context?campaignId=${campaign}`, other.cookie))
+    assert.equal(publicContext.publicReport, true)
+    const publicReport = { requestId: randomUUID(), campaignId: campaign, contributionId: null, category: 'PROJECT_NOT_EXECUTED', subject: 'Consulta sobre ejecución', description: 'No encuentro información pública del avance anunciado.', confirmed: true, evidenceFileIds: [] }
+    assert.equal((await call('me/support-cases', other.cookie, { ...publicReport, category: 'REFUND_REQUEST' })).status, 400)
+    assert.equal((await call('me/support-cases', other.cookie, { ...publicReport, category: 'OTHER' })).status,404)
+    const publicCase = await json<SupportReceipt>(await call('me/support-cases', other.cookie, publicReport), 201)
+    assert.equal((await json<SupportPage>(await call('me/support-cases', owner.cookie))).total, 0, 'El reporte de un tercero no aparece en la cuenta de la persona reportada.')
+    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${support.id}',id FROM role WHERE code='SUPPORT';`)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}`, other.cookie)).status, 403, 'El reportante externo no obtiene permiso administrativo.')
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`, support.cookie, { status: 'IN_PROGRESS', reason: 'breve' })).status, 400)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`, support.cookie, { body: 'Revisaremos la información pública disponible.' })).status, 200)
+    const transitionReason = 'Se revisó la información pública disponible.'
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`, support.cookie, { status: 'AWAITING_RESPONSE', reason: transitionReason })).status, 200)
+    const adminCase = await json<SupportAdminDetail>(await call(`admin/support-cases/${publicCase.id}`, support.cookie))
+    assert.equal(adminCase.status, 'AWAITING_RESPONSE')
+    assert.equal(adminCase.events.length, 2)
+    assert.deepEqual(adminCase.events.map(event => ({ previousStatus: event.previousStatus, status: event.status, reason: event.reason })), [
+      { previousStatus: 'OPEN', status: 'IN_PROGRESS', reason: 'Se envió una respuesta compartida al titular.' },
+      { previousStatus: 'IN_PROGRESS', status: 'AWAITING_RESPONSE', reason: transitionReason }
+    ])
+    resetBudget()
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{})).status,400,'Omitir el campo no debe desasignar silenciosamente.')
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{assignedTo:support.id})).status,200)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/assignment`,support.cookie,{assignedTo:null})).status,200)
+    for(const body of ['   ','Texto no válido\u0000','Texto inválido\uD800'])assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{body})).status,400)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'CLOSED',reason:transitionReason})).status,409,'No saltar la resolución previa.')
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'RESOLVED',reason:transitionReason})).status,200)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/actions`,support.cookie,{status:'CLOSED',reason:transitionReason})).status,200)
+    assert.equal((await call(`admin/support-cases/${publicCase.id}/messages`,support.cookie,{body:'Respuesta posterior al cierre del expediente.'})).status,404)
+    resetBudget()
     const requestId = randomUUID()
     const input = { requestId, campaignId: otherCampaign, contributionId: contribution, category: 'REFUND_REQUEST', subject: 'Consulta de devolución', description: 'Descripción privada de la incidencia', confirmed: true, evidenceFileIds: [evidence] }
     const financialCounts = () => sql("SELECT (SELECT count(*) FROM contribution)::text||':'||(SELECT count(*) FROM payment)::text||':'||(SELECT count(*) FROM refund)::text||':'||(SELECT count(*) FROM dispute)::text")
@@ -73,20 +106,26 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
     const created = await Promise.all([call('me/support-cases', owner.cookie, input), call('me/support-cases', owner.cookie, input)])
     const first = await json<SupportReceipt>(created[0]!, 201), repeat = await json<SupportReceipt>(created[1]!, 201)
     assert.equal(first.id, repeat.id); assert.match(first.reference, /^BRT-S-/); assert.equal(first.status, 'OPEN')
-    assert.equal((await call('me/support-cases', owner.cookie, { ...input, description: 'Otra descripción' })).status, 409)
+    assert.equal((await call('me/support-cases', owner.cookie, { ...input, description: 'Otra descripción válida y suficientemente extensa' })).status, 409)
     assert.equal((await call(`me/support-cases/${first.id}`, other.cookie)).status, 404)
     sql(`INSERT INTO support_case_message(support_case_id,author_user_id,body,is_internal) VALUES('${first.id}','${other.id}','Respuesta visible',false),('${first.id}','${other.id}','INTERNO_NO_DIVULGAR',true);`)
     const detail = await json<SupportDetail>(await call(`me/support-cases/${first.id}`, owner.cookie))
     assert.equal(detail.contributionId, contribution); assert.equal(detail.evidence[0]?.fileId, evidence); assert.equal(detail.messages.length, 1); assert.equal(detail.messages[0]?.body, 'Respuesta visible')
     assert.ok(!JSON.stringify(detail).includes('INTERNO_NO_DIVULGAR')); assert.ok(!JSON.stringify(detail).includes('PRIVADO_NO_DIVULGAR'))
     assert.equal((await json<SupportPage>(await call('me/support-cases', owner.cookie))).total, 1)
-    assert.equal((await json<SupportPage>(await call('me/support-cases', other.cookie))).total, 0)
+    assert.equal((await json<SupportPage>(await call('me/support-cases', other.cookie))).total, 1,'Solo conserva su propio reporte público, no el expediente ajeno.')
     assert.equal((await call(`files/${evidence}`, owner.cookie)).status, 200)
     assert.equal((await call(`files/${evidence}`, other.cookie)).status, 403)
     assert.equal((await call(`files/public/${evidence}`)).status, 404)
     assert.equal((await call(`files/${evidence}`, owner.cookie, undefined, 'DELETE')).status, 409, 'La evidencia enlazada no se elimina.')
     assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_name='support_case' AND entity_id='${first.id}' AND actor_user_id='${owner.id}' AND action='CREATE';`), '1')
     assert.equal(financialCounts(), financeBefore)
+    assert.equal((await call(`admin/support-cases/${first.id}/evidence/${evidence}`,support.cookie)).status,200)
+    assert.equal((await call(`admin/support-cases/${first.id}/evidence/${foreign}`,support.cookie)).status,404,'Una evidencia ajena al expediente devuelve 404, no un fallo interno.')
+    sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${other.id}',id FROM public.role WHERE code IN('SUPPORT','AUDITOR');`)
+    const staffList=await json<{assignees:{id:string}[]}>(await call('admin/support-cases',support.cookie))
+    assert.ok(!staffList.assignees.some(a=>a.id===other.id),'AUDITOR + SUPPORT no es un destinatario operativo válido.')
+    assert.equal((await call(`admin/support-cases/${first.id}/assignment`,support.cookie,{assignedTo:other.id})).status,404)
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${owner.id}',id FROM role WHERE code IN ('AUDITOR','ADMIN');`)
     assert.equal((await call('me/support-cases', owner.cookie, { ...input, requestId: randomUUID() })).status, 403)
     assert.equal((await call(`me/support-cases/${first.id}`, owner.cookie)).status, 200)
@@ -95,11 +134,13 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
     const campaignIds = `'${campaign}','${otherCampaign}','${orgCampaign}'`
     sql(`DELETE FROM audit_log WHERE entity_name='support_case' AND entity_id IN (SELECT id FROM support_case WHERE campaign_id IN (${campaignIds}));
       DELETE FROM brotar_extension.support_case_evidence WHERE case_id IN (SELECT id FROM support_case WHERE campaign_id IN (${campaignIds}));
+      DELETE FROM brotar_extension.support_case_event WHERE case_id IN (SELECT id FROM support_case WHERE campaign_id IN (${campaignIds}));
       DELETE FROM brotar_extension.support_case_context WHERE case_id IN (SELECT id FROM support_case WHERE campaign_id IN (${campaignIds}));
       DELETE FROM support_case WHERE campaign_id IN (${campaignIds}); DELETE FROM contribution WHERE id='${contribution}'; DELETE FROM campaign WHERE id IN (${campaignIds}); DELETE FROM organization WHERE id='${organization}';`)
     for (const file of files) sql(`DELETE FROM file_asset WHERE id='${file}';`)
     for (const user of users) sql(`DELETE FROM app_user WHERE id='${user.id}';`)
     if (previousStorage === undefined) delete process.env.FILE_STORAGE_DIR; else process.env.FILE_STORAGE_DIR = previousStorage
+    resetBudget()
     await rm(storage, { recursive: true, force: true })
   }
 })

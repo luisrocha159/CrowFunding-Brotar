@@ -39,6 +39,7 @@ import { AccountabilityPage } from '../../features/campaign-progress/Accountabil
 import { AdministrativeDashboardPage } from '../../features/campaign-progress/AdministrativeDashboardPage'
 
 import { SupportCasesPage } from '../../features/support-cases/SupportCasesPage'
+import { SupportAdministrationPage } from '../../features/support-cases/SupportAdministrationPage'
 import {CampaignCyclePage} from '../../features/campaign-lifecycle/CampaignCyclePage'
 import {ClosurePage} from '../../features/campaign-lifecycle/ClosurePage'
 import {DisbursementPage} from '../../features/disbursements/DisbursementPages'
@@ -71,6 +72,8 @@ export const router = createBrowserRouter([
       { path: 'mis-incidencias', element: <SupportCasesPage /> },
       { path: 'mis-incidencias/nueva', element: <SupportCasesPage create /> },
       { path: 'mis-incidencias/:id', element: <SupportCasesPage /> },
+      { path: 'administracion/soporte', element: <SupportAdministrationPage /> },
+      { path: 'administracion/soporte/:id', element: <SupportAdministrationPage /> },
       { path: 'mis-aportes', element: <ContributionsPage /> },
       { path: 'mis-aportes/:id', element: <ContributionDetailPage /> },
       { path: 'mis-aportes/:id/comprobante', element: <ContributionReceiptPage /> },

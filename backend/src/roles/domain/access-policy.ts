@@ -1,7 +1,7 @@
 /** Criterio aprobado por el equipo para el MVP de pruebas (20/10/2026). */
 export const ACCESS_POLICY = {
   'parties.read': {action:'read',roles:['ADMIN','AUDITOR']},
-  'dashboard.read': {action:'read',roles:['ADMIN','AUDITOR']},
+  'dashboard.read': {action:'read',roles:['ADMIN','AUDITOR','REVIEWER','COMPLIANCE','FINANCE','SUPPORT']},
   'campaign.closure.read': { action: 'read', roles: ['ADMIN','REVIEWER','SUPPORT','FINANCE','AUDITOR'] },
   'campaign.closure.review': { action: 'write', roles: ['REVIEWER','ADMIN'] },
   'campaign.lifecycle.read': { action: 'read', roles: ['ADMIN','FINANCE','REVIEWER','AUDITOR'] },

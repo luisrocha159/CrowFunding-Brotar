@@ -5,7 +5,7 @@ import { SupportCaseRepository } from '../src/support-cases/infrastructure/suppo
 import { SupportForbidden } from '../src/support-cases/application/support-cases'
 import { normalizeSupportInput, supportFingerprint } from '../src/support-cases/domain/support-case'
 import type { DatabaseService } from '../src/shared/infrastructure/database/database.service'
-const input = normalizeSupportInput({ requestId: '9743cad9-e8e8-4c28-a6ed-8e421548d759', campaignId: '1e36e42f-f958-4978-bd28-58dab81b6160', contributionId: null, category: 'OTHER', subject: 'Test', description: 'Test', evidenceFileIds: [], confirmed: true })
+const input = normalizeSupportInput({ requestId: '9743cad9-e8e8-4c28-a6ed-8e421548d759', campaignId: '1e36e42f-f958-4978-bd28-58dab81b6160', contributionId: null, category: 'OTHER', subject: 'Consulta de prueba', description: 'Detalle descriptivo de prueba suficiente.', evidenceFileIds: [], confirmed: true })
 test('soporte: revalida rol tras esperar por idempotencia incluso al recuperar una solicitud previa', async () => {
   const manager = { query: async (sql: string) => {
     if (sql.includes('public.app_user')) return [{ code: 'REGISTERED_USER' }, { code: 'AUDITOR' }]

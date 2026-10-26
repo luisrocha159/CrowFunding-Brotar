@@ -1,3 +1,13 @@
+# S3-10 / S3-25 - corte local - 25/10/2026
+
+[Revisión de la rama de Alison e integración local](revision-integracion-alison-sprint3-2026-10-25.md): registro de incidencias comprobado; S3-25 parcial por contadores financieros pendientes. Sin push ni cambios en DEV/Trello. Los cortes históricos siguientes conservan su fecha.
+
+La implementación añade reportes de terceros sobre campañas públicas y bandeja general de soporte para casos no financieros. Los reportes de información incorrecta y aparente falta de ejecución se limitan a campañas publicadas; pagos, devoluciones y disputas financieras conservan su flujo separado. La atención usa asignación de equipo, respuestas compartidas, transiciones permitidas, auditoría y descarga de evidencias privadas solo desde el expediente autorizado.
+
+El panel administrativo muestra agregados reales de campañas, catálogos, partes, identidad, soporte, rendición y cierre según permisos vigentes. Las metas operativas se presentan como alertas internas DEMO, no SLA ni correo. La migración 30 habilita el resumen por responsabilidad sin modificar cuentas o roles existentes. La migración 31 conserva motivos y fechas de cambios de estado de incidencias en una tabla aditiva, sin alterar los casos existentes.
+
+La base de datos permanece en el esquema PostgreSQL oficial y las migraciones son acumulativas. Para ejecutar la validación completa, seguir el README principal y las instrucciones de PostgreSQL V2; no usar 5432 ni copiar secretos locales.
+
 # Documentación de Brotar
 
 ## Incremento de correo · RicardoDev · 24/10/2026
@@ -8,7 +18,7 @@ Este índice separa el producto general de la entrega pública que ya puede ejec
 
 ## Integración transversal local S3-15 a S3-18 · 24 de octubre de 2026
 
-[Criterios, implementación, pruebas y límites del corte transversal](cierre-transversal-s3-15-18-2026-10-24.md), [169 contratos HTTP comprobados](contratos-http-sprint3.json) y README §34. **28 migraciones**, RicardoDev sin publicar. S3-17 conserva autoría de Santiago y se revalida; los módulos funcionales completos de compañeros, correo y legal no se dan por terminados mediante este documento. Los apartados siguientes conservan sus cortes históricos.
+[Criterios, implementación, pruebas y límites del corte transversal](cierre-transversal-s3-15-18-2026-10-24.md), [169 contratos HTTP comprobados](contratos-http-sprint3.json) y README §34. **28 migraciones**, RicardoDev sin publicar (corte histórico; la actualización S3-10/S3-25 vigente está descrita arriba). S3-17 conserva autoría de Santiago y se revalida; los módulos funcionales completos de compañeros, correo y legal no se dan por terminados mediante este documento. Los apartados siguientes conservan sus cortes históricos.
 
 ## Ampliación local del cierre S3-23 · 24 de octubre de 2026
 

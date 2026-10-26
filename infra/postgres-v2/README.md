@@ -1,3 +1,5 @@
+**Actualización local 25/10/2026:** `ResponsibilityDashboard1792800000003` conserva ADMIN/AUDITOR y concede `dashboard.read` a REVIEWER, COMPLIANCE, FINANCE y SUPPORT. No asigna roles a cuentas. Aplicar `node scripts/migrate.mjs up` tras activar la V2 existente; la instalación vigente contiene 30 migraciones.
+
 # PostgreSQL provisional V2 · base vigente
 
 **Corte transversal local 24/10/2026:** **28 migraciones**, RicardoDev sin publicar. `IntegratedAccess1792800000001` añade `parties.read`/`dashboard.read` para ADMIN/AUDITOR; no concede roles a usuarios ni cambia datos de negocio. Seguir README principal §34. Readiness verifica todas las concesiones necesarias de la matriz, además del esquema. El ensayo `drill-recovery.mjs --with-files` recupera también binarios verificados con el SHA-256 persistido; el modo sin esa opción verifica solo la base. Cortes siguientes históricos.

@@ -46,6 +46,7 @@ export function ProjectDetailPage() {
         <h1>{project.name}</h1><p className="lead">{project.summary}</p><p>{project.creator} · {project.location}</p>
         <figure className={styles.figure}><img className={styles.cover} src={project.image} alt={project.imageAlt} width={768} height={427} /><figcaption>{project.imageCaption}</figcaption></figure>
         <BookmarkActions campaignId={project.id} />
+        <p><Link to={`/mis-incidencias/nueva?campaignId=${encodeURIComponent(project.id)}`}>Reportar información incorrecta o un problema de ejecución</Link></p>
         <VerificationBadges campaignId={project.id}/>
         </div>
         {funding}

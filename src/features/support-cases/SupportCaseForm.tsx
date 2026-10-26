@@ -51,7 +51,7 @@ export function SupportCaseForm({ context, onCreated, onUnauthorized }: { contex
     {uncertain && <Message tone="warning" title="Comprueba el resultado">Puedes reintentar con los mismos datos para recuperar la referencia. La edición queda bloqueada mientras el resultado sea desconocido.</Message>}
     <fieldset className={styles.fields} disabled={busy || uncertain || forbidden}>
       <FormField as="select" label="Tipo de incidencia" required value={draft.category} error={errors.category} onChange={event => setDraft(value => ({ ...value, category: event.target.value }))}>
-        <option value="">Selecciona el tipo</option>{SUPPORT_TYPES.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+        <option value="">Selecciona el tipo</option>{SUPPORT_TYPES.filter(([value]) => !context.publicReport || value === 'INCORRECT_INFORMATION' || value === 'PROJECT_NOT_EXECUTED').map(([value, label]) => <option value={value} key={value}>{label}</option>)}
       </FormField>
       <FormField label="Asunto" required maxLength={200} value={draft.subject} error={errors.subject} onChange={event => setDraft(value => ({ ...value, subject: event.target.value }))} />
       <FormField as="textarea" label="Descripción" required maxLength={10000} rows={7} value={draft.description} error={errors.description} help="Explica qué ocurrió. Evita incluir contraseñas o datos completos de tarjeta." onChange={event => setDraft(value => ({ ...value, description: event.target.value }))} />

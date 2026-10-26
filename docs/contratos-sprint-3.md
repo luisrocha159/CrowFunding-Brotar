@@ -1,4 +1,8 @@
-# Contratos del Sprint 3 · 0.10 · RicardoDev
+# Contratos del Sprint 3 · 0.11 · RicardoDev local
+
+## Extensión 0.11 · Soporte general y resumen por responsabilidad
+
+Integración local de `AlisonDev bd4ed69` sobre `7d48fbf`, sin publicar: seis rutas administrativas de soporte, reportes de terceros sobre campañas públicas, respuesta/asignación/estados e historial privado. El resumen permite ADMIN/AUDITOR/REVIEWER/COMPLIANCE/FINANCE/SUPPORT con agregados filtrados por responsabilidad; no concede otros permisos de consulta ni roles de usuario. **31 migraciones y 181 rutas** en el [inventario comprobable](contratos-http-sprint3.json). Los comandos de soporte responden 200; texto inválido 400, transición incompatible 409 y expediente/evidencia no disponible 404. El reporte y comandos aplican la cuota compartida de casos. [Correcciones, evidencia y alcance pendiente](revision-integracion-alison-sprint3-2026-10-25.md). S3-25 no está completa: faltan sus agregados financieros. Las notas anteriores de matriz ADMIN/AUDITOR son cortes históricos.
 
 ## Extensión de contrato 0.10 · Correo propio
 
