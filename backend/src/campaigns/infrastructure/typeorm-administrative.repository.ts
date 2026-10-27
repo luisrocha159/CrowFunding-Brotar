@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, ConflictException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import type { AdministrativeDetail, AdministrativeRepository, ReviewRound } from '../application/administrative-review'
@@ -111,7 +111,7 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
         await transactionAccess(manager,actorId,'campaign.publish')
         const [c]=await manager.query('SELECT id,creator_user_id,organization_id,currency_code,status FROM public.campaign WHERE id=$1',[id])
         await independentActor(manager,actorId,c)
-        try{await identityReady(manager,c)}catch(error){if(error instanceof Error)throw new ReviewInvalid(error.message);throw error}
+        try{await identityReady(manager,c)}catch(error){if(error instanceof ConflictException)throw error;if(error instanceof Error)throw new ReviewInvalid(error.message);throw error}
         await transactionAccess(manager,actorId,'campaign.publish')
       }
       await this.actor(manager, actorId)

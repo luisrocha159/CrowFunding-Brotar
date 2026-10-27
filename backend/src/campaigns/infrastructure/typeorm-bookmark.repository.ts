@@ -66,8 +66,9 @@ export class TypeormBookmarkRepository implements BookmarkRepository {
   }
   async updates(userId: string, page: number): Promise<BookmarkPage<FollowedUpdate>> {
     const from = `FROM public.campaign_update u JOIN public.campaign c ON c.id=u.campaign_id
+      LEFT JOIN brotar_extension.update_version v ON v.update_id=u.id
       JOIN public.campaign_bookmark b ON b.campaign_id=c.id AND b.user_id=$1 AND b.kind='FOLLOW'
-      WHERE (${publicHistory}) AND u.visibility='PUBLIC' AND u.deleted_at IS NULL AND u.published_at<=now()`
+      WHERE (${publicHistory}) AND u.visibility='PUBLIC' AND u.deleted_at IS NULL AND u.published_at<=now() AND v.withdrawn_at IS NULL`
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
       const count = await manager.query(`SELECT count(*)::int AS total ${from}`, [userId]) as { total: number }[]
       const rows = await manager.query(`SELECT u.id,c.id AS "campaignId",c.title AS "campaignTitle",

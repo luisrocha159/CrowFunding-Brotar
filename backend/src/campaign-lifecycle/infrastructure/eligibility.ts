@@ -1,3 +1,4 @@
+import {assertRepresentationSettled} from '../../verifications/infrastructure/representation-settlement'
 import {ForbiddenException} from '@nestjs/common'
 import type {EntityManager} from 'typeorm'
 import {LedgerConflict} from '../../contributions/domain/payment'
@@ -40,6 +41,7 @@ export async function identityReady(m:EntityManager,c:CampaignSubject){
   return row
  }
  if(!c.organization_id){await kyc(c.creator_user_id);return}
+ await assertRepresentationSettled(m,c.organization_id)
  const [org]=await m.query(`SELECT id FROM public.organization WHERE id=$1 AND deleted_at IS NULL AND status NOT IN ('SUSPENDED','CLOSED') FOR SHARE`,[c.organization_id])
  const legal=await approved('KYB_LEGAL',null,c.organization_id),rep=await approved('KYB_REPRESENTATIVE',null,c.organization_id)
  if(!org || !legal || !rep || legal.representative!==rep.representative || !(await m.query(`SELECT id FROM public.organization_member WHERE organization_id=$1 AND user_id::text=$2 AND organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN') AND joined_at<=clock_timestamp() AND (left_at IS NULL OR left_at>clock_timestamp())`,[c.organization_id,rep.representative])).length)throw new LedgerConflict('Faltan KYB DEMO y representación aprobados y vigentes.')

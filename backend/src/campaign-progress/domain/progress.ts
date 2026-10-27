@@ -31,3 +31,37 @@ export function validateUpdate(input: UpdateInput): Record<string, string> {
   else if (new Set(input.images.map(row => row.fileId)).size !== input.images.length || input.images.some(row => !uuid.test(row.fileId) || !plain(row.caption, 1, 300))) errors.images = 'Revisa las imágenes y sus descripciones; no deben repetirse.'
   return errors
 }
+
+export type PublicationChange = { action: 'CORRECT'; revision: string; reason: string; confirmed: true; title: string; body: string; milestoneId: string | null; images: UpdateInput['images'] } | { action: 'WITHDRAW'; revision: string; reason: string; confirmed: true }
+export const rewardStatuses = ['PENDING', 'IN_PROGRESS', 'FULFILLED', 'CANCELLED'] as const
+export interface RewardChange { revision: string; status: typeof rewardStatuses[number]; reason: string; confirmed: true; fulfilledOn: string | null; fileId: string | null }
+const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
+export function validatePublicationChange(value: unknown): Record<string,string> {
+  if (!record(value)) return { request: 'Solicitud inválida.' }
+  const errors: Record<string,string> = {}
+  const keys = ['action','revision','reason','confirmed',...(value.action === 'CORRECT' ? ['title','body','milestoneId','images'] : [])]
+  if (!['CORRECT','WITHDRAW'].includes(String(value.action)) || Object.keys(value).some(k => value[k] !== undefined && !keys.includes(k)) || keys.some(k => !Object.hasOwn(value,k))) errors.request = 'Selecciona una corrección o un retiro con sus campos correspondientes.'
+  if (!plain(value.revision as string,1,100)) errors.revision = 'Actualiza la versión de la novedad.'
+  if (!plain(value.reason as string,10,1000)) errors.reason = 'Explica el motivo con 10 a 1000 caracteres, sin HTML.'
+  if (value.confirmed !== true) errors.confirmed = 'Confirma el cambio de la publicación.'
+  if (value.action === 'CORRECT') {
+    if (!Array.isArray(value.images) || value.images.some(i => !record(i) || typeof i.fileId !== 'string' || typeof i.caption !== 'string' || Object.keys(i).some(k => !['fileId','caption'].includes(k)))) errors.images = 'Revisa las evidencias.'
+    else Object.assign(errors,validateUpdate({title:value.title as string,body:value.body as string,milestoneId:value.milestoneId as string|null,images:value.images as UpdateInput['images'],revision:value.revision as string,publish:true}))
+  }
+  return errors
+}
+export function validateRewardChange(value: unknown): Record<string,string> {
+  if (!record(value)) return { request: 'Solicitud inválida.' }
+  const errors: Record<string,string> = {}
+  const keys = ['revision','status','reason','confirmed','fulfilledOn','fileId']
+  if (Object.keys(value).some(k=>!keys.includes(k)) || keys.some(k=>!Object.hasOwn(value,k))) errors.request = 'Solicitud de seguimiento inválida.'
+  if (!plain(value.revision as string,1,100)) errors.revision = 'Actualiza la versión de la recompensa.'
+  if (!(rewardStatuses as readonly unknown[]).includes(value.status)) errors.status = 'Selecciona un estado válido.'
+  if (!plain(value.reason as string,10,1000)) errors.reason = 'Describe el cambio con 10 a 1000 caracteres, sin HTML.'
+  if (value.confirmed !== true) errors.confirmed = 'Confirma el cambio de seguimiento.'
+  if (value.status === 'FULFILLED') {
+    if (typeof value.fulfilledOn !== 'string' || !date(value.fulfilledOn) || value.fulfilledOn < '2000-01-01') errors.fulfilledOn = 'Usa una fecha real no futura.'
+    if (typeof value.fileId !== 'string' || !uuid.test(value.fileId)) errors.fileId = 'Adjunta evidencia privada del cumplimiento.'
+  } else if (value.fulfilledOn !== null || value.fileId !== null) errors.evidence = 'La fecha y evidencia corresponden al cumplimiento.'
+  return errors
+}

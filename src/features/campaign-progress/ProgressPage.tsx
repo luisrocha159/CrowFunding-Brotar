@@ -6,6 +6,7 @@ import { SessionError } from '../../shared/api/sessionError'
 import { progressStatuses, validateProgress } from '../../../backend/src/campaign-progress/domain/progress'
 import { failureText, readProgress, saveProgress, type ActualRow, type ProgressState } from './progressClient'
 import { UpdatesEditor } from './UpdatesEditor'
+import { RewardsManager } from './RewardsManager'
 import { projectStatusNames } from '../campaigns/projectsClient'
 import styles from './progress.module.css'
 const progressLabels: Record<string, string> = { PLANNED: 'Planificado', IN_PROGRESS: 'En curso', COMPLETED: 'Completado', DELAYED: 'Con retraso', CANCELLED: 'Cancelado' }
@@ -18,10 +19,11 @@ export function ProgressPage() {
 }
 function ProgressEditor({ id }: { id: string }) {
   const [data, setData] = useState<ProgressState | null>(null); const [dirty, setDirty] = useState(false); const [updateDirty, setUpdateDirty] = useState(false)
+  const [rewardDirty,setRewardDirty]=useState(false)
   const [discard, setDiscard] = useState(false)
   const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [retry, setRetry] = useState(0); const [busy, setBusy] = useState(false); const locked = useRef(false); const [expired, setExpired] = useState(false)
-  const blocker = useBlocker(dirty || updateDirty)
-  useBeforeUnload(event => { if (dirty || updateDirty) { event.preventDefault(); event.returnValue = '' } })
+  const blocker = useBlocker(dirty || updateDirty || rewardDirty)
+  useBeforeUnload(event => { if (dirty || updateDirty || rewardDirty) { event.preventDefault(); event.returnValue = '' } })
   useEffect(() => { const controller = new AbortController(); readProgress(id, controller.signal).then(value => { if (!controller.signal.aborted) { setData(value); setDirty(false); setError('') } }).catch(e => { if (!controller.signal.aborted) { if (e instanceof SessionError && e.status === 401) setExpired(true); else setError(failureText(e)) } }); return () => controller.abort() }, [id, retry])
   if (expired) return <Navigate replace to="/iniciar-sesion" />
   function edit(key: 'activities' | 'milestones', index: number, patch: Partial<ActualRow>) { setData(current => current ? { ...current, [key]: current[key].map((row, i) => i === index ? { ...row, ...patch } : row) } : current); setDirty(true); setNotice('') }
@@ -48,5 +50,6 @@ function ProgressEditor({ id }: { id: string }) {
       <div className={styles.actions}><Button disabled={!data.editable || !dirty} loading={busy} onClick={() => { void save() }}>Guardar avances</Button><Button variant="secondary" disabled={busy || updateDirty} onClick={() => dirty ? setDiscard(true) : setRetry(v => v + 1)}>Actualizar datos</Button></div>
       <>{discard && <section role="alertdialog" aria-label="Recargar avances" className={styles.card}><h2>Recargar la versión guardada</h2><p>Se descartarán tus cambios locales de avances. Puedes cancelar para conservarlos y copiarlos antes de recargar.</p><div className={styles.actions}><Button onClick={() => { setRetry(v => v + 1); setDiscard(false) }}>Descartar cambios y recargar</Button><Button variant="secondary" onClick={() => setDiscard(false)}>Conservar mis cambios</Button></div></section>}</>
       <UpdatesEditor id={id} progress={data} progressDirty={dirty} onDirty={setUpdateDirty} />
+      <RewardsManager id={id} onDirty={setRewardDirty} />
     </>}</div>
 }

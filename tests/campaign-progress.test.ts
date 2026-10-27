@@ -13,3 +13,12 @@ describe('contratos de avances', () => {
     assert.throws(() => creatorFrom({ items: [{ id: 'c1', amountRaised: 10 }] }))
   })
 })
+
+test('contratos privados rechazan versiones de novedades y recompensas malformadas', async () => {
+ const client=await import('../src/features/campaign-progress/publicationClient')
+ assert.throws(()=>client.publicationHistoryFrom({items:[{version:0}],total:1,page:1,pageSize:20}))
+ assert.throws(()=>client.rewardTrackingFrom({items:[],total:0}))
+ const payload={mode:'DEMO',campaign:{id:'campaign',title:'Campaña',status:'IN_EXECUTION'},editable:true,items:[{id:'contribution',reference:'R1',title:'Reconocimiento',promise:'Reconocimiento público',promisedOn:null,status:'PENDING',fulfilledOn:null,fileId:null,notes:null,revision:'r1'}],total:1,fulfilled:0,page:1,pageSize:20}
+ assert.equal(client.rewardTrackingFrom(payload).items[0]?.status,'PENDING')
+ assert.throws(()=>client.rewardTrackingFrom({...payload,items:[{...payload.items[0],status:'SHIPPED'}]}))
+})

@@ -26,6 +26,61 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/accountability",
+      "controller": "AdminAccountabilityController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/accountability/:id",
+      "controller": "AdminAccountabilityController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/accountability/:id/actions",
+      "controller": "AdminAccountabilityController",
+      "handler": "act",
+      "guards": [
+        "AccountabilityOriginGuard",
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/accountability/:id/documents/:fileId",
+      "controller": "AdminAccountabilityController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "GET",
       "path": "/api/admin/audit",
       "controller": "AuditController",
       "handler": "list",
@@ -69,6 +124,7 @@
       "controller": "AdminClosureController",
       "handler": "act",
       "guards": [
+        "AccountabilityOriginGuard",
         "CaseWriteLimitGuard",
         "RoleGuard",
         "SessionMutationGuard"
@@ -665,6 +721,74 @@
       ]
     },
     {
+      "method": "GET",
+      "path": "/api/administration/parties/users/:id",
+      "controller": "PartyAdministrationController",
+      "handler": "user",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/administration/parties/users/:id",
+      "controller": "PartyAdministrationController",
+      "handler": "updateUser",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/administration/representation-requests",
+      "controller": "RepresentationAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/administration/representation-requests/:id",
+      "controller": "RepresentationAdministrationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/administration/representation-requests/:id/actions",
+      "controller": "RepresentationAdministrationController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "parties.read"
+      ]
+    },
+    {
       "method": "POST",
       "path": "/api/auth/email-availability",
       "controller": "RegistrationController",
@@ -784,6 +908,46 @@
     },
     {
       "method": "GET",
+      "path": "/api/campaigns/:id/reward-tracking",
+      "controller": "ProgressController",
+      "handler": "rewards",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/:id/reward-tracking/:contributionId",
+      "controller": "ProgressController",
+      "handler": "changeReward",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/reward-tracking/:contributionId/history",
+      "controller": "ProgressController",
+      "handler": "rewardHistory",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/campaigns/:id/updates",
       "controller": "ProgressController",
       "handler": "updates",
@@ -813,6 +977,33 @@
       "path": "/api/campaigns/:id/updates/:updateId",
       "controller": "ProgressController",
       "handler": "saveUpdate",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/:id/updates/:updateId/history",
+      "controller": "ProgressController",
+      "handler": "history",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/:id/updates/:updateId/publication",
+      "controller": "ProgressController",
+      "handler": "publication",
       "guards": [
         "RoleGuard",
         "SessionMutationGuard"
@@ -1645,6 +1836,48 @@
     },
     {
       "method": "GET",
+      "path": "/api/me/accountability/:id",
+      "controller": "OwnAccountabilityController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/accountability/:id/actions",
+      "controller": "OwnAccountabilityController",
+      "handler": "act",
+      "guards": [
+        "AccountabilityOriginGuard",
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/accountability/:id/documents/:fileId",
+      "controller": "OwnAccountabilityController",
+      "handler": "document",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/me/bookmarks",
       "controller": "BookmarkController",
       "handler": "list",
@@ -1715,6 +1948,7 @@
       "controller": "OwnClosureController",
       "handler": "act",
       "guards": [
+        "AccountabilityOriginGuard",
         "CaseWriteLimitGuard",
         "RoleGuard",
         "SessionMutationGuard"
@@ -1984,6 +2218,48 @@
     },
     {
       "method": "GET",
+      "path": "/api/me/organizations/:id/members",
+      "controller": "OrganizationManagementController",
+      "handler": "members",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/organizations/:id/members",
+      "controller": "OrganizationManagementController",
+      "handler": "changeMember",
+      "guards": [
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/organizations/:id/representation-requests",
+      "controller": "RepresentationController",
+      "handler": "propose",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/me/refunds",
       "controller": "OwnRefundController",
       "handler": "list",
@@ -2022,6 +2298,47 @@
       "permissions": [
         "contribution.read.own"
       ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/representation-requests",
+      "controller": "RepresentationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/representation-requests/:id",
+      "controller": "RepresentationController",
+      "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/representation-requests/:id/actions",
+      "controller": "RepresentationController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
     },
     {
       "method": "GET",

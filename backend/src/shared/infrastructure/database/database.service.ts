@@ -43,6 +43,24 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AND to_regclass('brotar_extension.email_challenge') IS NOT NULL
           AND to_regclass('brotar_extension.mail_delivery') IS NOT NULL
           AND to_regclass('brotar_extension.notification_source') IS NOT NULL
+          AND to_regclass('brotar_extension.update_version') IS NOT NULL
+          AND to_regclass('brotar_extension.update_history') IS NOT NULL
+          AND to_regclass('brotar_extension.reward_history') IS NOT NULL
+          AND NOT has_table_privilege(current_user,'brotar_extension.update_history','UPDATE')
+          AND NOT has_table_privilege(current_user,'brotar_extension.reward_history','DELETE')
+          AND to_regclass('brotar_extension.accountability_state') IS NOT NULL
+          AND to_regclass('brotar_extension.accountability_document') IS NOT NULL
+          AND to_regclass('brotar_extension.accountability_revision') IS NOT NULL
+          AND to_regclass('brotar_extension.accountability_event') IS NOT NULL
+          AND to_regclass('brotar_extension.beneficiary_return') IS NOT NULL
+          AND to_regclass('brotar_extension.representation_request') IS NOT NULL
+          AND to_regclass('brotar_extension.representation_event') IS NOT NULL
+          AND NOT has_table_privilege(current_user,'brotar_extension.representation_event','UPDATE')
+          AND NOT has_table_privilege(current_user,'brotar_extension.representation_event','DELETE')
+          AND to_regclass('brotar_extension.party_state') IS NOT NULL
+          AND to_regclass('brotar_extension.party_history') IS NOT NULL
+          AND NOT has_table_privilege(current_user,'brotar_extension.party_history','UPDATE')
+          AND NOT has_table_privilege(current_user,'brotar_extension.party_history','DELETE')
           AND has_column_privilege(current_user,'public.app_user','email_verified_at','UPDATE')
           AND to_regclass('brotar_extension.demo_event') IS NOT NULL
           AND to_regclass('brotar_extension.demo_compensation') IS NOT NULL

@@ -1,3 +1,4 @@
+import {assertRepresentationSettled} from './representation-settlement'
 import { randomUUID } from 'node:crypto'
 import { Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
@@ -10,7 +11,7 @@ import {reviewPlan,type ReviewInput} from '../domain/review'
 import type { PayoutSummary, VerificationDetail, VerificationDocument, VerificationRepository, VerificationSummary, VerificationType } from '../application/verifications'
 import { approvedPolicy, assertEditableVerification, CAPTURE_TYPES, InvalidVerification, validateSubmission, VerificationConflict, VerificationForbidden, VerificationPolicyUnavailable, VerificationUnavailable, type VerificationPolicy, type VerificationSubmission } from '../domain/verification'
 
-const subject = `(v.user_id=$1 OR EXISTS(SELECT 1 FROM public.organization_member m JOIN public.organization o ON o.id=m.organization_id
+const subject = `((v.organization_id IS NULL AND v.user_id=$1) OR EXISTS(SELECT 1 FROM public.organization_member m JOIN public.organization o ON o.id=m.organization_id
   WHERE m.organization_id=v.organization_id AND m.user_id=$1 AND (m.left_at IS NULL OR m.left_at>clock_timestamp()) AND m.joined_at<=clock_timestamp()
   AND m.organization_role::text=ANY($3::text[]) AND o.deleted_at IS NULL))`
 const summary = `v.id,t.name AS "typeName",t.code AS "typeCode",v.organization_id AS "organizationId",o.legal_name AS "organizationName",
@@ -28,6 +29,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
     if (!rows.some(row => row.code === 'REGISTERED_USER') || (write && rows.some(row => row.code === 'AUDITOR'))) throw new VerificationForbidden()
   }
   private async organization(manager: EntityManager, userId: string, id: string) {
+    await manager.query('SELECT id FROM public.organization WHERE id=$1 FOR SHARE',[id])
     const rows: { id: string }[] = await manager.query(`SELECT o.id FROM public.organization o JOIN public.organization_member m ON m.organization_id=o.id
       WHERE o.id=$1 AND o.deleted_at IS NULL AND m.user_id=$2 AND (m.left_at IS NULL OR m.left_at>clock_timestamp()) AND m.joined_at<=clock_timestamp()
       AND m.organization_role::text=ANY($3::text[]) FOR SHARE OF o`, [id, userId, ORGANIZATION_MANAGERS])
@@ -57,6 +59,10 @@ export class TypeormVerificationRepository implements VerificationRepository {
     return rows.map(row => ({ ...row, updatedAt: iso(row.updatedAt)! }))
   }
   private async row(manager: EntityManager, userId: string, id: string, lock = false, administrative=false): Promise<CaseRow> {
+    if(lock){
+      const [subject]=await manager.query('SELECT organization_id FROM public.verification WHERE id=$1',[id])
+      if(subject?.organization_id)await manager.query('SELECT id FROM public.organization WHERE id=$1 FOR SHARE',[subject.organization_id])
+    }
     const rows: CaseRow[] = await manager.query(`SELECT ${summary},v.verification_type_id AS "verificationTypeId",v.updated_at::text AS version,
       v.result_notes AS "resultNotes",v.rejection_reason AS "rejectionReason",v.submitted_at AS "submittedAt",v.submitted_data AS "submittedData"
       ${joined} WHERE v.id=$2 AND (${administrative?'$1::uuid IS NOT NULL AND $3::text[] IS NOT NULL':subject}) ${lock ? 'FOR UPDATE OF v' : ''}`, [userId, id, ORGANIZATION_MANAGERS])
@@ -100,10 +106,10 @@ export class TypeormVerificationRepository implements VerificationRepository {
       const policy = await this.policy(manager, typeId)
       if (!policy) throw new VerificationPolicyUnavailable()
       await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`verification:${organizationId ?? userId}:${typeId}`])
-      const existing: { id: string }[] = await manager.query(`SELECT id FROM public.verification WHERE verification_type_id=$1
+      const existing: { id: string; status:string }[] = await manager.query(`SELECT id,status FROM public.verification WHERE verification_type_id=$1
         AND (($2::uuid IS NOT NULL AND organization_id=$2) OR ($2::uuid IS NULL AND user_id=$3)) ORDER BY created_at DESC,id LIMIT 1`, [typeId, organizationId, userId])
-      // Un reintento recupera el caso existente, incluso después de enviarlo. No crea rondas paralelas.
-      if (existing[0]) return this.detailWith(manager, userId, existing[0].id)
+      // Un reintento recupera el caso existente; una representación caducada inicia otra ronda conservando el expediente anterior.
+      if (existing[0] && existing[0].status!=='EXPIRED') return this.detailWith(manager, userId, existing[0].id)
       await this.actor(manager, userId, true)
       if (organizationId) await this.organization(manager, userId, organizationId)
       const id = randomUUID()
@@ -162,7 +168,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
     await this.actor(manager, userId)
     return manager.query(`SELECT p.id,p.organization_id AS "organizationId",p.account_holder_name AS "accountHolderName",p.bank_name AS "bankName",
       right(p.account_number_last4,4) AS last4,p.currency_code AS currency,p.status FROM public.payout_account p
-      WHERE p.deleted_at IS NULL AND (p.user_id=$1 OR EXISTS(SELECT 1 FROM public.organization_member m JOIN public.organization o ON o.id=m.organization_id
+      WHERE p.deleted_at IS NULL AND ((p.organization_id IS NULL AND p.user_id=$1) OR EXISTS(SELECT 1 FROM public.organization_member m JOIN public.organization o ON o.id=m.organization_id
         WHERE m.organization_id=p.organization_id AND m.user_id=$1 AND (m.left_at IS NULL OR m.left_at>clock_timestamp()) AND m.joined_at<=clock_timestamp() AND o.deleted_at IS NULL AND m.organization_role::text=ANY($2::text[]))) ORDER BY p.created_at DESC,p.id`, [userId, ORGANIZATION_MANAGERS])
   }
 
@@ -197,6 +203,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
       if(!policy?.version.startsWith('mvp-demo-'))throw new VerificationPolicyUnavailable()
       const plan=reviewPlan(row.status,input,before.documents.map(d=>d.fileId))
       if(plan.decision==='APPROVED'){
+        if(row.organizationId)await assertRepresentationSettled(m,row.organizationId)
         const submitted=validateSubmission(policy,{policyVersion:row.submittedData.policyVersion??'',fields:row.submittedData.fields??{},documents:row.submittedData.documents??[],accepted:row.submittedData.accepted??false})
         if(!row.submittedData.acceptedBy || !row.submittedData.acceptedAt || submitted.documents.length!==before.documents.length)throw new InvalidVerification()
         if(row.organizationId){
