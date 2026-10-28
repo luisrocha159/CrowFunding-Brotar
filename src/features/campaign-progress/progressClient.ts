@@ -5,7 +5,7 @@ export type { ProgressInput, UpdateInput }
 export interface ActualRow { id: string; name: string; responsibleName: string; status: string; progressPercent: number; plannedStartOn: string | null; plannedEndOn: string | null; actualStartOn: string | null; actualEndOn: string | null }
 export interface Indicator { id: string; name: string; unit: string | null; targetValue: string | null; achievedValue: string | null }
 export interface ProgressState { revision: string; campaign: { id: string; title: string; status: string }; editable: boolean; activities: ActualRow[]; milestones: ActualRow[]; indicators: Indicator[] }
-export interface UpdateItem { id: string; title: string; body: string; milestoneId: string | null; publishedAt: string | null; revision?: string; images: { fileId: string; caption: string }[]; progress: ProgressState | null }
+export interface UpdateItem { version?: number; withdrawnAt?: string | null; id: string; title: string; body: string; milestoneId: string | null; publishedAt: string | null; revision?: string; images: { fileId: string; caption: string }[]; progress: ProgressState | null }
 export interface CreatorItem { id: string; title: string; status: string; currencyCode: string | null; goalAmount: string | null; amountRaised: string; fundingPercent: string; organizationId: string | null; organizationName: string | null; updateCount: number; activityProgress: string | null }
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
 const string = (v: unknown): v is string => typeof v === 'string'
@@ -16,7 +16,7 @@ export function progressFrom(v: unknown): ProgressState {
   return v as unknown as ProgressState
 }
 export function updatesFrom(v: unknown): UpdateItem[] {
-  if (!object(v) || !Array.isArray(v.items) || !v.items.every(i => object(i) && ['id', 'title', 'body'].every(k => string(i[k])) && nullable(i.milestoneId) && nullable(i.publishedAt) && (i.revision === undefined || string(i.revision)) && Array.isArray(i.images) && i.images.every(f => object(f) && string(f.fileId) && string(f.caption)) && (i.progress === null || Boolean(progressFrom(i.progress))))) throw new SessionError(0)
+  if (!object(v) || !Array.isArray(v.items) || !v.items.every(i => object(i) && ['id', 'title', 'body'].every(k => string(i[k])) && nullable(i.milestoneId) && nullable(i.publishedAt) && (i.revision === undefined || string(i.revision)) && (i.version === undefined || Number.isSafeInteger(i.version) && Number(i.version)>0) && (i.withdrawnAt === undefined || nullable(i.withdrawnAt)) && Array.isArray(i.images) && i.images.every(f => object(f) && string(f.fileId) && string(f.caption)) && (i.progress === null || Boolean(progressFrom(i.progress))))) throw new SessionError(0)
   return v.items as UpdateItem[]
 }
 export function creatorFrom(v: unknown): CreatorItem[] {

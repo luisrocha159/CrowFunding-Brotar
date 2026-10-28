@@ -95,6 +95,8 @@ export const router = createBrowserRouter([
       {path:'administracion/disputas/:id',element:<DisputesPage administrative/>},
       { path: 'panel-creador', element: <CreatorDashboardPage /> },
       { path: 'mis-proyectos/:id/rendicion', element: <AccountabilityPage /> },
+      { path: 'administracion/rendicion', element: <AccountabilityPage administrative /> },
+      { path: 'administracion/rendicion/:id', element: <AccountabilityPage administrative /> },
       { path: 'administracion', element: <AdministrativeDashboardPage /> },
       { path: 'mis-proyectos/:id/avances', element: <ProgressPage /> },
       { path: 'administracion/catalogos', element: <CatalogsPage /> },

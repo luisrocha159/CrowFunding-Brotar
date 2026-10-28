@@ -2,7 +2,7 @@
 
 ## Corte integrado RicardoDev
 
-Para instalar la versión actual, seguir primero [README principal, §3 y §34–36](../README.md). Incluye 32 migraciones con categorías, correo, respuestas de soporte y panel por responsabilidad. Las 182 rutas se comprueban con el inventario HTTP. La nueva ruta propia de mensajes y los mensajes administrativos exigen `requestId` UUID y texto validado; actualizar frontend y backend juntos. [Contrato, pruebas y recorridos](../docs/cierre-alison-panel-soporte-correo-2026-10-25.md). Mantener credenciales fuera de Git; no copiar el `.env` completo de otra máquina. Los apartados históricos siguientes no sustituyen esa preparación.
+Para instalar el corte local integrado, seguir [README principal §3 y §34–39](../README.md). Incluye **36 migraciones**: soporte/correo y las cuatro ampliaciones de Santiago (seguimiento, rendición, personas y representación). Actualizar frontend y backend juntos, respaldar la base y aplicar el registro completo con el comando habitual. Las credenciales son privadas por instalación. Legal definitivo sigue pendiente. Los apartados históricos conservan su fecha.
 
 Backend independiente: **NestJS 12 + TypeScript + pnpm 11.19.0**, ejecutado en Node.js 24 (>=24.13.0). El frontend permanece en la raíz del repositorio y usa Bun. No hay workspace común ni lockfiles mezclados.
 

@@ -10,6 +10,7 @@ import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/au
 import {transactionAccess} from '../../roles/infrastructure/transaction-access'
 import {cycleTarget,fundingOutcome} from '../domain/cycle'
 import {campaignFunds,identityReady,independentActor,ownerAccess,unsettled,type CampaignSubject} from './eligibility'
+import {closureRequiredSpend} from '../../accountability/infrastructure/accountability-integrity'
 import {closureSnapshot,executionPending} from './closure-integrity'
 
 interface Campaign extends CampaignSubject {title:string;goal_amount:string;funding_model:string;ends_at:Date|null;ended:boolean}
@@ -55,12 +56,14 @@ export class CampaignCycle {
    const pending=await executionPending(m,c.id)
    if(pending.progress)blockers.push('Completar actividades e hitos con sus resultados reales.')
    if(pending.rewards)blockers.push('Completar las recompensas de los aportes confirmados.')
-   const [report]=await m.query(`SELECT r.id FROM public.accountability_report r JOIN brotar_extension.campaign_final_report x ON x.report_id=r.id AND x.campaign_id=r.campaign_id WHERE r.campaign_id=$1 AND x.progress_hash=$6 AND r.id=(SELECT r2.id FROM public.accountability_report r2 JOIN brotar_extension.campaign_final_report x2 ON x2.report_id=r2.id WHERE r2.campaign_id=$1 ORDER BY r2.created_at DESC,r2.id DESC LIMIT 1) AND r.is_final AND r.status IN ('APPROVED','PUBLISHED') AND r.reviewed_by IS NOT NULL AND r.reviewed_by<>$2 AND r.reviewed_by IS DISTINCT FROM r.submitted_by AND r.reviewed_at IS NOT NULL AND r.currency_code=$3 AND r.funds_received=$4::numeric AND r.funds_spent=r.funds_received
+   const settlement=await closureRequiredSpend(m,c.id,funds.disbursed)
+   if(totalMoney(settlement.pending))blockers.push('Completar o rechazar las devoluciones de remanente pendientes.')
+   const [report]=await m.query(`SELECT r.id FROM public.accountability_report r JOIN brotar_extension.campaign_final_report x ON x.report_id=r.id AND x.campaign_id=r.campaign_id WHERE r.campaign_id=$1 AND x.progress_hash=$6 AND r.id=(SELECT r2.id FROM public.accountability_report r2 JOIN brotar_extension.campaign_final_report x2 ON x2.report_id=r2.id WHERE r2.campaign_id=$1 ORDER BY r2.created_at DESC,r2.id DESC LIMIT 1) AND r.is_final AND r.status IN ('APPROVED','PUBLISHED') AND r.reviewed_by IS NOT NULL AND r.reviewed_by<>$2 AND r.reviewed_by IS DISTINCT FROM r.submitted_by AND r.reviewed_at IS NOT NULL AND r.currency_code=$3 AND r.funds_received=$4::numeric AND r.funds_spent=$7::numeric
     AND r.funds_spent=COALESCE((SELECT sum(e.spent_amount) FROM public.accountability_expense e WHERE e.report_id=r.id),0)
     AND r.period_start IS NOT NULL AND r.period_end<=((clock_timestamp() AT TIME ZONE 'America/La_Paz')::date)
     AND NOT EXISTS(SELECT 1 FROM public.organization_member mem WHERE mem.organization_id=$5 AND mem.user_id=r.reviewed_by AND mem.joined_at<=r.reviewed_at AND (mem.left_at IS NULL OR mem.left_at>r.reviewed_at))
     AND NOT EXISTS(SELECT 1 FROM public.accountability_expense e WHERE e.report_id=r.id AND (e.currency_code<>$3 OR e.spent_on IS NULL OR e.spent_on<r.period_start OR e.spent_on>r.period_end OR NOT EXISTS(SELECT 1 FROM public.file_attachment a JOIN public.file_asset f ON f.id=a.file_id WHERE a.accountability_expense_id=e.id AND f.scope='PRIVATE' AND f.storage_key LIKE 'CLOSURE_EVIDENCE/%' AND f.deleted_at IS NULL)))
-    AND NOT EXISTS(SELECT 1 FROM public.disbursement d WHERE d.campaign_id=$1 AND d.status='COMPLETED' AND d.completed_at>r.reviewed_at)`,[c.id,c.creator_user_id,c.currency_code,funds.disbursed,c.organization_id,await closureSnapshot(m,c.id)])
+    AND NOT EXISTS(SELECT 1 FROM public.disbursement d WHERE d.campaign_id=$1 AND d.status='COMPLETED' AND d.completed_at>r.reviewed_at)`,[c.id,c.creator_user_id,c.currency_code,funds.disbursed,c.organization_id,await closureSnapshot(m,c.id),settlement.requiredSpent])
    if(!report)blockers.push('Presentar y aprobar una rendición final vigente, con gastos respaldados, revisión independiente y saldo cero desde Preparar cierre.')
   }
   return blockers

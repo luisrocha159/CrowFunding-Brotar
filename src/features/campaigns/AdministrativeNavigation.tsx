@@ -16,6 +16,7 @@ export function AdministrativeNavigation() {
     {can('finance.read') && <NavLink to="/administracion/devoluciones">Devoluciones DEMO</NavLink>}
     {can('campaign.lifecycle.read') && <NavLink to="/administracion/ciclo-campanas">Ciclo de campañas DEMO</NavLink>}
     {can('campaign.closure.read') && <NavLink to="/administracion/cierre-campanas">Preparar cierres DEMO</NavLink>}
+    {can('campaign.lifecycle.read') && <NavLink to="/administracion/rendicion">Rendición y remanentes DEMO</NavLink>}
     {can('finance.read') && <NavLink to="/administracion/desembolsos">Desembolsos DEMO</NavLink>}
     {can('support.read') && <NavLink to="/administracion/disputas">Disputas DEMO</NavLink>}
     {can('support.read') && <NavLink to="/administracion/soporte">Bandeja de soporte</NavLink>}

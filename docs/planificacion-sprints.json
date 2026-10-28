@@ -1,11 +1,11 @@
 {
-  "version": "2.11",
+  "version": "2.12",
   "localProgressSprint3": {
-    "date": "2026-10-25",
+    "date": "2026-10-28",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "25/10: 221 frontend + 217 backend + 8 ADMIN local + 40 integración = 486 casos distintos aprobados. Regresión completa 40/40 con reinicio/recuperación e instalación desde SQL oficial; comprobación posterior del último ajuste de concurrencia: 4/4 en soporte, disputa y panel. Lint/tipos/builds aprobados. 182 rutas, 32 migraciones; original respaldado, migrado/repetible y readiness comprobado. SMTP privado: conexión/autenticación verificada, sin envío externo nuevo; cola/reintentos/destinatario con remitente sustituido. Prueba visual de respuesta obligatoria, guardado/estado y panel/enlace financiero. Sin push/Trello; legal y aceptación global pendientes.",
-    "evidence": "cierre-alison-panel-soporte-correo-2026-10-25.md",
+    "verification": "242 pruebas frontend + 232 backend + 8 ADMIN local; lint/tipos/builds aprobados. Cobertura de 48 escenarios PostgreSQL/HTTP verificada: 45 aprobados en regresión general y tres detenidos por precondiciones del entorno (dos exigen nombre QA, uno modo DEMO). Repetición en copia nueva QA con DEMO habilitado: 4/4 aprobados, incluidos esos tres y S3-14 con los últimos límites de campos opcionales. No se presenta la ejecución general inicial como 48/48 ni se suman repeticiones. 36 migraciones, 205 rutas; 97 tablas originales con contenido idéntico tras migrar, readiness y cinco categorías comprobados. Sin push/Trello/correos externos; legal y diferencias S3-12/13/14/aceptación global pendientes.",
+    "evidence": "revision-integracion-santiago-2026-10-28.md",
     "previousEvidence": "revision-integracion-alison-sprint3-2026-10-25.md",
     "rules": "decisiones/ADR-013-definiciones-integracion-mvp-demo.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
@@ -24,18 +24,18 @@
       "S3-07": "Cierre técnico previo preservado y revalidado: conciliación DEMO, pendientes/referencias/diferencias, resolución/compensación sin ingreso y cierre protegido.",
       "S3-17": "Cierre técnico local de Santiago preservado/revalidado: categorías y referencias, dos parámetros acordados tipados, ADMIN escribe/AUDITOR lee, actor y auditoría atómicos, consumidor de alertas persistidas. Revalidación tras bloqueos y compatibilidad histórica verificadas; sin reasignar autoría ni añadir parámetros fuera del acuerdo.",
       "S3-22": "Cierre técnico local: favoritos/seguimiento independientes, persistidos, idempotentes y con novedades; sin correo externo.",
-      "S2-06": "Parcial global: captura/revisión sintéticas y destino DEMO enlazado a desembolsos implementados. Legal/contactos reales siguen pendientes; no cerrar automáticamente tareas de otro responsable.",
-      "S2-07": "Parcial: expedientes KYB y destino institucional DEMO con representación vigente comprobada. Gestión completa de representantes y legal real siguen pendientes.",
+      "S2-06": "Parcial global: captura/revisión/documentos y destino DEMO operativos. Pendiente S1-11 legal aprobada/versionada y conexión final de consentimiento/políticas KYC con sus pruebas; no falta correo por instalar.",
+      "S2-07": "Parcial global: solicitud OWNER, aceptación autenticada y aprobación independiente de representación integradas; membresía atómica e invalidación KYB previos. Pendiente legal S1-11 y su integración final con requisitos/aceptaciones versionados.",
       "S2-08": "Cierre técnico DEMO local: colas persona/organización, revisión privada, documentos, decisiones motivadas/versionadas con responsable/fecha, sin autoaprobación y distintivos públicos mínimos. No aprueba identidad real ni legal, no concede roles ni habilita desembolsos.",
-      "S2-09": "Correcciones, observaciones, versiones y reenvío integrados con decisiones y revalidados. No se declara cierre adicional de la tarjeta de Santiago en este incremento; notificaciones reales y aceptación integral de su alcance siguen pendientes.",
+      "S2-09": "Cierre técnico DEMO: observaciones, corrección/versiones/reenvío y avisos privados integrados; la política definitiva se mantiene abierta en S2-06/S2-07.",
       "S3-02": "Cierre técnico del núcleo DEMO: importes/cupos/idempotencia y estados enlazados con devoluciones/disputas/ciclo; avisos tardíos no duplican ni reabren pagos. Recaudación oficial menos devoluciones completadas. Sin proveedor bancario real.",
       "S3-08": "Implementado alcance DEMO local: destino ficticio revisado, solicitud propia, autorización/proceso/resultado por FINANCE independiente, bruto/costos cero/neto, fechas, referencias únicas, saldo/reservas e idempotencia. No es transferencia bancaria ni cierre de rendición.",
       "S3-09": "Cierre técnico DEMO local: solicitud propia, autorización/resultado separados por FINANCE, total/parcial, saldo/reservas, idempotencia y trazabilidad. Rechazo/fallo no resta ingresos; sin dinero real ni correo.",
       "S3-10": "Cierre técnico local: registro propio y de terceros, evidencias privadas, bandeja/asignación, conversación titular/soporte y estados/historial auditados. Respuestas idempotentes, límites Unicode/longitud, permisos tras bloqueos y exclusión de disputas incluso con conversión concurrente. Avisos internos y correo al titular con dirección verificada/preferencia, outbox transaccional y reintentos; sin exponer textos privados. Casos cerrados no reciben mensajes nuevos.",
       "S3-11": "Cierre técnico DEMO local: bandeja/prioridad/asignación SUPPORT, mensajes privados/compartidos, solicitud de información, escalamiento, resolución/reapertura/cierre con versión e historial. Recomendar no mueve dinero; la devolución se autoriza aparte por FINANCE.",
-      "S3-12": "Parcial de Santiago: avances/publicación/instantáneas integrados. S3-23 añade cumplimiento mínimo DEMO con evidencia privada para cerrar; no construye logística, gestión general ni todas las operaciones de retiro/cumplimiento de su alcance.",
-      "S3-13": "Parcial de Santiago: consulta histórica y rendición final mínima con gastos/evidencias, revisión independiente y correcciones por nueva versión integradas para S3-23. Informes periódicos/borradores, editor general y resolución operativa completa de remanentes siguen pendientes; no se cierra su tarjeta.",
-      "S3-14": "Parcial: consultas administrativas y edición propia básica; faltan miembros/representantes, edición de terceros y restricciones.",
+      "S3-12": "Parcial de alcance: avances/recompensas, corrección y retiro propio con historial integrados. ADR-013 pide retiro administrativo y corrección por nueva publicación referenciada: la API actual solo permite al autor y versiona el mismo UUID. No cerrar automáticamente por el estado de SantiagoDev/Trello.",
+      "S3-13": "Parcial de alcance: borradores/versiones de períodos, gastos/evidencias, revisión, remanentes DEMO y final acumulativo implementados. ADR-013 aún exige periodicidad mensual y resumen público aprobado sin documentos; hoy son períodos libres sin superposición y la proyección pública no existe.",
+      "S3-14": "Parcial de alcance: administración de terceros, restricciones/sesiones, colaboradores e historial implementados; representación sensible requiere aceptación/aprobación. ADD ordinario de ADMIN/MEMBER concede vínculo inmediatamente; falta aceptación del invitado prevista en ADR-013.",
       "S3-15": "Cierre técnico transversal del corte integrado: decisiones/operaciones existentes, registro/sesión/perfil, captura KYC, organizaciones, archivos, guardados, avances, simulaciones, ciclo/rendición/desembolsos y soporte mínimo auditados. READ privado/EXPORT mínimos; actor local, rollback, privacidad y retención DEMO comprobados. Las funciones generales todavía no construidas no se aceptan por anticipado.",
       "S3-16": "Cierre técnico transversal del corte integrado: responsabilidades, pertenencia y separación de funciones de las API actuales; AUDITOR también en perfil, concesiones residuales sin ampliar matriz, revalidación tras bloqueos y caducidad, permisos explícitos de consultas y navegación. Matriz de nueve perfiles y negativas HTTP aprobadas. Nuevas funciones del equipo deben pasar otra vez estas garantías.",
       "S3-18": "Cierre transversal revalidado para la ampliación: contrato 0.12, 182 rutas comprobables, clientes/API coordinados y 32 migraciones no destructivas; readiness y recuperación probados. Contratos de mensajes requieren requestId y el detalle propio publica replyAllowed. Nuevos módulos posteriores requieren integración; no certifica aceptación global.",
@@ -43,14 +43,14 @@
       "S3-20": "Pendiente de entrega general del MVP/DEV: documentación y publicación del corte disponible en RicardoDev autorizadas el 24/10, sin incorporar funciones todavía pendientes del equipo ni certificar aceptación global.",
       "S3-21": "Pendiente: recorrido integral de todo el MVP cuando existan sus módulos restantes.",
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
-      "S3-24": "Parcial: panel de creador integrado; faltan rendición, cumplimiento y cierre operativo completos.",
+      "S3-24": "Cierre técnico DEMO del panel: paginación, ámbitos personales/institucionales autorizados, totales por moneda y DEMO, pendientes/enlaces a módulos combinados. No cierra S3-21.",
       "S3-25": "Cierre técnico local: agregados reales de revisión, identidad, soporte, rendición/cierre, pagos, conciliación, desembolsos, devoluciones y disputas. Responsabilidad/privacidad de nueve perfiles, auditor en consulta, fecha de instantánea, actualización, cero/error honestos y enlaces a bandejas con filtros. Conteos por estado y pagos distintos; MATCHED no es pendiente. Operaciones económicas solo DEMO.",
-      "S3-26": "En curso global: verificación propia, preferencias y cola de correo operativas; ampliación de soporte general conectada y probada con protección de contenido, idempotencia y cancelación/reintentos. Gmail privado conserva conexión/autenticación válida. No cierra legal, SMS, funciones generales restantes ni aceptación integral del equipo.",
+      "S3-26": "En curso global: correo propio, preferencias, cola y estados/soporte operativos; corrección de verificación integrada y ensayada con transporte controlado. Pendiente aceptación integral con legal y módulos finales. Teléfono opcional sin SMS; no se inventa un bloqueo de proveedor SMS.",
       "S1-11": "Pendiente por solicitud: contenido legal definitivo aprobado/versionado. Aviso sintético no es aceptación legal.",
       "S1-12": "Cierre técnico: Gmail autorizado con TLS, recepción comprobada, recuperación HTTP → correo → reset → login nuevo, token temporal de un uso, rechazo de reutilización y revocación de sesión previa. Clave exclusivamente local; importador privado de solo correo y README actualizados."
     },
-    "note": "Ampliación local autorizada por Ricardo sobre 55959ca: completa panel y conversación/correo de soporte de Alison. Sin push ni cambios en DEV/Trello. Se conservan responsables y publicación anterior, credenciales privadas y legal pendiente. La aceptación global permanece abierta.",
-    "integratedSource": "SantiagoDev a504e43ef738025920277ed6b38b25d1e120eec9, preservando snapshot local Ricardo previo",
+    "note": "Revisión e integración local solicitada por Ricardo: implementación de Santiago conservada junto a soporte/correo/panel de Alison. Se corrigen validaciones administrativas y alertas de revisiones sustituidas; no se atribuye cierre total a legal ni a estados de Trello. Sin push ni cambios en DEV/Trello.",
+    "integratedSource": "SantiagoDev b8de6ea, combinado con RicardoDev 2c6d612 (incluye Alison bd4ed69 y ampliación de soporte/correo)",
     "completedDemoTasks": [
       "S2-01",
       "S2-18",
@@ -75,9 +75,11 @@
       "S3-18",
       "S1-12",
       "S3-10",
-      "S3-25"
+      "S3-25",
+      "S2-09",
+      "S3-24"
     ],
-    "scope": "24 alcances técnicos implementados de 36; 12 abiertos/parciales. Ricardo conserva 14/18 con cierre técnico, 2 en curso y 2 pendientes. Alison: 8/9 alcances técnicos, únicamente S1-11 legal pendiente. No equivale al cierre integral/aceptación del MVP.",
+    "scope": "26 alcances con cierre técnico DEMO de 36; 10 abiertos/parciales tras contrastar criterios con código. Santiago: 4/9 con cierre técnico; 3 parciales por diferencias funcionales (S3-12/13/14) y 2 por legal/integración final (S2-06/07). Alison: 8/9 técnicos, S1-11 legal pendiente. Ricardo conserva 14/18 técnicos y 4 de integración/verificación/publicación pendientes o en curso. Cobertura integrada verificada con las precondiciones QA/DEMO documentadas; no equivale a aceptación global.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -97,6 +99,28 @@
       "published": false,
       "trelloChanged": false,
       "evidence": "cierre-alison-panel-soporte-correo-2026-10-25.md"
+    },
+    "previousLocalEvidence": "cierre-alison-panel-soporte-correo-2026-10-25.md",
+    "santiagoIntegration": {
+      "branch": "SantiagoDev",
+      "commit": "b8de6ea",
+      "localBase": "2c6d612",
+      "published": false,
+      "trelloChanged": false,
+      "evidence": "revision-integracion-santiago-2026-10-28.md",
+      "scopeGaps": {
+        "S3-12": [
+          "Retiro ADMIN",
+          "Nueva publicación referenciada en correcciones frente al mismo UUID actual"
+        ],
+        "S3-13": [
+          "Periodicidad mensual según ADR-013",
+          "Resumen público aprobado sin documentos privados"
+        ],
+        "S3-14": [
+          "Aceptación autenticada de colaboradores ordinarios ADMIN/MEMBER"
+        ]
+      }
     }
   },
   "delivery": {

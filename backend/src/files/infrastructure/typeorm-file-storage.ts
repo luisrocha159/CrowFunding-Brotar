@@ -70,6 +70,7 @@ export class TypeormFileStorage implements FileStorage {
         EXISTS(SELECT 1 FROM public.verification_document WHERE file_id=$1) OR
         EXISTS(SELECT 1 FROM brotar_extension.support_case_evidence WHERE file_id=$1) OR
         EXISTS(SELECT 1 FROM brotar_extension.campaign_reward_evidence WHERE file_id=$1) OR
+        EXISTS(SELECT 1 FROM brotar_extension.beneficiary_return WHERE request_file_id=$1 OR completion_file_id=$1) OR
         EXISTS(SELECT 1 FROM public.user_profile WHERE avatar_file_id=$1) AS used`, [id])
       if (used[0]?.used) throw new FileInUse()
       // Baja lógica: no inventa un plazo de retención ni elimina evidencias de forma irreversible.

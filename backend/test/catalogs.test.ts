@@ -99,6 +99,22 @@ test('solo se gestionan parámetros acordados y se registra quién modifica', as
   assert.equal((await settings.write('support.first_response_hours',24,'admin-1')).value,24)
   assert.deepEqual(recorded,{key:'support.first_response_hours',updatedBy:'admin-1'})
 })
+test('categorías: rechaza ciclos de varios niveles y reactivación con padre inactivo', async () => {
+  const parent = { ...base, id: 'parent', parentId: base.id }
+  const leaf = { ...base, id: 'leaf', parentId: parent.id }
+  const categories = new Categories(repositoryWith({ find: async id => [base, parent, leaf].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => categories.update(base.id, { ...input, parentId: leaf.id }, 'admin-1'), CategoryInvalid)
+  const inactiveParent = { ...base, id: 'retired', isActive: false }
+  const inactiveChild = { ...base, id: 'child', parentId: inactiveParent.id, isActive: false }
+  const retired = new Categories(repositoryWith({ find: async id => [inactiveParent, inactiveChild].find(row => row.id === id) ?? null }))
+  await assert.rejects(() => retired.setActive(inactiveChild.id, true, 'admin-1'), CategoryParentUnavailable)
+})
+test('parámetros: listar solo consulta las claves acordadas', async () => {
+  const queried:string[]=[]
+  const settings = new Settings({ read: async key => { queried.push(key);return null }, write: async () => { throw new Error('No debe escribir') } })
+  assert.deepEqual((await settings.list()).map(row=>row.key),AGREED_SETTINGS)
+  assert.deepEqual(queried,AGREED_SETTINGS)
+})
 
 
 test('categorías: rechaza ciclos de varios niveles y reactivación con padre inactivo', async () => {
@@ -110,12 +126,4 @@ test('categorías: rechaza ciclos de varios niveles y reactivación con padre in
   const inactiveChild = { ...base, id: 'child', parentId: inactiveParent.id, isActive: false }
   const retired = new Categories(repositoryWith({ find: async id => [inactiveParent, inactiveChild].find(row => row.id === id) ?? null }))
   await assert.rejects(() => retired.setActive(inactiveChild.id, true, 'admin-1'), CategoryParentUnavailable)
-})
-
-
-test('parámetros: listar solo consulta las claves acordadas', async () => {
-  const queried:string[]=[]
-  const settings = new Settings({ read: async key => { queried.push(key);return null }, write: async () => { throw new Error('No debe escribir') } })
-  assert.deepEqual((await settings.list()).map(row=>row.key),AGREED_SETTINGS)
-  assert.deepEqual(queried,AGREED_SETTINGS)
 })

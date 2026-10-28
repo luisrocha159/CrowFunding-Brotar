@@ -5,8 +5,9 @@ import { Message } from '../../shared/components/Feedback'
 import { SessionError } from '../access/session/sessionClient'
 import { validateOrganization, type OrganizationInput, type OrganizationType } from '../organizations/organizationsClient'
 import { saveOrganization, type ManagedOrganization } from './verificationsClient'
+import {MembershipManager} from './MembershipManager'
 import styles from './verifications.module.css'
-export function OrganizationManager({ organization, types, readOnly, onSaved }: { organization: ManagedOrganization; types: OrganizationType[]; readOnly: boolean; onSaved: (value: ManagedOrganization) => void }) {
+export function OrganizationManager({ organization, types, readOnly, onSaved, onMembershipChanged }: { organization: ManagedOrganization; types: OrganizationType[]; readOnly: boolean; onSaved: (value: ManagedOrganization) => void; onMembershipChanged?:()=>void }) {
   const [input,setInput] = useState<OrganizationInput>({legalName:organization.legalName,tradeName:organization.tradeName,organizationTypeId:organization.organizationTypeId,contactEmail:organization.contactEmail,contactPhone:organization.contactPhone})
   const [errors,setErrors] = useState<Partial<Record<keyof OrganizationInput,string>>>({})
   const [error,setError] = useState(''); const [saved,setSaved] = useState(false); const [saving,setSaving] = useState(false); const busy = useRef(false)
@@ -28,5 +29,6 @@ export function OrganizationManager({ organization, types, readOnly, onSaved }: 
       <FormField as="select" label="Tipo de organización" required disabled={disabled} value={input.organizationTypeId} error={errors.organizationTypeId} onChange={event => setInput({...input,organizationTypeId:event.target.value})}>{types.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}</FormField>
       {!readOnly && organization.canEdit && <Button type="submit" loading={saving} loadingLabel="Guardando…">Guardar datos</Button>}
     </form>
+    <MembershipManager organizationId={organization.id} readOnly={readOnly} onChanged={onMembershipChanged}/>
   </details>
 }

@@ -5,14 +5,16 @@ import { uploadFile } from '../files/fileClient'
 import { validateUpdate } from '../../../backend/src/campaign-progress/domain/progress'
 import { failureText, readUpdate, readUpdatePage, saveUpdate, type ProgressState, type UpdateInput, type UpdateItem } from './progressClient'
 import { UpdateCards } from './UpdateCards'
+import { PublicationManager } from './PublicationManager'
 import styles from './progress.module.css'
 const blank = (): UpdateInput => ({ revision: null, title: '', body: '', milestoneId: null, images: [], publish: false })
 export function UpdatesEditor({ id, progress, progressDirty, onDirty }: { id: string; progress: ProgressState; progressDirty: boolean; onDirty: (dirty: boolean) => void }) {
   const [page, setPage] = useState(1); const [total, setTotal] = useState(0)
   const [items, setItems] = useState<UpdateItem[] | null>(null); const [input, setInput] = useState(blank); const [updateId, setUpdateId] = useState<string>(() => crypto.randomUUID()); const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false); const lock = useRef(false); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [confirm, setConfirm] = useState(false); const [retry, setRetry] = useState(0)
+  const [managed,setManaged]=useState<UpdateItem|null>(null),[publicationDirty,setPublicationDirty]=useState(false)
   const [recover, setRecover] = useState(false)
-  useEffect(() => { onDirty(dirty) }, [dirty, onDirty])
+  useEffect(() => { onDirty(dirty||publicationDirty) }, [dirty, publicationDirty, onDirty])
   useEffect(() => { const c = new AbortController(); readUpdatePage(id, false, page, c.signal).then(value => { if (!c.signal.aborted) { setItems(value.items); setTotal(value.total) } }).catch(e => { if (!c.signal.aborted) setError(failureText(e)) }); return () => c.abort() }, [id, retry, page])
   function change(patch: Partial<UpdateInput>) { setInput(value => ({ ...value, ...patch })); setDirty(true); setNotice(''); setConfirm(false) }
   async function reloadSaved() {
@@ -42,7 +44,8 @@ export function UpdatesEditor({ id, progress, progressDirty, onDirty }: { id: st
   }
   return <section className={styles.page}><h2>Novedades del proyecto</h2><p>Una publicación comparte su texto, imágenes y los avances guardados (incluidos responsables y resultados). Evita información privada. Las imágenes son públicas desde el momento de cargarlas, incluso mientras el texto sea un borrador. Las publicaciones conservan su versión histórica.</p>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
-    {progress.editable && <div className={styles.card}><fieldset disabled={busy} aria-label="Editar novedad"><legend>{input.revision ? 'Editar borrador' : 'Nueva novedad'}</legend>
+    {managed && <PublicationManager key={managed.id} id={id} item={managed} progress={progress} onDirty={setPublicationDirty} onClose={()=>setManaged(null)} onSaved={()=>{setManaged(null);setRetry(v=>v+1);setNotice('Cambio de publicación registrado.')}} />}
+    {progress.editable && !managed && <div className={styles.card}><fieldset disabled={busy} aria-label="Editar novedad"><legend>{input.revision ? 'Editar borrador' : 'Nueva novedad'}</legend>
       <Button variant="tertiary" disabled={dirty || busy} onClick={() => { setInput(blank()); setUpdateId(crypto.randomUUID()); setConfirm(false); setError('') }}>Empezar otra novedad</Button>
       <label>Título de la novedad<input value={input.title} maxLength={200} onChange={e => change({ title: e.target.value })} /></label>
       <label htmlFor="update-body">Descripción del avance</label><textarea id="update-body" value={input.body} maxLength={10000} onChange={e => change({ body: e.target.value })} />
@@ -55,6 +58,6 @@ export function UpdatesEditor({ id, progress, progressDirty, onDirty }: { id: st
       {confirm && <section role="alertdialog" aria-label="Confirmar publicación"><h3>Publicar esta novedad</h3><p>El texto y los resultados pasarán a ser públicos. Las imágenes ya son públicas desde su carga. Se incluirán los últimos avances guardados y no podrán editarse desde este formulario.</p><div className={styles.actions}><Button onClick={() => { void save(true) }}>Confirmar publicación</Button><Button variant="secondary" onClick={() => setConfirm(false)}>Seguir editando</Button></div></section>}
     </fieldset></div>}
     {!items && !error && <p role="status">Cargando novedades…</p>}{!items && error && <Button onClick={() => setRetry(v => v + 1)}>Reintentar novedades</Button>}
-    {items && <><h3>Historial ({total})</h3>{!items.length && <p>Todavía no hay novedades.</p>}<UpdateCards items={items} onEdit={progress.editable ? item => { if (dirty || busy) { setError('Guarda la novedad actual antes de abrir otra.'); return }; setUpdateId(item.id); setInput({ revision: item.revision!, title: item.title, body: item.body, milestoneId: item.milestoneId, images: item.images, publish: false }); setConfirm(false); setError(''); setNotice('Borrador cargado para editar.') } : undefined} /><nav className={styles.actions} aria-label="Paginación de novedades"><Button variant="secondary" disabled={page===1 || dirty || busy} onClick={() => setPage(p=>p-1)}>Anterior</Button><span>Página {page} de {Math.max(1,Math.ceil(total/20))}</span><Button variant="secondary" disabled={page*20>=total || dirty || busy} onClick={() => setPage(p=>p+1)}>Siguiente</Button></nav></>}
+    {items && <><h3>Historial ({total})</h3>{!items.length && <p>Todavía no hay novedades.</p>}<UpdateCards items={items} onManage={item=>{if(dirty||busy||publicationDirty){setError('Guarda o descarta los cambios actuales antes de abrir otra publicación.');return};setManaged(item)}} onEdit={progress.editable ? item => { if (dirty || busy) { setError('Guarda la novedad actual antes de abrir otra.'); return }; setUpdateId(item.id); setInput({ revision: item.revision!, title: item.title, body: item.body, milestoneId: item.milestoneId, images: item.images, publish: false }); setConfirm(false); setError(''); setNotice('Borrador cargado para editar.') } : undefined} /><nav className={styles.actions} aria-label="Paginación de novedades"><Button variant="secondary" disabled={page===1 || dirty || busy || publicationDirty} onClick={() => setPage(p=>p-1)}>Anterior</Button><span>Página {page} de {Math.max(1,Math.ceil(total/20))}</span><Button variant="secondary" disabled={page*20>=total || dirty || busy || publicationDirty} onClick={() => setPage(p=>p+1)}>Siguiente</Button></nav></>}
   </section>
 }

@@ -12,6 +12,7 @@ import {CampaignCycle} from './infrastructure/campaign-cycle'
 import {CampaignClosure} from './infrastructure/campaign-closure'
 import {OwnClosureController,AdminClosureController} from './infrastructure/closure.controller'
 import {DemoOperationDto,operation,pageNumber} from './infrastructure/operation'
+import {AccountabilityOriginGuard} from '../accountability/infrastructure/accountability-origin.guard'
 export {DemoOperationDto,operation,pageNumber} from './infrastructure/operation'
 export class CycleActionDto extends DemoOperationDto {@IsIn(cycleActions) action!:string;@IsInt() @Min(1) @Max(2147483647) expectedVersion!:number}
 @Controller('me/campaign-cycle') @UseGuards(RoleGuard) @RequirePermissions('campaign.manage.own')
@@ -30,5 +31,5 @@ export class AdministrativeCycleController {
  @Post(':id/actions') @Header('Cache-Control','private, no-store') @RequirePermissions('campaign.lifecycle.manage') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard)
  act(@Req() r:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Body() input:CycleActionDto){return operation(()=>this.cycle.act(r.brotarUser.id,id,input,true))}
 }
-@Module({imports:[DatabaseModule,RolesModule,ContributionsModule,FilesModule],controllers:[OwnCycleController,AdministrativeCycleController,OwnClosureController,AdminClosureController],providers:[CampaignCycle,CampaignClosure,SessionMutationGuard,CaseWriteLimitGuard]})
+@Module({imports:[DatabaseModule,RolesModule,ContributionsModule,FilesModule],controllers:[OwnCycleController,AdministrativeCycleController,OwnClosureController,AdminClosureController],providers:[CampaignCycle,CampaignClosure,SessionMutationGuard,CaseWriteLimitGuard,AccountabilityOriginGuard]})
 export class CampaignLifecycleModule{}

@@ -42,7 +42,7 @@ try{
  }
  assert.ok(routes.length>100,'Inventario incompleto')
  assert.equal(new Set(routes.map(r=>r.method+' '+r.path)).size,routes.length,'Hay rutas duplicadas')
- const value={version:'sprint3-demo-0.10',scope:'API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.',routes}
+ const value={version:'sprint3-demo-0.13',scope:'API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.',routes}
  if(process.argv.includes('--write'))writeFileSync(destination,JSON.stringify(value,null,2)+'\n')
  else assert.deepEqual(JSON.parse(readFileSync(destination,'utf8')),value,'Cambió un contrato HTTP: revisar permisos/cliente y regenerar inventario con --write.')
  console.log(`Contratos HTTP: ${routes.length} rutas verificadas, sin puerto ni conexión a PostgreSQL.`)

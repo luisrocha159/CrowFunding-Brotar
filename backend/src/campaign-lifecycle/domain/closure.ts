@@ -1,17 +1,19 @@
 import {LedgerInvalid,money} from '../../contributions/domain/payment'
 
 export const closureActions=['SUBMIT_FINAL','APPROVE_FINAL','REQUEST_CHANGES','FULFILL_REWARD','RESOLVE_CLOSURE_CASE'] as const
-export interface FinalExpense {budgetItemId:string|null;expenseCategoryId:string;description:string;amount:string;spentOn:string;fileIds:string[]}
-export interface FinalSubmission {periodStart:string;periodEnd:string;narrative:string;varianceExplanation:string;expenses:FinalExpense[]}
+export interface FinalExpense {budgetItemId:string|null;expenseCategoryId:string;description:string;amount:string;spentOn:string;fileIds:string[];sourceExpenseId?:string}
+export interface FinalSubmission {periodStart:string;periodEnd:string;narrative:string;varianceExplanation:string;expenses:FinalExpense[];includeApprovedPeriodic?:true;periodicRevision?:string}
 const id=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(v)
 export function closureText(v:unknown,min:number,max:number):string {if(typeof v!=='string'||v.trim().length<min||v.length>max||/[\p{Cc}\p{Cf}\p{Cs}<>]/u.test(v))throw new LedgerInvalid(`Escribe entre ${min} y ${max} caracteres, sin HTML ni controles invisibles.`);return v.trim()}
 function record(v:unknown,keys:string[]){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!keys.includes(k))||keys.some(k=>!Object.hasOwn(v,k)))throw new LedgerInvalid('Los campos no corresponden a esta acción de cierre.');return v as Record<string,unknown>}
 export function actualDate(v:unknown,today:string):string {if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)||!Number.isFinite(Date.parse(v+'T00:00:00Z'))||new Date(v+'T00:00:00Z').toISOString().slice(0,10)!==v||v>today||v<'2000-01-01')throw new LedgerInvalid('Usa una fecha real entre 2000 y hoy, sin fechas futuras.');return v}
 export function closureData(action:string,value:unknown,today:string):FinalSubmission|{reportId:string}|{contributionId:string;fulfilledOn:string;fileId:string}|{caseId:string} {
  if(action==='SUBMIT_FINAL'){
-  const v=record(value,['periodStart','periodEnd','narrative','varianceExplanation','expenses']),start=actualDate(v.periodStart,today),end=actualDate(v.periodEnd,today)
+  const reference=Boolean(value&&typeof value==='object'&&Object.hasOwn(value,'includeApprovedPeriodic'))
+  const v=record(value,['periodStart','periodEnd','narrative','varianceExplanation','expenses',...(reference?['includeApprovedPeriodic','periodicRevision']:[])]),start=actualDate(v.periodStart,today),end=actualDate(v.periodEnd,today)
   if(end<start)throw new LedgerInvalid('El fin del período no puede ser anterior al inicio.')
-  if(!Array.isArray(v.expenses)||v.expenses.length>100)throw new LedgerInvalid('Máximo 100 gastos por rendición final.')
+  if(reference&&(v.includeApprovedPeriodic!==true||typeof v.periodicRevision!=='string'||!/^([a-f0-9]{32})$/.test(v.periodicRevision)))throw new LedgerInvalid('Confirma la referencia vigente a los gastos periódicos aprobados.')
+  if(!Array.isArray(v.expenses)||v.expenses.length>100)throw new LedgerInvalid('Máximo 100 gastos adicionales por presentación final; los periódicos aprobados se incluyen por referencia.')
   const files=new Set<string>()
   const expenses=v.expenses.map(raw=>{const e=record(raw,['budgetItemId','expenseCategoryId','description','amount','spentOn','fileIds'])
    if(e.budgetItemId!==null&&!id(e.budgetItemId)||!id(e.expenseCategoryId))throw new LedgerInvalid('Selecciona una partida y categoría válidas.')
@@ -21,7 +23,7 @@ export function closureData(action:string,value:unknown,today:string):FinalSubmi
    for(const f of e.fileIds)files.add(f)
    return{budgetItemId:e.budgetItemId as string|null,expenseCategoryId:e.expenseCategoryId,description:closureText(e.description,10,300),amount:e.amount,spentOn,fileIds:e.fileIds as string[]}
   })
-  return{periodStart:start,periodEnd:end,narrative:closureText(v.narrative,20,5000),varianceExplanation:closureText(v.varianceExplanation,20,2000),expenses}
+  return{periodStart:start,periodEnd:end,narrative:closureText(v.narrative,20,5000),varianceExplanation:closureText(v.varianceExplanation,20,2000),expenses,...(reference?{includeApprovedPeriodic:true as const,periodicRevision:v.periodicRevision as string}:{})}
  }
  if(action==='FULFILL_REWARD'){const v=record(value,['contributionId','fulfilledOn','fileId']);if(!id(v.contributionId)||!id(v.fileId))throw new LedgerInvalid('Selecciona aporte y evidencia válidos.');return{contributionId:v.contributionId,fulfilledOn:actualDate(v.fulfilledOn,today),fileId:v.fileId}}
  if(action==='RESOLVE_CLOSURE_CASE'){const v=record(value,['caseId']);if(!id(v.caseId))throw new LedgerInvalid('Selecciona una incidencia válida.');return{caseId:v.caseId}}

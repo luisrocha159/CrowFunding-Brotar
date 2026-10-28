@@ -21,6 +21,7 @@ import {DisputesModule} from './disputes/disputes.module'
 import {CampaignLifecycleModule} from './campaign-lifecycle/campaign-lifecycle.module'
 import {DisbursementsModule} from './disbursements/disbursements.module'
 import {ContactsModule} from './contacts/contacts.module'
+import {AccountabilityModule} from './accountability/accountability.module'
 
-@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule, FinanceModule, AuditModule, DemoPaymentsModule, CampaignProgressModule, VerificationsModule, SupportCasesModule,RefundsModule,DisputesModule,CampaignLifecycleModule,DisbursementsModule,ContactsModule] })
+@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule, FinanceModule, AuditModule, DemoPaymentsModule, CampaignProgressModule, VerificationsModule, SupportCasesModule,RefundsModule,DisputesModule,CampaignLifecycleModule,DisbursementsModule,ContactsModule,AccountabilityModule] })
 export class AppModule {}

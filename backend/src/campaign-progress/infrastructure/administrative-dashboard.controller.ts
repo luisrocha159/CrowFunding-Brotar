@@ -1,3 +1,4 @@
+import {currentPeriodic} from '../../accountability/infrastructure/accountability-integrity'
 import { Controller, Get, Header, Req, UseGuards } from '@nestjs/common'
 import { RoleAccess } from '../../roles/application/roles'
 import { PermissionAccess } from '../../roles/application/permissions'
@@ -45,7 +46,7 @@ export class AdministrativeDashboardController {
         FROM public.dispute d JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id`))[0]
       if (has('campaign.closure.read')) {
         result.accountabilityAlerts = (await m.query(`WITH current_reports AS (
-          SELECT status FROM public.accountability_report WHERE NOT is_final UNION ALL
+          SELECT r.status FROM public.accountability_report r WHERE ${currentPeriodic} UNION ALL
           SELECT status FROM(SELECT DISTINCT ON(campaign_id) status FROM public.accountability_report WHERE is_final ORDER BY campaign_id,created_at DESC,id DESC) latest)
           SELECT count(*) FILTER(WHERE status IN ('SUBMITTED','IN_REVIEW'))::int AS "awaitingReview",
           count(*) FILTER(WHERE status='CHANGES_REQUESTED')::int AS "requiresInformation" FROM current_reports`))[0]

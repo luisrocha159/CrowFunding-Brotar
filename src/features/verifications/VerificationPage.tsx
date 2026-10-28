@@ -10,6 +10,7 @@ import { managedOrganizations, myVerifications, payoutAccounts, startVerificatio
 import { VerificationEditor } from './VerificationEditor'
 import { OrganizationManager } from './OrganizationManager'
 import styles from './verifications.module.css'
+import {RepresentationRequests} from './RepresentationRequests'
 export function VerificationPage() {
   const [status,setStatus]=useState<'loading'|'ready'|'error'|'anonymous'>('loading');const [retry,setRetry]=useState(0)
   const [cases,setCases]=useState<VerificationSummary[]>([]);const [types,setTypes]=useState<VerificationType[]>([]);const [organizations,setOrganizations]=useState<ManagedOrganization[]>([])
@@ -29,6 +30,7 @@ export function VerificationPage() {
     {status==='loading'&&<p role="status">Consultando datos privados…</p>}
     {status==='error'&&<><Message tone="error" title="Información no disponible">No pudimos comprobar tus datos y permisos.</Message><Button onClick={()=>{setStatus('loading');setRetry(value=>value+1)}}>Reintentar</Button></>}
     {status==='ready'&&<div className={styles.page}>
+      <RepresentationRequests/>
       {notice&&<p role="status">{notice}</p>}{readOnly&&<p>Tu rol auditor permite consultar. Las modificaciones están deshabilitadas.</p>}
       <section className={styles.card}><h2>Mis verificaciones</h2><p>La carga de documentos y el envío no acreditan identidad. La decisión corresponde al equipo autorizado.</p>
         {cases.length?<ul className={styles.list}>{cases.map(item=><li key={item.id}><span>{item.typeName}{item.organizationName?` · ${item.organizationName}`:''}<br/><strong>{verificationStatus(item.status)}</strong></span><Button variant="secondary" disabled={busy} onClick={()=>void open(item.id)}>Consultar caso</Button></li>)}</ul>:<p>No tienes casos registrados.</p>}
@@ -41,7 +43,7 @@ export function VerificationPage() {
         </form>}
       </section>
       {detail&&<VerificationEditor key={`${detail.id}:${detail.version}`} detail={detail} readOnly={readOnly} onSaved={saved} onReload={()=>void open(detail.id)} />}
-      <section><h2>Datos de mis organizaciones</h2><p>La edición básica está disponible según tu membresía vigente y el estado del registro. La administración de miembros y representación requiere las reglas pendientes de definición.</p>{organizations.length?organizations.map(org=><OrganizationManager key={`${org.id}:${org.version}`} organization={org} types={orgTypes} readOnly={readOnly} onSaved={value=>{setOrganizations(current=>current.map(item=>item.id===value.id?value:item));setNotice('Datos de la organización guardados.')}} />):<p>No tienes organizaciones vinculadas.</p>}<ButtonLink variant="secondary" to="/mis-organizaciones">Registrar una organización</ButtonLink></section>
+      <section><h2>Datos de mis organizaciones</h2><p>La edición básica está disponible según tu membresía vigente y el estado del registro. Puedes administrar membresías y representación en el entorno DEMO; los cambios requieren motivo y confirmación.</p>{organizations.length?organizations.map(org=><OrganizationManager key={`${org.id}:${org.version}`} organization={org} types={orgTypes} readOnly={readOnly} onMembershipChanged={()=>{setNotice('Información institucional actualizada. Consulta las solicitudes y su estado; una propuesta pendiente no cambia la membresía.');setDetail(null);setStatus('loading');setRetry(value=>value+1)}} onSaved={value=>{setOrganizations(current=>current.map(item=>item.id===value.id?value:item));setNotice('Datos de la organización guardados.')}} />):<p>No tienes organizaciones vinculadas.</p>}<ButtonLink variant="secondary" to="/mis-organizaciones">Registrar una organización</ButtonLink></section>
       <section className={styles.card}><h2>Cuentas destino registradas</h2><p>Consulta privada de cuentas existentes. El registro y los cambios de cuenta requieren la política de datos y el flujo de validación de destino.</p>{payouts.length?<ul>{payouts.map(account=><li key={account.id}>{account.accountHolderName} · {account.bankName??'Entidad sin registrar'} · {account.last4?`terminación ${account.last4}`:'sin terminación registrada'} · {account.currency} · {account.status}{account.status!=='VERIFIED'&&<p>Esta cuenta no consta como verificada.</p>}</li>)}</ul>:<p>No hay cuentas destino registradas.</p>}</section>
     </div>}
   </AccessShell>

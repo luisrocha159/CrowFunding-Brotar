@@ -1,4 +1,17 @@
-# Contratos del Sprint 3 · 0.12 · RicardoDev local
+# Contratos del Sprint 3 · 0.13 · RicardoDev local
+
+## Extensión 0.13 · Integración Santiago/Ricardo/Alison · 28/10/2026
+
+**205 rutas y 36 migraciones**. Inventario regenerado a partir del módulo combinado y comprobado tras compilar; no reemplazarlo por el inventario de una sola rama. Se conserva 0.12 íntegro y se incorporan:
+
+- `/api/{me,admin}/accountability`: consulta, acciones versionadas/idempotentes y descarga privada autorizada. Períodos sin superposición, borradores por revisión, revisión independiente y remanentes DEMO, con comprobantes y reservas. La devolución del beneficiario no crea un reembolso al aportante.
+- `/api/administration/parties/users/:id` y `/api/me/organizations/:id/members`: datos básicos/restricción/restauración y membresías con motivo, confirmación y versión. Concesión directa de OWNER/LEGAL_REPRESENTATIVE y transferencia antigua rechazadas; no concede roles globales. Nombres personales conservan la validación de registro/perfil; motivos usan texto significativo sin HTML/controles.
+- Solicitudes `/api/{me,administration}/representation-requests` y alta desde organización: propuesta, aceptación/declinación, cancelación y decisión independiente. Aceptar no concede facultades. Aprobar aplica membresía y caduca KYB previo. Petición pendiente bloquea las operaciones sensibles previstas.
+- Gestión propia de publicaciones, historial y recompensas en `/api/campaigns/:id/…`; panel del creador con página/ámbito personal o institucional, totales separados por moneda y DEMO. Las versiones de publicación se conservan bajo el mismo identificador; revisar la diferencia con ADR-013 indicada en la evidencia.
+
+El panel administrativo excluye las revisiones periódicas sustituidas de sus alertas, conservando informes históricos sin metadatos de versión para compatibilidad. La ampliación de cierre acumula gastos aprobados por referencia y contempla remanentes; conserva los avisos de soporte de 0.12. Sesión, origen, cuenta/rol vigente, propiedad, versión y revalidación transaccional se comprueban por módulo; el inventario no sustituye esas pruebas.
+
+[Revisión, defectos corregidos, evidencia y límites](revision-integracion-santiago-2026-10-28.md). Legal y diferencias funcionales señaladas continúan abiertas; este contrato documenta la implementación, no aprueba contenido legal ni declara completo el MVP.
 
 ## Extensión 0.12 · Panel completo y conversación/avisos de soporte
 

@@ -1,6 +1,26 @@
 # Control de cambios de PostgreSQL
 
-## Registro actual de RicardoDev · 25/10/2026
+## Corte integrado local de RicardoDev · 28/10/2026
+
+**36 migraciones**: las 32 de Ricardo/Alison y cuatro de Santiago. El registro explícito conserva todas, sin renumerar ni modificar migraciones ya aplicadas. Actualizar con respaldo, compilación y `node scripts/migrate.mjs up`, `status` y verificación de V2 (README §39). Las categorías siguen en el flujo automático de instalación; no hay un seed SQL manual nuevo. Los bloques inferiores son históricos y sus conteos describen ramas/cortes anteriores.
+
+## S2-07 · circuito formal · 27/10/2026
+
+Registro vigente: **33 migraciones**. `SantiagoRepresentation1793059200000` añade solicitudes de representación y eventos append-only en brotar_extension, índice único de petición activa por organización y acceso limitado del rol API. No altera datos preexistentes, asigna roles globales ni concede representación al instalar. Readiness exige ambas tablas y prohíbe UPDATE/DELETE del historial. Actualizar con respaldo y README §38; los cortes inferiores son históricos. [Evidencia](../../docs/cierre-s207-2026-10-27.md).
+
+## Ampliación local de SantiagoDev · 26/10/2026
+
+El registro explícito incorpora **32 migraciones**. Sobre las 29 integradas de RicardoDev se añaden:
+
+| Orden | Migración | Efecto |
+| --- | --- | --- |
+| 30 | SantiagoProgress1792972800000 | Versiones de publicación, retiro lógico y seguimiento de recompensas con evidencia. |
+| 31 | SantiagoAccountability1792972800001 | Rendiciones periódicas, revisiones, gastos y devoluciones de remanentes DEMO. |
+| 32 | SantiagoParties1792972800002 | Historial/versiones de miembros y cambios de personas; representación institucional. |
+
+Actualizar con respaldo privado → compilar → `node scripts/migrate.mjs up` → `node scripts/migrate.mjs status` → verificación → reinicio. README principal §37 y [evidencia de Santiago](../../docs/cierre-santiago-2026-10-26.md). No restaurar el SQL oficial sobre la instalación existente. No crean aprobaciones, cuentas privilegiadas ni dinero; los historiales tienen permisos de inserción/lectura y la reversión destructiva automática se rechaza. Los registros inferiores conservan sus cortes históricos.
+
+## Registro histórico de RicardoDev · 25/10/2026
 
 La rama incluye **32 migraciones** en el registro explícito de `backend/src/shared/infrastructure/database/migration-data-source.ts`. Los apartados de siete migraciones más abajo describen el antecedente de Sprint 2. Instalar/actualizar con el README principal §3/34; `node scripts/migrate.mjs up` aplica todas en orden y `status` debe indicar ninguna pendiente. La migración 29 añade contactos y cola de correo; la 30 amplía la lectura del panel por responsabilidad; la 31 conserva el historial de soporte; la 32 añade respuestas reintentables y avisos transaccionales de soporte. Se mantienen en `brotar_extension`, sin seed manual ni secretos. No reinstalar el SQL oficial sobre una base existente. [Cierre de panel/soporte/correo](../../docs/cierre-alison-panel-soporte-correo-2026-10-25.md).
 

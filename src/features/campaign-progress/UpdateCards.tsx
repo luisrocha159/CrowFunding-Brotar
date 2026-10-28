@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { Button } from '../../shared/components/Button'
 import { failureText, readUpdatePage, type UpdateItem } from './progressClient'
 import styles from './progress.module.css'
-export function UpdateCards({ items, onEdit }: { items: UpdateItem[]; onEdit?: (item: UpdateItem) => void }) {
-  return <div className={styles.page}>{items.map(item => <article className={styles.card} key={item.id}><h3>{item.title}</h3><p>{item.publishedAt ? `Publicado el ${new Date(item.publishedAt).toLocaleString('es-BO')}` : 'Borrador de texto · imágenes públicas'}</p><p className={styles.body}>{item.body}</p>
+export function UpdateCards({ items, onEdit, onManage }: { items: UpdateItem[]; onEdit?: (item: UpdateItem) => void; onManage?: (item: UpdateItem) => void }) {
+  return <div className={styles.page}>{items.map(item => <article className={styles.card} key={item.id}><h3>{item.title}</h3><p>{item.withdrawnAt ? `Retirada el ${new Date(item.withdrawnAt).toLocaleString('es-BO')}` : item.publishedAt ? `Publicado el ${new Date(item.publishedAt).toLocaleString('es-BO')}` : 'Borrador de texto · imágenes públicas'}</p><p className={styles.body}>{item.body}</p>
     <div className={styles.images}>{item.images.map(image => <figure key={image.fileId}><a href={`/api/files/public/${encodeURIComponent(image.fileId)}`} target="_blank" rel="noopener noreferrer"><img loading="lazy" src={`/api/files/public/${encodeURIComponent(image.fileId)}`} alt={image.caption} /></a><figcaption>{image.caption}</figcaption></figure>)}</div>
     {item.progress && <details><summary>Avances incluidos en esta publicación</summary><p>Registro del creador a la fecha de publicación.</p><ul>{[...item.progress.activities, ...item.progress.milestones].map(row => <li key={row.id}>{row.name}: {row.progressPercent}% · {row.responsibleName || 'Sin responsable'} · {row.actualEndOn ? `Fin real ${row.actualEndOn}` : 'Sin fecha de fin real'}</li>)}</ul><ul>{item.progress.indicators.map(row => <li key={row.id}>{row.name}: {row.achievedValue ?? 'Sin resultado registrado'} {row.unit} · Meta {row.targetValue ?? 'Sin definir'}</li>)}</ul></details>}
+    {item.publishedAt && onManage && <Button variant="secondary" onClick={() => onManage(item)}>Gestionar publicación e historial</Button>}
     {!item.publishedAt && onEdit && <Button variant="secondary" onClick={() => onEdit(item)}>Editar borrador</Button>}
   </article>)}</div>
 }

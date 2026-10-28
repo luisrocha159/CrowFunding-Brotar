@@ -1,10 +1,15 @@
 # Brotar · Base integrada del equipo
 
+> **Corte local integrado · 28/10/2026 · RicardoDev:** `SantiagoDev b8de6ea` sobre nuestro `2c6d612`, conservando panel, soporte y correo. **36 migraciones y 205 rutas**. Para instalar o actualizar este corte, seguir §3 y **§39**; los conteos de §37–38 pertenecen a la entrega separada de Santiago. Sin publicación a GitHub ni cambios en DEV/Trello. Legal y aceptación integral siguen pendientes. [Revisión y diferencias de alcance](docs/revision-integracion-santiago-2026-10-28.md).
+
 > **Ampliación local · panel y soporte · 25/10/2026:** sobre `55959ca`, el panel añade pagos, conciliación, desembolsos, devoluciones y disputas según responsabilidad; el titular puede responder a sus incidencias y recibir avisos por el canal de correo ya configurado. **32 migraciones, 182 rutas**; la instalación habitual las aplica en orden, sin pasos SQL nuevos ni variables adicionales. Frontend y backend deben actualizarse juntos. [Recorridos, validaciones y pruebas](docs/cierre-alison-panel-soporte-correo-2026-10-25.md). Solo RicardoDev local; sin push ni cambios en DEV. Legal definitivo continúa pendiente. Los bloques anteriores de integración que siguen conservan su corte de 31 migraciones.
 
 > **Integración local de Alison · 25/10/2026:** `AlisonDev bd4ed69` integrado sobre `RicardoDev 7d48fbf`. Reportes públicos, bandeja de soporte e historial, y resumen por responsabilidad revisados. **31 migraciones y 181 rutas**. Este incremento **no está publicado**; DEV no cambia. S3-25 sigue parcial por sus agregados financieros y legal continúa pendiente. [Revisión, correcciones y pruebas](docs/revision-integracion-alison-sprint3-2026-10-25.md).
 
 > **Versión vigente · 25/10/2026 · RicardoDev:** corte integrado DEMO con ciclo, desembolsos, cierre, auditoría/permisos y **correo operativo**. Requiere **31 migraciones**, aplicadas por el comando habitual. Seguir §3 y §34–36, que actualizan los cortes históricos siguientes. Destino de esta entrega: RicardoDev; **DEV conserva Sprint 2**. Legal definitivo, módulos generales del equipo y aceptación global del MVP siguen pendientes. Las credenciales son locales y no vienen en el clon.
+> **Ampliación local · 26/10/2026 · SantiagoDev:** sobre la integración de RicardoDev, seguimiento y recompensas, rendición periódica/remanentes, miembros/representación y panel del creador. El 27/10 se completó solicitud → aceptación → aprobación independiente de representación (§38). El código requiere **33 migraciones**; actualizar con §37–38. [Alcance y evidencia](docs/cierre-santiago-2026-10-26.md). Entrega en SantiagoDev autorizada para commit y push el 27/10/2026; [traspaso a Ricardo e integración legal pendiente](docs/traspaso-ricardo-santiago-2026-10-27.md). Los cortes anteriores conservan su fecha. Legal definitivo y aceptación global del MVP siguen pendientes. Las credenciales son locales y no vienen en el clon.
+
+> **Corte integrado · 24/10/2026 · RicardoDev:** ciclo, desembolsos, cierre, auditoría/permisos y **correo operativo**, con 29 migraciones antes de la ampliación de §37. Seguir §3 y §34–36 para sus instrucciones de instalación/correo. Destino de aquel corte: RicardoDev; **DEV conserva Sprint 2**.
 
 > **Avance local de Sprint 3 · 21/10/2026 · RicardoDev:** API de aportes, simulador y conciliación exclusivamente DEMO, además de responsabilidades/auditoría. Requiere **catorce migraciones**; ver §24–28, [contratos 0.5](docs/contratos-sprint-3.md) y [reglas del MVP de pruebas](docs/decisiones/ADR-012-reglas-mvp-pruebas.md). No hay dinero real. Pantallas de Alison, correo, KYC/KYB e integración completa siguen pendientes. Este avance no está publicado.
 
@@ -1126,3 +1131,73 @@ El responsable puede generar ese archivo con `node scripts/mail-config.mjs --exp
 Una vez verificado, el titular puede activar los avisos opcionales de **próximos** cambios registrados de campaña, verificación, pagos/devoluciones/desembolsos DEMO, disputas y recompensas. Los avisos privados se consultan en Mi cuenta (últimos 50); el correo no incluye motivos/documentos privados. El backend activo procesa cada 15 segundos; la cola persiste y reintenta hasta tres veces, con cinco minutos de espera. Una baja de suscripción o dirección cambiada cancela el envío pendiente. “Aceptado por el servidor de correo” no acredita lectura/recepción. No se reenvía el historial anterior a la instalación. Ver [ADR-014](docs/decisiones/ADR-014-correo-operativo-mvp.md) para destinatarios y límites de entrega.
 
 Sin SMTP los avisos en Brotar conservan su utilidad, pero no se puede acreditar posesión de correo por un TXT. El teléfono continúa opcional y sin verificación SMS. Legal definitivo y módulos pendientes de los compañeros permanecen abiertos. S1-12 tiene cierre técnico; S3-26 conserva el cierre global pendiente del alcance legal/integrado. S3-19/S3-21 no se cierran por pasar esta regresión. Publicar RicardoDev no modifica DEV.
+
+
+## 37. Ampliación local de Santiago · 26/10/2026
+
+Sobre el merge de RicardoDev en SantiagoDev, este incremento completa correcciones/retiro de novedades y recompensas, informes periódicos/borradores/gastos/remanentes, miembros/representación y cambios autorizados de cuentas, e indicadores/accesos del panel del creador. [Evidencia y límites de verificación](docs/cierre-santiago-2026-10-26.md). S2-06/S2-07 conservan la dependencia de textos legales definitivos de S1-11; documentos sintéticos y representación DEMO no acreditan identidad legal. No se modifican S1-11, S3-10 ni S3-25 de Alison.
+
+**V2 existente:** detener API, respaldar base y archivos/configuración privados fuera de Git y, desde `backend`, usar la configuración propia del contenedor:
+
+```sh
+pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+pnpm run start
+```
+
+El estado esperado es **32 migraciones, ninguna pendiente**. Se añaden `SantiagoProgress1792972800000`, `SantiagoAccountability1792972800001` y `SantiagoParties1792972800002`. No ejecutar `install`/`activate` para actualizar una configuración vigente ni restaurar el SQL oficial sobre los datos. La API no migra al arrancar y readiness exige las tablas/permisos nuevos. Para operaciones financieras sintéticas, conservar `DEMO_PAYMENTS_ENABLED=true` en el entorno local de desarrollo; producción continúa bloqueada. En otra terminal, desde la raíz, iniciar `bun run dev`.
+
+**Recorridos:** Mi panel → proyecto → avances/recompensas, rendición y cierre. Los informes periódicos tienen revisión independiente; los remanentes se solicitan, autorizan y completan con evidencia privada por la responsabilidad correspondiente. El cierre acumula los gastos aprobados sin volver a cargarlos ni duplicarlos. El total financiero comprende todos los registros, aunque las listas se consulten por páginas. Mi cuenta muestra el identificador propio que se comparte para altas de miembros; no se incorpora un buscador global de cuentas. Las bajas de miembros y restricciones conservan historial y revocan acceso según la operación.
+
+El correo se prepara con §36 usando el TXT privado del remitente, sin copiar credenciales al frontend, Git ni Trello. Una cuenta local con dirección de ejemplo no es un buzón externo. SMTP autenticado, recepción real de mensajes y aprobación legal son comprobaciones distintas; el registro de evidencia indica cuáles se ejecutaron.
+
+Las integraciones que escriben datos se ejecutan exclusivamente en una copia QA aislada con su `.env`, almacenamiento y contenedor propios. No apuntar `ALLOW_DB_TEST_WRITES=true` a la instalación personal. Para checks sin escritura: raíz `bun run check` y backend `pnpm run check`.
+
+
+## 38. S2-07 · aceptación y aprobación de representación · 27/10/2026
+
+El circuito técnico de Santiago ahora registra solicitud del OWNER vigente, aceptación autenticada del destinatario y aprobación de un ADMIN independiente. La solicitud y su aceptación no conceden membresía ni roles. Tras aprobar se aplica el cambio de manera atómica y se caducan las verificaciones KYB previas, conservando documentos e historial. La identidad del destinatario requiere KYC DEMO vigente. [Evidencia y dependencia externa restante](docs/cierre-s207-2026-10-27.md).
+
+**Actualizar una V2 existente:** con API detenida y respaldo privado de base/archivos/configuración, desde `backend` ejecutar `pnpm run check`, `node scripts/migrate.mjs up`, `node scripts/migrate.mjs status`, `node scripts/verify-provisional-v2.mjs` y `pnpm run start`. Se esperan **33 migraciones sin pendientes**; la nueva es `SantiagoRepresentation1793059200000`. No reinstalar SQL, activar otra configuración ni borrar datos/volúmenes. Frontend mantiene `bun run dev` desde raíz.
+
+**Recorrido:** Mi verificación → organización → Consultar membresías → Solicitar representación. Introducir el UUID compartido por el destinatario, tipo, motivo y confirmación. El destinatario abre Mi verificación → Mis solicitudes de representación para aceptar/declinar aunque no sea miembro todavía. El solicitante puede cancelar. Un ADMIN independiente consulta Personas y organizaciones → Aprobar representación institucional para aprobar o rechazar; AUDITOR conserva lectura. Si falla una propuesta, consultar su estado y recargar explícitamente las membresías permite preparar un nuevo intento con confirmación renovada.
+
+Durante una solicitud pendiente se bloquean publicación, inicio de ejecución, desembolsos y aprobación KYB; los detalles, documentos y decisiones de rechazo/cancelación siguen consultables. Ya no se concede OWNER/LEGAL_REPRESENTATIVE ni se transfiere propiedad por el formulario directo de colaboradores. Miembros corrientes y revocación conservan el historial y los controles previos.
+
+S2-07 conserva únicamente la dependencia de la entrega legal S1-11 de Alison: contenido/requisitos definitivos aprobados y versionados, sus referencias de aprobación y aceptación correspondiente. Las etapas operativas nuevas ya están implementadas y verificadas; la aceptación DEMO no se presenta como aceptación de esos textos finales. No se modifican S1-11/S3-10/S3-25 ni se habilitan identidad o dinero reales.
+
+
+## 39. Integración local Ricardo + Alison + Santiago · 28/10/2026
+
+Esta copia de RicardoDev combina `2c6d612` y `SantiagoDev b8de6ea`. Conserva la conversación/avisos de soporte, panel por responsabilidad y Gmail privado; añade seguimiento/recompensas, rendición periódica/remanentes, administración de personas/miembros, panel paginado del creador y representación por solicitud → aceptación → aprobación independiente.
+
+**Instalación nueva:** seguir §3 con configuración generada propia. PostgreSQL es el servicio de Docker; frontend y backend se ejecutan en sus terminales. Las categorías provisionales y las **36 migraciones** forman parte de la preparación normal. Las credenciales de correo no vienen en Git.
+
+**V2 existente:** detener la API, respaldar base/configuración/archivos fuera de Git y mantener el `.env` propio. Desde `backend/`:
+
+```powershell
+corepack.cmd pnpm install --frozen-lockfile
+corepack.cmd pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/verify-provisional-v2.mjs
+corepack.cmd pnpm run dev
+```
+
+En otra terminal, desde la raíz del repositorio:
+
+```powershell
+bun install --frozen-lockfile
+bun run check
+bun run dev
+```
+
+`status` debe indicar 36 migraciones aplicadas y ninguna pendiente. Se añaden cuatro respecto al corte local de 32: `SantiagoProgress1792972800000`, `SantiagoAccountability1792972800001`, `SantiagoParties1792972800002`, `SantiagoRepresentation1793059200000`. No reinstalar el SQL oficial, activar otra configuración ni borrar volúmenes para actualizar. Mantener frontend/backend del mismo corte; la API exige el esquema preparado mediante readiness.
+
+Conservar `DEMO_PAYMENTS_ENABLED=true` para ensayar finanzas localmente y el origen real del frontend en `PUBLIC_WEB_ORIGIN`/`CORS_ORIGINS` (§36). La política DEMO no permite documentos ni dinero reales. Para revisar HTTP tras compilar: `node scripts/check-http-contracts.mjs` desde `backend/` verifica las 205 rutas.
+
+Recorridos: Panel del creador → proyecto → avances/recompensas/rendición/cierre; Mi verificación → organizaciones → solicitudes de representación; Administración → personas/representación, rendición, finanzas y soporte según responsabilidad. La revisión enlazada separa lo recibido y probado de los criterios aún abiertos. Que la representación tenga tres etapas no termina por sí solo la aceptación legal ni la invitación de colaboradores ordinarios.
+
+Las pruebas con escritura solo se ejecutan en una copia QA con contenedor, puerto, configuración y almacenamiento propios. No usar `ALLOW_DB_TEST_WRITES=true` en la base personal. Este incremento permanece local y no acredita cierre global S3-19/S3-20/S3-21/S3-26 ni entrega legal S1-11.
