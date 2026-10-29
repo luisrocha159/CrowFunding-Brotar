@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import {strict as assert} from 'node:assert'
-import {randomBytes,randomUUID} from 'node:crypto'
+import {createHash,randomBytes,randomUUID} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {test} from 'node:test'
 import {NestFactory} from '@nestjs/core'
@@ -21,10 +21,10 @@ test('S3-14 PostgreSQL/HTTP: membresías históricas, transferencia, renovación
  const {container,project}=readTestDatabaseTarget(config)
  assert.equal(execFileSync('docker',['inspect','--format','{{index .Config.Labels "com.docker.compose.project"}}',container],{encoding:'utf8'}).trim(),project)
  const sql=(input:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim()
- const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl(),suffix=randomUUID(),password=randomBytes(24).toString('hex'),reason='Cambio explícito de prueba de administración DEMO.'
+ const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));const ip=`parties-${randomUUID()}`;app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:ip});next()});await app.listen(0,'127.0.0.1');const base=await app.getUrl(),suffix=randomUUID(),password=randomBytes(24).toString('hex'),reason='Cambio explícito de prueba de administración DEMO.'
  const users:string[]=[],organizations:string[]=[],cases:string[]=[],files:string[]=[]
  // Do not reuse a socket that can expire during synchronous Docker/psql fixture setup.
- const call=(path:string,cookie='',method='GET',body?:unknown)=>fetch(`${base}/api/${path}`,{method,headers:{Connection:'close','Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173',Cookie:cookie},...(body===undefined?{}:{body:JSON.stringify(body)})})
+ const call=(path:string,cookie='',method='GET',body?:unknown)=>{if(method==='PUT')sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash=ANY(ARRAY[${[...users.map(u=>'account:'+u),'ip:'+ip].map(k=>"'"+createHash('sha256').update('mvp-case-write:'+k).digest('hex')+"'").join(',')}]);`);return fetch(`${base}/api/${path}`,{method,headers:{Connection:'close','Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173',Cookie:cookie},...(body===undefined?{}:{body:JSON.stringify(body)})})}
  const account=async(role='REGISTERED_USER')=>{const email=`parties-${users.length}-${suffix}@example.invalid`;const registered=await call('auth/register','','POST',{email,password,firstName:'DEMO',lastName:'Miembro',demoConsent:true});assert.equal(registered.status,201);const{id}=await registered.json() as{id:string};users.push(id);if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`);const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);return{id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!}}
  try{
   const owner=await account(),member=await account(),other=await account(),admin=await account('ADMIN'),auditor=await account('ADMIN')
@@ -33,7 +33,7 @@ test('S3-14 PostgreSQL/HTTP: membresías históricas, transferencia, renovación
   const created=await call('organizations',owner.cookie,'POST',{legalName:`DEMO Membresías ${suffix}`,tradeName:'DEMO',organizationTypeId:orgTypes[0]!.id,contactEmail:'demo@example.invalid',contactPhone:''});assert.equal(created.status,201)
   const org=(await created.json() as{id:string}).id;organizations.push(org)
   const view=async(cookie=owner.cookie)=>{const response=await call(`me/organizations/${org}/members`,cookie);assert.equal(response.status,200);return response.json() as Promise<MemberView>}
-  const change=(action:string,userId:string,role='MEMBER',cookie=owner.cookie,expectedVersion?:string)=>view(cookie).then(detail=>call(`me/organizations/${org}/members`,cookie,'PUT',{action,userId,role,expectedVersion:expectedVersion??detail.version,reason,confirmed:true}))
+  const change=(action:string,userId:string,role='MEMBER',cookie=owner.cookie,expectedVersion?:string)=>view(cookie).then(async detail=>{const response=await call(`me/organizations/${org}/members`,cookie,'PUT',{action,userId,role,expectedVersion:expectedVersion??detail.version,reason,confirmed:true});if(response.status===200){const ack=await response.clone().json() as{invitationId?:string};if(ack.invitationId){const target=[owner,member,other].find(u=>u.id===userId)!;const accepted=await call(`me/organization-invitations/${ack.invitationId}`,target.cookie,'PUT',{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true});assert.equal(accepted.status,200,await accepted.text())}}return response})
   assert.equal((await call(`me/organizations/${org}/members`)).status,401)
   assert.equal((await call(`me/organizations/${org}/members`,other.cookie)).status,404)
   assert.equal((await call(`administration/parties/users/${owner.id}`,member.cookie)).status,403)
@@ -52,6 +52,7 @@ test('S3-14 PostgreSQL/HTTP: membresías históricas, transferencia, renovación
   const stale=(await view()).version
   const race=await Promise.all([call(`me/organizations/${org}/members`,owner.cookie,'PUT',{action:'ADD',userId:other.id,role:'MEMBER',expectedVersion:stale,reason,confirmed:true}),call(`me/organizations/${org}/members`,owner.cookie,'PUT',{action:'ADD',userId:other.id,role:'MEMBER',expectedVersion:stale,reason,confirmed:true})])
   assert.deepEqual(race.map(r=>r.status).sort(),[200,409])
+  const winning=await race.find(r=>r.status===200)!.json() as{invitationId:string};assert.equal((await call(`me/organization-invitations/${winning.invitationId}`,other.cookie,'PUT',{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})).status,200)
   const historical=(await view()).members.find(row=>row.id===first)!;assert.equal(historical.current,false);assert.ok(historical.leftAt)
   const types=await(await call('me/verifications/types',owner.cookie)).json() as VerificationType[],type=types.find(t=>t.code==='KYB_REPRESENTATIVE')!;assert.ok(type.policy)
   const started=await call('me/verifications',owner.cookie,'POST',{verificationTypeId:type.id,organizationId:org});assert.equal(started.status,201);const kyb=await started.json() as VerificationDetail;cases.push(kyb.id)

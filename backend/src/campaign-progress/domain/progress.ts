@@ -5,7 +5,7 @@ export interface UpdateInput { revision: string | null; title: string; body: str
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const plain = (value: string, min: number, max: number) => typeof value === 'string' && value.trim().length >= min && value.trim().length <= max && !/[<>]/u.test(value) && ![...value].some(char => { const code = char.charCodeAt(0); return (code < 32 && code !== 9 && code !== 10 && code !== 13) || (char.length === 1 && code >= 0xd800 && code <= 0xdfff) })
 function date(value: string | null): boolean { if (value === null) return true; if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const parsed = new Date(`${value}T00:00:00Z`); return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value && value <= new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().slice(0, 10) }
-export function validateProgress(input: ProgressInput): Record<string, string> {
+export function validateProgress(input: ProgressInput, units:Readonly<Record<string,string|null>>={}): Record<string, string> {
   const errors: Record<string, string> = {}
   if (!plain(input.revision, 1, 100)) errors.revision = 'Actualiza la información antes de guardar.'
   for (const key of ['activities', 'milestones'] as const) {
@@ -19,6 +19,11 @@ export function validateProgress(input: ProgressInput): Record<string, string> {
   }
   if (!Array.isArray(input.indicators) || input.indicators.length > 50) errors.indicators = 'Máximo 50 indicadores.'
   else { const ids = new Set<string>(); for (const [index, row] of input.indicators.entries()) { if (!row || !uuid.test(row.id) || ids.has(row.id) || (row.achievedValue !== null && (!Number.isFinite(row.achievedValue) || row.achievedValue < 0 || row.achievedValue > 999999999999.99 || !/^\d+(?:\.\d{1,2})?$/.test(String(row.achievedValue))))) errors[`indicators.${index}`] = 'Usa un resultado no negativo con hasta dos decimales.'; if (row) ids.add(row.id) } }
+  if(Array.isArray(input.indicators))for(const [index,row]of input.indicators.entries())if(row&&row.achievedValue!==null){
+    const unit=units[row.id]
+    if(unit==='%'&&row.achievedValue>100)errors[`indicators.${index}`]='El resultado porcentual debe estar entre 0 y 100.'
+    if(['personas','familias','unidades'].includes(unit??'')&&!Number.isInteger(row.achievedValue))errors[`indicators.${index}`]='Personas, familias y unidades requieren resultados enteros.'
+  }
   return errors
 }
 export function validateUpdate(input: UpdateInput): Record<string, string> {

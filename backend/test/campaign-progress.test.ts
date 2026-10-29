@@ -17,3 +17,12 @@ test('novedades requieren contenido válido y evidencias no duplicadas', () => {
   assert.ok(Object.keys(validateUpdate({ ...input, body: '<script>alert(1)</script>' })).length)
   assert.ok(Object.keys(validateUpdate({ ...input, images: [...input.images, ...input.images] })).length)
 })
+
+
+test('resultados respetan la unidad persistida: porcentajes hasta100 y personas enteras',()=>{
+ const check=validateProgress as (input:ProgressInput,units?:Record<string,string|null>)=>Record<string,string>
+ assert.ok(Object.keys(check({...valid,indicators:[{id,achievedValue:101}]},{[id]:'%'})).length)
+ assert.ok(Object.keys(check({...valid,indicators:[{id,achievedValue:1.5}]},{[id]:'personas'})).length)
+ assert.deepEqual(check({...valid,indicators:[{id,achievedValue:1.5}]},{[id]:'ha'}),{})
+ assert.deepEqual(check({...valid,indicators:[{id,achievedValue:100}]},{[id]:'%'}),{})
+})

@@ -1,3 +1,5 @@
+import {OrganizationInvitations1793145600002} from './migrations/1793145600002-OrganizationInvitations'
+import {MonthlyPublicAccountability1793145600001} from './migrations/1793145600001-MonthlyPublicAccountability'
 import 'reflect-metadata'
 import { DataSource, type DataSourceOptions } from 'typeorm'
 import type { MigrationConfig } from './migration.config'
@@ -41,8 +43,10 @@ import {SantiagoAccountability1792972800001} from './migrations/1792972800001-Sa
 import {SantiagoParties1792972800002} from './migrations/1792972800002-SantiagoParties'
 import {SantiagoRepresentation1793059200000} from './migrations/1793059200000-SantiagoRepresentation'
 
+import {PublicationSuccession1793145600000} from './migrations/1793145600000-PublicationSuccession'
+
 // Orden explícito: el registro integrado conserva las migraciones de ambas ramas.
-export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002, ResponsibilityPermissions1792368000000, ContributionIntegrity1792368000001, FinancialRead1792368000002, AuditRead1792368000003, StaffResponsibilities1792454400000, AuditRetention1792454400001, DemoPayments1792540800000, GalleryBookmarks1792627200000, CampaignProgress1792627200001, ContributionRead1792627200002, VerificationCapture1792627200003, SupportCases1792627200004, MvpDemoAgreements1792713600000, VerificationReview1792713600001, DemoRefunds1792713600002, DemoObligationRead1792713600003, DemoDisputes1792713600004, CampaignLifecycle1792713600005, DemoDisbursements1792713600006, CampaignClosure1792800000000, IntegratedAccess1792800000001, ContactMail1792800000002, ResponsibilityDashboard1792800000003, SupportCaseHistory1792800000004, SupportRepliesMail1792886400000, SantiagoProgress1792972800000, SantiagoAccountability1792972800001, SantiagoParties1792972800002, SantiagoRepresentation1793059200000]
+export const MIGRATIONS = [BaselineProvisionalV21789948800000, CampaignRejected1791244800000, CreatorGrantAudit1791244800001, MilestoneActivities1791849600000, ProvisionalCatalogs1792015200000, InitiativeIdentity1792015200001, IdentityDraftCorrections1792015200002, ResponsibilityPermissions1792368000000, ContributionIntegrity1792368000001, FinancialRead1792368000002, AuditRead1792368000003, StaffResponsibilities1792454400000, AuditRetention1792454400001, DemoPayments1792540800000, GalleryBookmarks1792627200000, CampaignProgress1792627200001, ContributionRead1792627200002, VerificationCapture1792627200003, SupportCases1792627200004, MvpDemoAgreements1792713600000, VerificationReview1792713600001, DemoRefunds1792713600002, DemoObligationRead1792713600003, DemoDisputes1792713600004, CampaignLifecycle1792713600005, DemoDisbursements1792713600006, CampaignClosure1792800000000, IntegratedAccess1792800000001, ContactMail1792800000002, ResponsibilityDashboard1792800000003, SupportCaseHistory1792800000004, SupportRepliesMail1792886400000, SantiagoProgress1792972800000, SantiagoAccountability1792972800001, SantiagoParties1792972800002, SantiagoRepresentation1793059200000, PublicationSuccession1793145600000, MonthlyPublicAccountability1793145600001, OrganizationInvitations1793145600002]
 
 // Nombre propio: el esquema oficial trae sus propias tablas y no se invade con el genérico "migrations".
 export const MIGRATIONS_TABLE = 'schema_migration_brotar'

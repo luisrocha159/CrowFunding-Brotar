@@ -32,6 +32,7 @@ export function OrganizationsPage() {
   function change(key:keyof OrganizationInput,value:string) { setValues(previous=>({...previous,[key]:value})); setErrors(previous=>({...previous,[key]:undefined})); setMessage(null) }
   if (state==='anonymous') return <Navigate to="/iniciar-sesion?continuar=%2Fmis-organizaciones" replace />
   return <AccessShell centered title="Mis organizaciones" subtitle="Registra los datos iniciales de tu organización o empresa." notice={<><strong>Registro conectado.</strong> Se guarda un borrador vinculado a tu cuenta. No incluye verificación KYB, campañas ni permisos globales de creador o administrador.</>}>
+    <ButtonLink to="/mis-invitaciones" variant="secondary">Mis invitaciones</ButtonLink>
     <ButtonLink to="/mi-cuenta" variant="secondary">Volver a mi cuenta</ButtonLink>
     {state==='loading' && <p role="status">Consultando organizaciones…</p>}
     {state==='forbidden' && <Message tone="error" title="Rol no disponible">Necesitas el rol Usuario registrado vigente. Consulta al equipo responsable.</Message>}

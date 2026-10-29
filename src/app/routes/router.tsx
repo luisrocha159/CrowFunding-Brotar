@@ -1,3 +1,6 @@
+import {OrganizationInvitationsPage} from '../../features/verifications/OrganizationInvitationsPage'
+import {PublicAccountabilityPage} from '../../features/campaign-progress/PublicAccountabilityPage'
+import {PublicationAdministrationPage} from '../../features/campaign-progress/PublicationAdministrationPage'
 import { createBrowserRouter } from 'react-router-dom'
 import { PublicLayout } from '../../shared/layout/PublicLayout'
 import { NotFoundPage } from './NotFoundPage'
@@ -65,6 +68,7 @@ export const router = createBrowserRouter([
       { path: 'para-creadores', element: <ForCreatorsPage /> },
       { path: 'explorar', element: <ExploreProjectsPage /> },
       { path: 'explorar/buscar', element: <SearchProjectsPage /> },
+      {path:'campanas/:id/rendicion-publica',element:<PublicAccountabilityPage/>},
       { path: 'proyectos/:slug', element: <ProjectDetailPage /> },
       { path: 'iniciar-sesion', element: <GuestAccessGate><LoginPage /></GuestAccessGate> },
       { path: 'mi-cuenta', element: <AccountPage /> },
@@ -97,6 +101,7 @@ export const router = createBrowserRouter([
       { path: 'mis-proyectos/:id/rendicion', element: <AccountabilityPage /> },
       { path: 'administracion/rendicion', element: <AccountabilityPage administrative /> },
       { path: 'administracion/rendicion/:id', element: <AccountabilityPage administrative /> },
+      {path:'administracion/publicaciones',element:<PublicationAdministrationPage/>},
       { path: 'administracion', element: <AdministrativeDashboardPage /> },
       { path: 'mis-proyectos/:id/avances', element: <ProgressPage /> },
       { path: 'administracion/catalogos', element: <CatalogsPage /> },
@@ -104,6 +109,7 @@ export const router = createBrowserRouter([
       { path: 'mis-guardados', element: <BookmarksPage /> },
       { path: 'mis-organizaciones', element: <OrganizationsPage /> },
       { path: 'crear-campana', element: <CampaignBuilderPage /> },
+      {path:'mis-invitaciones',element:<OrganizationInvitationsPage/>},
       { path: 'mis-proyectos', element: <ProjectsPage /> },
       { path: 'mis-proyectos/:id', element: <ProjectsPage /> },
       { path: 'administracion/campanas', element: <ProjectsPage admin /> },

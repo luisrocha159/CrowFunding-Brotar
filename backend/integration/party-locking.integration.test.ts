@@ -1,3 +1,4 @@
+import {OrganizationInvitations} from '../src/verifications/infrastructure/organization-invitations'
 import 'reflect-metadata'
 import {strict as assert} from 'node:assert'
 import {randomBytes,randomUUID} from 'node:crypto'
@@ -36,8 +37,8 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
   const types=await(await call('organizations/types',a.cookie)).json() as{id:string}[]
   const created=await call('organizations',a.cookie,'POST',{legalName:`DEMO Locks ${suffix}`,tradeName:'DEMO',organizationTypeId:types[0]!.id,contactEmail:'demo@example.invalid',contactPhone:''});assert.equal(created.status,201);organizationId=(await created.json() as{id:string}).id
   const database=app.get(DatabaseService),source=database.connection(),organizations=app.get(OrganizationManagement),parties=app.get(PartyAdministration)
-  await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:b.id,role:'ADMIN',expectedVersion:'0',reason,confirmed:true})
-  await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:c.id,role:'MEMBER',expectedVersion:'1',reason,confirmed:true})
+  const inviteB=await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:b.id,role:'ADMIN',expectedVersion:'0',reason,confirmed:true});await new OrganizationInvitations(database).act(b.id,inviteB.invitationId!,{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})
+  const inviteC=await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:c.id,role:'MEMBER',expectedVersion:'2',reason,confirmed:true});await new OrganizationInvitations(database).act(c.id,inviteC.invitationId!,{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})
   const verificationTypes=await(await call('me/verifications/types',b.cookie)).json() as VerificationType[],type=verificationTypes.find(row=>row.code==='KYB_REPRESENTATIVE')!;assert.ok(type.policy)
   const started=await call('me/verifications',b.cookie,'POST',{verificationTypeId:type.id,organizationId});assert.equal(started.status,201);const verification=await started.json() as VerificationDetail;cases.push(verification.id)
   const submission={policyVersion:type.policy!.version,fields:{},documents:[],accepted:false}
@@ -66,7 +67,7 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
   const deadline=Date.now()+3000;let blocked=false
   while(Date.now()<deadline){const [row]=await source.query('SELECT cardinality(pg_blocking_pids($1))>0 AS blocked',[restrictionPid]);if(row.blocked){blocked=true;break}await new Promise(resolve=>setTimeout(resolve,10))}
   assert.ok(blocked,'La restricción está esperando el bloqueo compartido de B')
-  const membershipResult=status(managing.changeMember(a.id,organizationId,{action:'CHANGE',userId:c.id,role:'ADMIN',expectedVersion:'2',reason,confirmed:true}))
+  const membershipResult=status(managing.changeMember(a.id,organizationId,{action:'CHANGE',userId:c.id,role:'ADMIN',expectedVersion:'4',reason,confirmed:true}))
   await membershipHasOrganization.promise;await membershipRequestedAccounts.promise;resumeVerification.open()
   const outcomes=await Promise.all([saveResult,restrictionResult,membershipResult]);assert.equal(outcomes.includes(500),false,`Sin deadlock/500 en tres solicitudes: ${outcomes.join(',')}`);assert.deepEqual(outcomes,[200,200,200])
   assert.equal((await call('auth/me',b.cookie)).status,401)

@@ -1,3 +1,6 @@
+import {CaseWriteLimitGuard} from '../../shared/infrastructure/http/case-write-limit.guard'
+import {requiresInvitation} from '../domain/organization-invitation'
+import {expireInvitations,invalidateMembershipVerification} from './organization-invitations'
 import {assertRepresentationSettled} from './representation-settlement'
 import { Body, BadRequestException, ConflictException, Controller, ForbiddenException, Get, Header, Injectable, NotFoundException, Param, ParseUUIDPipe, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { IsIn, IsOptional, IsString, IsUUID, Length } from 'class-validator'
@@ -89,15 +92,24 @@ export class OrganizationManagement {
       await partyActor(m,actor,false)
       if(input.action!=='REMOVE')await partyActor(m,input.userId,false,false)
       await setAuditActor(m,actor)
+      if(requiresInvitation(input.action,input.role)){
+        if(target&&target.role!=='MEMBER')throw new ConflictException('La promoción requiere una membresía MEMBER vigente; la representación formal usa su solicitud propia.')
+        await expireInvitations(m,id)
+        const [pending]=await m.query(`SELECT id FROM brotar_extension.organization_invitation WHERE organization_id=$1 AND target_user_id=$2 AND status='PENDING'`,[id,input.userId]);if(pending)throw new ConflictException('Ya existe una invitación pendiente para esa cuenta. Cancélala o espera su aceptación.')
+        const invitationId=randomUUID()
+        await m.query(`INSERT INTO brotar_extension.organization_invitation(id,organization_id,target_user_id,invited_by,role,current_member_id,reason) VALUES($1,$2,$3,$4,$5,$6,$7)`,[invitationId,id,input.userId,actor,input.role,target?.id??null,input.reason.trim()])
+        await m.query(`INSERT INTO brotar_extension.organization_invitation_event(invitation_id,version,action,actor_id,reason) VALUES($1,1,'INVITE',$2,$3)`,[invitationId,actor,input.reason.trim()])
+        await partyActor(m,actor,false);await partyActor(m,input.userId,false,false)
+        await partyHistory(m,actor,'ORGANIZATION',id,input,'INVITE',{before:current,targetUserId:input.userId,role:input.role,invitationId})
+        await recordAudit(m,actor,'UPDATE','organization',id)
+        return{id,version:String(Number(before.version)+1),representationChanged:false,invitationId,status:'INVITED'}
+      }
       const terminate=async(member:{id:string})=>{await m.query('UPDATE public.organization_member SET left_at=clock_timestamp() WHERE id=$1',[member.id]);await recordAudit(m,actor,'UPDATE','organization_member',member.id)}
       const add=async(user:string,role:string)=>{const memberId=randomUUID();await m.query('INSERT INTO public.organization_member(id,organization_id,user_id,organization_role,invited_by,joined_at) VALUES($1,$2,$3,$4,$5,clock_timestamp())',[memberId,id,user,role,actor]);await recordAudit(m,actor,'CREATE','organization_member',memberId)}
       if(target)await terminate(target)
       if(input.action!=='REMOVE')await add(input.userId,input.role!)
       const representationChanged=['OWNER','LEGAL_REPRESENTATIVE'].includes(input.role??'')||['OWNER','LEGAL_REPRESENTATIVE'].includes(target?.role??'')||!!target&&input.action!=='ADD'
-      if(representationChanged){
-        const cases:{id:string;status:string;submitted_data:unknown}[]=await m.query(`SELECT v.id,v.status,v.submitted_data FROM public.verification v JOIN public.verification_type t ON t.id=v.verification_type_id WHERE v.organization_id=$1 AND t.code IN ('KYB_LEGAL','KYB_REPRESENTATIVE') AND v.status IN ('PENDING','IN_REVIEW','APPROVED') FOR UPDATE OF v`,[id])
-        for(const row of cases){await m.query(`INSERT INTO brotar_extension.verification_revision(id,verification_id,actor_user_id,operation,snapshot) VALUES($1,$2,$3,'REPRESENTATION_CHANGE',$4::jsonb)`,[randomUUID(),row.id,actor,JSON.stringify({status:row.status,submission:row.submitted_data,reason:input.reason})]);await m.query(`UPDATE public.verification SET status='EXPIRED',expires_at=clock_timestamp() WHERE id=$1`,[row.id]);await recordAudit(m,actor,'STATUS_CHANGE','verification',row.id)}
-      }
+      if(representationChanged)await invalidateMembershipVerification(m,actor,id,input.reason)
       await partyActor(m,actor,false)
       if(input.action!=='REMOVE')await partyActor(m,input.userId,false,['OWNER','LEGAL_REPRESENTATIVE','ADMIN'].includes(input.role??''))
       await partyHistory(m,actor,'ORGANIZATION',id,input,input.action,{before:current,targetUserId:input.userId,role:input.role??null,representationChanged})
@@ -139,7 +151,7 @@ export class OrganizationManagementController {
   list(@Req() request: AuthenticatedRequest) { return this.organizations.list(request.brotarUser.id) }
   @Get(':id/members') @Header('Cache-Control','no-store')
   members(@Req() request:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Query('currentPage') current='1',@Query('memberPage') history='1'){return operation(()=>this.organizations.members(request.brotarUser.id,id,pageNumber(current),pageNumber(history)))}
-  @Put(':id/members') @UseGuards(SessionMutationGuard) @Header('Cache-Control','no-store')
+  @Put(':id/members') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard) @Header('Cache-Control','no-store')
   changeMember(@Req() request:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Body() input:MemberMutationDto){return this.organizations.changeMember(request.brotarUser.id,id,input)}
   @Put(':id') @UseGuards(SessionMutationGuard) @Header('Cache-Control','no-store')
   save(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: OrganizationUpdateDto) { return this.organizations.save(request.brotarUser.id, id, input) }

@@ -31,7 +31,7 @@ test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas
    const c=await json<{id:string}>(await call('campaigns/drafts',users[i]!.cookie,{title:'Ensayo de seguimiento publicado',summary:'Datos sintéticos para novedades y recompensas',campaignType:'DONATION'}),201);campaigns.push(c.id)
    sql(`UPDATE campaign SET status='PUBLISHED',published_at=clock_timestamp(),goal_amount=1000,currency_code='BOB' WHERE id='${c.id}';`)
   }
-  const owner=users[0]!,other=users[1]!,id=campaigns[0]!,updateId=randomUUID(),path=`campaigns/${id}/updates/${updateId}`
+  const owner=users[0]!,other=users[1]!,id=campaigns[0]!,originalId=randomUUID();let updateId:string=originalId,path=`campaigns/${id}/updates/${updateId}`
   const image=randomUUID();files.push(image);sql(`INSERT INTO file_asset(id,storage_key,file_name,mime_type,size_bytes,scope,uploaded_by) VALUES('${image}','CAMPAIGN_PUBLIC_IMAGE/${image}.bin','ensayo.png','image/png',8,'PUBLIC','${owner.id}');`)
   const input={revision:null,title:'Publicación original de ensayo',body:'Resultado original con evidencia y avance capturado de la campaña.',milestoneId:null,images:[{fileId:image,caption:'Evidencia pública original'}],publish:true}
   let published=await json<Update>(await call(path,owner.cookie,input,'PUT'));assert.equal(published.version,1)
@@ -49,9 +49,9 @@ test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas
   assert.equal((await call(`${path}/publication`,owner.cookie,correction,'PUT','https://invalid.example')).status,403)
   for(const invalid of [{...correction,confirmed:false},{...correction,reason:'x'},{...correction,images:[null]},{...correction,unknown:'field'},{...correction,revision:'stale'}])assert.ok([400,409].includes((await call(`${path}/publication`,owner.cookie,invalid,'PUT')).status))
   const race=await Promise.all([call(`${path}/publication`,owner.cookie,correction,'PUT'),call(`${path}/publication`,owner.cookie,{...correction,title:'Segunda versión concurrente de ensayo'},'PUT')]);assert.deepEqual(race.map(r=>r.status).sort(),[200,409])
-  published=await json<Update>(await call(path,owner.cookie));assert.equal(published.version,2);assert.deepEqual(published.progress,progressSnapshot)
+  published=await json<Update>(race.find(r=>r.status===200)!);assert.notEqual(published.id,originalId);updateId=published.id;path=`campaigns/${id}/updates/${updateId}`;assert.equal(published.version,2);assert.deepEqual(published.progress,progressSnapshot)
   let history=await json<{items:{version:number;reason:string;snapshot:Update}[];total:number}>(await call(`${path}/history`,owner.cookie));assert.equal(history.total,2);assert.equal(history.items[1]!.snapshot.images[0]!.fileId,image);assert.deepEqual(history.items[1]!.snapshot.progress,progressSnapshot)
-  assert.equal(sql(`SELECT count(*) FROM file_attachment WHERE campaign_update_id='${updateId}' AND attachment_role='UPDATE_EVIDENCE_ARCHIVED'`),'1')
+  assert.equal(sql(`SELECT count(*) FROM file_attachment WHERE campaign_update_id='${originalId}' AND attachment_role='UPDATE_EVIDENCE'`),'1')
   const visible=await json<{items:Record<string,unknown>[]}>(await call(`campaigns/public/${id}/updates`));assert.equal(visible.items.find(i=>i.id===updateId)!.title,published.title);for(const key of ['revision','reason','history','withdrawnAt','version','authorUserId'])assert.equal(visible.items[0]![key],undefined)
   assert.equal((await call(path,owner.cookie,{...input,revision:published.revision,publish:false},'PUT')).status,409,'El guardado ordinario no modifica publicaciones')
   const withdrawal={action:'WITHDRAW',revision:published.revision,confirmed:true,reason:'Retiro privado por resultado publicado incorrecto.'}
@@ -65,7 +65,7 @@ test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas
   const followedAfter=await json<{items:{id:string}[];total:number}>(await call('me/bookmarks/updates',other.cookie))
   assert.equal(followedAfter.total,1,'El total seguido excluye el retiro y conserva publicaciones históricas')
   assert.deepEqual(followedAfter.items.map(i=>i.id),[legacyUpdate],'El feed seguido oculta el retiro y conserva registros sin update_version')
-  assert.equal((await json<{total:number}>(await call(`campaigns/${id}/updates`,owner.cookie))).total,2)
+  assert.equal((await json<{total:number}>(await call(`campaigns/${id}/updates`,owner.cookie))).total,3)
   assert.equal((await call(`${path}/publication`,owner.cookie,{...correction,revision:withdrawn.revision},'PUT')).status,409)
   assert.equal((await call(`${path}/history`,other.cookie)).status,404)
   assert.equal((await call(`${path}/history`)).status,401)

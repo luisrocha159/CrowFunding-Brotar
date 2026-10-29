@@ -1,5 +1,5 @@
 {
-  "version": "sprint3-demo-0.13",
+  "version": "sprint3-demo-0.14",
   "scope": "API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.",
   "routes": [
     {
@@ -77,6 +77,22 @@
       "roles": [],
       "permissions": [
         "campaign.lifecycle.read"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/accountability/:id/publications/:reportId/withdraw",
+      "controller": "WithdrawAccountabilityController",
+      "handler": "withdraw",
+      "guards": [
+        "AccountabilityOriginGuard",
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.lifecycle.manage"
       ]
     },
     {
@@ -186,6 +202,34 @@
       "roles": [],
       "permissions": [
         "campaign.lifecycle.manage"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaign-publications",
+      "controller": "PublicationAdministrationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.review.read"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/campaign-publications/:campaignId/:updateId/withdraw",
+      "controller": "PublicationAdministrationController",
+      "handler": "withdraw",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "campaign.publish"
       ]
     },
     {
@@ -1514,6 +1558,15 @@
     },
     {
       "method": "GET",
+      "path": "/api/campaigns/public/:id/accountability",
+      "controller": "PublicAccountabilityController",
+      "handler": "list",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/campaigns/public/:id/gallery",
       "controller": "PublicGalleryController",
       "handler": "read",
@@ -1961,6 +2014,22 @@
       "permissions": []
     },
     {
+      "method": "POST",
+      "path": "/api/me/accountability/:id/publications",
+      "controller": "ShareAccountabilityController",
+      "handler": "publish",
+      "guards": [
+        "AccountabilityOriginGuard",
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "CREATOR"
+      ],
+      "permissions": []
+    },
+    {
       "method": "GET",
       "path": "/api/me/bookmarks",
       "controller": "BookmarkController",
@@ -2275,6 +2344,34 @@
     },
     {
       "method": "GET",
+      "path": "/api/me/organization-invitations",
+      "controller": "OrganizationInvitationController",
+      "handler": "list",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/organization-invitations/:id",
+      "controller": "OrganizationInvitationController",
+      "handler": "act",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/me/organizations",
       "controller": "OrganizationManagementController",
       "handler": "list",
@@ -2319,6 +2416,7 @@
       "controller": "OrganizationManagementController",
       "handler": "changeMember",
       "guards": [
+        "CaseWriteLimitGuard",
         "RoleGuard",
         "SessionMutationGuard"
       ],

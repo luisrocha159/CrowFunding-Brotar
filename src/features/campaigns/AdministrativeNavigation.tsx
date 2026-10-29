@@ -8,6 +8,7 @@ export function AdministrativeNavigation() {
     {can('dashboard.read') && <NavLink to="/administracion">Resumen administrativo</NavLink>}
     {can('catalog.read') && <NavLink to="/administracion/catalogos">Catálogos</NavLink>}
     {can('parties.read') && <NavLink to="/administracion/personas">Personas y organizaciones</NavLink>}
+    {can('campaign.review.read') && <NavLink to="/administracion/publicaciones">Novedades publicadas</NavLink>}
     {can('campaign.review.read') && <NavLink to="/administracion/campanas">Panel de revisión</NavLink>}
     {can('verification.read') && <NavLink to="/administracion/verificaciones">Verificación KYC/KYB DEMO</NavLink>}
     {can('creator.provision') && <NavLink to="/administracion/usuarios">Creadores y responsabilidades</NavLink>}

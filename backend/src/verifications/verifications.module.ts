@@ -1,3 +1,5 @@
+import {OrganizationInvitations} from './infrastructure/organization-invitations'
+import {OrganizationInvitationController} from './infrastructure/organization-invitation.controller'
 import {RepresentationRequests} from './infrastructure/representation-requests'
 import {RepresentationController,RepresentationAdministrationController} from './infrastructure/representation.controller'
 import { Module } from '@nestjs/common'
@@ -12,6 +14,6 @@ import { TypeormVerificationRepository } from './infrastructure/typeorm-verifica
 import { OrganizationManagement, OrganizationManagementController } from './infrastructure/organization-management.controller'
 import { PartyAdministration, PartyAdministrationController } from './infrastructure/party-administration.controller'
 import {VerificationReviewController,VerificationBadgeController} from './infrastructure/verification-review.controller'
-@Module({ imports: [RolesModule, FilesModule, DatabaseModule], controllers: [RepresentationController,RepresentationAdministrationController,VerificationController, OrganizationManagementController, PartyAdministrationController,VerificationReviewController,VerificationBadgeController], providers: [RepresentationRequests,PartyAdministration, OrganizationManagement, SessionMutationGuard,CaseWriteLimitGuard, TypeormVerificationRepository,
+@Module({ imports: [RolesModule, FilesModule, DatabaseModule], controllers: [OrganizationInvitationController,RepresentationController,RepresentationAdministrationController,VerificationController, OrganizationManagementController, PartyAdministrationController,VerificationReviewController,VerificationBadgeController], providers: [OrganizationInvitations,RepresentationRequests,PartyAdministration, OrganizationManagement, SessionMutationGuard,CaseWriteLimitGuard, TypeormVerificationRepository,
   { provide: Verifications, inject: [TypeormVerificationRepository], useFactory: (repository: TypeormVerificationRepository) => new Verifications(repository) }] })
 export class VerificationsModule {}

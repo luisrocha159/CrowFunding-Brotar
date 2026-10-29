@@ -1,5 +1,6 @@
-import {Body,Controller,ForbiddenException,Get,Header,Module,NotFoundException,Param,ParseUUIDPipe,Post,Query,Req,Res,StreamableFile,UseGuards} from '@nestjs/common'
-import {IsIn,IsInt,IsObject,Max,Min} from 'class-validator'
+import {PublicAccountabilityRepository} from './infrastructure/public-accountability.repository'
+import {Body,Controller,ForbiddenException,Get,Header,Module,NotFoundException,Param,ParseUUIDPipe,Post,Put,Query,Req,Res,StreamableFile,UseGuards} from '@nestjs/common'
+import {IsBoolean,IsIn,IsInt,IsObject,IsString,IsUUID,Length,Max,Min} from 'class-validator'
 import type {Response} from 'express'
 import {DatabaseModule} from '../shared/infrastructure/database/database.module'
 import {DatabaseService} from '../shared/infrastructure/database/database.service'
@@ -33,5 +34,22 @@ export class AdminAccountabilityController {
  @Post(':id/actions') @Header('Cache-Control','private, no-store') @UseGuards(AccountabilityOriginGuard,SessionMutationGuard,CaseWriteLimitGuard) act(@Req() r:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Body() input:AccountabilityDto){return operation(()=>this.repository.act(r.brotarUser.id,id,input,true))}
  @Get(':id/documents/:fileId') @Header('Cache-Control','private, no-store') document(@Req() r:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Param('fileId',new ParseUUIDPipe()) fileId:string,@Res({passthrough:true}) response:Response){return operation(()=>download(this.repository,this.files,this.database,r.brotarUser.id,id,fileId,true,response))}
 }
-@Module({imports:[DatabaseModule,RolesModule,FilesModule],controllers:[OwnAccountabilityController,AdminAccountabilityController],providers:[AccountabilityRepository,AccountabilityOriginGuard,SessionMutationGuard,CaseWriteLimitGuard]})
+class PublicReportDto {@IsUUID() reportId!:string;@IsUUID() requestKey!:string;@IsString() @Length(10,1000) reason!:string;@IsBoolean() publishConsent!:boolean}
+class WithdrawReportDto {@IsUUID() requestKey!:string;@IsString() @Length(10,1000) reason!:string;@IsBoolean() confirmed!:boolean;@IsInt() @Min(1) @Max(1) expectedVersion!:number}
+@Controller('campaigns/public')
+export class PublicAccountabilityController {
+ constructor(private readonly repository:PublicAccountabilityRepository){}
+ @Get(':id/accountability') @Header('Cache-Control','no-store') list(@Param('id',new ParseUUIDPipe()) id:string,@Query('page') page='1'){return operation(()=>this.repository.list(id,pageNumber(page)))}
+}
+@Controller('me/accountability') @UseGuards(RoleGuard) @RequireRoles('CREATOR')
+export class ShareAccountabilityController {
+ constructor(private readonly repository:PublicAccountabilityRepository){}
+ @Post(':id/publications') @UseGuards(AccountabilityOriginGuard,SessionMutationGuard,CaseWriteLimitGuard) @Header('Cache-Control','private, no-store') publish(@Req() r:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Body() input:PublicReportDto){return operation(()=>this.repository.change(r.brotarUser.id,id,input.reportId,input))}
+}
+@Controller('admin/accountability') @UseGuards(RoleGuard) @RequirePermissions('campaign.lifecycle.manage')
+export class WithdrawAccountabilityController {
+ constructor(private readonly repository:PublicAccountabilityRepository){}
+ @Put(':id/publications/:reportId/withdraw') @UseGuards(AccountabilityOriginGuard,SessionMutationGuard,CaseWriteLimitGuard) @Header('Cache-Control','private, no-store') withdraw(@Req() r:AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Param('reportId',new ParseUUIDPipe()) reportId:string,@Body() input:WithdrawReportDto){return operation(()=>this.repository.change(r.brotarUser.id,id,reportId,input,true))}
+}
+@Module({imports:[DatabaseModule,RolesModule,FilesModule],controllers:[OwnAccountabilityController,AdminAccountabilityController,PublicAccountabilityController,ShareAccountabilityController,WithdrawAccountabilityController],providers:[AccountabilityRepository,PublicAccountabilityRepository,AccountabilityOriginGuard,SessionMutationGuard,CaseWriteLimitGuard]})
 export class AccountabilityModule{}

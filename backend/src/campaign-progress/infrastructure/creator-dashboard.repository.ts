@@ -35,7 +35,7 @@ export class CreatorDashboardRepository {
        c.real_amount::text AS "amountRaised",c.demo_amount::text AS "demoAmountRaised",
        CASE WHEN c.goal_amount>0 THEN round(c.real_amount/c.goal_amount*100,2) ELSE 0 END::text AS "fundingPercent",
        CASE WHEN c.goal_amount>0 THEN round(c.demo_amount/c.goal_amount*100,2) ELSE 0 END::text AS "demoFundingPercent",
-       (SELECT count(*)::int FROM public.campaign_update u LEFT JOIN brotar_extension.update_version uv ON uv.update_id=u.id WHERE u.campaign_id=c.id AND u.deleted_at IS NULL AND u.published_at IS NOT NULL AND u.visibility='PUBLIC' AND uv.withdrawn_at IS NULL) AS "updateCount",
+       (SELECT count(*)::int FROM public.campaign_update u LEFT JOIN brotar_extension.update_version uv ON uv.update_id=u.id WHERE u.campaign_id=c.id AND u.deleted_at IS NULL AND u.published_at IS NOT NULL AND u.visibility='PUBLIC' AND uv.withdrawn_at IS NULL AND NOT EXISTS(SELECT 1 FROM brotar_extension.publication_successor ps WHERE ps.supersedes_id=u.id)) AS "updateCount",
        (SELECT round(avg(a.progress_percent),1)::text FROM public.campaign_activity a WHERE a.campaign_id=c.id) AS "activityProgress",
        ((SELECT count(*)::int FROM public.campaign_activity WHERE campaign_id=c.id AND ${incompleteExecution})+
         (SELECT count(*)::int FROM public.milestone WHERE campaign_id=c.id AND ${incompleteExecution})) AS "pendingActivities",

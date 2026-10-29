@@ -23,3 +23,20 @@ test('tarjetas públicas no muestran controles ni motivos de gestión',()=>{
  const privateHtml=renderToStaticMarkup(<UpdateCards items={[{...item,withdrawnAt:'2026-01-02T12:00:00Z'}]} onManage={noop} />)
  assert.match(privateHtml,/Retirada el/);assert.match(privateHtml,/Gestionar publicación e historial/)
 })
+
+
+test('S3-12: distingue sucesoras y originales sustituidas sin ofrecer otra corrección',()=>{
+ const old={id:'00000000-0000-4000-8000-000000000001',title:'Original conservada',body:'Contenido original inmutable de ensayo.',milestoneId:null,publishedAt:'2026-10-01T12:00:00Z',images:[],progress:null,supersededById:'00000000-0000-4000-8000-000000000002'}
+ const html=renderToStaticMarkup(<UpdateCards items={[old]} onManage={()=>{}}/>);
+ assert.match(html,/Sustituida por una corrección/)
+ assert.match(renderToStaticMarkup(<UpdateCards items={[{...old,supersededById:null,supersedesId:old.id}]} />),/Referencia de la publicación anterior/)
+})
+
+
+test('moderación: motivos obligatorios y auditor sin controles de escritura',async()=>{
+ const {PublicationModerationCard}=await import('../src/features/campaign-progress/PublicationAdministrationPage')
+ const item={id:'00000000-0000-4000-8000-000000000001',campaignId:'00000000-0000-4000-8000-000000000002',campaignTitle:'Proyecto Ñandú',title:'<b>Avance</b>',body:'Contenido conservado del avance de ensayo.',revision:'v1',publishedAt:'2026-10-01T12:00:00Z',withdrawnAt:null,supersededById:null}
+ const html=renderToStaticMarkup(<PublicationModerationCard item={item} canModerate onChanged={()=>{}} />)
+ assert.match(html,/&lt;b&gt;Avance&lt;\/b&gt;/);assert.match(html,/Motivo del retiro/);assert.match(html,/required/)
+ assert.doesNotMatch(renderToStaticMarkup(<PublicationModerationCard item={item} canModerate={false} onChanged={()=>{}} />),/Confirmar retiro de la publicación/)
+})

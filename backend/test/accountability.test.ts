@@ -45,3 +45,15 @@ test('cierre por referencia: 120 gastos aprobados conservan identidades y dejan 
  assert.throws(()=>closureData('SUBMIT_FINAL',{...input,expenses:Array.from({length:101},()=>({...additional,fileIds:[randomUUID()]}))},today),/100 gastos adicionales/)
  assert.throws(()=>closureData('SUBMIT_FINAL',{...input,includeApprovedPeriodic:false},today))
 })
+
+
+test('S3-13: meses calendario de Bolivia, primer mes parcial, año bisiesto y sin fechas futuras',async()=>{
+ const {monthlyBounds}=await import('../src/accountability/domain/monthly-period')
+ assert.deepEqual(monthlyBounds('2026-09','2026-08-13','2026-10-28'),{periodStart:'2026-09-01',periodEnd:'2026-09-30'})
+ assert.deepEqual(monthlyBounds('2026-08','2026-08-13','2026-10-28'),{periodStart:'2026-08-13',periodEnd:'2026-08-31'})
+ assert.deepEqual(monthlyBounds('2026-10','2026-08-13','2026-10-28'),{periodStart:'2026-10-01',periodEnd:'2026-10-28'})
+ assert.equal(monthlyBounds('2024-02','2024-01-01','2024-03-02').periodEnd,'2024-02-29')
+ for(const month of ['2026-07','2026-11','2026-13','2026-00','2026-1','texto'])assert.throws(()=>monthlyBounds(month,'2026-08-13','2026-10-28'))
+ const {assertPublicConsent}=await import('../src/accountability/domain/publication')
+ assert.throws(()=>assertPublicConsent(false));assert.throws(()=>assertPublicConsent('true'));assert.doesNotThrow(()=>assertPublicConsent(true))
+})

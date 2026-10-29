@@ -1,10 +1,12 @@
+import {randomUUID,createHash} from 'node:crypto'
+import {transactionAccess} from '../../roles/infrastructure/transaction-access'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { BASIC_ACCESS_STATUSES } from '../../auth/application/basic-access'
 import {ownerAccess} from '../../campaign-lifecycle/infrastructure/eligibility'
 import {recordAudit} from '../../shared/infrastructure/database/audit'
-import { validatePublicationChange, validateRewardChange, type PublicationChange, type ProgressInput, type RewardChange, type UpdateInput } from '../domain/progress'
+import { validateProgress, validatePublicationChange, validateRewardChange, type PublicationChange, type ProgressInput, type RewardChange, type UpdateInput } from '../domain/progress'
 import { rewardOwed } from '../../campaign-lifecycle/infrastructure/closure-integrity'
 import { assertDemoEnabled, lockDemo } from '../../demo-payments/infrastructure/demo-payments'
 import { fulfillCampaignReward, rewardHistorySnapshot } from './reward-tracking'
@@ -15,7 +17,7 @@ interface Campaign { id: string; title: string; status: string; currency: string
 interface ActualRow { id: string; name: string; responsibleName: string; status: string; progressPercent: number; plannedStartOn: string | null; plannedEndOn: string | null; actualStartOn: string | null; actualEndOn: string | null }
 interface Indicator { id: string; name: string; unit: string | null; targetValue: string | null; achievedValue: string | null }
 export interface ProgressState { revision: string; campaign: Campaign; editable: boolean; activities: ActualRow[]; milestones: ActualRow[]; indicators: Indicator[] }
-interface UpdateRow { version: number; withdrawnAt: string | null; id: string; title: string; body: string; milestoneId: string | null; publishedAt: string | null; revision: string; images: { fileId: string; caption: string }[]; progress: unknown }
+interface UpdateRow { supersedesId:string|null;supersededById:string|null; version: number; withdrawnAt: string | null; id: string; title: string; body: string; milestoneId: string | null; publishedAt: string | null; revision: string; images: { fileId: string; caption: string }[]; progress: unknown }
 @Injectable()
 export class ProgressRepository {
   constructor(private readonly database: DatabaseService) {}
@@ -52,25 +54,27 @@ export class ProgressRepository {
       const campaign = await this.owner(m, userId, id, true)
       if (!editable.includes(campaign.status)) throw new ConflictException('Este estado del proyecto no permite registrar avances.')
       const before = await this.state(m, campaign)
+      const unitErrors=validateProgress(input,Object.fromEntries(before.indicators.map(i=>[i.id,i.unit])));if(Object.keys(unitErrors).length)throw new BadRequestException({message:'Revisa los resultados y sus unidades.',errors:unitErrors})
       if (before.revision !== input.revision) throw new ConflictException('Los avances cambiaron. Actualiza antes de guardar.')
       for (const key of ['activities', 'milestones', 'indicators'] as const) if (input[key].some(row => !before[key].some(known => known.id === row.id))) throw new BadRequestException('Un elemento no pertenece a este proyecto.')
       await m.query('SELECT set_config($1,$2,true)', ['brotar.actor_id', userId])
       for (const key of ['activities', 'milestones'] as const) for (const row of input[key]) await m.query(`UPDATE public.${key === 'activities' ? 'campaign_activity' : 'milestone'} SET responsible_name=$3,status=$4,progress_percent=$5,actual_start_on=$6,actual_end_on=$7,updated_at=clock_timestamp() WHERE campaign_id=$1 AND id=$2`, [id, row.id, row.responsibleName.trim(), row.status, row.progressPercent, row.actualStartOn, row.actualEndOn])
       for (const row of input.indicators) await m.query('UPDATE public.campaign_impact_indicator SET achieved_value=$3 WHERE campaign_id=$1 AND id=$2', [id, row.id, row.achievedValue])
+      await this.owner(m,userId,id,true)
       const after = await this.state(m, campaign)
       await recordAudit(m,userId,'UPDATE','campaign_progress',id)
       return after
     })
   }
   private async updateRows(m: EntityManager, id: string, publicOnly: boolean, updateId: string | null = null, page = 1): Promise<UpdateRow[]> {
-    return m.query(`SELECT u.id,u.title,u.body,u.milestone_id AS "milestoneId",u.published_at::text AS "publishedAt",CASE WHEN u.published_at IS NULL THEN u.updated_at::text ELSE u.updated_at::text||':'||COALESCE(v.version,1)::text END AS revision,COALESCE(v.version,1) AS version,v.withdrawn_at::text AS "withdrawnAt",
+    return m.query(`SELECT u.id,(SELECT supersedes_id FROM brotar_extension.publication_successor WHERE update_id=u.id) AS "supersedesId",(SELECT update_id FROM brotar_extension.publication_successor WHERE supersedes_id=u.id) AS "supersededById",u.title,u.body,u.milestone_id AS "milestoneId",u.published_at::text AS "publishedAt",CASE WHEN u.published_at IS NULL THEN u.updated_at::text ELSE u.updated_at::text||':'||COALESCE(v.version,1)::text END AS revision,COALESCE(v.version,1) AS version,v.withdrawn_at::text AS "withdrawnAt",
       COALESCE((SELECT jsonb_agg(jsonb_build_object('fileId',a.file_id,'caption',a.caption) ORDER BY a.display_order,a.id) FROM public.file_attachment a JOIN public.file_asset f ON f.id=a.file_id WHERE a.campaign_update_id=u.id AND a.attachment_role='UPDATE_EVIDENCE' AND f.deleted_at IS NULL AND f.scope='PUBLIC' AND f.storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%'),'[]') AS images,
       s.data AS progress FROM public.campaign_update u LEFT JOIN brotar_extension.update_progress s ON s.update_id=u.id LEFT JOIN brotar_extension.update_version v ON v.update_id=u.id
-      WHERE u.campaign_id=$1 AND ($2::uuid IS NULL OR u.id=$2) AND u.deleted_at IS NULL ${publicOnly ? "AND u.visibility='PUBLIC' AND u.published_at IS NOT NULL AND u.published_at<=now() AND v.withdrawn_at IS NULL" : ''} ORDER BY u.created_at DESC,u.id DESC LIMIT 20 OFFSET $3`, [id, updateId, (page - 1) * 20])
+      WHERE u.campaign_id=$1 AND ($2::uuid IS NULL OR u.id=$2) AND u.deleted_at IS NULL ${publicOnly ? "AND u.visibility='PUBLIC' AND u.published_at IS NOT NULL AND u.published_at<=now() AND v.withdrawn_at IS NULL AND NOT EXISTS(SELECT 1 FROM brotar_extension.publication_successor ps WHERE ps.supersedes_id=u.id)" : ''} ORDER BY u.created_at DESC,u.id DESC LIMIT 20 OFFSET $3`, [id, updateId, (page - 1) * 20])
   }
   private async updatePage(m: EntityManager, id: string, publicOnly: boolean, page: number) {
     if (!Number.isSafeInteger(page) || page<1 || page>100000) throw new BadRequestException('Página inválida.')
-    const count = await m.query(`SELECT count(*)::int AS total FROM public.campaign_update u LEFT JOIN brotar_extension.update_version v ON v.update_id=u.id WHERE campaign_id=$1 AND deleted_at IS NULL ${publicOnly ? "AND visibility='PUBLIC' AND published_at IS NOT NULL AND published_at<=now() AND v.withdrawn_at IS NULL" : ''}`, [id]) as {total:number}[]
+    const count = await m.query(`SELECT count(*)::int AS total FROM public.campaign_update u LEFT JOIN brotar_extension.update_version v ON v.update_id=u.id WHERE campaign_id=$1 AND deleted_at IS NULL ${publicOnly ? "AND visibility='PUBLIC' AND published_at IS NOT NULL AND published_at<=now() AND v.withdrawn_at IS NULL AND NOT EXISTS(SELECT 1 FROM brotar_extension.publication_successor ps WHERE ps.supersedes_id=u.id)" : ''}`, [id]) as {total:number}[]
     return {items:await this.updateRows(m,id,publicOnly,null,page),total:count[0]!.total,page,pageSize:20}
   }
   async updates(userId: string, id: string, page=1) { return this.database.connection().transaction('REPEATABLE READ', async m => { await this.owner(m, userId, id); return this.updatePage(m,id,false,page) }) }
@@ -84,7 +88,7 @@ export class ProgressRepository {
     const rows = await m.query(`SELECT id FROM public.campaign WHERE id=$1 AND deleted_at IS NULL AND published_at IS NOT NULL AND status IN ('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED')`, [id]) as unknown[]
     if (!rows.length) throw new NotFoundException('Proyecto no disponible.')
     const result=await this.updatePage(m,id,true,page)
-    return { ...result, items: result.items.map(row => ({ id: row.id, title: row.title, body: row.body, milestoneId: row.milestoneId, publishedAt: row.publishedAt, images: row.images, progress: row.progress })) }
+    return { ...result, items: result.items.map(row => ({ id: row.id, title: row.title, body: row.body, milestoneId: row.milestoneId, publishedAt: row.publishedAt, supersedesId:row.supersedesId, images: row.images, progress: row.progress })) }
   }) }
   async saveUpdate(userId: string, id: string, updateId: string, input: UpdateInput) { return this.database.connection().transaction(async m => {
     const campaign = await this.owner(m, userId, id, true)
@@ -126,43 +130,62 @@ export class ProgressRepository {
     if(!Number.isSafeInteger(page)||page<1||page>100000)throw new BadRequestException('Página inválida.')
     const row=(await this.updateRows(m,id,false,updateId))[0]
     if(!row)throw new NotFoundException('Novedad no encontrada.')
-    const [count]=await m.query('SELECT count(*)::int AS total FROM brotar_extension.update_history WHERE update_id=$1',[updateId])
-    const items=await m.query('SELECT version,action,reason,actor_id AS "actorId",recorded_at::text AS "recordedAt",snapshot FROM brotar_extension.update_history WHERE update_id=$1 ORDER BY version DESC LIMIT 20 OFFSET $2',[updateId,(page-1)*20])
-    return {items,total:count.total,page,pageSize:20}
+    return this.chainHistory(m,updateId,page)
   }) }
-  async changePublication(userId: string, id: string, updateId: string, input: PublicationChange) {
+  private async chainHistory(m:EntityManager,updateId:string,page:number){
+    const chain=`WITH RECURSIVE ancestors(id) AS(SELECT $1::uuid UNION SELECT s.supersedes_id FROM brotar_extension.publication_successor s JOIN ancestors a ON s.update_id=a.id),roots AS(SELECT id FROM ancestors a WHERE NOT EXISTS(SELECT 1 FROM brotar_extension.publication_successor s WHERE s.update_id=a.id)),chain(id) AS(SELECT id FROM roots UNION SELECT s.update_id FROM brotar_extension.publication_successor s JOIN chain c ON s.supersedes_id=c.id)`
+    const [count]=await m.query(`${chain} SELECT count(*)::int AS total FROM brotar_extension.update_history h WHERE h.update_id IN(SELECT id FROM chain)`,[updateId])
+    const items=await m.query(`${chain} SELECT h.version,h.action,h.reason,h.actor_id AS "actorId",h.recorded_at::text AS "recordedAt",h.snapshot FROM brotar_extension.update_history h WHERE h.update_id IN(SELECT id FROM chain) ORDER BY h.version DESC,h.recorded_at DESC,h.update_id LIMIT 20 OFFSET $2`,[updateId,(page-1)*20])
+    return {items,total:count.total,page,pageSize:20}
+  }
+  async changePublication(userId:string,id:string,updateId:string,input:PublicationChange,administrative=false){
     const errors=validatePublicationChange(input);if(Object.keys(errors).length)throw new BadRequestException({message:'Revisa el cambio de publicación.',errors})
+    if(administrative&&input.action!=='WITHDRAW')throw new ForbiddenException('Administración solo puede retirar la exposición; la autoría se conserva.')
     return this.database.connection().transaction(async m=>{
-      const campaign=await this.owner(m,userId,id,true)
-      if(!editable.includes(campaign.status))throw new ConflictException('Este estado del proyecto no permite corregir ni retirar novedades.')
-      const [current]=await m.query('SELECT author_user_id FROM public.campaign_update WHERE id=$1 AND campaign_id=$2 AND deleted_at IS NULL FOR UPDATE',[updateId,id])
-      if(!current)throw new NotFoundException('Novedad no encontrada.')
-      if(current.author_user_id!==userId)throw new ForbiddenException('Solo el autor puede corregir o retirar su publicación.')
-      const before=(await this.updateRows(m,id,false,updateId))[0]!
-      if(!before.publishedAt||before.withdrawnAt||before.revision!==input.revision)throw new ConflictException('La publicación cambió o fue retirada. Actualiza antes de continuar.')
-      if(input.action==='CORRECT') {
-        if(input.milestoneId&&!(await m.query('SELECT id FROM public.milestone WHERE id=$1 AND campaign_id=$2',[input.milestoneId,id])).length)throw new BadRequestException('El hito no pertenece a este proyecto.')
-        if(input.images.length){
-          const files=await m.query(`SELECT id FROM public.file_asset WHERE id=ANY($1::uuid[]) AND uploaded_by=$2 AND scope='PUBLIC' AND storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%' AND deleted_at IS NULL ORDER BY id FOR UPDATE`,[input.images.map(i=>i.fileId),userId])
-          if(files.length!==input.images.length)throw new BadRequestException('Una evidencia no está disponible.')
-        }
+      if(administrative){
+        const [row]=await m.query('SELECT id,title,status,currency_code AS currency FROM public.campaign WHERE id=$1 AND deleted_at IS NULL FOR UPDATE',[id]);if(!row)throw new NotFoundException('Campaña no disponible.');await transactionAccess(m,userId,'campaign.publish')
+      }else{const campaign=await this.owner(m,userId,id,true);if(!editable.includes(campaign.status))throw new ConflictException('Este estado del proyecto no permite corregir ni retirar novedades.')}
+      const [current]=await m.query('SELECT author_user_id FROM public.campaign_update WHERE id=$1 AND campaign_id=$2 AND deleted_at IS NULL FOR UPDATE',[updateId,id]);if(!current)throw new NotFoundException('Novedad no encontrada.')
+      if(!administrative&&current.author_user_id!==userId)throw new ForbiddenException('Solo el autor puede corregir o retirar su publicación.')
+      const before=(await this.updateRows(m,id,false,updateId))[0]!,hash=createHash('sha256').update(JSON.stringify([userId,id,updateId,input])).digest('hex')
+      if(input.action==='CORRECT'&&before.supersededById){
+        const [old]=await m.query('SELECT update_id FROM brotar_extension.publication_successor WHERE supersedes_id=$1 AND request_hash=$2',[updateId,hash]);if(old)return(await this.updateRows(m,id,false,old.update_id))[0]
       }
-      await this.owner(m,userId,id,true)
-      await m.query('SELECT set_config($1,$2,true)',['brotar.actor_id',userId])
-      // Importaciones históricas se archivan antes de la primera corrección; su instantánea nunca se recalcula.
-      await this.archiveUpdate(m,current.author_user_id,before,'PUBLISHED','Publicación inicial conservada.')
-      await m.query(`INSERT INTO brotar_extension.update_version(update_id,version,withdrawn_at) VALUES($1,$2,CASE WHEN $3 THEN clock_timestamp() ELSE NULL END) ON CONFLICT(update_id) DO UPDATE SET version=EXCLUDED.version,withdrawn_at=EXCLUDED.withdrawn_at`,[updateId,before.version+1,input.action==='WITHDRAW'])
+      if(!before.publishedAt||before.withdrawnAt||before.supersededById||before.revision!==input.revision)throw new ConflictException('La publicación cambió, fue sustituida o retirada. Recarga antes de continuar.')
       if(input.action==='CORRECT'){
-        await m.query('UPDATE public.campaign_update SET title=$2,body=$3,milestone_id=$4,updated_at=clock_timestamp() WHERE id=$1',[updateId,input.title.trim(),input.body.trim(),input.milestoneId])
-        await m.query(`UPDATE public.file_attachment SET attachment_role='UPDATE_EVIDENCE_ARCHIVED' WHERE campaign_update_id=$1 AND attachment_role='UPDATE_EVIDENCE'`,[updateId])
-        for(const [i,image]of input.images.entries())await m.query(`INSERT INTO public.file_attachment(file_id,campaign_update_id,attachment_role,caption,display_order) VALUES($1,$2,'UPDATE_EVIDENCE',$3,$4)`,[image.fileId,updateId,image.caption.trim(),i])
-      }else await m.query('UPDATE public.campaign_update SET updated_at=clock_timestamp() WHERE id=$1',[updateId])
-      const after=(await this.updateRows(m,id,false,updateId))[0]!
-      await this.archiveUpdate(m,userId,after,input.action==='CORRECT'?'CORRECTED':'WITHDRAWN',input.reason.trim())
-      await recordAudit(m,userId,'UPDATE','campaign_update',updateId)
+        if(input.milestoneId&&!(await m.query('SELECT id FROM public.milestone WHERE id=$1 AND campaign_id=$2',[input.milestoneId,id])).length)throw new BadRequestException('El hito no pertenece a este proyecto.')
+        if(input.images.length){const files=await m.query(`SELECT id FROM public.file_asset WHERE id=ANY($1::uuid[]) AND uploaded_by=$2 AND scope='PUBLIC' AND storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%' AND deleted_at IS NULL ORDER BY id FOR SHARE`,[input.images.map(i=>i.fileId),userId]);if(files.length!==input.images.length)throw new BadRequestException('Una evidencia no está disponible.')}
+      }
+      if(administrative)await transactionAccess(m,userId,'campaign.publish');else await this.owner(m,userId,id,true)
+      await m.query('SELECT set_config($1,$2,true)',['brotar.actor_id',userId]);await this.archiveUpdate(m,current.author_user_id,before,'PUBLISHED','Publicación inicial conservada.')
+      let resultId=updateId
+      if(input.action==='CORRECT'){
+        resultId=randomUUID()
+        await m.query(`INSERT INTO public.campaign_update(id,campaign_id,author_user_id,title,body,milestone_id,visibility,published_at) VALUES($1,$2,$3,$4,$5,$6,'PUBLIC',clock_timestamp())`,[resultId,id,userId,input.title.trim(),input.body.trim(),input.milestoneId])
+        await m.query('INSERT INTO brotar_extension.update_progress(update_id,data) VALUES($1,$2::jsonb)',[resultId,JSON.stringify(before.progress)])
+        await m.query('INSERT INTO brotar_extension.update_version(update_id,version) VALUES($1,$2)',[resultId,before.version+1])
+        await m.query('INSERT INTO brotar_extension.publication_successor(update_id,supersedes_id,request_hash) VALUES($1,$2,$3)',[resultId,updateId,hash])
+        for(const [i,image]of input.images.entries())await m.query(`INSERT INTO public.file_attachment(file_id,campaign_update_id,attachment_role,caption,display_order) VALUES($1,$2,'UPDATE_EVIDENCE',$3,$4)`,[image.fileId,resultId,image.caption.trim(),i])
+      }else{
+        await m.query(`INSERT INTO brotar_extension.update_version(update_id,version,withdrawn_at) VALUES($1,$2,clock_timestamp()) ON CONFLICT(update_id) DO UPDATE SET version=EXCLUDED.version,withdrawn_at=EXCLUDED.withdrawn_at`,[updateId,before.version+1])
+      }
+      const after=(await this.updateRows(m,id,false,resultId))[0]!
+      await this.archiveUpdate(m,userId,after,input.action==='CORRECT'?'CORRECTED':'WITHDRAWN',input.reason.trim());await recordAudit(m,userId,input.action==='CORRECT'?'CREATE':'UPDATE','campaign_update',resultId)
       return after
     })
   }
+  async administrativePublications(actor:string,page:number,campaignId?:string){
+    if(!Number.isSafeInteger(page)||page<1||page>100000)throw new BadRequestException('Página inválida.')
+    return this.database.connection().transaction('REPEATABLE READ',async m=>{
+      await transactionAccess(m,actor,'campaign.review.read')
+      const where=`FROM public.campaign_update u JOIN public.campaign c ON c.id=u.campaign_id WHERE c.deleted_at IS NULL AND u.deleted_at IS NULL AND u.published_at IS NOT NULL AND ($1::uuid IS NULL OR c.id=$1)`
+      const [n]=await m.query(`SELECT count(*)::int AS total ${where}`,[campaignId??null])
+      const rows:{id:string;campaignId:string;campaignTitle:string}[]=await m.query(`SELECT u.id,c.id AS "campaignId",c.title AS "campaignTitle" ${where} ORDER BY u.published_at DESC,u.id DESC LIMIT 20 OFFSET $2`,[campaignId??null,(page-1)*20])
+      const items=[];for(const row of rows)items.push({...((await this.updateRows(m,row.campaignId,false,row.id))[0]!),campaignId:row.campaignId,campaignTitle:row.campaignTitle})
+      return{items,total:n.total,page,pageSize:20}
+    })
+  }
+
   private async rewardRows(m: EntityManager,id: string,contributionId: string|null=null,page=1) {
     return m.query(`SELECT c.id,c.reference_code AS reference,r.title,r.description AS promise,r.estimated_delivery_on::text AS "promisedOn",
       COALESCE(f.status::text,'PENDING') AS status,f.notes,(f.fulfilled_at AT TIME ZONE 'America/La_Paz')::date::text AS "fulfilledOn",e.file_id AS "fileId",

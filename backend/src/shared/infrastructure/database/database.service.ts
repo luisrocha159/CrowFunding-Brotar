@@ -51,6 +51,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AND has_column_privilege(current_user,'brotar_extension.support_mail_event','processed_at','UPDATE')
           AND has_column_privilege(current_user,'brotar_extension.support_mail_event','notification_id','UPDATE')
           AND has_table_privilege(current_user,'brotar_extension.support_case_event','SELECT,INSERT')
+          AND to_regclass('brotar_extension.organization_invitation') IS NOT NULL
+          AND to_regclass('brotar_extension.organization_invitation_event') IS NOT NULL
+          AND has_table_privilege(current_user,'brotar_extension.organization_invitation_event','SELECT,INSERT')
+          AND NOT has_table_privilege(current_user,'brotar_extension.organization_invitation_event','UPDATE,DELETE')
+          AND to_regclass('brotar_extension.publication_successor') IS NOT NULL
+          AND has_table_privilege(current_user,'brotar_extension.publication_successor','SELECT,INSERT')
+          AND NOT has_table_privilege(current_user,'brotar_extension.publication_successor','UPDATE')
           AND to_regclass('brotar_extension.update_version') IS NOT NULL
           AND to_regclass('brotar_extension.update_history') IS NOT NULL
           AND to_regclass('brotar_extension.reward_history') IS NOT NULL
@@ -58,6 +65,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
           AND NOT has_table_privilege(current_user,'brotar_extension.reward_history','DELETE')
           AND to_regclass('brotar_extension.accountability_state') IS NOT NULL
           AND to_regclass('brotar_extension.accountability_document') IS NOT NULL
+          AND to_regclass('brotar_extension.accountability_publication') IS NOT NULL
+          AND to_regclass('brotar_extension.accountability_publication_event') IS NOT NULL
+          AND has_column_privilege(current_user,'brotar_extension.accountability_document','reporting_month','SELECT,INSERT')
+          AND has_table_privilege(current_user,'brotar_extension.accountability_publication_event','SELECT,INSERT')
+          AND NOT has_table_privilege(current_user,'brotar_extension.accountability_publication_event','UPDATE,DELETE')
           AND to_regclass('brotar_extension.accountability_revision') IS NOT NULL
           AND to_regclass('brotar_extension.accountability_event') IS NOT NULL
           AND to_regclass('brotar_extension.beneficiary_return') IS NOT NULL

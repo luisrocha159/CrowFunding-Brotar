@@ -44,3 +44,12 @@ test('terceros: nombres personales y motivos no admiten números, HTML ni contro
  }
  for(const invalid of ['<b>Motivo demasiado general</b>','!!!!!!!!!!!!','Motivo\u0001con control'])assert.throws(()=>assertMutation({confirmed:true,expectedVersion:'0',reason:invalid}))
 })
+
+
+test('S3-14: altas y promoción ADMIN requieren aceptación; vencimiento y versión no reactivan una invitación',async()=>{
+ const {requiresInvitation,assertInvitationPending}=await import('../src/verifications/domain/organization-invitation')
+ assert.equal(requiresInvitation('ADD','MEMBER'),true);assert.equal(requiresInvitation('ADD','ADMIN'),true);assert.equal(requiresInvitation('CHANGE','ADMIN'),true)
+ assert.equal(requiresInvitation('REMOVE','ADMIN'),false);assert.equal(requiresInvitation('CHANGE','MEMBER'),false)
+ assert.doesNotThrow(()=>assertInvitationPending({status:'PENDING',version:1,expired:false},'1'))
+ for(const row of [{status:'ACCEPTED',version:1,expired:false},{status:'PENDING',version:2,expired:false},{status:'PENDING',version:1,expired:true}])assert.throws(()=>assertInvitationPending(row,'1'))
+})

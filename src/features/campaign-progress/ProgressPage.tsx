@@ -30,7 +30,7 @@ function ProgressEditor({ id }: { id: string }) {
   async function save() {
     if (!data || locked.current) return
     const input = { revision: data.revision, activities: data.activities.map(({ id: rowId, responsibleName, status, progressPercent, actualStartOn, actualEndOn }) => ({ id: rowId, responsibleName, status, progressPercent, actualStartOn, actualEndOn })), milestones: data.milestones.map(({ id: rowId, responsibleName, status, progressPercent, actualStartOn, actualEndOn }) => ({ id: rowId, responsibleName, status, progressPercent, actualStartOn, actualEndOn })), indicators: data.indicators.map(row => ({ id: row.id, achievedValue: row.achievedValue === null || row.achievedValue === '' ? null : Number(row.achievedValue) })) }
-    const errors = Object.values(validateProgress(input)); if (errors.length) { setError(errors.join(' ')); return }
+    const errors = Object.values(validateProgress(input,Object.fromEntries(data.indicators.map(i=>[i.id,i.unit])))); if (errors.length) { setError(errors.join(' ')); return }
     locked.current = true; setBusy(true); setError(''); setNotice('')
     try { setData(await saveProgress(id, input)); setDirty(false); setNotice('Avances guardados. Publícalos mediante una novedad para compartirlos.') } catch (e) { if (e instanceof SessionError && e.status === 401) setExpired(true); else setError(failureText(e)) } finally { locked.current = false; setBusy(false) }
   }
