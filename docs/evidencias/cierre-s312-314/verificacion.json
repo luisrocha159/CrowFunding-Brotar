@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-28",
+  "branch": "RicardoDev",
+  "published": false,
+  "trelloChanged": false,
+  "base": "8e7405d",
+  "codeCommit": "fba9776",
+  "tasks": [
+    "S3-12",
+    "S3-13",
+    "S3-14"
+  ],
+  "tests": {
+    "frontend": 247,
+    "backend": 236,
+    "localAdmin": 8,
+    "postgresHttp": 50,
+    "totalDistinct": 541,
+    "failures": 0,
+    "repeatedTestsAdded": false
+  },
+  "integrationLogSha256": "95b8b940eec39ded0a1e65a7b68c63320770c37cdc64827d00ac2163688559d0",
+  "migrations": 39,
+  "httpRoutes": 212,
+  "categories": 5,
+  "officialPublicTables": 59,
+  "previousTablesUnchanged": 109,
+  "scope": "Cierre técnico de tres tarjetas para MVP DEMO; legal y aceptación transversal pendientes.",
+  "isolation": "Base QA vacía para suite completa; copia diferente para capturas; datos originales no usados como fixtures.",
+  "manualEvidence": [
+    "correccion-con-referencia.png",
+    "retiro-administrativo.png",
+    "resumen-publico.png",
+    "invitacion-aceptada.png"
+  ]
+}

@@ -1,13 +1,13 @@
 {
-  "version": "2.12",
+  "version": "2.13",
   "localProgressSprint3": {
     "date": "2026-10-28",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "242 pruebas frontend + 232 backend + 8 ADMIN local; lint/tipos/builds aprobados. Cobertura de 48 escenarios PostgreSQL/HTTP verificada: 45 aprobados en regresión general y tres detenidos por precondiciones del entorno (dos exigen nombre QA, uno modo DEMO). Repetición en copia nueva QA con DEMO habilitado: 4/4 aprobados, incluidos esos tres y S3-14 con los últimos límites de campos opcionales. No se presenta la ejecución general inicial como 48/48 ni se suman repeticiones. 36 migraciones, 205 rutas; 97 tablas originales con contenido idéntico tras migrar, readiness y cinco categorías comprobados. Sin push/Trello/correos externos; legal y diferencias S3-12/13/14/aceptación global pendientes.",
-    "evidence": "revision-integracion-santiago-2026-10-28.md",
+    "verification": "247 pruebas frontend + 236 backend + 8 ADMIN local + 50 escenarios PostgreSQL/HTTP de la suite completa aprobados: 541 sin sumar repeticiones. Lint, tipos y builds aprobados; 39 migraciones y 212 rutas HTTP. Instalación desde SQL oficial, preparación/activación, cinco categorías y segunda migración sin pendientes. Base personal respaldada: 109 tablas anteriores con filas/valores idénticos tras migrar. Cuatro recorridos visuales con datos sintéticos. Sin push/Trello/correos externos; legal y aceptación global pendientes.",
+    "evidence": "cierre-s312-314-2026-10-28.md",
     "previousEvidence": "revision-integracion-alison-sprint3-2026-10-25.md",
-    "rules": "decisiones/ADR-013-definiciones-integracion-mvp-demo.md",
+    "rules": "decisiones/ADR-015-cierre-avances-rendicion-colaboradores.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
     "previousAuditEvidence": "avance-auditoria-s3-15-16-18-2026-10-19.md",
     "contracts": "contratos-sprint-3.md",
@@ -33,12 +33,12 @@
       "S3-09": "Cierre técnico DEMO local: solicitud propia, autorización/resultado separados por FINANCE, total/parcial, saldo/reservas, idempotencia y trazabilidad. Rechazo/fallo no resta ingresos; sin dinero real ni correo.",
       "S3-10": "Cierre técnico local: registro propio y de terceros, evidencias privadas, bandeja/asignación, conversación titular/soporte y estados/historial auditados. Respuestas idempotentes, límites Unicode/longitud, permisos tras bloqueos y exclusión de disputas incluso con conversión concurrente. Avisos internos y correo al titular con dirección verificada/preferencia, outbox transaccional y reintentos; sin exponer textos privados. Casos cerrados no reciben mensajes nuevos.",
       "S3-11": "Cierre técnico DEMO local: bandeja/prioridad/asignación SUPPORT, mensajes privados/compartidos, solicitud de información, escalamiento, resolución/reapertura/cierre con versión e historial. Recomendar no mueve dinero; la devolución se autoriza aparte por FINANCE.",
-      "S3-12": "Parcial de alcance: avances/recompensas, corrección y retiro propio con historial integrados. ADR-013 pide retiro administrativo y corrección por nueva publicación referenciada: la API actual solo permite al autor y versiona el mismo UUID. No cerrar automáticamente por el estado de SantiagoDev/Trello.",
-      "S3-13": "Parcial de alcance: borradores/versiones de períodos, gastos/evidencias, revisión, remanentes DEMO y final acumulativo implementados. ADR-013 aún exige periodicidad mensual y resumen público aprobado sin documentos; hoy son períodos libres sin superposición y la proyección pública no existe.",
-      "S3-14": "Parcial de alcance: administración de terceros, restricciones/sesiones, colaboradores e historial implementados; representación sensible requiere aceptación/aprobación. ADD ordinario de ADMIN/MEMBER concede vínculo inmediatamente; falta aceptación del invitado prevista en ADR-013.",
+      "S3-12": "Cierre técnico DEMO local: avances y novedades existentes, corrección con nueva UUID referenciada y original inmutable, una sucesora/reintento, feed vigente e historial, retiro propio/ADMIN, lectura REVIEWER/AUDITOR y unidades/fechas validadas. Integración PostgreSQL y recorrido visual aprobados.",
+      "S3-13": "Cierre técnico DEMO local: meses terminados de Bolivia, primer mes desde ejecución, períodos legados conservados, gastos/evidencias privadas y revisión independiente, remanentes y final acumulativo sin duplicar gastos. Resumen aprobado compartido con consentimiento adicional, proyección pública congelada sin documentos/destinos y retiro ADMIN independiente de finanzas. Pruebas con dos meses y 120 gastos, privacidad/versiones/concurrencia y recorrido visual aprobados.",
+      "S3-14": "Cierre técnico DEMO local: datos/restricciones/representación previos, altas MEMBER/ADMIN y promociones por invitación aceptada por el destinatario; pendiente sin acceso, siete días, rechazo/cancelación/historial/paginación. Validación posterior a bloqueos y transición condicional impiden aceptar con invitación o autoridad vencidas. Bajas/demociones inmediatas, roles globales intactos y representación formal separada. Integración y aceptación visual persistida aprobadas.",
       "S3-15": "Cierre técnico transversal del corte integrado: decisiones/operaciones existentes, registro/sesión/perfil, captura KYC, organizaciones, archivos, guardados, avances, simulaciones, ciclo/rendición/desembolsos y soporte mínimo auditados. READ privado/EXPORT mínimos; actor local, rollback, privacidad y retención DEMO comprobados. Las funciones generales todavía no construidas no se aceptan por anticipado.",
       "S3-16": "Cierre técnico transversal del corte integrado: responsabilidades, pertenencia y separación de funciones de las API actuales; AUDITOR también en perfil, concesiones residuales sin ampliar matriz, revalidación tras bloqueos y caducidad, permisos explícitos de consultas y navegación. Matriz de nueve perfiles y negativas HTTP aprobadas. Nuevas funciones del equipo deben pasar otra vez estas garantías.",
-      "S3-18": "Cierre transversal revalidado para la ampliación: contrato 0.12, 182 rutas comprobables, clientes/API coordinados y 32 migraciones no destructivas; readiness y recuperación probados. Contratos de mensajes requieren requestId y el detalle propio publica replyAllowed. Nuevos módulos posteriores requieren integración; no certifica aceptación global.",
+      "S3-18": "Cierre transversal revalidado para el corte disponible: contrato 0.14, 212 rutas comprobables, clientes/API coordinados y 39 migraciones no destructivas; instalación, readiness y recuperación verificados. Incluye publicaciones, resúmenes e invitaciones. No certifica aceptación legal/global ni funciones futuras.",
       "S3-19": "En curso: QA del incremento aprobado; no se certifican pantallas/operaciones todavía no implementadas.",
       "S3-20": "Pendiente de entrega general del MVP/DEV: documentación y publicación del corte disponible en RicardoDev autorizadas el 24/10, sin incorporar funciones todavía pendientes del equipo ni certificar aceptación global.",
       "S3-21": "Pendiente: recorrido integral de todo el MVP cuando existan sus módulos restantes.",
@@ -49,7 +49,7 @@
       "S1-11": "Pendiente por solicitud: contenido legal definitivo aprobado/versionado. Aviso sintético no es aceptación legal.",
       "S1-12": "Cierre técnico: Gmail autorizado con TLS, recepción comprobada, recuperación HTTP → correo → reset → login nuevo, token temporal de un uso, rechazo de reutilización y revocación de sesión previa. Clave exclusivamente local; importador privado de solo correo y README actualizados."
     },
-    "note": "Revisión e integración local solicitada por Ricardo: implementación de Santiago conservada junto a soporte/correo/panel de Alison. Se corrigen validaciones administrativas y alertas de revisiones sustituidas; no se atribuye cierre total a legal ni a estados de Trello. Sin push ni cambios en DEV/Trello.",
+    "note": "Se completaron localmente las diferencias S3-12/13/14 de la integración de Santiago, conservando el trabajo previo del equipo. Regresión completa en una base QA sin datos anteriores y recorridos en otra copia separada; no se debilitaron guardias para reutilizar datos de demostración. Sin push, cambios en DEV/Trello ni atribuir aprobación a legal.",
     "integratedSource": "SantiagoDev b8de6ea, combinado con RicardoDev 2c6d612 (incluye Alison bd4ed69 y ampliación de soporte/correo)",
     "completedDemoTasks": [
       "S2-01",
@@ -77,9 +77,12 @@
       "S3-10",
       "S3-25",
       "S2-09",
-      "S3-24"
+      "S3-24",
+      "S3-12",
+      "S3-13",
+      "S3-14"
     ],
-    "scope": "26 alcances con cierre técnico DEMO de 36; 10 abiertos/parciales tras contrastar criterios con código. Santiago: 4/9 con cierre técnico; 3 parciales por diferencias funcionales (S3-12/13/14) y 2 por legal/integración final (S2-06/07). Alison: 8/9 técnicos, S1-11 legal pendiente. Ricardo conserva 14/18 técnicos y 4 de integración/verificación/publicación pendientes o en curso. Cobertura integrada verificada con las precondiciones QA/DEMO documentadas; no equivale a aceptación global.",
+    "scope": "29 alcances con cierre técnico DEMO de 36; siete abiertos por legal/aceptación integral. Santiago: 7/9 técnicos y S2-06/07 parciales por legal e integración final; Alison: 8/9 técnicos y S1-11 legal pendiente; Ricardo: 14/18 técnicos, S3-19/20/21/26 de integración/verificación/publicación pendientes o en curso. La asignación original de S3-12/13/14 se conserva; Ricardo completó sus diferencias en esta integración. Los campos state originales son la instantánea histórica del tablero, no una sincronización nueva. No equivale a aceptación global.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -100,7 +103,7 @@
       "trelloChanged": false,
       "evidence": "cierre-alison-panel-soporte-correo-2026-10-25.md"
     },
-    "previousLocalEvidence": "cierre-alison-panel-soporte-correo-2026-10-25.md",
+    "previousLocalEvidence": "revision-integracion-santiago-2026-10-28.md",
     "santiagoIntegration": {
       "branch": "SantiagoDev",
       "commit": "b8de6ea",
@@ -108,7 +111,7 @@
       "published": false,
       "trelloChanged": false,
       "evidence": "revision-integracion-santiago-2026-10-28.md",
-      "scopeGaps": {
+      "scopeGapsAtIntegration": {
         "S3-12": [
           "Retiro ADMIN",
           "Nueva publicación referenciada en correcciones frente al mismo UUID actual"
@@ -120,7 +123,13 @@
         "S3-14": [
           "Aceptación autenticada de colaboradores ordinarios ADMIN/MEMBER"
         ]
-      }
+      },
+      "scopeGapsResolvedLocally": [
+        "S3-12",
+        "S3-13",
+        "S3-14"
+      ],
+      "closureEvidence": "cierre-s312-314-2026-10-28.md"
     }
   },
   "delivery": {
@@ -1036,7 +1045,10 @@
       "owner": "Santiago",
       "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
       "trelloUrl": "https://trello.com/c/GfwdpFM3",
-      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21.",
+      "localStatus": "Cierre técnico DEMO local",
+      "localEvidence": "cierre-s312-314-2026-10-28.md",
+      "localCompletionDate": "2026-10-28"
     },
     {
       "sprint": 3,
@@ -1052,7 +1064,10 @@
       "owner": "Santiago",
       "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
       "trelloUrl": "https://trello.com/c/qbBmvUPd",
-      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21.",
+      "localStatus": "Cierre técnico DEMO local",
+      "localEvidence": "cierre-s312-314-2026-10-28.md",
+      "localCompletionDate": "2026-10-28"
     },
     {
       "sprint": 3,
@@ -1068,7 +1083,10 @@
       "owner": "Santiago",
       "planningNote": "Plan v2.4 autorizado el 15/10/2026; asignación verificada en Trello. No es implementación terminada ni compromiso de capacidad.",
       "trelloUrl": "https://trello.com/c/Tx8F84Ts",
-      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21."
+      "acceptanceSource": "Criterios originales de las BG y alcance refinado de la tarjeta Trello. Cierre global S3-21.",
+      "localStatus": "Cierre técnico DEMO local",
+      "localEvidence": "cierre-s312-314-2026-10-28.md",
+      "localCompletionDate": "2026-10-28"
     },
     {
       "sprint": 3,
