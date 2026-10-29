@@ -24,7 +24,7 @@ export function CampaignModalityGuide({ modality }: { modality: Modality }) {
           ? rewardCount === 0 ? 'Aún no hay recompensas guardadas. Se configuran en el paso «Recompensas».' : 'Consulta sus detalles en el paso «Recompensas».'
           : rewardCount === 0 ? 'En donación no necesitas ofrecer recompensas; esa etapa se omite.' : 'Las recompensas guardadas se conservan, pero no se utilizan en donación.'}</p>
       </div>
-      {(rewardsApply || rewardCount > 0) && <span className={styles.count} aria-label={`${rewardCount} recompensas guardadas`}>{rewardCount}</span>}
+      {(rewardsApply || rewardCount > 0) && <span className={styles.count}>{rewardCount}</span>}
     </div>
   </div>
 }

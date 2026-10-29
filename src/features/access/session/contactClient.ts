@@ -1,5 +1,8 @@
 import {requestApi} from '../../../shared/api/request'
 import {SessionError} from '../../../shared/api/sessionError'
+import {stateLabels} from '../../contributions/labels'
+/** Translate known technical state prefixes without rewriting the stored notice. */
+export function noticeBody(body:string){return body.replace(/^Estado registrado: ([A-Z_]+)\./, (prefix,code:string)=>Object.hasOwn(stateLabels,code)?`Estado registrado: ${stateLabels[code]}.`:prefix)}
 export interface ContactStatus {email:string;verifiedAt:string|null;phoneVerifiedAt:string|null;emailNotifications:boolean;channelAvailable:boolean;phoneChannelAvailable:false}
 export interface ContactNotice {id:string;title:string;body:string;createdAt:string;readAt:string|null;delivery:'IN_APP'|'QUEUED'|'RETRY'|'SMTP_ACCEPTED'|'FAILED'|'CANCELLED';attempts:number}
 export const deliveryLabel:Record<ContactNotice['delivery'],string>={IN_APP:'Disponible en Brotar',QUEUED:'Correo en cola',RETRY:'Reintentando correo',SMTP_ACCEPTED:'Aceptado por el servidor de correo',FAILED:'No se pudo enviar el correo',CANCELLED:'Aviso por correo cancelado'}

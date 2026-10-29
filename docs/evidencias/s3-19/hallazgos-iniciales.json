@@ -1,0 +1,186 @@
+[
+  {
+    "label": "visitante",
+    "path": "/proyectos/qa-s319-061c0611-6b91-4fbe-a6ca-92b4a28b7570",
+    "width": 375,
+    "checkedAt": "2026-10-29T13:08:32.962Z",
+    "documentTitle": "Detalle del proyecto | Brotar",
+    "main": 1,
+    "h1": 1,
+    "overflow": [],
+    "horizontalOverflow": false,
+    "violations": [
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "help": "Heading levels should only increase by one",
+        "nodes": [
+          {
+            "target": [
+              "h3"
+            ],
+            "summary": "Fix any of the following:\n  Heading order invalid"
+          }
+        ]
+      }
+    ],
+    "incomplete": [],
+    "passes": 37
+  },
+  {
+    "label": "usuario",
+    "path": "/mis-invitaciones",
+    "width": 375,
+    "checkedAt": "2026-10-29T13:09:11.972Z",
+    "documentTitle": "Invitaciones de colaboración | Brotar",
+    "main": 2,
+    "h1": 1,
+    "overflow": [],
+    "horizontalOverflow": false,
+    "violations": [
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "nodes": [
+          {
+            "target": [
+              "._page_bndd8_1"
+            ],
+            "summary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "nodes": [
+          {
+            "target": [
+              "#contenido"
+            ],
+            "summary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "nodes": [
+          {
+            "target": [
+              "#contenido"
+            ],
+            "summary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      }
+    ],
+    "incomplete": [],
+    "passes": 37
+  },
+  {
+    "label": "administrador",
+    "path": "/administracion/catalogos",
+    "width": 375,
+    "checkedAt": "2026-10-29T13:11:20.360Z",
+    "documentTitle": "Catálogos y parámetros | Brotar",
+    "main": 1,
+    "h1": 1,
+    "overflow": [],
+    "horizontalOverflow": false,
+    "violations": [
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "help": "Heading levels should only increase by one",
+        "nodes": [
+          {
+            "target": [
+              "li:nth-child(1) > ._details_1vbvz_9 > ._title_1vbvz_10 > h3"
+            ],
+            "summary": "Fix any of the following:\n  Heading order invalid"
+          }
+        ]
+      }
+    ],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "help": "Elements must only use permitted ARIA attributes",
+        "nodes": [
+          {
+            "target": [
+              "label[for=\"_r_0_\"] > span[aria-label=\"obligatorio\"]"
+            ],
+            "summary": "Fix all of the following:\n  aria-label attribute is not well supported on \"span\" elements with no valid role attribute."
+          },
+          {
+            "target": [
+              "label[for=\"_r_1_\"] > span[aria-label=\"obligatorio\"]"
+            ],
+            "summary": "Fix all of the following:\n  aria-label attribute is not well supported on \"span\" elements with no valid role attribute."
+          }
+        ]
+      }
+    ],
+    "passes": 43
+  },
+  {
+    "label": "administrador",
+    "path": "/administracion/publicaciones",
+    "width": 375,
+    "checkedAt": "2026-10-29T13:11:21.779Z",
+    "documentTitle": "Novedades publicadas | Brotar",
+    "main": 2,
+    "h1": 1,
+    "overflow": [],
+    "horizontalOverflow": false,
+    "violations": [
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "nodes": [
+          {
+            "target": [
+              "._page_17noe_1"
+            ],
+            "summary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "nodes": [
+          {
+            "target": [
+              "#contenido"
+            ],
+            "summary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "nodes": [
+          {
+            "target": [
+              "#contenido"
+            ],
+            "summary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      }
+    ],
+    "incomplete": [],
+    "passes": 37
+  }
+]

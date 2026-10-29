@@ -9,11 +9,11 @@ export function Message({ tone = 'info', title, children }: { tone?: 'info' | 's
 }
 
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
-  return <section className={styles.state}><span className={styles.stateIcon} aria-hidden="true">—</span><h3>{title}</h3><p>{description}</p>{action}</section>
+  return <section className={styles.state}><span className={styles.stateIcon} aria-hidden="true">—</span><h2>{title}</h2><p>{description}</p>{action}</section>
 }
 
 export function ErrorState({ title = 'No pudimos cargar la información', action }: { title?: string; action?: ReactNode }) {
-  return <section className={styles.state} aria-live="polite"><span className={styles.stateIcon} aria-hidden="true">!</span><h3>{title}</h3><p>Intenta nuevamente en unos momentos.</p>{action}</section>
+  return <section className={styles.state} aria-live="polite"><span className={styles.stateIcon} aria-hidden="true">!</span><h2>{title}</h2><p>Intenta nuevamente en unos momentos.</p>{action}</section>
 }
 
 export function ProjectCardSkeleton() {

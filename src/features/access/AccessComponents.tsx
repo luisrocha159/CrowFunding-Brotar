@@ -4,10 +4,11 @@ import { Button } from '../../shared/components/Button'
 import type { AccessOutcome } from '../../mocks/access/accessService'
 import styles from './access.module.css'
 
-export function AccessShell({ title, subtitle, intro, children, centered = false, notice }: { title: string; subtitle: string; intro?: string; children: ReactNode; centered?: boolean; notice?: ReactNode }) {
+export function AccessShell({ title, subtitle, intro, children, centered = false, notice, headingLevel = 1 }: { title: string; subtitle: string; intro?: string; children: ReactNode; centered?: boolean; notice?: ReactNode; headingLevel?: 1 | 2 | 3 }) {
+  const Heading = `h${headingLevel}` as 'h1' | 'h2' | 'h3'
   return <div className={centered ? styles.centered : styles.shell}>
     {!centered && <aside className={styles.intro}><div><span className={styles.introTag}>Una comunidad, muchas formas de contribuir</span><p className={styles.introTitle}>{intro}</p><p>Un mismo acceso para quienes descubren iniciativas, crean proyectos o representan a una organización.</p></div><div className={styles.introNote}><strong>Ideas que nos unen</strong>Descubre proyectos y conoce las comunidades que buscan transformar su entorno.</div></aside>}
-    <div className={styles.body}><h1>{title}</h1><p className={styles.subtitle}>{subtitle}</p><p className={styles.notice}>{notice ?? <><strong>Modo demostración.</strong> Esta pantalla no inicia sesiones ni envía correos o credenciales. El registro de cuentas, en su propia pantalla, ya está conectado a la base de pruebas.</>}</p>{children}</div>
+    <div className={styles.body}><Heading>{title}</Heading><p className={styles.subtitle}>{subtitle}</p><p className={styles.notice}>{notice ?? <><strong>Entorno de pruebas.</strong> La cuenta y los permisos se comprueban con el servidor. Espera la confirmación de cada operación antes de continuar.</>}</p>{children}</div>
   </div>
 }
 

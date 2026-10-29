@@ -14,7 +14,12 @@ export function CategoryForm({ category, categories, busy, onSave, onCancel }: {
     event.preventDefault()
     if (busy) return
     const result = categoryInput(draft, categories, category?.id); setErrors(result.errors)
-    if (Object.keys(result.errors).length) { event.currentTarget.querySelector<HTMLElement>(`[name="${Object.keys(result.errors)[0]}"]`)?.focus(); return }
+    if (Object.keys(result.errors).length) {
+      // Follow the visible form order, not the order used by the validator.
+      Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[name]'))
+        .find(field => result.errors[field.getAttribute('name') as keyof CategoryErrors])?.focus()
+      return
+    }
     void onSave(result.input)
   }}>
     <h2>{category ? `Editar ${category.name}` : 'Nueva categoría'}</h2>

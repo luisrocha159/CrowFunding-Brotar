@@ -1,11 +1,23 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import styles from './projects.module.css'
 import { useAccessPermissions } from '../access/session/accessPermissions'
 
 export function AdministrativeNavigation() {
   const { can,error,access } = useAccessPermissions()
-  return <aside className={styles.sidebar}><h2>Administración</h2>
-    {can('dashboard.read') && <NavLink to="/administracion">Resumen administrativo</NavLink>}
+  const menu = useRef<HTMLDetailsElement>(null)
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 761px)')
+    const adapt = () => { if (menu.current) menu.current.open = media.matches }
+    adapt()
+    media.addEventListener('change', adapt)
+    return () => media.removeEventListener('change', adapt)
+  }, [pathname])
+  return <aside className={styles.sidebar}><details ref={menu} open className={styles.adminMenu} onKeyDown={event => {
+    if (event.key === 'Escape' && menu.current) { menu.current.open = false; menu.current.querySelector('summary')?.focus() }
+  }}><summary><h2>Administración</h2><span>Ver secciones</span></summary><nav aria-label="Secciones de administración">
+    {can('dashboard.read') && <NavLink end to="/administracion">Resumen administrativo</NavLink>}
     {can('catalog.read') && <NavLink to="/administracion/catalogos">Catálogos</NavLink>}
     {can('parties.read') && <NavLink to="/administracion/personas">Personas y organizaciones</NavLink>}
     {can('campaign.review.read') && <NavLink to="/administracion/publicaciones">Novedades publicadas</NavLink>}
@@ -26,5 +38,5 @@ export function AdministrativeNavigation() {
     {access?.readOnly && <p>Auditoría: acceso de solo lectura.</p>}
     <NavLink to="/mi-cuenta">Mi cuenta y perfil</NavLink>
     <p>Habilitar CREATOR no acredita identidad ni KYC, ni concede permisos para mover dinero.</p>
-  </aside>
+  </nav></details></aside>
 }

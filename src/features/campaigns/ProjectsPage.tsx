@@ -54,7 +54,8 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
       {data.discardError && <Button variant="secondary" onClick={data.refresh}>Actualizar lista</Button>}
       {data.state === 'ready' && !id && (data.projects.length === 0 ? <EmptyState title={admin ? 'No hay campañas pendientes' : 'Todavía no tienes proyectos'} description={admin ? 'Aquí aparecerán las campañas que hayan sido enviadas a revisión.' : 'Crea un borrador para comenzar tu primera campaña.'} />
         : admin ? <><label className={styles.search}>Buscar campaña o creador<input type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
-          <div className={styles.tableScroll}><table><caption>Campañas pendientes de revisión</caption><thead><tr><th>Campaña</th><th>Creador</th><th>Fecha de envío</th><th>Meta</th><th>Estado</th><th>Acción</th></tr></thead>
+          <p id="campaign-queue-help">En pantallas estrechas, desplaza la tabla horizontalmente para consultar todas las columnas. Con teclado, enfoca la tabla y usa las flechas.</p>
+          <div className={styles.tableScroll} role="region" aria-label="Tabla desplazable de campañas pendientes" aria-describedby="campaign-queue-help" tabIndex={0}><table><caption>Campañas pendientes de revisión</caption><thead><tr><th scope="col">Campaña</th><th scope="col">Creador</th><th scope="col">Fecha de envío</th><th scope="col">Meta</th><th scope="col">Estado</th><th scope="col">Acción</th></tr></thead>
             <tbody>{visible.map(project => <tr key={project.id}><td>{project.title}</td><td>{project.creatorName || 'Nombre no disponible'}</td><td>{project.submittedAt ? new Date(project.submittedAt).toLocaleDateString('es-BO') : 'Sin fecha de envío'}</td><td>{projectGoal(project)}</td><td><span className={styles.badge}>{projectStatusNames[project.status]}</span></td><td><Link to={`${back}/${encodeURIComponent(project.id)}`}>Revisar campaña</Link></td></tr>)}</tbody></table></div>
           {visible.length === 0 && <p role="status">No hay coincidencias con esa búsqueda.</p>}</>
           : <ProjectsList projects={data.projects} onDiscard={setConfirmation} />)}
@@ -68,7 +69,13 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
         <section className={styles.panel}><h2>Historia e impacto</h2>{(['problem', 'solution', 'beneficiaries', 'expectedResults'] as const).map((key, index) => <div key={key}><h3>{['Problema', 'Solución', 'Beneficiarios', 'Resultados esperados'][index]}</h3><p className={styles.prose}>{data.detail!.story?.[key] || 'Información todavía no registrada.'}</p></div>)}</section>
         <section className={styles.panel}><h2>Historial registrado</h2>{data.detail.history.length === 0 ? <p>No hay movimientos registrados.</p> : <ol>{data.detail.history.map((event, index) => <li key={index}>{new Date(event.changedAt).toLocaleString('es-BO')} · {projectStatusNames[event.toStatus] ?? event.toStatus}{event.reason && <p>{event.reason}</p>}</li>)}</ol>}</section>
       </>}
-      <dialog ref={dialog} className={styles.dialog} aria-labelledby="discard-title" onCancel={event => { event.preventDefault(); if (!data.discarding) setConfirmation(null) }}>
+      <dialog ref={dialog} className={styles.dialog} aria-labelledby="discard-title" onKeyDown={event => {
+        if (event.key !== 'Tab') return
+        const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
+        const first = buttons[0], last = buttons.at(-1)
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+      }} onCancel={event => { event.preventDefault(); if (!data.discarding) setConfirmation(null) }}>
         <h2 id="discard-title">¿Descartar este borrador?</h2><p>«{confirmation?.title}» dejará de aparecer en tus proyectos. Solo se admite esta acción mientras sea un borrador propio.</p>
         <div className={styles.actions}><Button variant="secondary" autoFocus disabled={data.discarding} onClick={() => setConfirmation(null)}>Conservar borrador</Button><Button loading={data.discarding} loadingLabel="Descartando…" onClick={async () => { if (!confirmation) return; await data.discard(confirmation); setConfirmation(null) }}>Confirmar descarte</Button></div>
       </dialog>

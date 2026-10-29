@@ -21,14 +21,11 @@ import { INDICATOR_UNITS, MINIMUMS } from '../../../backend/src/campaigns/domain
 import { validateGeneralInput, validateStoryInput } from './campaignsClient'
 import { readSectionCatalogs } from './sectionsClient'
 import { readSubmission, submissionFieldsForStep } from './submissionClient'
+import { projectStatusNames as statusNames } from './projectsClient'
 
 const empty: DraftInput = { title: '', summary: '', campaignType: 'DONATION', categoryId: null, organizationId: null }
 const typeNames: Record<string, string> = { DONATION: 'Donación', REWARD: 'Recompensa', PRESALE: 'Preventa' }
 const stepNames = ['Modalidad', 'Información general', 'Historia e impacto', 'Portada', 'Plan y presupuesto', 'Financiamiento', 'Recompensas', 'Revisión y envío']
-const statusNames: Record<string, string> = {
-  DRAFT: 'Borrador', PENDING_VERIFICATION: 'Pendiente de verificación', IN_REVIEW: 'En revisión',
-  CHANGES_REQUESTED: 'Cambios solicitados', APPROVED: 'Aprobada', PUBLISHED: 'Publicada', REJECTED: 'Rechazada'
-}
 
 type Saving = 'idle' | 'saving' | 'saved' | 'failed'
 type Screen = 'loading' | 'ready' | 'error' | 'anonymous' | 'forbidden' | 'missing'
@@ -496,7 +493,7 @@ export function CampaignBuilderPage() {
           </form>
         </section>}
 
-        {step === 3 && editable && <><CoverDraftEditor key={current.id} campaignId={current.id} /><GalleryEditor key={`gallery-${current.id}`} campaignId={current.id} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} /></>}
+        {step === 3 && editable && <><CoverDraftEditor embedded key={current.id} campaignId={current.id} /><GalleryEditor key={`gallery-${current.id}`} campaignId={current.id} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} /></>}
         {step >= 4 && step <= 6 && <CampaignSectionsEditor key={current.id} id={current.id} step={step} editable={editable} campaignType={current.campaignType} externalErrors={fieldErrors} onFieldsEdited={() => setFieldErrors({})} onBusyChange={setSectionBusy} onDirtyChange={setSectionDirty} />}
         {step === 7 && <CampaignSubmissionPanel key={current.id} id={current.id} categories={categories} onGoTo={move} onBusyChange={setSectionBusy} onStatusChange={status => {
           setCurrent(previous => previous ? { ...previous, status } : previous)

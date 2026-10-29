@@ -23,7 +23,7 @@ test('ciclo cliente: opciones dependen del estado, cancelación y condiciones re
 })
 test('formulario operativo: confirmación previa, límites, obligatorios y acción explícita',()=>{
  const html=renderToStaticMarkup(createElement(OperationForm,{title:'Ciclo DEMO',options:{END_FUNDING:'Finalizar recaudación'},onSave:async()=>{}}))
- for(const text of ['sin dinero real','minLength="20"','maxLength="500"','aria-label="obligatorio"','disabled=""','Selecciona una acción'])assert.ok(html.includes(text))
+ for(const text of ['sin dinero real','minLength="20"','maxLength="500"','aria-hidden="true"','disabled=""','Selecciona una acción'])assert.ok(html.includes(text))
 })
 test('operación HTTP: muestra conflicto comprobado, no éxito ficticio ni error técnico crudo',async()=>{
  const old=globalThis.fetch

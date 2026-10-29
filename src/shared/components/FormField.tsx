@@ -28,7 +28,7 @@ export function FormField(props: FieldProps) {
     input = <input {...rest} {...accessibility} data-control={kind ?? 'input'} className={`${styles.input} ${className}`} />
   }
   return <div className={styles.field}>
-    <label className={styles.label} htmlFor={id}>{label}{required && <span aria-label="obligatorio"> *</span>}</label>
+    <label className={styles.label} htmlFor={id}>{label}{required && <span aria-hidden="true"> *</span>}</label>
     {input}
     {help && <p className={styles.help} id={`${id}-help`}>{help}</p>}
     {error && <p className={styles.fieldError} id={`${id}-error`} role="alert">{error}</p>}

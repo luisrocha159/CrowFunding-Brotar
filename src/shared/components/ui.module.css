@@ -30,7 +30,7 @@
 .message p { margin: 4px 0 0; }
 .messageBody { margin-top: 4px; }
 .state { padding: 40px 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); text-align: center; }
-.state h3 { margin: 14px 0 8px; font-size: 18px; }
+.state h2 { margin: 14px 0 8px; font-size: 18px; }
 .state p { color: var(--color-muted); max-width: 480px; margin: 0 auto 20px; }
 .stateIcon { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; width: 44px; height: 44px; background: var(--color-soft); color: var(--color-brand); font-size: 22px; }
 .skeleton { height: 16px; background: #e6ede8; border-radius: var(--radius-sm); animation: pulse 1.5s ease-in-out infinite; }

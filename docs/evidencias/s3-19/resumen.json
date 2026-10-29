@@ -1,0 +1,121 @@
+{
+  "task": "S3-19",
+  "date": "2026-10-29",
+  "branch": "RicardoDev",
+  "published": false,
+  "trelloChanged": false,
+  "status": "Cierre técnico del alcance académico DEMO verificado",
+  "browser": {
+    "routerPatterns": 73,
+    "concreteCases": 81,
+    "requiredChecks": 243,
+    "missing": 0,
+    "automaticFailures": 0,
+    "viewports": [
+      375,
+      768,
+      1440
+    ],
+    "casesByRole": {
+      "public": 13,
+      "basic": 18,
+      "creator": 23,
+      "admin": 16,
+      "finance": 7,
+      "support": 4
+    },
+    "assertions": [
+      "Datos asentados antes de medir",
+      "Un main y un h1",
+      "Sin violaciones detectadas por axe",
+      "Sin desbordamiento horizontal global",
+      "Sin excepciones de script",
+      "Sin HTTP 5xx o conexión fallida inesperados"
+    ],
+    "incompleteRulesOccurrences": {
+      "color-contrast": 87
+    },
+    "incompleteTreatment": "Se conservan por separado; no equivalen a reglas aprobadas ni a defectos confirmados. Flecha de búsqueda y superposiciones de imagen requieren evaluación humana de contraste."
+  },
+  "tests": {
+    "distinctPassed": 557,
+    "frontend": 258,
+    "backend": 239,
+    "localAdmin": 8,
+    "integrationDistinct": 52,
+    "integrationMethod": "Resultado compuesto: 47 iniciales +2 con protección QA +2 dirigidos +1 tras corregir configuración DEMO. No es una única ejecución completa de 52/52; no se suman repeticiones."
+  },
+  "executions": [
+    {
+      "privateLocalLog": "tmp/s319-front-close.log",
+      "sha256": "f9c44e8aabaf50284531a45e62abeab230797c99a1a685747df8ec4a6bca97bb",
+      "result": {
+        "checksExitCode": 0,
+        "passed": 258,
+        "failed": 0
+      }
+    },
+    {
+      "privateLocalLog": "tmp/s319-back-close.log",
+      "sha256": "dc0fde0501a3e97bfced74b926cad2003e174486f0ce918aa3e1fb785f30930a",
+      "result": {
+        "checksExitCode": 0,
+        "backendPassed": 239,
+        "adminPassed": 8,
+        "failed": 0
+      }
+    },
+    {
+      "privateLocalLog": "tmp/s319-integration.log",
+      "sha256": "ece8bf0d6bc472f9355e423e4cb66554e702f3b1f5e40efff634b9c482540960",
+      "result": {
+        "tests": 52,
+        "passed": 47,
+        "failed": 5,
+        "note": "Primera ejecución; cuatro protecciones QA y una configuración DEMO."
+      }
+    },
+    {
+      "privateLocalLog": "tmp/s319-integration-qa-guarded.log",
+      "sha256": "c87983a9363f261b59767c7000267a5c0db4bdf5d5069bc0f33e35d6342f7977",
+      "result": {
+        "tests": 2,
+        "passed": 2,
+        "failed": 0
+      }
+    },
+    {
+      "privateLocalLog": "tmp/s319-integration-directed.log",
+      "sha256": "830fdcec35e87233acdc90c2d5c8d9fb7a39c564e601d9b75a3b80731715f459",
+      "result": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "note": "La repetición confirma el fallo de configuración DEMO; los otros dos escenarios pasan."
+      }
+    },
+    {
+      "privateLocalLog": "tmp/s319-integration-progress-fixed.log",
+      "sha256": "09a208d27fe1f8a0995b30ab857f912ee5815fd8d2891a5b783a94e273dfb2fb",
+      "result": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "note": "Configuración DEMO autónoma del test; variable externa ausente."
+      }
+    }
+  ],
+  "performance": {
+    "assessment": "INCONCLUSIVE para producción",
+    "diagnostic": "Desarrollo local; una recarga de soporte observó LCP 884 ms, CLS 0.5043930658090833 e INP no disponible. CLS local pobre: no se declara rendimiento aprobado ni se usa este dato como Core Web Vitals de campo. Requiere medición de un build representativo y estabilización del contenido asincrónico antes de evaluar producción."
+  },
+  "visualRegression": "INCONCLUSIVE: primer corte de referencia; sin baseline anterior ni comparación exacta con Figma",
+  "accessibility": "Auditoría automática parcial y pruebas de teclado; sin certificación WCAG completa ni prueba con lector de pantalla",
+  "nonBlockingBuildWarning": "Bundle principal de desarrollo de entrega compilada: 936.18 kB minificado; advertencia previa de >500 kB conservada.",
+  "remainingTasks": [
+    "S3-20",
+    "S3-21",
+    "S3-26"
+  ],
+  "environment": "QA PostgreSQL15448/API3198/frontend5198 sin SMTP; regresión nueva aislada15449. No escribe en original15433 ni envía correo externo."
+}

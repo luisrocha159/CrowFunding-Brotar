@@ -1,0 +1,409 @@
+{
+  "routeSource": "src/app/routes/router.tsx",
+  "routerPatterns": [
+    "/",
+    "/condiciones",
+    "/mis-proyectos/:id/cierre",
+    "/administracion/cierre-campanas",
+    "/administracion/cierre-campanas/:id",
+    "/mis-campanas/ciclo",
+    "/mis-campanas/ciclo/:id",
+    "/administracion/ciclo-campanas",
+    "/administracion/ciclo-campanas/:id",
+    "/mis-desembolsos",
+    "/mis-desembolsos/:id",
+    "/mis-proyectos/:campaignId/desembolsos",
+    "/administracion/desembolsos",
+    "/administracion/desembolsos/:id",
+    "/como-funciona",
+    "/para-creadores",
+    "/explorar",
+    "/explorar/buscar",
+    "/campanas/:id/rendicion-publica",
+    "/proyectos/:slug",
+    "/iniciar-sesion",
+    "/mi-cuenta",
+    "/verificar-correo",
+    "/mis-incidencias",
+    "/mis-incidencias/nueva",
+    "/mis-incidencias/:id",
+    "/administracion/soporte",
+    "/administracion/soporte/:id",
+    "/mis-aportes",
+    "/mis-aportes/:id",
+    "/mis-aportes/:id/comprobante",
+    "/panel-patrocinador",
+    "/simulacion-apoyo",
+    "/apoyo-demo",
+    "/mi-verificacion",
+    "/administracion/verificaciones",
+    "/administracion/verificaciones/:id",
+    "/mis-devoluciones",
+    "/mis-devoluciones/nueva",
+    "/mis-devoluciones/:id",
+    "/administracion/devoluciones",
+    "/administracion/devoluciones/:id",
+    "/mis-disputas",
+    "/mis-disputas/nueva",
+    "/mis-disputas/:id",
+    "/administracion/disputas",
+    "/administracion/disputas/:id",
+    "/panel-creador",
+    "/mis-proyectos/:id/rendicion",
+    "/administracion/rendicion",
+    "/administracion/rendicion/:id",
+    "/administracion/publicaciones",
+    "/administracion",
+    "/mis-proyectos/:id/avances",
+    "/administracion/catalogos",
+    "/administracion/personas",
+    "/mis-guardados",
+    "/mis-organizaciones",
+    "/crear-campana",
+    "/mis-invitaciones",
+    "/mis-proyectos",
+    "/mis-proyectos/:id",
+    "/administracion/campanas",
+    "/administracion/campanas/:id",
+    "/administracion/usuarios",
+    "/administracion/finanzas",
+    "/administracion/conciliacion",
+    "/administracion/conciliacion/:id",
+    "/administracion/auditoria",
+    "/mi-campana/portada",
+    "/registro",
+    "/recuperar-contrasena",
+    "*"
+  ],
+  "viewports": [
+    375,
+    768,
+    1440
+  ],
+  "cases": [
+    {
+      "role": "public",
+      "path": "/"
+    },
+    {
+      "role": "public",
+      "path": "/condiciones"
+    },
+    {
+      "role": "public",
+      "path": "/como-funciona"
+    },
+    {
+      "role": "public",
+      "path": "/para-creadores"
+    },
+    {
+      "role": "public",
+      "path": "/explorar"
+    },
+    {
+      "role": "public",
+      "path": "/explorar/buscar"
+    },
+    {
+      "role": "public",
+      "path": "/iniciar-sesion"
+    },
+    {
+      "role": "public",
+      "path": "/verificar-correo"
+    },
+    {
+      "role": "public",
+      "path": "/registro"
+    },
+    {
+      "role": "public",
+      "path": "/recuperar-contrasena"
+    },
+    {
+      "role": "public",
+      "path": "/no-existe-qa"
+    },
+    {
+      "role": "public",
+      "path": "/proyectos/qa-s319-061c0611-6b91-4fbe-a6ca-92b4a28b7570"
+    },
+    {
+      "role": "public",
+      "path": "/campanas/061c0611-6b91-4fbe-a6ca-92b4a28b7570/rendicion-publica"
+    },
+    {
+      "role": "basic",
+      "path": "/mi-cuenta"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-incidencias"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-incidencias/nueva"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-incidencias/a2d88032-67a5-4bb0-a903-68f925ba4e96"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-aportes"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-aportes/7bbe3827-8564-4c8b-b2e6-5f083e35f9e1"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-aportes/7bbe3827-8564-4c8b-b2e6-5f083e35f9e1/comprobante"
+    },
+    {
+      "role": "basic",
+      "path": "/panel-patrocinador"
+    },
+    {
+      "role": "basic",
+      "path": "/simulacion-apoyo?campaignId=061c0611-6b91-4fbe-a6ca-92b4a28b7570"
+    },
+    {
+      "role": "basic",
+      "path": "/apoyo-demo?pago=dcb81473-e7f0-4c13-8c53-356478352382"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-devoluciones"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-devoluciones/nueva?pago=dcb81473-e7f0-4c13-8c53-356478352382"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-devoluciones/da640ade-a97c-459f-a21c-3e0db24053ef"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-disputas"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-disputas/nueva?incidencia=b011266d-1fa9-41c9-8bfe-3b91963508d7"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-disputas/1e0a4f9f-b3cf-4837-a51c-4aa9aa8dcbab"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-guardados"
+    },
+    {
+      "role": "basic",
+      "path": "/mis-invitaciones"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos/5ccce678-f922-4ab8-9ffe-4bf142dd68e5/cierre"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-campanas/ciclo"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-campanas/ciclo/5ccce678-f922-4ab8-9ffe-4bf142dd68e5"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-desembolsos"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-desembolsos/2e8b8583-a1d9-4a84-a0cb-a29a48982dea"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos/5ccce678-f922-4ab8-9ffe-4bf142dd68e5/desembolsos"
+    },
+    {
+      "role": "creator",
+      "path": "/mi-verificacion"
+    },
+    {
+      "role": "creator",
+      "path": "/panel-creador"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos/5ccce678-f922-4ab8-9ffe-4bf142dd68e5/rendicion"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos/5ccce678-f922-4ab8-9ffe-4bf142dd68e5/avances"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-organizaciones"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos"
+    },
+    {
+      "role": "creator",
+      "path": "/mis-proyectos/5ccce678-f922-4ab8-9ffe-4bf142dd68e5"
+    },
+    {
+      "role": "creator",
+      "path": "/mi-campana/portada?borrador=6e08c1ee-ccdc-4068-ab59-e077272be50d"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/cierre-campanas"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/cierre-campanas/5ccce678-f922-4ab8-9ffe-4bf142dd68e5"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/ciclo-campanas"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/ciclo-campanas/5ccce678-f922-4ab8-9ffe-4bf142dd68e5"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/verificaciones"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/verificaciones/cedd85c4-cc11-4e54-a525-3b131d1d876f"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/rendicion"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/rendicion/5ccce678-f922-4ab8-9ffe-4bf142dd68e5"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/publicaciones"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/catalogos"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/personas"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/campanas"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/campanas/63903ea1-8387-4849-928c-a3cb365cb046"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/usuarios"
+    },
+    {
+      "role": "admin",
+      "path": "/administracion/auditoria"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/desembolsos"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/desembolsos/2e8b8583-a1d9-4a84-a0cb-a29a48982dea"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/devoluciones"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/devoluciones/da640ade-a97c-459f-a21c-3e0db24053ef"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/finanzas"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/conciliacion"
+    },
+    {
+      "role": "finance",
+      "path": "/administracion/conciliacion/80549080-3624-4651-83e2-12548737e49d"
+    },
+    {
+      "role": "support",
+      "path": "/administracion/soporte"
+    },
+    {
+      "role": "support",
+      "path": "/administracion/soporte/a2d88032-67a5-4bb0-a903-68f925ba4e96"
+    },
+    {
+      "role": "support",
+      "path": "/administracion/disputas"
+    },
+    {
+      "role": "support",
+      "path": "/administracion/disputas/1e0a4f9f-b3cf-4837-a51c-4aa9aa8dcbab"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=5188cd54-603e-4dbc-b4e1-82e0a0967d84"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=b847a569-3ef2-414f-ab1d-4c0b8cebaed8"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=92405d78-8687-4c14-acee-161e7a93684c"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=6e08c1ee-ccdc-4068-ab59-e077272be50d"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=08dc9427-d018-4d32-ac18-c3d0cab0a43c"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=2a0d6d19-9f90-4f0a-8c3a-2d33fadad76e"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=d6c4ea26-6824-4346-8a9f-ab38924d45b9"
+    },
+    {
+      "role": "creator",
+      "path": "/crear-campana?borrador=552e753d-1fb3-4534-a104-dbbfc840a902"
+    }
+  ]
+}

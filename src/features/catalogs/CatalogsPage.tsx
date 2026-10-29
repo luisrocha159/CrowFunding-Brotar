@@ -37,6 +37,7 @@ export function CatalogsPage() {
         <p>{stateTarget.isActive ? 'La categoría dejará de estar disponible para nuevas selecciones. Si tiene campañas o subcategorías activas, el cambio será rechazado.' : 'La categoría volverá a estar disponible. Su categoría superior debe estar activa.'}</p>
         <div className={styles.actions}><Button autoFocus loading={data.busy} onClick={() => { void data.state(stateTarget).then(saved => { if (saved) closeEditor() }) }}>Confirmar {stateTarget.isActive ? 'desactivación' : 'activación'}</Button><Button variant="secondary" disabled={data.busy} onClick={closeEditor}>Cancelar</Button></div>
       </section>}
+      <h2>Categorías de campaña</h2>
       <CategoryList categories={data.categories} editable={editable} busy={data.busy || Boolean(editing) || Boolean(stateTarget)} onEdit={setEditing} onState={setStateTarget} />
       <section className={styles.settings}><h2>Parámetros acordados</h2>
         {data.settings.length === 0 ? <p>No hay parámetros de negocio aprobados para administrar. Las decisiones sobre categorías, reglas, límites y vistas siguen pendientes en D02 y D10. Los costos requieren además D04.</p>

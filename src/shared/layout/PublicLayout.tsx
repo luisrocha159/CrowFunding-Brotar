@@ -37,8 +37,15 @@ export function PublicLayout() {
       window.scrollTo(0, 0)
     }
     previousLocation.current = location.pathname
-    const heading = main.current?.querySelector('h1')?.textContent
-    document.title = heading ? `${heading} | Brotar` : 'Brotar'
+    const updateTitle = () => {
+      const heading = main.current?.querySelector('h1')?.textContent
+      document.title = heading ? `${heading} | Brotar` : 'Brotar'
+    }
+    updateTitle()
+    // Route data may replace a loading heading after navigation has finished.
+    const observer = new MutationObserver(updateTitle)
+    if (main.current) observer.observe(main.current, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
   }, [location.pathname, checking, unavailable, user?.id])
 
   return <>
@@ -57,7 +64,12 @@ export function PublicLayout() {
             <input key={location.search} id="header-search" name="q" type="search" placeholder="Buscar proyectos" defaultValue={new URLSearchParams(location.search).get('q') ?? ''} />
             <button type="submit" aria-label="Enviar búsqueda">→</button>
           </form>
-          {user ? <details className={styles.accountMenu} ref={accountMenu}>
+          {user ? <details className={styles.accountMenu} ref={accountMenu} onKeyDown={(event) => {
+            if (event.key === 'Escape' && accountMenu.current) {
+              accountMenu.current.open = false
+              accountMenu.current.querySelector('summary')?.focus()
+            }
+          }}>
             <summary aria-label={`Cuenta de ${user.firstName}`}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6" /></svg><span>{user.firstName}</span></summary>
             <nav aria-label="Opciones de mi cuenta"><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/mis-guardados">Guardadas y novedades</Link><Link to="/explorar">Explorar proyectos</Link></nav>
           </details> : checking ? <span className={styles.sessionLoading} role="status">Comprobando cuenta…</span>

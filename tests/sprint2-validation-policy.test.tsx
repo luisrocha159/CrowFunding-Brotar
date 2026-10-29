@@ -101,7 +101,7 @@ test('correo: contrato normalizado, comprobación real y errores sin fingir disp
 test('campos obligatorios: el asterisco aparece también al envolver controles hijos', () => {
   const native = renderToStaticMarkup(<FormField id="nombre" label="Nombre" required />)
   const wrapped = renderToStaticMarkup(<FormField id="meta" label="Meta"><input required /></FormField>)
-  for (const html of [native, wrapped]) assert.match(html, /aria-label="obligatorio"/)
+  for (const html of [native, wrapped]) assert.match(html, /aria-hidden="true"/)
   assert.match(renderToStaticMarkup(<FormField id="titulo" label="Título" required><input /></FormField>), /required=""/)
 })
 

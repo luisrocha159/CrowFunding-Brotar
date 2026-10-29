@@ -38,7 +38,7 @@ function FilePreview({ file }: { file: File }) {
   return <img ref={image} alt="Vista previa local de la portada seleccionada" />
 }
 
-export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
+export function CoverDraftEditor({ campaignId, embedded = false }: { campaignId: string; embedded?: boolean }) {
   const [values, setValues] = useState<CoverValues>({ ...initialValues })
   const [errors, setErrors] = useState<CoverErrors>({})
   const [cover, setCover] = useState<CoverDraft | null>(null)
@@ -72,14 +72,14 @@ export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
     if (status === 'save-error' || status === 'saved') setStatus('ready')
   }
 
-  if (status === 'loading') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta."><p role="status">Cargando portada…</p></AccessShell>
+  if (status === 'loading') return <AccessShell headingLevel={embedded ? 3 : 1} centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta."><p role="status">Cargando portada…</p></AccessShell>
   if (status === 'load-error' && lastError === 401) return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent(`/mi-campana/portada?borrador=${campaignId}`)}`} />
-  if (status === 'load-error') return <AccessShell centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta.">
+  if (status === 'load-error') return <AccessShell headingLevel={embedded ? 3 : 1} centered title="Portada del borrador" subtitle="Carga y reemplaza la imagen principal de tu propuesta.">
     <div id="cover-response" tabIndex={-1}><Message tone="error" title="No se pudo cargar la portada">{errorMessage[lastError] ?? errorMessage[0]}</Message></div>
     <div className={accessStyles.actions}><Button onClick={() => { setStatus('loading'); readCoverDraft(campaignId).then(result => { setCover(result); setValues({ altText: result?.altText ?? '', file: null }); setStatus('ready') }).catch(() => setStatus('load-error')) }}>Reintentar</Button><Link to="/crear-campana">Volver a mis borradores</Link></div>
   </AccessShell>
 
-  return <AccessShell centered title="Portada del borrador" subtitle="Selecciona, previsualiza y guarda la portada de tu propuesta."
+  return <AccessShell headingLevel={embedded ? 3 : 1} centered title="Portada del borrador" subtitle="Selecciona, previsualiza y guarda la portada de tu propuesta."
     notice={<><strong>Borrador conectado.</strong> La imagen se guarda como archivo público autorizado. Si el guardado falla, tus campos y la vista previa permanecen en pantalla.</>}>
     {status === 'saved' && <AccessSuccess title="Portada guardada"><p>La portada quedó asociada al borrador. Puedes reemplazarla seleccionando otra imagen y guardando de nuevo.</p></AccessSuccess>}
     {status === 'save-error' && <div id="cover-response" tabIndex={-1} className={accessStyles.response}><Message tone="error" title="No se pudo guardar la portada">{errorMessage[lastError] ?? errorMessage[0]}</Message></div>}
@@ -104,7 +104,7 @@ export function CoverDraftEditor({ campaignId }: { campaignId: string }) {
     }}>
       <ValidationSummary prefix="cover" errors={errors} />
       <fieldset className={accessStyles.fields} disabled={busy}>
-        <div className={styles.preview} aria-label="Vista previa de portada">
+        <div className={styles.preview} role="group" aria-label="Vista previa de portada">
           {values.file ? <FilePreview file={values.file} /> : cover ? <img src={coverImageUrl(cover)} alt={cover.altText} /> : <div className={styles.emptyPreview}>Sin portada guardada</div>}
         </div>
         <div>

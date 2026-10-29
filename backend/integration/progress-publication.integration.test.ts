@@ -16,6 +16,10 @@ interface Tracking {items:Reward[];total:number;fulfilled:number;editable:boolea
 test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas compartido con cierre', {timeout:90000},async()=>{
  const config=readDatabaseConfig(process.env);assert.ok(config.enabled&&process.env.ALLOW_DB_TEST_WRITES==='true');assert.notEqual(process.env.NODE_ENV,'production')
  const {container}=readTestDatabaseTarget(config)
+  // This scenario explicitly exercises the DEMO payment read model. It must not
+  // depend on an untracked developer environment to enable its own fixture.
+  const previousDemo=process.env.DEMO_PAYMENTS_ENABLED
+  process.env.DEMO_PAYMENTS_ENABLED='true'
  const sql=(query:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-A','-t','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:query,encoding:'utf8',timeout:10000}).trim()
  const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl()
  // Do not reuse a socket that can expire during synchronous Docker/psql fixture setup.
@@ -102,6 +106,8 @@ test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas
   assert.equal(sql(`SELECT has_table_privilege('brotar_app','brotar_extension.update_history','UPDATE') OR has_table_privilege('brotar_app','brotar_extension.reward_history','DELETE')`),'f')
   assert.ok(Number(sql(`SELECT count(*) FROM audit_log WHERE entity_name IN ('campaign_update','reward_fulfillment') AND actor_user_id='${owner.id}'`))>=5)
  }finally{
+  if(previousDemo===undefined)delete process.env.DEMO_PAYMENTS_ENABLED
+  else process.env.DEMO_PAYMENTS_ENABLED=previousDemo
   await app.close()
   for(const id of campaigns)sql(`DELETE FROM brotar_extension.reward_history WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${id}');DELETE FROM brotar_extension.campaign_reward_evidence WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${id}');DELETE FROM payment WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${id}');DELETE FROM contribution WHERE campaign_id='${id}';DELETE FROM brotar_extension.campaign_cycle WHERE campaign_id='${id}';DELETE FROM campaign WHERE id='${id}';`)
   for(const file of files)sql(`DELETE FROM file_asset WHERE id='${file}';`)

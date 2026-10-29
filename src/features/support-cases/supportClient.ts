@@ -6,6 +6,7 @@ export const SUPPORT_TYPES = [
   ['UNRECOGNIZED_PAYMENT', 'Pago no reconocido'], ['REFUND_REQUEST', 'Consulta sobre devolución'], ['INCORRECT_INFORMATION', 'Información incorrecta'],
   ['REWARD_NOT_RECEIVED', 'Recompensa no recibida'], ['PROJECT_NOT_EXECUTED', 'Proyecto aparentemente no ejecutado'], ['OTHER', 'Otra incidencia']
 ] as const
+export function supportCategoryLabel(category: string | null) { return SUPPORT_TYPES.find(([key]) => key === category)?.[1] ?? category ?? 'Sin categoría' }
 const CONTRIBUTION_CATEGORIES = new Set(['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST', 'REWARD_NOT_RECEIVED'])
 export const SUPPORT_STATES = { OPEN: 'Abierta', IN_PROGRESS: 'En atención', AWAITING_RESPONSE: 'Esperando respuesta', RESOLVED: 'Resuelta', CLOSED: 'Cerrada' } as const
 export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null; publicReport: boolean }

@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react'
 import {Button,ButtonLink} from '../../../shared/components/Button'
 import {Message} from '../../../shared/components/Feedback'
-import {contactStatus,contactNotices,requestEmail,mailPreference,readNotice,confirmEmail,contactError,deliveryLabel,type ContactStatus,type ContactNotice} from './contactClient'
+import {contactStatus,noticeBody,contactNotices,requestEmail,mailPreference,readNotice,confirmEmail,contactError,deliveryLabel,type ContactStatus,type ContactNotice} from './contactClient'
 import {myPermissions} from './accessPermissions'
 import {AccessShell} from '../AccessComponents'
 
@@ -22,7 +22,7 @@ export function ContactPanel(){
    <p><label><input type="checkbox" checked={data.contact.emailNotifications} disabled={busy||data.readOnly||!data.contact.verifiedAt} onChange={e=>{const enabled=e.target.checked;void act(async()=>{await mailPreference(enabled);setNotice(enabled?'Avisos de estado activados para los próximos cambios.':'Avisos de estado por correo desactivados.')})}}/> Recibir por correo avisos de mis cambios de estado</label></p>
    <p>Estos avisos son opcionales. La recuperación y la verificación son mensajes de seguridad solicitados por ti. Las condiciones provisionales y su aceptación se consultan en esta cuenta; estos avisos no son publicidad.</p>
    <h3>Últimos avisos</h3><Button variant="secondary" disabled={busy} onClick={()=>setRetry(n=>n+1)}>Actualizar notificaciones</Button>
-   {data.notices.length===0?<p>Todavía no tienes avisos de cambios de estado.</p>:<ul>{data.notices.map(n=><li key={n.id}><h4>{n.title}</h4><p>{n.body}</p><p>{new Date(n.createdAt).toLocaleString('es-BO')} · {deliveryLabel[n.delivery]}{n.readAt?' · Leído':''}</p>{!n.readAt&&<Button variant="secondary" disabled={busy||data.readOnly} onClick={()=>void act(async()=>{await readNotice(n.id)})}>Marcar aviso como leído</Button>}</li>)}</ul>}
+   {data.notices.length===0?<p>Todavía no tienes avisos de cambios de estado.</p>:<ul>{data.notices.map(n=><li key={n.id}><h4>{n.title}</h4><p>{noticeBody(n.body)}</p><p>{new Date(n.createdAt).toLocaleString('es-BO')} · {deliveryLabel[n.delivery]}{n.readAt?' · Leído':''}</p>{!n.readAt&&<Button variant="secondary" disabled={busy||data.readOnly} onClick={()=>void act(async()=>{await readNotice(n.id)})}>Marcar aviso como leído</Button>}</li>)}</ul>}
   </>}
  </section>
 }
