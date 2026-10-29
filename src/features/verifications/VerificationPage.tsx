@@ -1,3 +1,4 @@
+import {LegalAcceptancePanel} from '../legal/LegalAcceptancePanel'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -29,7 +30,7 @@ export function VerificationPage() {
     <p><ButtonLink variant="secondary" to="/mi-cuenta">Mi cuenta y datos personales</ButtonLink></p>
     {status==='loading'&&<p role="status">Consultando datos privados…</p>}
     {status==='error'&&<><Message tone="error" title="Información no disponible">No pudimos comprobar tus datos y permisos.</Message><Button onClick={()=>{setStatus('loading');setRetry(value=>value+1)}}>Reintentar</Button></>}
-    {status==='ready'&&<div className={styles.page}>
+    {status==='ready'&&<div className={styles.page}><LegalAcceptancePanel/>
       <RepresentationRequests/>
       {notice&&<p role="status">{notice}</p>}{readOnly&&<p>Tu rol auditor permite consultar. Las modificaciones están deshabilitadas.</p>}
       <section className={styles.card}><h2>Mis verificaciones</h2><p>La carga de documentos y el envío no acreditan identidad. La decisión corresponde al equipo autorizado.</p>

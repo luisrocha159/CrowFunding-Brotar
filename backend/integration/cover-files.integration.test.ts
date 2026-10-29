@@ -43,7 +43,7 @@ test('portada integrada: carga, persistencia PostgreSQL, nueva sesión y sustitu
     return response.headers.get('set-cookie')!.split(';')[0]!
   }
   try {
-    const registered = await call('auth/register', '', 'POST', { firstName: 'Prueba', lastName: 'Portada', email, password, demoConsent: true })
+    const registered = await call('auth/register', '', 'POST', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Portada', email, password, demoConsent: true })
     assert.equal(registered.status, 201)
     const user = await registered.json() as { id: string }
     assert.match(user.id, /^[a-f0-9-]{36}$/)

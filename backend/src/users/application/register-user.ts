@@ -1,3 +1,4 @@
+import {assertLegalAcceptance,InvalidLegalAgreement} from '../../legal/domain/legal-agreement'
 import { newUser, type NewUser, type RegistrationInput } from '../domain/registration'
 import { phoneErrors } from '../../shared/domain/phone'
 export type { NewUser, RegistrationInput } from '../domain/registration'
@@ -11,6 +12,7 @@ export class RegisterUser {
   constructor(private readonly users: UserRegistrationRepository, private readonly passwords: PasswordHasher) {}
 
   async execute(input: RegistrationInput): Promise<RegistrationResult> {
+    try {assertLegalAcceptance(input.legalVersion,input.demoConsent)} catch(e) {if(e instanceof InvalidLegalAgreement)throw new RegistrationInvalid({legalVersion:e.message});throw e}
     const errors = phoneErrors(input.phoneCountryCode ?? '', input.phoneNumber ?? '')
     if (Object.keys(errors).length) throw new RegistrationInvalid(errors)
     const passwordHash = await this.passwords.hash(input.password)

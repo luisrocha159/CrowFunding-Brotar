@@ -30,7 +30,7 @@ test('S3-15/16/17/18: matriz real, perfil de auditor, permisos residuales, rollb
  let changedGrants=false,auditRevoked=false,readGrantRemoved=false
  try{
   for(const role of roles){
-   const email=`security-${role.toLowerCase()}-${suffix}@example.invalid`,r=await call('auth/register','','POST',{email,password,firstName:'DEMO',lastName:'Ñandú',demoConsent:true});assert.equal(r.status,201)
+   const email=`security-${role.toLowerCase()}-${suffix}@example.invalid`,r=await call('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',email,password,firstName:'DEMO',lastName:'Ñandú',demoConsent:true});assert.equal(r.status,201)
    const {id}=await r.json() as{id:string};users.push(id)
    if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
    const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);accounts[role]={id,cookie:login.headers.get('set-cookie')!.split(';')[0]!}

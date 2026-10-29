@@ -22,7 +22,7 @@ test('responsabilidades HTTP/PostgreSQL: conceder, revocar, idempotencia, revoca
   })
   async function account(role: string) {
     const email = `staff-${role.toLowerCase()}-${suffix}@example.invalid`
-    const registered = await call('auth/register', '', { firstName: 'Ensayo', lastName: 'Roles', email, password, demoConsent: true }); assert.equal(registered.status, 201)
+    const registered = await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: 'Roles', email, password, demoConsent: true }); assert.equal(registered.status, 201)
     const { id } = await registered.json() as { id: string }; users.push(id)
     if (role !== 'REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
     const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)

@@ -1,3 +1,4 @@
+import {LegalPage} from '../../features/legal/LegalPage'
 import {OrganizationInvitationsPage} from '../../features/verifications/OrganizationInvitationsPage'
 import {PublicAccountabilityPage} from '../../features/campaign-progress/PublicAccountabilityPage'
 import {PublicationAdministrationPage} from '../../features/campaign-progress/PublicationAdministrationPage'
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
+      {path:'condiciones',element:<LegalPage/>},
       {path:'mis-proyectos/:id/cierre',element:<ClosurePage/>},
       {path:'administracion/cierre-campanas',element:<ClosurePage administrative/>},
       {path:'administracion/cierre-campanas/:id',element:<ClosurePage administrative/>},

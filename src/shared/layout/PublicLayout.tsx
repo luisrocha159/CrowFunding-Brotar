@@ -79,7 +79,7 @@ export function PublicLayout() {
     <footer className={styles.footer}>
       <div className={styles.footerGrid}>
         <div><Brand inverse /><p className={styles.footerIntro}>Plataforma boliviana de crowdfunding para proyectos con impacto social, ambiental y productivo.</p></div>
-        <nav aria-label="Plataforma"><h2>Plataforma</h2><Link to="/explorar">Explorar proyectos</Link><Link to="/como-funciona">Cómo funciona</Link><Link to="/para-creadores">Para creadores</Link></nav>
+        <nav aria-label="Plataforma"><h2>Plataforma</h2><Link to="/explorar">Explorar proyectos</Link><Link to="/como-funciona">Cómo funciona</Link><Link to="/para-creadores">Para creadores</Link><Link to="/condiciones">Condiciones y privacidad del ensayo</Link></nav>
         <nav aria-label="Cuenta"><h2>Tu cuenta</h2>{user ? <><Link to="/mi-cuenta">Mi cuenta y perfil</Link><Link to="/crear-campana">Mis borradores</Link><Link to="/mis-guardados">Guardadas y novedades</Link></> : checking ? <span role="status">Comprobando cuenta…</span> : unavailable ? <Link to="/mi-cuenta">Comprobar mi cuenta</Link> : <><Link to="/iniciar-sesion">Iniciar sesión</Link><Link to="/registro">Crear una cuenta</Link><Link to="/recuperar-contrasena">Recuperar acceso</Link></>}</nav>
         <div><h2>Crezcamos juntos</h2><p>Cada iniciativa es una oportunidad para transformar nuestro entorno.</p><Link to="/para-creadores">Conoce cómo empezar →</Link></div>
       </div>

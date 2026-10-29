@@ -1,3 +1,4 @@
+import {LegalModule} from './legal/legal.module'
 import { Module } from '@nestjs/common'
 import { HealthModule } from './health/health.module'
 import { UsersModule } from './users/users.module'
@@ -23,5 +24,5 @@ import {DisbursementsModule} from './disbursements/disbursements.module'
 import {ContactsModule} from './contacts/contacts.module'
 import {AccountabilityModule} from './accountability/accountability.module'
 
-@Module({ imports: [HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule, FinanceModule, AuditModule, DemoPaymentsModule, CampaignProgressModule, VerificationsModule, SupportCasesModule,RefundsModule,DisputesModule,CampaignLifecycleModule,DisbursementsModule,ContactsModule,AccountabilityModule] })
+@Module({ imports: [LegalModule,HealthModule, UsersModule, AuthModule, ProfilesModule, OrganizationsModule, CatalogsModule, CampaignsModule, FilesModule, CampaignDraftsModule, ContributionsModule, FinanceModule, AuditModule, DemoPaymentsModule, CampaignProgressModule, VerificationsModule, SupportCasesModule,RefundsModule,DisputesModule,CampaignLifecycleModule,DisbursementsModule,ContactsModule,AccountabilityModule] })
 export class AppModule {}

@@ -40,7 +40,7 @@ test('S2-16 PostgreSQL: lectura anónima publicada, financiación neta, contenid
   })
   try {
     assert.equal((await call('campaigns/public')).status, 200, 'El catálogo no exige iniciar sesión.')
-    const registered = await call('auth/register', '', { firstName: 'Creador', lastName: 'Público Ensayo', email, password, demoConsent: true })
+    const registered = await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Creador', lastName: 'Público Ensayo', email, password, demoConsent: true })
     assert.equal(registered.status, 201)
     userId = (await registered.json() as { id: string }).id
     assert.match(userId, /^[a-f0-9-]{36}$/)

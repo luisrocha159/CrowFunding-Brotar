@@ -28,6 +28,10 @@ export class RegisterUserDto {
   @Matches(/\S/u)
   password!: string
 
+  @IsString()
+  @Length(1,100)
+  legalVersion!: string
+
   @Equals(true)
   demoConsent!: true
 

@@ -1,3 +1,4 @@
+import {LegalAcceptancePanel} from '../../legal/LegalAcceptancePanel'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button, ButtonLink } from '../../../shared/components/Button'
@@ -44,6 +45,7 @@ export function AccountPage() {
       <ButtonLink variant="secondary" to="/mis-guardados">Mis campañas guardadas y novedades</ButtonLink>
       {user.status === 'PENDING_VERIFICATION' && <p className={styles.accountHint}>Puedes usar las funciones básicas. Esto todavía no verifica tu identidad ni habilita pagos o publicación.</p>}
       <ContactPanel />
+      <LegalAcceptancePanel key={user.id}/>
       <ProfileForm onExpired={() => { setUser(null); setStatus('anonymous') }} onSaved={profile => setUser(current => current ? { ...current, firstName: profile.firstName, lastName: profile.lastName } : null)} />
       <details className={styles.accountAdvanced}><summary>Opciones para iniciativas y permisos</summary><p>Si quieres preparar una campaña o registrar una organización, puedes iniciar un borrador. Tu rol básico no equivale a ser una organización verificada ni a tener una campaña publicada.</p><AccountRoles /><ButtonLink variant="secondary" to="/panel-creador">Panel del creador</ButtonLink><ButtonLink variant="secondary" to="/crear-campana">Ver mis borradores</ButtonLink></details>
       {logoutError && <Message tone="error" title="No pudimos confirmar el cierre">Reintenta. No se considera cerrada la sesión hasta que el servidor la revoque.</Message>}

@@ -26,7 +26,7 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
  const reset=()=>sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash IN (${[`ip:${ip}`,...users.map(u=>`account:${u.id}`)].map(k=>`'${createHash('sha256').update('mvp-case-write:'+k).digest('hex')}'`).join(',')});`)
  const trigger='support_mail_test_'+suffix.replaceAll('-','')
  try{
-  for(let i=0;i<3;i++){const email=`support-mail-${i}-${suffix}@example.invalid`,r=await call('auth/register','',{email,password,firstName:'DEMO',lastName:'Soporte',demoConsent:true});assert.equal(r.status,201);const {id}=await r.json() as{id:string};const login=await call('auth/login','',{email,password});assert.equal(login.status,200);users.push({id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
+  for(let i=0;i<3;i++){const email=`support-mail-${i}-${suffix}@example.invalid`,r=await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',email,password,firstName:'DEMO',lastName:'Soporte',demoConsent:true});assert.equal(r.status,201);const {id}=await r.json() as{id:string};const login=await call('auth/login','',{email,password});assert.equal(login.status,200);users.push({id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
   const [owner,other,staff]=users as [typeof users[number],typeof users[number],typeof users[number]]
   sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${staff.id}',id FROM public.role WHERE code='SUPPORT';
    INSERT INTO public.campaign(id,slug,creator_user_id,title,summary,campaign_type,goal_amount,currency_code,status,published_at)

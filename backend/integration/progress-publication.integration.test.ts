@@ -25,7 +25,7 @@ test('S3-12 correcciones, retiro lógico, historial y seguimiento de recompensas
  try{
   for(let i=0;i<2;i++){
    const email=`publication-${randomUUID()}@example.invalid`,password=randomBytes(24).toString('hex')
-   const u=await json<{id:string}>(await call('auth/register','',{firstName:'Ensayo',lastName:'Novedades',email,password,demoConsent:true}),201)
+   const u=await json<{id:string}>(await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Ensayo',lastName:'Novedades',email,password,demoConsent:true}),201)
    const login=await call('auth/login','',{email,password});assert.equal(login.status,200);users.push({id:u.id,cookie:login.headers.get('set-cookie')!.split(';')[0]!})
    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${u.id}',id FROM role WHERE code='CREATOR' ON CONFLICT DO NOTHING;`)
    const c=await json<{id:string}>(await call('campaigns/drafts',users[i]!.cookie,{title:'Ensayo de seguimiento publicado',summary:'Datos sintéticos para novedades y recompensas',campaignType:'DONATION'}),201);campaigns.push(c.id)

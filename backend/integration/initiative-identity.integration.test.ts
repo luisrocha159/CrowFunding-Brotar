@@ -31,7 +31,7 @@ test('borradores PostgreSQL/HTTP: reintentos atómicos, rutas retiradas, propied
   })
   const account = async (name: string) => {
     const email = `identity-${name}-${suffix}@example.invalid`, password = `Ensayo con Ñ ${suffix} protegido`
-    const created = await call('auth/register','',{ firstName: 'Ensayo', lastName: name, email, password, demoConsent: true })
+    const created = await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: name, email, password, demoConsent: true })
     assert.equal(created.status,201); const { id } = await created.json() as { id: string }; users.push(id)
     const login = await call('auth/login','',{ email,password }); assert.equal(login.status,200)
     return { id, cookie: login.headers.get('set-cookie')!.split(';')[0]! }

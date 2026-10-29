@@ -38,7 +38,7 @@ test('S3 galería/guardadas: PostgreSQL real, propiedad, concurrencia, nueva ses
   try {
     for (let index = 0; index < 2; index++) {
       const email = `s3-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
-      const user = await json<{ id: string }>(await call('auth/register', '', { firstName: 'Ensayo', lastName: 'Sprint Tres', email, password, demoConsent: true }), 201)
+      const user = await json<{ id: string }>(await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: 'Sprint Tres', email, password, demoConsent: true }), 201)
       assert.match(user.id, /^[a-f0-9-]{36}$/)
       const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)
       users.push({ id: user.id, email, password, cookie: login.headers.get('set-cookie')!.split(';')[0]! })

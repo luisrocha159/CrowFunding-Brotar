@@ -31,7 +31,7 @@ try{
  const publicOperations=['RegistrationController.checkEmail','RegistrationController.create','PasswordRecoveryController.request','PasswordRecoveryController.reset',
   'HealthController.ready','HealthController.live','PublicCampaignController.list','PublicCampaignController.find','PublicGalleryController.read','VerificationBadgeController.read']
  const sessionOperations=['SessionController.login','SessionController.logout','SessionController.me','RolesController.current']
- const publicMethods=['FileController.publicFile','ProgressController.publicUpdates','PublicAccountabilityController.list']
+ const publicMethods=['FileController.publicFile','ProgressController.publicUpdates','PublicAccountabilityController.list','LegalDocumentsController.read']
  for(const route of routes){
   const name=route.controller+'.'+route.handler
   for(const permission of route.permissions)assert.ok(Object.hasOwn(ACCESS_POLICY,permission),`${name} usa un permiso fuera de la matriz acordada`)
@@ -42,7 +42,7 @@ try{
  }
  assert.ok(routes.length>100,'Inventario incompleto')
  assert.equal(new Set(routes.map(r=>r.method+' '+r.path)).size,routes.length,'Hay rutas duplicadas')
- const value={version:'sprint3-demo-0.14',scope:'API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.',routes}
+ const value={version:'sprint3-demo-0.15',scope:'API implementada, correo operativo del MVP; condiciones provisionales del equipo integradas; aceptación general pendiente. Matriz y autorización por objeto se comprueban además en integración.',routes}
  if(process.argv.includes('--write'))writeFileSync(destination,JSON.stringify(value,null,2)+'\n')
  else assert.deepEqual(JSON.parse(readFileSync(destination,'utf8')),value,'Cambió un contrato HTTP: revisar permisos/cliente y regenerar inventario con --write.')
  console.log(`Contratos HTTP: ${routes.length} rutas verificadas, sin puerto ni conexión a PostgreSQL.`)

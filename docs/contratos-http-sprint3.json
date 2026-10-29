@@ -1,6 +1,6 @@
 {
-  "version": "sprint3-demo-0.14",
-  "scope": "API implementada, correo operativo del MVP; legal e integraciones pendientes del equipo. Matriz y autorización por objeto se comprueban además en integración.",
+  "version": "sprint3-demo-0.15",
+  "scope": "API implementada, correo operativo del MVP; condiciones provisionales del equipo integradas; aceptación general pendiente. Matriz y autorización por objeto se comprueban además en integración.",
   "routes": [
     {
       "method": "GET",
@@ -1973,6 +1973,15 @@
     },
     {
       "method": "GET",
+      "path": "/api/legal/documents",
+      "controller": "LegalDocumentsController",
+      "handler": "read",
+      "guards": [],
+      "roles": [],
+      "permissions": []
+    },
+    {
+      "method": "GET",
       "path": "/api/me/accountability/:id",
       "controller": "OwnAccountabilityController",
       "handler": "detail",
@@ -2341,6 +2350,34 @@
       "permissions": [
         "contribution.write.own"
       ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/legal",
+      "controller": "LegalAcceptanceController",
+      "handler": "status",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/me/legal",
+      "controller": "LegalAcceptanceController",
+      "handler": "accept",
+      "guards": [
+        "CaseWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
     },
     {
       "method": "GET",

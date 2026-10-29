@@ -36,7 +36,7 @@ test('semejanzas PostgreSQL/HTTP: nombres repetidos, aviso privado, decisión li
   })
   const account = async (label: string, role: string) => {
     const email = `duplicates-${label}-${suffix}@example.invalid`, password = `Ensayo seguro con Ñ ${suffix}`
-    const response = await call('auth/register', '', { firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
+    const response = await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
     assert.equal(response.status, 201)
     const { id } = await response.json() as { id: string }; users.push(id)
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`)

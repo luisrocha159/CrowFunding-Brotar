@@ -21,7 +21,7 @@ test('S2 calidad: hash conserva Ñ, representación Unicode y espacios exactos',
 })
 
 test('S2 calidad: DTO acepta español y 128 puntos de código; rechaza nombres numéricos', async () => {
-  const input = { firstName: 'Muñoz', lastName: 'Peña', email: 'ensayo@example.invalid', password: '😀'.repeat(128), demoConsent: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Muñoz', lastName: 'Peña', email: 'ensayo@example.invalid', password: '😀'.repeat(128), demoConsent: true }
   assert.deepEqual(await validate(plainToInstance(RegisterUserDto, input)), [])
   for (const patch of [{ firstName: '123' }, { firstName: 'Ana9' }, { password: '😀'.repeat(129) }, { password: ' '.repeat(15) }]) assert.ok((await validate(plainToInstance(RegisterUserDto, { ...input, ...patch }))).length)
 })

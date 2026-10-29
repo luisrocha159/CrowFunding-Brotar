@@ -34,7 +34,7 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
   })
   const account = async (role: string) => {
     const email=`s3-${role.toLowerCase()}-${suffix}@example.invalid`
-    const registered=await call('auth/register','',{ firstName:'Ensayo',lastName:'Responsabilidades',email,password,demoConsent:true })
+    const registered=await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028', firstName:'Ensayo',lastName:'Responsabilidades',email,password,demoConsent:true })
     assert.equal(registered.status,201)
     const { id }=await registered.json() as { id:string }; users.push(id)
     if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`)

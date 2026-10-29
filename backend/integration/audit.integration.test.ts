@@ -31,7 +31,7 @@ test('S3-15/16/18 PostgreSQL/HTTP: auditoría mínima, actor local, permisos, le
     ...(body===undefined?{}:{body:JSON.stringify(body)})})
   async function account(role:string) {
     const email=`audit-${role.toLowerCase()}-${suffix}@example.invalid`
-    const registered=await call('auth/register','','POST',{firstName:'Ensayo',lastName:'Auditoría',email,password,demoConsent:true});assert.equal(registered.status,201)
+    const registered=await call('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Ensayo',lastName:'Auditoría',email,password,demoConsent:true});assert.equal(registered.status,201)
     const {id}=await registered.json() as {id:string};users.push(id)
     if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
     const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200)

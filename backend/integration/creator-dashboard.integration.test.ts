@@ -25,7 +25,7 @@ test('panel del creador: paginación, totales completos, pendientes y representa
     const cookies: string[] = []
     for (let i = 0; i < 2; i++) {
       const email = `dashboard-${i}-${suffix}@example.invalid`, password = randomBytes(24).toString('hex')
-      const r = await request('auth/register', '', { firstName: 'Panel', lastName: 'Ensayo', email, password, demoConsent: true }); assert.equal(r.status, 201)
+      const r = await request('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Panel', lastName: 'Ensayo', email, password, demoConsent: true }); assert.equal(r.status, 201)
       users.push((await r.json() as { id: string }).id)
       const login = await request('auth/login', '', { email, password }); assert.equal(login.status, 200); cookies.push(login.headers.get('set-cookie')!.split(';')[0]!)
       sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${users[i]}',id FROM public.role WHERE code='CREATOR';`)

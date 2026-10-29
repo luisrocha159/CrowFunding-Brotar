@@ -27,7 +27,7 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
   try{
     const cookies:string[]=[]
     for(let i=0;i<2;i++){
-      const email=`verification-${i}-${suffix}@example.invalid`;const registration=await request('auth/register','','POST',{firstName:'Prueba',lastName:'Identidad',email,password,demoConsent:true});assert.equal(registration.status,201);users.push((await registration.json() as {id:string}).id)
+      const email=`verification-${i}-${suffix}@example.invalid`;const registration=await request('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Prueba',lastName:'Identidad',email,password,demoConsent:true});assert.equal(registration.status,201);users.push((await registration.json() as {id:string}).id)
       const login=await request('auth/login','','POST',{email,password});assert.equal(login.status,200);cookies.push(login.headers.get('set-cookie')!.split(';')[0]!)
     }
     assert.equal((await request('me/verifications')).status,401)

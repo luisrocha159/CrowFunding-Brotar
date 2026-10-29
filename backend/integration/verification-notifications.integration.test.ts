@@ -29,7 +29,7 @@ test('S2-09: correo verificado, observaciones, corrección, reenvío y avisos pr
     const accounts: { id: string; cookie: string; email: string }[] = []
     for (let i = 0; i < 2; i++) {
       const email = `s2-09-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
-      const user = await value<{ id: string }>(await request('auth/register', '', { firstName: 'DEMO', lastName: 'Corrección', email, password, demoConsent: true }), 201)
+      const user = await value<{ id: string }>(await request('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'DEMO', lastName: 'Corrección', email, password, demoConsent: true }), 201)
       users.push(user.id)
       if (i) sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${user.id}',id FROM public.role WHERE code='COMPLIANCE';`)
       const login = await request('auth/login', '', { email, password }); assert.equal(login.status, 200)

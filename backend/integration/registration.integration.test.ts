@@ -25,7 +25,7 @@ test('registro HTTP real: persistencia atómica, duplicados, teléfono y rollbac
     await app.listen(0, '127.0.0.1')
     const base = await app.getUrl()
     const post = (body: unknown) => fetch(`${base}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    const input = { firstName: 'Prueba', lastName: 'Registro', email: emails[0], password: randomBytes(24).toString('hex'), demoConsent: true }
+    const input = { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Registro', email: emails[0], password: randomBytes(24).toString('hex'), demoConsent: true }
     const response = await post(input)
     assert.equal(response.status, 201)
     const result = await response.json() as { id: string; status: string }

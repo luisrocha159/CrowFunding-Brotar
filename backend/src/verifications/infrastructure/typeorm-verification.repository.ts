@@ -1,3 +1,5 @@
+import {recordLegalAcceptance} from '../../legal/legal-record'
+import {LEGAL_VERSION} from '../../legal/domain/legal-v1-20261028'
 import {assertRepresentationSettled} from './representation-settlement'
 import { randomUUID } from 'node:crypto'
 import { Injectable } from '@nestjs/common'
@@ -141,6 +143,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await this.record(manager, userId, id, 'BEFORE_CHANGE', { policyVersion: row.submittedData.policyVersion ?? '', fields: before.fields, documents: before.documents, accepted: row.submittedData.accepted ?? false, acceptedBy: row.submittedData.acceptedBy ?? null, acceptedAt: row.submittedData.acceptedAt ?? null, resultNotes: row.resultNotes, rejectionReason: row.rejectionReason })
       for (const doc of value.documents) await manager.query(`INSERT INTO public.verification_document(verification_id,document_type_id,file_id) VALUES($1,$2,$3) ON CONFLICT(verification_id,file_id) DO NOTHING`, [id, doc.documentTypeId, doc.fileId])
       const submission = { ...value, acceptedBy: value.accepted ? userId : null, acceptedAt: value.accepted ? new Date().toISOString() : null }
+      if(submit)await recordLegalAcceptance(manager,userId,LEGAL_VERSION,'VERIFICATION',id,value.policyVersion)
       if(submit)await manager.query('UPDATE public.verification_document SET is_valid=NULL,review_notes=NULL WHERE verification_id=$1 AND file_id=ANY($2::uuid[])',[id,value.documents.map(d=>d.fileId)])
       await manager.query(`UPDATE public.verification SET submitted_data=$2::jsonb, status=CASE WHEN $3 THEN 'PENDING'::verification_status ELSE status END,
         reviewed_by=CASE WHEN $3 THEN NULL ELSE reviewed_by END,reviewed_at=CASE WHEN $3 THEN NULL ELSE reviewed_at END,

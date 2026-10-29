@@ -42,7 +42,7 @@ test('modalidad real: se conserva, omite recompensas en donación y no descarta 
   })
   const register = async (label: string) => {
     const email = `mod-${label}-${suffix}@example.invalid`
-    const created = await call('auth/register', '', 'POST', { firstName: 'Prueba', lastName: 'Modalidad', email, password, demoConsent: true })
+    const created = await call('auth/register', '', 'POST', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Modalidad', email, password, demoConsent: true })
     assert.equal(created.status, 201)
     const { id } = await created.json() as { id: string }
     ids.push(id)

@@ -34,7 +34,7 @@ test('recuperación PostgreSQL consume una vez, rechaza vencido y revoca la sesi
     const post = (path: string, body: unknown) => fetch(`${base}/api/${path}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Brotar-Request': '1', Origin: 'http://127.0.0.1:5173' }, body: JSON.stringify(body)
     })
-    const created = await post('auth/register', { firstName: 'Prueba', lastName: 'Recuperación', email, password, demoConsent: true })
+    const created = await post('auth/register', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Recuperación', email, password, demoConsent: true })
     assert.equal(created.status, 201)
     userId = (await created.json() as { id: string }).id
     const login = await post('auth/login', { email, password })

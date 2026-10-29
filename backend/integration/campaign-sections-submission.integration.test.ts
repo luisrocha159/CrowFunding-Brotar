@@ -49,7 +49,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
   })
   const register = async (label: string) => {
     const email = `santiago-${label}-${suffix}@example.invalid`
-    const registered = await call('auth/register', '', { firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
+    const registered = await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
     assert.equal(registered.status, 201)
     const { id } = await registered.json() as { id: string }
     assert.match(id, /^[a-f0-9-]{36}$/); users.push(id)

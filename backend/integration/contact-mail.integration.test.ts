@@ -29,7 +29,7 @@ test('correo integrado: titular, caducidad, reenvío, privilegios, preferencias,
  try{
   // QA conserva historial de otros ensayos; procesarlo antes de medir SOLO el fixture actual.
   for(let batch=0;batch<100;batch++){if(await mail.collect()<100)break}
-  for(let i=0;i<2;i++){const r=await request('auth/register','','POST',{firstName:'Prueba',lastName:'Correo',email:email(i),password,demoConsent:true});assert.equal(r.status,201);users.push((await r.json() as {id:string}).id);const l=await request('auth/login','','POST',{email:email(i),password});assert.equal(l.status,200);cookies.push(l.headers.get('set-cookie')!.split(';')[0]!)}
+  for(let i=0;i<2;i++){const r=await request('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Prueba',lastName:'Correo',email:email(i),password,demoConsent:true});assert.equal(r.status,201);users.push((await r.json() as {id:string}).id);const l=await request('auth/login','','POST',{email:email(i),password});assert.equal(l.status,200);cookies.push(l.headers.get('set-cookie')!.split(';')[0]!)}
   assert.equal((await request('contacts')).status,401)
   assert.equal((await request('contacts/email/request',cookies[0],'POST',undefined,{'X-Brotar-Request':''})).status,403)
   assert.equal((await request('contacts/email/preferences',cookies[0],'PUT',{enabled:'true'})).status,400)

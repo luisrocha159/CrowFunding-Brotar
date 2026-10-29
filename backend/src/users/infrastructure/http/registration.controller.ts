@@ -1,3 +1,4 @@
+import {LegalAgreementRequired} from '../../../legal/domain/legal-agreement'
 import { BadRequestException, Body, ConflictException, Controller, Header, Post, UseGuards } from '@nestjs/common'
 import { RegisterUser, RegistrationConflict, RegistrationInvalid, type RegistrationResult } from '../../application/register-user'
 import { RegisterUserDto } from './register-user.dto'
@@ -22,6 +23,7 @@ export class RegistrationController {
   async create(@Body() input: RegisterUserDto): Promise<RegistrationResult> {
     try { return await this.register.execute(input) }
     catch (error) {
+      if(error instanceof LegalAgreementRequired)throw new ConflictException(error.message)
       if (error instanceof RegistrationInvalid) throw new BadRequestException(Object.entries(error.fields).map(([field, message]) => `${field}: ${message}`))
       if (error instanceof RegistrationConflict) throw new ConflictException('No se puede registrar una cuenta con estos datos.')
       throw error

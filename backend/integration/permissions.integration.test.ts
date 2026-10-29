@@ -41,7 +41,7 @@ test('permisos y pertenencia reales: denegaciones en API, auditor en lectura y c
   })
   const register = async (label: string) => {
     const email = `perm-${label}-${suffix}@example.invalid`
-    const created = await request('auth/register', '', { firstName: 'Prueba', lastName: 'Permisos', email, password, demoConsent: true })
+    const created = await request('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Permisos', email, password, demoConsent: true })
     assert.equal(created.status, 201)
     const { id } = await created.json() as { id: string }
     assert.match(id, /^[a-f0-9-]{36}$/); ids.push(id)

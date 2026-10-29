@@ -43,7 +43,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
   })
   const register = async (label: string) => {
     const email = `cat-${label}-${suffix}@example.invalid`
-    const created = await call('auth/register', '', 'POST', { firstName: 'Prueba', lastName: 'Catálogo', email, password, demoConsent: true })
+    const created = await call('auth/register', '', 'POST', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Prueba', lastName: 'Catálogo', email, password, demoConsent: true })
     assert.equal(created.status, 201)
     const { id } = await created.json() as { id: string }
     ids.push(id)

@@ -24,7 +24,7 @@ test('S3-06 PostgreSQL/HTTP: consulta, filtros UTC, totales exactos, páginas, C
   const call=(path: string,cookie='',body?: unknown)=>fetch(`${base}/api/${path}`,{method:body===undefined?'GET':'POST',headers:{Connection:'close',Cookie:cookie,'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173'},...(body===undefined?{}:{body:JSON.stringify(body)})})
   async function account(role: string) {
     const email=`finance-${role.toLowerCase()}-${suffix}@example.invalid`
-    const response=await call('auth/register','',{firstName:'Ensayo',lastName:'Finanzas',email,password,demoConsent:true});assert.equal(response.status,201)
+    const response=await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Ensayo',lastName:'Finanzas',email,password,demoConsent:true});assert.equal(response.status,201)
     const {id}=await response.json() as {id:string};users.push(id)
     if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
     const login=await call('auth/login','',{email,password});assert.equal(login.status,200)

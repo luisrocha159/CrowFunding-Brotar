@@ -31,7 +31,7 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
  const users:{id:string;cookie:string}[]=[],cases:string[]=[];let organizationId=''
  const bAccountHeld=gate(),resumeVerification=gate(),aAccountHeld=gate(),restrictionRequestedB=gate(),membershipHasOrganization=gate(),membershipRequestedAccounts=gate()
  try{
-  for(let i=0;i<3;i++){const email=`parties-lock-${i}-${suffix}@example.invalid`,registered=await call('auth/register','','POST',{email,password,firstName:'DEMO',lastName:'Concurrencia',demoConsent:true});assert.equal(registered.status,201);const{id}=await registered.json() as{id:string};const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);users.push({id,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
+  for(let i=0;i<3;i++){const email=`parties-lock-${i}-${suffix}@example.invalid`,registered=await call('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',email,password,firstName:'DEMO',lastName:'Concurrencia',demoConsent:true});assert.equal(registered.status,201);const{id}=await registered.json() as{id:string};const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);users.push({id,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
   users.sort((a,b)=>a.id.localeCompare(b.id));const [a,b,c]=users as [typeof users[number],typeof users[number],typeof users[number]]
   sql(`INSERT INTO user_role(user_id,role_id) SELECT '${a.id}',id FROM role WHERE code='ADMIN';`)
   const types=await(await call('organizations/types',a.cookie)).json() as{id:string}[]

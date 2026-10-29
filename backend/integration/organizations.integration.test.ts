@@ -47,7 +47,7 @@ test('roles y organizaciones reales: registro básico, borrador, aislamiento, ca
     const cookies:string[]=[]
     for(let i=0;i<2;i++) {
       const email=`org-${i}-${suffix}@example.invalid`
-      const registration=await request('auth/register','',{firstName:'Prueba',lastName:'Organización',email,password,demoConsent:true})
+      const registration=await request('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Prueba',lastName:'Organización',email,password,demoConsent:true})
       assert.equal(registration.status,201)
       const body=await registration.json() as {id:string;status:string}; assert.match(body.id,/^[a-f0-9-]{36}$/);ids.push(body.id)
       assert.equal(body.status,'PENDING_VERIFICATION')

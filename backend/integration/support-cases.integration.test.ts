@@ -33,7 +33,7 @@ test('S3-10: reporte real propio, evidencia privada, idempotencia, contexto y au
   try {
     for (let i = 0; i < 3; i++) {
       const email = `support-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
-      const user = await json<{ id: string }>(await call('auth/register', '', { firstName: 'Ensayo', lastName: 'Soporte', email, password, demoConsent: true }), 201)
+      const user = await json<{ id: string }>(await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: 'Soporte', email, password, demoConsent: true }), 201)
       const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)
       users.push({ id: user.id, cookie: login.headers.get('set-cookie')!.split(';')[0]! })
     }

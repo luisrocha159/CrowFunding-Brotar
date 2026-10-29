@@ -29,7 +29,7 @@ export function VerificationEditor({ detail, readOnly, onSaved, onReload }: { de
   return <article className={styles.card}><h2>{detail.typeName}{detail.organizationName ? ` · ${detail.organizationName}` : ''}</h2><p><strong>{verificationStatus(detail.status)}</strong> · Referencia {detail.id}</p>
     {detail.resultNotes && <Message tone="info" title="Observaciones">{detail.resultNotes}</Message>}{detail.rejectionReason && <Message tone="error" title="Motivo de rechazo">{detail.rejectionReason}</Message>}
     {!policy && <p>Los requisitos y el aviso de tratamiento de datos están pendientes de aprobación. Puedes consultar el historial; la captura y el envío están deshabilitados.</p>}
-    {policy && <><p className={styles.notice}>{policy.treatmentNotice}</p><p>Requisitos: versión {policy.version}.</p></>}
+    {policy && <><p className={styles.notice}>{policy.treatmentNotice}</p><p>Requisitos: versión {policy.version}. <a href="/condiciones#IDENTITY" target="_blank" rel="noopener noreferrer">Consultar reglas provisionales de identidad y privacidad (otra pestaña)</a>.</p></>}
     {error && <Message tone="error" title="Operación sin confirmar">{error} <button type="button" onClick={onReload}>Recargar caso</button></Message>}{message && <p role="status">{message}</p>}
     <form onSubmit={event=>void save(true,event)} className={styles.form}>
       {policy ? policy.fields.map(field=><FormField key={field.key} label={field.label} value={fields[field.key]??''} maxLength={field.maxLength} required={field.required} disabled={!editable||saving} onChange={event=>setFields({...fields,[field.key]:event.target.value})} />) : Object.entries(fields).map(([key,value])=><p key={key}>{key}: {value}</p>)}

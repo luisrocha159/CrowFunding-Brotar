@@ -11,7 +11,7 @@ import { RegistrationLimitGuard } from '../src/users/infrastructure/http/registr
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
 import { readEnvironment } from '../src/config/environment'
 
-const valid = { firstName: ' María ', lastName: " D'Ávila ", email: ' TEST@example.invalid ', password: 'frase de prueba de registro', demoConsent: true }
+const valid = { firstName: ' María ', lastName: " D'Ávila ", email: ' TEST@example.invalid ', password: 'frase de prueba de registro', demoConsent: true, legalVersion: 'mvp-demo-legal-1.0-20261028' }
 let received: NewUser | undefined
 let duplicate = false
 const useCase = new RegisterUser({ emailExists: async () => duplicate, create: async input => {
@@ -31,6 +31,12 @@ before(async () => {
 })
 after(async () => { await app?.close() })
 const post = (body: unknown) => fetch(`${base}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+
+test('registro no infiere aceptación: exige la versión exacta también fuera del controlador', async () => {
+  const withoutVersion = { ...valid }; delete (withoutVersion as Partial<typeof valid>).legalVersion
+  await assert.rejects(useCase.execute(withoutVersion), /Datos inválidos/)
+  const stale = {...valid,legalVersion:'versión-anterior'}; await assert.rejects(useCase.execute(stale), /Datos inválidos/)
+})
 
 test('registro HTTP valida campos, teléfono en pareja y rechaza atributos no admitidos', async () => {
   for (const change of [

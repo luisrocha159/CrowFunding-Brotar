@@ -26,7 +26,7 @@ test('S3-25: acceso y agregados del panel por responsabilidad sin filtrar datos 
  try{
   assert.equal((await call('administration/dashboard')).status,401)
   for(const role of ['REGISTERED_USER','CREATOR','SPONSOR',...Object.keys(expected)]){
-   const email=`dash-${role}-${suffix}@example.invalid`,r=await call('auth/register','',{firstName:'DEMO',lastName:'Panel',email,password,demoConsent:true});assert.equal(r.status,201);const {id}=await r.json() as{id:string};users.push(id)
+   const email=`dash-${role}-${suffix}@example.invalid`,r=await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'DEMO',lastName:'Panel',email,password,demoConsent:true});assert.equal(r.status,201);const {id}=await r.json() as{id:string};users.push(id)
    if(role!=='REGISTERED_USER')admin(`INSERT INTO public.user_role(user_id,role_id) SELECT '${id}',id FROM public.role WHERE code='${role}';`)
    const login=await call('auth/login','',{email,password});assert.equal(login.status,200);const cookie=login.headers.get('set-cookie')!.split(';')[0]!
    const result=await call('administration/dashboard',cookie);assert.equal(result.status,expected[role]?200:403,`${role} accede según responsabilidad`)

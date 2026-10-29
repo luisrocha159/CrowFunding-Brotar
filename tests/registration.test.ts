@@ -28,7 +28,7 @@ test('cliente envía solo contrato permitido, normaliza datos y no envía confir
     assert.equal(url, '/api/auth/register')
     assert.equal(init?.credentials, 'omit')
     assert.equal(init?.redirect, 'error')
-    assert.deepEqual(JSON.parse(String(init?.body)), { firstName: 'María', lastName: "D'Ávila", email: 'prueba@example.invalid', password: values.password, demoConsent: true })
+    assert.deepEqual(JSON.parse(String(init?.body)), { firstName: 'María', lastName: "D'Ávila", email: 'prueba@example.invalid', password: values.password, demoConsent: true, legalVersion:'mvp-demo-legal-1.0-20261028' })
     return Response.json({ id: '00000000-0000-4000-8000-000000000001', status: 'PENDING_VERIFICATION' }, { status: 201 })
   }) as typeof fetch)
   assert.equal(result.status, 'PENDING_VERIFICATION')

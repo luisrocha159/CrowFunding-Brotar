@@ -1,3 +1,4 @@
+import {recordLegalAcceptance} from '../../../legal/legal-record'
 import { randomUUID } from 'node:crypto'
 import { Injectable } from '@nestjs/common'
 import { QueryFailedError } from 'typeorm'
@@ -26,6 +27,7 @@ export class TypeormRegistrationRepository implements UserRegistrationRepository
         const assigned: { id: string }[] = await manager.query(`INSERT INTO public.user_role(user_id, role_id)
           SELECT $1, id FROM public.role WHERE code='REGISTERED_USER' AND is_internal=false RETURNING id`, [id])
         if (assigned.length !== 1) throw new Error('Catálogo de rol básico no disponible.')
+        await recordLegalAcceptance(manager,id,input.legalVersion!,'REGISTRATION')
         await setAuditActor(manager,id)
         await recordAudit(manager,id,'CREATE','app_user',id)
       })
