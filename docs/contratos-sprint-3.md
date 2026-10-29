@@ -1,4 +1,20 @@
-# Contratos del Sprint 3 · 0.13 · RicardoDev local
+# Contratos del Sprint 3 · 0.14 · RicardoDev local
+
+## Extensión 0.14 · Cierre de S3-12/13/14 · 28/10/2026
+
+**39 migraciones y 212 rutas**. [Reglas ADR-015](decisiones/ADR-015-cierre-avances-rendicion-colaboradores.md) y [criterios, pruebas y recorridos](cierre-s312-314-2026-10-28.md). Sustituye las diferencias funcionales abiertas de 0.13; legal y aceptación integral siguen pendientes.
+
+- Corrección `PUT /api/campaigns/:id/updates/:updateId/publication`: devuelve sucesora con UUID nueva y `supersedesId`; original conserva `supersededById` en consulta privada. Reintento idéntico recupera sucesora, incompatible 409. Historial paginado abarca la cadena. Público/feed excluyen antecesores y retirados.
+- `GET /api/admin/campaign-publications`: página de 20, filtro opcional campaignId UUID, lectura `campaign.review.read`. `PUT /api/admin/campaign-publications/:campaignId/:updateId/withdraw`: `campaign.publish`, sesión/origen/cuota, `{revision,reason,confirmed:true}`; retiro lógico sin alterar finanzas.
+- Rendición `SAVE_DRAFT`: mes calendario terminado, primer inicio recortado a ejecución, documento único por mes, gastos dentro del período y sin superposición. Legados conservan límites originales y `reportingMonth:null`; una revisión previa parcial mensual debe completar su mes antes de presentar/aprobar.
+- `POST /api/me/accountability/:id/publications`: `{reportId,requestKey,reason,publishConsent:true}`. Titular/representante CREATOR vigente, informe aprobado actual, origen obligatorio y cuota. Confirmación `{reportId,status:'PUBLISHED'}`; reintento idéntico idempotente y clave incompatible 409.
+- `GET /api/campaigns/public/:id/accountability?page`: anónimo, campaña previamente pública, página de 20 resúmenes explícitos no retirados. Campos exactos: reportId, reportKind (`MONTHLY|LEGACY|FINAL`), isFinal, periodLabel, periodStart, periodEnd, narrative, varianceExplanation, fundsReceived, fundsSpent, balance, currency, comparison, indicators, publishedAt. Importes decimales string; balance puede ser negativo por uso de saldo anterior. Ningún documento, destino o identificador personal. Final rotulado acumulativo.
+- `PUT /api/admin/accountability/:id/publications/:reportId/withdraw`: `campaign.lifecycle.manage`, `{requestKey,reason,expectedVersion:1,confirmed:true}`, origen obligatorio y cuota. Diario separado de aprobación financiera; snapshot permanece inmutable. No se vuelve a publicar un resumen retirado con otra clave.
+- `PUT /api/me/organizations/:id/members`: ADD MEMBER/ADMIN o CHANGE→ADMIN responde `{id,version,representationChanged:false,invitationId,status:'INVITED'}`; no crea membresía. Conserva las demás operaciones y añade cuota compartida. Consumir la confirmación, sin anunciar alta efectiva antes de aceptación.
+- `GET /api/me/organization-invitations?page&organizationId?`: bandeja propia/gestión autorizada, eventos y allowedActions, 20 por página. `PUT /api/me/organization-invitations/:id`: `{action:ACCEPT|DECLINE|CANCEL,expectedVersion:string,reason,confirmed:true}`. Cuenta/rol/propiedad/origen/cuota, versión y plazo de siete días; revalidación tras bloqueos y transición condicional atómica. ACK `{id,status,version}`; versión resuelta 409, ajena 404, AUDITOR no escribe.
+
+Las notas siguientes son cortes históricos.
+
 
 ## Extensión 0.13 · Integración Santiago/Ricardo/Alison · 28/10/2026
 

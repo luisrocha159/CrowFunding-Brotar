@@ -26,3 +26,11 @@ test('resultados respetan la unidad persistida: porcentajes hasta100 y personas 
  assert.deepEqual(check({...valid,indicators:[{id,achievedValue:1.5}]},{[id]:'ha'}),{})
  assert.deepEqual(check({...valid,indicators:[{id,achievedValue:100}]},{[id]:'%'}),{})
 })
+
+
+test('migraciones del cierre rechazan down destructivo con el contrato de error establecido',async()=>{
+ const {PublicationSuccession1793145600000}=await import('../src/shared/infrastructure/database/migrations/1793145600000-PublicationSuccession')
+ const {MonthlyPublicAccountability1793145600001}=await import('../src/shared/infrastructure/database/migrations/1793145600001-MonthlyPublicAccountability')
+ const {OrganizationInvitations1793145600002}=await import('../src/shared/infrastructure/database/migrations/1793145600002-OrganizationInvitations')
+ for(const migration of [new PublicationSuccession1793145600000(),new MonthlyPublicAccountability1793145600001(),new OrganizationInvitations1793145600002()])await assert.rejects(()=>migration.down(),/no se revierte automáticamente/)
+})

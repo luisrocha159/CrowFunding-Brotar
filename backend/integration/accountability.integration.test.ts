@@ -42,6 +42,7 @@ test('S3-13 HTTP/PostgreSQL: borradores, períodos, revisión independiente, evi
   assert.equal((await call(own)).status,401);assert.equal((await call(own,other.cookie)).status,403)
   for(const origin of [null,'https://foreign.invalid'])assert.equal((await call(`${own}/actions`,owner.cookie,payload('SAVE_DRAFT',draft),'POST',origin)).status,403)
   for(const patch of [{fundsReceived:'999.00'},{periodStart:'2026-02-30'},{periodStart:'2000-01-01'},{periodEnd:'2999-01-01'},{expenses:[{...draft.expenses[0],amount:'1.005'}]},{expenses:[{...draft.expenses[0],fileIds:[wrong]}]},{expenses:[{...draft.expenses[0],fileIds:[publicFile]}]}])assert.equal((await act('SAVE_DRAFT',{...draft,...patch})).status,400,JSON.stringify(patch))
+  assert.equal((await act('SAVE_DRAFT',{...draft,periodStart:today.slice(0,7)+'-01',periodEnd:today,expenses:[]})).status,400,'El mes abierto no se puede rendir ni sellar anticipadamente')
   assert.equal((await act('SAVE_DRAFT',{...draft,periodEnd:start})).status,400,'Un informe nuevo cubre el mes calendario')
   state=await json<State>(await act('SAVE_DRAFT',draft),201);assert.equal(state.reports[0]!.fundsReceived,'80.20');assert.equal((await act('SUBMIT_REPORT',{documentId})).status,409,'No se presenta sin evidencia')
   state=await json<State>(await call(own,owner.cookie));assert.equal(state.reports[0]!.status,'DRAFT')
@@ -63,9 +64,9 @@ test('S3-13 HTTP/PostgreSQL: borradores, períodos, revisión independiente, evi
   for(const origin of [null,'https://foreign.invalid']){budget();assert.equal((await call(`${own}/publications`,owner.cookie,publicBody,'POST',origin)).status,403)}
   budget();assert.equal((await call(`${own}/publications`,owner.cookie,publicBody)).status,201)
   budget();assert.equal((await call(`${own}/publications`,owner.cookie,publicBody)).status,201,'Reintento idempotente')
-  const summary=await json<{total:number;items:Record<string,unknown>[]}>(await call(publicPath));assert.equal(summary.total,1);assert.equal(summary.items[0]!.reportId,publicReport);assert.equal(summary.items[0]!.fundsSpent,'30.10')
+  const summary=await json<{total:number;items:Record<string,unknown>[]}>(await call(publicPath));assert.equal(summary.total,1);assert.equal(summary.items[0]!.reportId,publicReport);assert.equal(summary.items[0]!.fundsSpent,'30.10');assert.equal(summary.items[0]!.reportKind,'MONTHLY')
   assert.deepEqual(summary.items[0]!.comparison,[{category:sql(`SELECT name FROM expense_category WHERE id='${category}'`),planned:'0.00',spent:'30.10'}])
-  assert.deepEqual(Object.keys(summary.items[0]!).sort(),['reportId','isFinal','periodLabel','periodStart','periodEnd','narrative','varianceExplanation','fundsReceived','fundsSpent','balance','currency','comparison','indicators','publishedAt'].sort())
+  assert.deepEqual(Object.keys(summary.items[0]!).sort(),['reportKind','reportId','isFinal','periodLabel','periodStart','periodEnd','narrative','varianceExplanation','fundsReceived','fundsSpent','balance','currency','comparison','indicators','publishedAt'].sort())
   for(const secret of [file,owner.id,reviewer.id,accountId,why])assert.ok(!JSON.stringify(summary).includes(secret),'No exponer documentos, cuentas ni motivos privados')
   const withdrawBody={requestKey:randomUUID(),reason:why,confirmed:true,expectedVersion:1}
   budget();assert.equal((await call(`${admin}/publications/${publicReport}/withdraw`,finance.cookie,withdrawBody,'PUT')).status,403)
@@ -141,6 +142,21 @@ test('S3-13 HTTP/PostgreSQL: borradores, períodos, revisión independiente, evi
   budget();assert.equal((await call(`admin/campaign-closure/${institutional}/actions`,reviewer.cookie,{action:'APPROVE_FINAL',expectedVersion:referenceFinal.version,requestKey:randomUUID(),reason:why,demoConsent:true,data:{reportId:referenceFinal.report.id}})).status,201)
   const institutionCycle=await json<{version:number;closeBlockers:string[]}>(await call(`admin/campaign-cycle/${institutional}`,reviewer.cookie));assert.deepEqual(institutionCycle.closeBlockers,[]);budget();assert.equal((await call(`admin/campaign-cycle/${institutional}/actions`,reviewer.cookie,{action:'CLOSE',expectedVersion:institutionCycle.version,requestKey:randomUUID(),reason:why,demoConsent:true})).status,201)
 
+  // Legacy reports keep arbitrary old bounds without being silently relabeled as monthly.
+  const legacyCampaign=randomUUID(),legacyDocument=randomUUID(),legacyReport=randomUUID();campaigns.push(legacyCampaign)
+  const legacyStart=sql(`SELECT ('${execution}'::date+3)::text`),legacyEnd=sql(`SELECT ('${execution}'::date+8)::text`)
+  sql(`INSERT INTO campaign(id,slug,title,campaign_type,creator_user_id,status,published_at,goal_amount,currency_code,funding_model) VALUES('${legacyCampaign}','legacy-${legacyCampaign}','DEMO Rendición histórica','DONATION','${owner.id}','IN_EXECUTION',now(),100,'BOB','ALL_OR_NOTHING');INSERT INTO brotar_extension.campaign_cycle(campaign_id,execution_started_at,outcome) VALUES('${legacyCampaign}','${execution} 12:00:00-04','EXECUTION_ELIGIBLE');INSERT INTO accountability_report(id,campaign_id,period_label,period_start,period_end,is_final,status,funds_received,funds_spent,currency_code,variance_explanation,narrative) VALUES('${legacyReport}','${legacyCampaign}','Período histórico parcial','${legacyStart}','${legacyEnd}',false,'DRAFT',0,0,'BOB','Sin variaciones en este informe histórico.','Resultados anteriores al calendario mensual.');INSERT INTO brotar_extension.accountability_document(id,campaign_id,current_report_id,created_by) VALUES('${legacyDocument}','${legacyCampaign}','${legacyReport}','${owner.id}');INSERT INTO brotar_extension.accountability_revision(report_id,document_id,version) VALUES('${legacyReport}','${legacyDocument}',1);INSERT INTO brotar_extension.accountability_state(campaign_id,version) VALUES('${legacyCampaign}',2);`)
+  let legacyState=await json<State>(await call(`me/accountability/${legacyCampaign}`,owner.cookie))
+  const legacyData={documentId:legacyDocument,periodLabel:'Período histórico parcial',periodStart:legacyStart,periodEnd:legacyEnd,narrative:'Resultados históricos aclarados sin cambiar sus fechas.',varianceExplanation:'Sin variaciones en los importes históricos guardados.',expenses:[]}
+  const legacyAct=async(action:string,data:unknown,actor=owner)=>{budget();return call(`${actor===owner?'me':'admin'}/accountability/${legacyCampaign}/actions`,actor.cookie,{action,data,requestKey:randomUUID(),reason:why,demoConsent:true,expectedVersion:legacyState.version})}
+  assert.equal((await legacyAct('SAVE_DRAFT',{...legacyData,periodEnd:end})).status,400,'No se mueve el período del informe legado')
+  legacyState=await json<State>(await legacyAct('SAVE_DRAFT',legacyData),201)
+  sql(`UPDATE brotar_extension.accountability_document SET reporting_month='${today.slice(0,7)}' WHERE id='${legacyDocument}';`)
+  assert.equal((await legacyAct('SUBMIT_REPORT',{documentId:legacyDocument})).status,400,'Un borrador mensual parcial previo no se presenta después sin completar el mes')
+  sql(`UPDATE brotar_extension.accountability_document SET reporting_month=NULL WHERE id='${legacyDocument}';`)
+  legacyState=await json<State>(await legacyAct('SUBMIT_REPORT',{documentId:legacyDocument}),201);legacyState=await json<State>(await legacyAct('APPROVE_REPORT',{documentId:legacyDocument},reviewer),201)
+  budget();assert.equal((await call(`me/accountability/${legacyCampaign}/publications`,owner.cookie,{reportId:legacyState.reports[0]!.id,requestKey:randomUUID(),reason:why,publishConsent:true})).status,201)
+  const legacyPublic=await json<{items:{reportKind:string;periodStart:string;periodEnd:string}[]}>(await call(`campaigns/public/${legacyCampaign}/accountability`));assert.equal(legacyPublic.items[0]!.reportKind,'LEGACY');assert.equal(legacyPublic.items[0]!.periodStart,legacyStart);assert.equal(legacyPublic.items[0]!.periodEnd,legacyEnd)
  }finally{
   await app.close();if(oldDemo===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=oldDemo
   removeDemoIdentityFixtures(sql,users.map(u=>u.id))

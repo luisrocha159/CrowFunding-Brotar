@@ -33,9 +33,9 @@ export class PublicAccountabilityRepository {
 
   const [count]=await m.query('SELECT count(*)::int AS total FROM brotar_extension.accountability_publication WHERE campaign_id=$1 AND withdrawn_at IS NULL',[id])
 
-  const rows=await m.query('SELECT snapshot,published_at::text AS "publishedAt" FROM brotar_extension.accountability_publication WHERE campaign_id=$1 AND withdrawn_at IS NULL ORDER BY published_at DESC,report_id LIMIT 20 OFFSET $2',[id,(page-1)*20])
+  const rows=await m.query(`SELECT p.snapshot,p.published_at::text AS "publishedAt",CASE WHEN r.is_final THEN 'FINAL' WHEN d.reporting_month IS NOT NULL THEN 'MONTHLY' ELSE 'LEGACY' END AS "reportKind" FROM brotar_extension.accountability_publication p JOIN public.accountability_report r ON r.id=p.report_id LEFT JOIN brotar_extension.accountability_document d ON d.current_report_id=r.id WHERE p.campaign_id=$1 AND p.withdrawn_at IS NULL ORDER BY p.published_at DESC,p.report_id LIMIT 20 OFFSET $2`,[id,(page-1)*20])
 
-  return{items:rows.map((row:{snapshot:object;publishedAt:string})=>({...row.snapshot,publishedAt:row.publishedAt})),total:count.total,page,pageSize:20}
+  return{items:rows.map((row:{snapshot:Record<string,unknown>;publishedAt:string;reportKind:string})=>({...row.snapshot,reportKind:row.snapshot.reportKind??row.reportKind,publishedAt:row.publishedAt})),total:count.total,page,pageSize:20}
 
  })}
 
@@ -56,7 +56,7 @@ export class PublicAccountabilityRepository {
 
    const [old]=await m.query('SELECT report_id,request_hash FROM brotar_extension.accountability_publication_event WHERE request_key=$1',[key]);if(old){if(old.report_id!==reportId||old.request_hash!==hash)throw new ConflictException('La clave pertenece a otra operación.');return{reportId,status:withdraw?'WITHDRAWN':'PUBLISHED'}}
 
-   const [r]=await m.query(`SELECT r.id,r.is_final AS "isFinal",r.status,r.period_label AS "periodLabel",r.period_start::text AS "periodStart",r.period_end::text AS "periodEnd",r.narrative,r.variance_explanation AS "varianceExplanation",r.funds_received::text AS "fundsReceived",r.funds_spent::text AS "fundsSpent",r.balance::text AS balance,trim(r.currency_code) AS currency FROM public.accountability_report r WHERE r.id=$1 AND r.campaign_id=$2 FOR SHARE OF r`,[reportId,id]);if(!r)throw new NotFoundException('Informe no disponible.')
+   const [r]=await m.query(`SELECT r.id,r.is_final AS "isFinal",r.status,(SELECT d.reporting_month FROM brotar_extension.accountability_document d WHERE d.current_report_id=r.id) AS "reportingMonth",r.period_label AS "periodLabel",r.period_start::text AS "periodStart",r.period_end::text AS "periodEnd",r.narrative,r.variance_explanation AS "varianceExplanation",r.funds_received::text AS "fundsReceived",r.funds_spent::text AS "fundsSpent",r.balance::text AS balance,trim(r.currency_code) AS currency FROM public.accountability_report r WHERE r.id=$1 AND r.campaign_id=$2 FOR SHARE OF r`,[reportId,id]);if(!r)throw new NotFoundException('Informe no disponible.')
 
    const [pub]=await m.query('SELECT version,withdrawn_at FROM brotar_extension.accountability_publication WHERE report_id=$1 FOR UPDATE',[reportId])
 
@@ -82,7 +82,7 @@ export class PublicAccountabilityRepository {
 
     const indicators=await m.query(`SELECT name,unit,target_value::text AS expected,achieved_value::text AS achieved FROM public.campaign_impact_indicator WHERE campaign_id=$1 ORDER BY display_order,id`,[id])
 
-    snapshot={reportId:r.id,isFinal:r.isFinal,periodLabel:r.periodLabel,periodStart:r.periodStart,periodEnd:r.periodEnd,narrative:r.narrative,varianceExplanation:r.varianceExplanation,fundsReceived:r.fundsReceived,fundsSpent:r.fundsSpent,balance:r.balance,currency:r.currency,comparison,indicators}
+    snapshot={reportId:r.id,reportKind:r.isFinal?'FINAL':r.reportingMonth?'MONTHLY':'LEGACY',isFinal:r.isFinal,periodLabel:r.periodLabel,periodStart:r.periodStart,periodEnd:r.periodEnd,narrative:r.narrative,varianceExplanation:r.varianceExplanation,fundsReceived:r.fundsReceived,fundsSpent:r.fundsSpent,balance:r.balance,currency:r.currency,comparison,indicators}
 
    }
 
@@ -105,4 +105,3 @@ export class PublicAccountabilityRepository {
  }
 
 }
-

@@ -18,5 +18,5 @@ export class MonthlyPublicAccountability1793145600001 implements MigrationInterf
  GRANT SELECT,INSERT ON brotar_extension.accountability_publication,brotar_extension.accountability_publication_event TO brotar_app;
  GRANT UPDATE(withdrawn_by,withdrawn_at,version) ON brotar_extension.accountability_publication TO brotar_app;
  REVOKE UPDATE,DELETE ON brotar_extension.accountability_publication_event FROM brotar_app;`)}
- async down():Promise<void>{throw new Error('La rendición pública y sus meses no se revierten automáticamente; conservar consentimientos e historial.')}
+ async down():Promise<void>{throw new Error('El historial de rendición pública no se revierte automáticamente; conservar consentimientos e historial.')}
 }

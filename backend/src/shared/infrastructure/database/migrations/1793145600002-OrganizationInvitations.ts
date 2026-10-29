@@ -17,5 +17,5 @@ export class OrganizationInvitations1793145600002 implements MigrationInterface 
  GRANT SELECT,INSERT ON brotar_extension.organization_invitation,brotar_extension.organization_invitation_event TO brotar_app;
  GRANT UPDATE(status,version,resolved_at) ON brotar_extension.organization_invitation TO brotar_app;
  REVOKE UPDATE,DELETE ON brotar_extension.organization_invitation_event FROM brotar_app;`)}
- async down():Promise<void>{throw new Error('Las invitaciones y aceptaciones no se revierten automáticamente; conservar el historial de colaboración.')}
+ async down():Promise<void>{throw new Error('El historial de invitaciones y aceptaciones no se revierte automáticamente; conservar el historial de colaboración.')}
 }

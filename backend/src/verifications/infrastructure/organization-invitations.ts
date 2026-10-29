@@ -47,6 +47,12 @@ export class OrganizationInvitations {
    assertInvitationPending(i,input.expectedVersion)
    if(!(await this.actions(m,actor,i)).includes(input.action))throw new ForbiddenException('Solo el destinatario acepta o rechaza; el remitente o la gestión cancela.')
    if(['SUSPENDED','CLOSED'].includes(org.status)&&input.action==='ACCEPT')throw new ConflictException('La organización no permite incorporar colaboradores.')
+   const liveAcceptance=async()=>{
+    const [live]=await m.query(`SELECT status,version,expires_at<=clock_timestamp() AS expired FROM brotar_extension.organization_invitation WHERE id=$1`,[id]);assertInvitationPending(live,input.expectedVersion)
+    await partyActor(m,actor,false);await partyActor(m,i.invitedBy,false)
+    const [authority]=await m.query(`SELECT id FROM public.organization_member WHERE organization_id=$1 AND user_id=$2 AND organization_role::text=ANY($3::text[]) AND ${current}`,[org.id,i.invitedBy,i.role==='ADMIN'?['OWNER']:['OWNER','ADMIN','LEGAL_REPRESENTATIVE']])
+    if(!authority)throw new ConflictException('La autoridad del remitente venció durante la operación. Solicita una nueva invitación.')
+   }
    await setAuditActor(m,actor)
    if(input.action==='ACCEPT'){
     await assertRepresentationSettled(m,org.id);await partyActor(m,i.invitedBy,false);await partyActor(m,i.targetUserId,false)
@@ -55,15 +61,15 @@ export class OrganizationInvitations {
     const targets=await m.query(`SELECT id,organization_role AS role FROM public.organization_member WHERE organization_id=$1 AND user_id=$2 AND ${current} FOR UPDATE`,[org.id,actor]),target=targets[0]
     if(targets.length>1||(i.currentMemberId?target?.id!==i.currentMemberId||target.role!=='MEMBER':Boolean(target)))throw new ConflictException('La membresía cambió desde la invitación. Cancélala y solicita una nueva.')
     // Recheck after the membership lock; an expired account must not acquire authority.
-    await partyActor(m,actor,false);await partyActor(m,i.invitedBy,false)
+    await liveAcceptance()
     if(target){await m.query('UPDATE public.organization_member SET left_at=clock_timestamp() WHERE id=$1',[target.id]);await recordAudit(m,actor,'UPDATE','organization_member',target.id)}
     const member=randomUUID();await m.query('INSERT INTO public.organization_member(id,organization_id,user_id,organization_role,invited_by,joined_at) VALUES($1,$2,$3,$4,$5,clock_timestamp())',[member,org.id,actor,i.role,i.invitedBy]);await recordAudit(m,actor,'CREATE','organization_member',member)
     if(target)await invalidateMembershipVerification(m,actor,org.id,input.reason)
     await m.query(`INSERT INTO brotar_extension.party_state(kind,subject_id) VALUES('ORGANIZATION',$1) ON CONFLICT DO NOTHING`,[org.id]);await partyHistory(m,actor,'ORGANIZATION',org.id,input,'ACCEPT_INVITATION',{before:targets,targetUserId:actor,role:i.role,invitationId:id})
    }
-   await partyActor(m,actor,false);if(input.action==='ACCEPT')await partyActor(m,i.invitedBy,false)
+   await partyActor(m,actor,false);if(input.action==='ACCEPT')await liveAcceptance()
    const status=input.action==='ACCEPT'?'ACCEPTED':input.action==='DECLINE'?'DECLINED':'CANCELLED'
-   await m.query('UPDATE brotar_extension.organization_invitation SET status=$2,version=version+1,resolved_at=clock_timestamp() WHERE id=$1',[id,status])
+   const resolved=await m.query(`WITH resolved AS(UPDATE brotar_extension.organization_invitation i SET status=$2,version=version+1,resolved_at=clock_timestamp() WHERE i.id=$1 AND i.status='PENDING' AND i.version=$3 AND i.expires_at>clock_timestamp() AND ($4::boolean=false OR EXISTS(SELECT 1 FROM public.organization_member inviter WHERE inviter.organization_id=i.organization_id AND inviter.user_id=i.invited_by AND inviter.organization_role::text=ANY($5::text[]) AND inviter.joined_at<=clock_timestamp() AND (inviter.left_at IS NULL OR inviter.left_at>clock_timestamp()))) RETURNING id) SELECT id FROM resolved`,[id,status,i.version,input.action==='ACCEPT',i.role==='ADMIN'?['OWNER']:['OWNER','ADMIN','LEGAL_REPRESENTATIVE']]);if(!resolved.length)throw new ConflictException('La invitación o la autoridad cambió antes de confirmar. No se concedió acceso.')
    await m.query('INSERT INTO brotar_extension.organization_invitation_event(invitation_id,version,action,actor_id,reason) VALUES($1,$2,$3,$4,$5)',[id,i.version+1,input.action,actor,input.reason.trim()]);await recordAudit(m,actor,'UPDATE','organization',org.id)
    return{id,status,version:i.version+1}
   })

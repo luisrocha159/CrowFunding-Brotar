@@ -66,7 +66,7 @@ test('resumen público: tabla de comparación e indicadores, final acumulativo y
 
  const {publicAccountabilityFrom}=await import('../src/features/campaign-progress/publicAccountabilityClient');const {PublicAccountabilityCards}=await import('../src/features/campaign-progress/PublicAccountabilityPage')
 
- const report={reportId:randomUUID(),isFinal:true,periodLabel:'Informe final',periodStart:'2026-10-01',periodEnd:today,narrative:'<script>texto</script>',varianceExplanation:'Sin variaciones públicas.',fundsReceived:'100.30',fundsSpent:'80.10',balance:'-1.00',currency:'BOB',comparison:[{category:'Materiales',planned:'90.00',spent:'80.10'}],indicators:[{name:'Árboles plantados',unit:'unidades',expected:'100',achieved:'80'}],publishedAt:'2026-10-26 12:00:00+00'}
+ const report={reportId:randomUUID(),reportKind:'FINAL',isFinal:true,periodLabel:'Informe final',periodStart:'2026-10-01',periodEnd:today,narrative:'<script>texto</script>',varianceExplanation:'Sin variaciones públicas.',fundsReceived:'100.30',fundsSpent:'80.10',balance:'-1.00',currency:'BOB',comparison:[{category:'Materiales',planned:'90.00',spent:'80.10'}],indicators:[{name:'Árboles plantados',unit:'unidades',expected:'100',achieved:'80'}],publishedAt:'2026-10-26 12:00:00+00'}
 
  const state=publicAccountabilityFrom({items:[report],total:1,page:1,pageSize:20}),html=renderToStaticMarkup(<PublicAccountabilityCards items={state.items}/>)
 
@@ -76,3 +76,12 @@ test('resumen público: tabla de comparación e indicadores, final acumulativo y
 
 })
 
+
+test('rendición legada conserva el tipo período; no presenta gastos históricos como mensuales',async()=>{
+ const {PublicAccountabilityCards}=await import('../src/features/campaign-progress/PublicAccountabilityPage')
+ const {publicAccountabilityFrom}=await import('../src/features/campaign-progress/publicAccountabilityClient')
+ const report={reportId:randomUUID(),reportKind:'LEGACY',isFinal:false,periodLabel:'Histórico de ensayo',periodStart:'2026-08-13',periodEnd:'2026-09-17',narrative:'Resultados del período histórico compartido.',varianceExplanation:'Gastos registrados antes de la periodicidad mensual.',fundsReceived:'100.30',fundsSpent:'80.10',balance:'20.20',currency:'BOB',comparison:[],indicators:[],publishedAt:'2026-10-28 12:00:00+00'}
+ const parsed=publicAccountabilityFrom({items:[report],total:1,page:1,pageSize:20}),html=renderToStaticMarkup(<PublicAccountabilityCards items={parsed.items}/>)
+ assert.match(html,/legado/i);assert.match(html,/del período/);assert.ok(!html.includes('en el mes'))
+ assert.throws(()=>publicAccountabilityFrom({items:[{...report,reportKind:'MONTHLY'}],total:1,page:1,pageSize:20}))
+})

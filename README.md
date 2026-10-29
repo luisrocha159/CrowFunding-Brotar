@@ -1,6 +1,6 @@
 # Brotar · Base integrada del equipo
 
-> **Corte local integrado · 28/10/2026 · RicardoDev:** `SantiagoDev b8de6ea` sobre nuestro `2c6d612`, conservando panel, soporte y correo. **36 migraciones y 205 rutas**. Para instalar o actualizar este corte, seguir §3 y **§39**; los conteos de §37–38 pertenecen a la entrega separada de Santiago. Sin publicación a GitHub ni cambios en DEV/Trello. Legal y aceptación integral siguen pendientes. [Revisión y diferencias de alcance](docs/revision-integracion-santiago-2026-10-28.md).
+> **Corte local vigente · 28/10/2026 · RicardoDev:** cierre de **S3-12/13/14**, sobre la integración Santiago/Ricardo/Alison. **39 migraciones y 212 rutas HTTP**. Instalación nueva §3; actualización y recorridos **§40**. Las categorías se preparan en el flujo normal. Sin push ni cambios en DEV/Trello; legal y aceptación integral pendientes. [Criterios, pruebas y demostración](docs/cierre-s312-314-2026-10-28.md).
 
 > **Ampliación local · panel y soporte · 25/10/2026:** sobre `55959ca`, el panel añade pagos, conciliación, desembolsos, devoluciones y disputas según responsabilidad; el titular puede responder a sus incidencias y recibir avisos por el canal de correo ya configurado. **32 migraciones, 182 rutas**; la instalación habitual las aplica en orden, sin pasos SQL nuevos ni variables adicionales. Frontend y backend deben actualizarse juntos. [Recorridos, validaciones y pruebas](docs/cierre-alison-panel-soporte-correo-2026-10-25.md). Solo RicardoDev local; sin push ni cambios en DEV. Legal definitivo continúa pendiente. Los bloques anteriores de integración que siguen conservan su corte de 31 migraciones.
 
@@ -94,7 +94,7 @@ No usar npm/yarn para instalar este proyecto. No mezclar gestores: conservar `bu
 
 ## 3. Primera instalación completa
 
-Estas instrucciones son para PowerShell en Windows, desde una copia nueva. Ejecuta los bloques en orden y **detente si un comando falla**. Cada integrante utiliza su base local, no la base de otro compañero.
+Estas instrucciones son para PowerShell en Windows, desde una copia nueva. El bloque A descarga la entrega publicada en DEV (Sprint 1/2). Para el incremento local de Sprint 3 de este README, conserva tu copia en RicardoDev y empieza en la instalación de dependencias; no cambies a DEV ni hagas pull de otra rama. Este incremento todavía no se ha subido. Ejecuta los bloques en orden y **detente si un comando falla**. Cada integrante utiliza su base local, no la base de otro compañero.
 
 ### A. Obtener el código
 
@@ -134,7 +134,7 @@ node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
 ```
 
-El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **catorce migraciones de RicardoDev** conservan las siete del Sprint 2 y añaden permisos por responsabilidad, integridad de pagos, reportes, auditoría/retención y simulador/conciliación DEMO. El simulador queda apagado por defecto y producción lo deniega (§28); no se crean pagos ni cuentas. La API no recibe UPDATE/DELETE de auditoría ni permiso para sobrescribir/borrar importes de recibos DEMO. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
+El instalador comprueba el hash de la versión oficial, levanta una instancia en `127.0.0.1:15433`, restaura el SQL **solo si el esquema `public` está vacío** y genera credenciales locales distintas para administrador y aplicación. Si se interrumpe, puedes repetir exactamente `install`: reconoce un esquema oficial completo, repone el rol/permisos y conserva los datos. Si detecta un esquema parcialmente distinto, se detiene y pide diagnóstico; no lo restaura encima ni borra volúmenes. Usa `brotar_db` y un rol limitado `brotar_app`; TypeORM no sincroniza ni borra el esquema automáticamente. `pnpm run check` compila antes de migrar y no invoca otro pnpm global internamente. Las **migraciones acumulativas de RicardoDev (39 en el corte local de §40)** conservan las siete del Sprint 2 y añaden permisos por responsabilidad, integridad de pagos, reportes, auditoría/retención y simulador/conciliación DEMO. El simulador queda apagado por defecto y producción lo deniega (§28); no se crean pagos ni cuentas. La API no recibe UPDATE/DELETE de auditoría ni permiso para sobrescribir/borrar importes de recibos DEMO. Las tablas de iniciativa/etapa del ensayo anterior se conservan por compatibilidad; no son requisitos de creación ni admisión. **No crean las tablas oficiales**, por eso siempre van después de `install`. La preparación S2 concede los permisos técnicos, no roles a cuentas.
 
 El SQL incluido contiene estructura y catálogos oficiales, no nuestras cuentas, contraseñas, sesiones ni borradores locales. Conserva el SHA-256 `5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88`, validado por el instalador. No editar sus saltos de línea ni reemplazarlo por un backup de una base poblada. Si recibes otra versión/hash, coordina su revisión; no evites la comprobación ni ejecutes el archivo encima de una base existente. Las categorías adicionales se cargan automáticamente con `migrate up`, sin modificar ese SQL.
 
@@ -1201,3 +1201,42 @@ Conservar `DEMO_PAYMENTS_ENABLED=true` para ensayar finanzas localmente y el ori
 Recorridos: Panel del creador → proyecto → avances/recompensas/rendición/cierre; Mi verificación → organizaciones → solicitudes de representación; Administración → personas/representación, rendición, finanzas y soporte según responsabilidad. La revisión enlazada separa lo recibido y probado de los criterios aún abiertos. Que la representación tenga tres etapas no termina por sí solo la aceptación legal ni la invitación de colaboradores ordinarios.
 
 Las pruebas con escritura solo se ejecutan en una copia QA con contenedor, puerto, configuración y almacenamiento propios. No usar `ALLOW_DB_TEST_WRITES=true` en la base personal. Este incremento permanece local y no acredita cierre global S3-19/S3-20/S3-21/S3-26 ni entrega legal S1-11.
+
+
+## 40. Cierre local S3-12, S3-13 y S3-14 · 28/10/2026
+
+Sustituye el corte de §39 para esta copia de **RicardoDev**, todavía sin publicar. Se completan correcciones de novedades con nueva referencia e historial, retiro administrativo, rendición de meses terminados con resumen público explícito e invitaciones ordinarias aceptadas por el destinatario. [Demostración y comprobaciones](docs/cierre-s312-314-2026-10-28.md), [reglas de implementación](docs/decisiones/ADR-015-cierre-avances-rendicion-colaboradores.md).
+
+**Instalación nueva:** seguir §3 completo. `install` restaura el SQL oficial únicamente en una base vacía; el comando normal `migrate up` ejecuta las 39 migraciones e incorpora los catálogos provisionales. `prepare-sprint2.mjs` termina permisos de S2. No copiar un `.env` ajeno, editar el SQL ni cargar categorías manualmente.
+
+**V2 existente:** detener la API y respaldar base/configuración/archivos fuera de Git. Conservar el `.env` propio. Desde `backend/`:
+
+```powershell
+corepack.cmd pnpm install --frozen-lockfile
+corepack.cmd pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/prepare-sprint2.mjs
+node scripts/verify-provisional-v2.mjs
+corepack.cmd pnpm run dev
+```
+
+Desde la raíz, en otra terminal:
+
+```powershell
+bun install --frozen-lockfile
+bun run check
+bun run dev
+```
+
+`status` debe listar **39 aplicadas y ninguna pendiente**. Se añaden tres sobre §39: `PublicationSuccession1793145600000`, `MonthlyPublicAccountability1793145600001`, `OrganizationInvitations1793145600002`. Una segunda ejecución no repite migraciones ni borra datos. No ejecutar `install` sobre otra configuración para actualizar ni usar `down -v` como reparación. Las categorías vienen de PostgreSQL, no de una lista fija del frontend.
+
+Mantener `DEMO_PAYMENTS_ENABLED=true` para ensayar finanzas y `PUBLIC_WEB_ORIGIN`/`CORS_ORIGINS` de la dirección del frontend, como explica §36. No activar `ALLOW_DB_TEST_WRITES` en tu instalación personal. Las pruebas de integración se ejecutan únicamente en una copia QA aislada.
+
+Recorridos nuevos:
+
+- **Avances → Gestionar publicación:** corregir crea nueva UUID enlazada y conserva el original. **Administración → Novedades publicadas:** ADMIN retira exposición; REVIEWER/AUDITOR leen.
+- **Rendición:** elegir un mes calendario terminado. El actual estará disponible el siguiente mes; para terminar la campaña antes, usar **Preparar cierre acumulativo DEMO**. El histórico legado conserva fechas. Tras revisión independiente, el titular confirma expresamente compartir un resumen; aprobado no significa público automáticamente. ADMIN puede retirar ese resumen sin cambiar sus importes/aprobación. El final acumulativo no se suma otra vez a los meses.
+- **Organizaciones → Miembros:** altas y promociones a ADMIN generan invitación, sin acceso anticipado. **Mi cuenta → Invitaciones a organizaciones:** el destinatario acepta/rechaza; vence en siete días. Bajas y demociones son inmediatas. Propiedad/representación formal conserva su circuito independiente.
+
+Frontend/API deben pertenecer a este mismo corte. Tras compilar, `node scripts/check-http-contracts.mjs` comprueba **212 rutas**, versión `sprint3-demo-0.14`. No trae cuentas sintéticas de QA ni credenciales Gmail en Git. Legal y cierre global del MVP permanecen pendientes.

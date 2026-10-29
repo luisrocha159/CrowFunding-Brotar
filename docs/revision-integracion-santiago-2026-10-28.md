@@ -76,3 +76,8 @@ corepack.cmd pnpm run test:integration
 Esas variables pertenecen al proceso de pruebas en la copia aislada, no son instrucciones para habilitar escritura de tests en la instalación personal. Los contenedores QA y sus datos se conservan fuera del repositorio para reproducir evidencia.
 
 Los ensayos con escritura apuntan exclusivamente a la copia QA en un contenedor/puerto/almacenamiento separado del original; SMTP se sustituye en las pruebas de avisos. No se envió correo real durante esta revisión ni se copiaron secretos Gmail a QA. Vite conserva el aviso conocido de bundle superior a 500 kB; el build no lo considera un fallo. No se acredita capacidad de producción, dinero real, identidad real ni aprobación legal por estas comprobaciones.
+
+
+## Seguimiento del mismo día · cierre de diferencias S3-12/13/14
+
+El diagnóstico anterior conserva lo que se recibió y los faltantes entonces. El incremento posterior de Ricardo completa sucesoras/retiro ADMIN, rendición mensual y resumen público explícito, e invitaciones ordinarias aceptadas, con pruebas negativas y concurrentes. Consultar la [evidencia de cierre](cierre-s312-314-2026-10-28.md) y ADR-015; no extrapolar este cierre a legal o aceptación global. Sin modificar Trello ni publicar a GitHub.

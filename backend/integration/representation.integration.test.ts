@@ -39,8 +39,9 @@ test('S2-07 formal representation: no early access, target consent and independe
   assert.equal((await propose('OWNERSHIP',{unexpected:'field'})).status,400)
   assert.equal((await propose('OWNERSHIP',{targetUserId:owner.id})).status,400)
   assert.equal((await propose('OWNERSHIP',{targetUserId:auditor.id})).status,403)
-  assert.equal((await call(`me/organizations/${org}/members`,owner.cookie,{action:'ADD',userId:interested.id,role:'MEMBER',expectedVersion:await version(),reason,confirmed:true},'PUT')).status,200)
-  const stale=await version();assert.equal((await call(`me/organizations/${org}/members`,owner.cookie,{action:'ADD',userId:stranger.id,role:'MEMBER',expectedVersion:stale,reason,confirmed:true},'PUT')).status,200)
+  const inviteAndAccept=async(who:typeof owner,expectedVersion=undefined as string|undefined)=>{budget();const response=await call(`me/organizations/${org}/members`,owner.cookie,{action:'ADD',userId:who.id,role:'MEMBER',expectedVersion:expectedVersion??await version(),reason,confirmed:true},'PUT');assert.equal(response.status,200);const {invitationId}=await response.json() as{invitationId:string};budget();const accepted=await call(`me/organization-invitations/${invitationId}`,who.cookie,{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true},'PUT');assert.equal(accepted.status,200,await accepted.text())}
+  await inviteAndAccept(interested)
+  const stale=await version();await inviteAndAccept(stranger,stale)
   assert.equal((await propose('OWNERSHIP',{expectedVersion:stale})).status,409)
   budget()
   const initial=await propose();assert.equal(initial.status,201);let d=await initial.json() as Detail;assert.equal(d.status,'REQUESTED');assert.equal(d.version,1)

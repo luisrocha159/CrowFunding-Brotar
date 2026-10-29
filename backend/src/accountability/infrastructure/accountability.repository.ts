@@ -89,8 +89,9 @@ export class AccountabilityRepository {
   await m.query('INSERT INTO brotar_extension.accountability_revision(report_id,document_id,version) VALUES($1,$2,$3)',[report,data.documentId,version]);await recordAudit(m,actor,'CREATE','accountability_report',report)
  }
  private async reportAction(m:EntityManager,actor:string,c:Subject,id:string,action:string){
-  const [r]=await m.query(`SELECT r.* FROM brotar_extension.accountability_document d JOIN public.accountability_report r ON r.id=d.current_report_id WHERE d.id=$1 AND d.campaign_id=$2 FOR UPDATE OF d,r`,[id,c.id]);if(!r)throw new NotFoundException('Informe no disponible.')
+  const [r]=await m.query(`SELECT r.*,d.reporting_month FROM brotar_extension.accountability_document d JOIN public.accountability_report r ON r.id=d.current_report_id WHERE d.id=$1 AND d.campaign_id=$2 FOR UPDATE OF d,r`,[id,c.id]);if(!r)throw new NotFoundException('Informe no disponible.')
   const submit=action==='SUBMIT_REPORT';if(submit?!['DRAFT','CHANGES_REQUESTED'].includes(r.status):!['SUBMITTED','IN_REVIEW'].includes(r.status))throw new LedgerConflict('El estado del informe no permite esta acción.')
+  if(r.reporting_month){const bounds=monthlyBounds(r.reporting_month,c.execution_on!,c.today);const start=r.period_start instanceof Date?r.period_start.toISOString().slice(0,10):String(r.period_start).slice(0,10),end=r.period_end instanceof Date?r.period_end.toISOString().slice(0,10):String(r.period_end).slice(0,10);if(start!==bounds.periodStart||end!==bounds.periodEnd)throw new LedgerConflict('Completa y guarda las fechas del mes terminado antes de presentar o aprobar el informe.')}
   if(!submit&&r.submitted_by===actor)throw new ForbiddenException('Otra persona debe revisar la rendición.')
   if(submit||action==='APPROVE_REPORT'){
    await m.query(`SELECT f.id FROM public.file_asset f JOIN public.file_attachment a ON a.file_id=f.id JOIN public.accountability_expense e ON e.id=a.accountability_expense_id WHERE e.report_id=$1 ORDER BY f.id FOR SHARE OF f`,[r.id])
