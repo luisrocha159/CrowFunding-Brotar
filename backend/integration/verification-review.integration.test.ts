@@ -33,7 +33,7 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
    const docs=[]
    for(const doc of policy.documents){const r=await call('files',owner.cookie,'POST',{purpose:'VERIFICATION_DOCUMENT',visibility:'PRIVATE',originalName:'DEMO.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nDEMO synthetic').toString('base64')});assert.equal(r.status,201);const{id}=await r.json() as{id:string};files.push(id);docs.push({documentTypeId:doc.documentTypeId,fileId:id})}
    const fields=Object.fromEntries(policy.fields.map(f=>[f.key,'DEMO Ejemplo ficticio']))
-   const sent=await call(`me/verifications/${value.id}`,owner.cookie,'PUT',{expectedVersion:value.version,policyVersion:policy.version,fields,documents:docs,accepted:true,submit:true});assert.equal(sent.status,200);return await sent.json() as VerificationDetail
+   const sent=await call(`me/verifications/${value.id}`,owner.cookie,'PUT',{ legalVersion:'mvp-demo-legal-1.0-20261028',expectedVersion:value.version,policyVersion:policy.version,fields,documents:docs,accepted:true,submit:true});assert.equal(sent.status,200);return await sent.json() as VerificationDetail
   }
   const detail=await capture('KYC_IDENTITY');const fileId=detail.documents[0]!.fileId
   assert.equal((await call('admin/verifications')).status,401)
@@ -57,7 +57,7 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   assert.equal((await decide(current,'REQUIRES_INFO')).status,201)
   const ownerCase=await(await call(`me/verifications/${detail.id}`,owner.cookie)).json() as VerificationDetail
   assert.equal(ownerCase.status,'REQUIRES_INFO');assert.ok(ownerCase.resultNotes)
-  const resubmit=await call(`me/verifications/${detail.id}`,owner.cookie,'PUT',{expectedVersion:ownerCase.version,policyVersion:ownerCase.policy!.version,fields:ownerCase.fields,documents:ownerCase.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:d.fileId})),accepted:true,submit:true});assert.equal(resubmit.status,200)
+  const resubmit=await call(`me/verifications/${detail.id}`,owner.cookie,'PUT',{ legalVersion:'mvp-demo-legal-1.0-20261028',expectedVersion:ownerCase.version,policyVersion:ownerCase.policy!.version,fields:ownerCase.fields,documents:ownerCase.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:d.fileId})),accepted:true,submit:true});assert.equal(resubmit.status,200)
   current=await read(detail.id);assert.equal(current.status,'PENDING')
   assert.equal((await decide(current,'IN_REVIEW')).status,201);current=await read(detail.id)
   assert.equal((await decide(current,'APPROVED')).status,201);current=await read(detail.id);assert.equal(current.status,'APPROVED');assert.ok(current.revisions.filter(r=>r.operation==='REVIEW').length>=4)

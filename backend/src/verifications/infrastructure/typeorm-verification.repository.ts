@@ -1,5 +1,5 @@
-import {recordLegalAcceptance} from '../../legal/legal-record'
-import {LEGAL_VERSION} from '../../legal/domain/legal-v1-20261028'
+import {LEGAL_HASH,recordLegalAcceptance} from '../../legal/legal-record'
+import {assertLegalAcceptance} from '../../legal/domain/legal-agreement'
 import {assertRepresentationSettled} from './representation-settlement'
 import { randomUUID } from 'node:crypto'
 import { Injectable } from '@nestjs/common'
@@ -20,7 +20,7 @@ const summary = `v.id,t.name AS "typeName",t.code AS "typeCode",v.organization_i
  v.status,v.updated_at AS "updatedAt"`
 const joined = `FROM public.verification v JOIN public.verification_type t ON t.id=v.verification_type_id LEFT JOIN public.organization o ON o.id=v.organization_id`
 const iso = (value: Date | string | null): string | null => value instanceof Date ? value.toISOString() : value
-interface CaseRow extends Omit<VerificationDetail, 'history' | 'revisions' | 'documents' | 'policy' | 'fields'> { verificationTypeId: string; submittedData: Partial<VerificationSubmission> & {acceptedBy?: string | null;acceptedAt?: string | null} }
+interface CaseRow extends Omit<VerificationDetail, 'history' | 'revisions' | 'documents' | 'policy' | 'fields'> { verificationTypeId: string; submittedData: Partial<VerificationSubmission> & {acceptedBy?: string | null;acceptedAt?: string | null;legalReceiptId?:string;legalHash?:string} }
 @Injectable()
 export class TypeormVerificationRepository implements VerificationRepository {
   constructor(private readonly database: DatabaseService) {}
@@ -82,11 +82,11 @@ export class TypeormVerificationRepository implements VerificationRepository {
     const allDocuments = await this.documents(manager, id)
     const documents = Array.isArray(row.submittedData.documents) ? allDocuments.filter(doc => row.submittedData.documents!.some(ref => ref.fileId === doc.fileId)) : allDocuments
     const history: VerificationDetail['history'] = await manager.query(`SELECT to_status AS status,changed_at AS at,reason FROM public.status_history WHERE entity_type='VERIFICATION' AND entity_id=$1 ORDER BY changed_at,id`, [id])
-    const revisions: { id: string; operation: string; recordedAt: string; snapshot: { policyVersion?: string; fields?: Record<string, string>; documents?: VerificationDocument[]; resultNotes?: string | null; rejectionReason?: string | null } }[] = await manager.query(`SELECT id,operation,recorded_at AS "recordedAt",snapshot FROM brotar_extension.verification_revision WHERE verification_id=$1 ORDER BY recorded_at,id`, [id])
+    const revisions: { id: string; operation: string; recordedAt: string; snapshot: { policyVersion?: string; fields?: Record<string, string>; documents?: VerificationDocument[]; legalVersion?:string;legalReceiptId?:string;legalHash?:string; resultNotes?: string | null; rejectionReason?: string | null } }[] = await manager.query(`SELECT id,operation,recorded_at AS "recordedAt",snapshot FROM brotar_extension.verification_revision WHERE verification_id=$1 ORDER BY recorded_at,id`, [id])
     return { id: row.id, typeName: row.typeName, typeCode: row.typeCode, organizationId: row.organizationId, organizationName: row.organizationName, status: row.status, updatedAt: iso(row.updatedAt)!, version: row.version,
       resultNotes: row.resultNotes, rejectionReason: row.rejectionReason, submittedAt: iso(row.submittedAt), policy: await this.policy(manager, row.verificationTypeId),
       fields: this.fields(row.submittedData.fields), documents, history: history.map(event => ({ ...event, at: iso(event.at)! })),
-      revisions: revisions.map(revision => ({ id: revision.id, operation: revision.operation, recordedAt: iso(revision.recordedAt)!, policyVersion: revision.snapshot.policyVersion ?? '', fields: this.fields(revision.snapshot.fields), documents: revision.snapshot.documents ?? [], resultNotes: revision.snapshot.resultNotes ?? null, rejectionReason: revision.snapshot.rejectionReason ?? null })) }
+      revisions: revisions.map(revision => ({ id: revision.id, operation: revision.operation, recordedAt: iso(revision.recordedAt)!, policyVersion: revision.snapshot.policyVersion ?? '', legalReceipt:revision.snapshot.legalReceiptId&&revision.snapshot.legalVersion&&revision.snapshot.legalHash?{id:revision.snapshot.legalReceiptId,version:revision.snapshot.legalVersion,hash:revision.snapshot.legalHash}:null, fields: this.fields(revision.snapshot.fields), documents: revision.snapshot.documents ?? [], resultNotes: revision.snapshot.resultNotes ?? null, rejectionReason: revision.snapshot.rejectionReason ?? null })) }
   }
   private fields(data: unknown): Record<string, string> {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return {}
@@ -127,6 +127,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
       const row = await this.row(manager, userId, id, true)
       if (row.version !== expectedVersion) throw new VerificationConflict()
       assertEditableVerification(row.status)
+      if(submit)assertLegalAcceptance(input.legalVersion,input.accepted)
       const value = validateSubmission(await this.policy(manager, row.verificationTypeId), input, submit)
       for (const doc of [...value.documents].sort((a,b) => a.fileId.localeCompare(b.fileId))) {
         const files: { id: string }[] = await manager.query(`SELECT f.id FROM public.file_asset f WHERE f.id=$1 AND f.scope='PRIVATE' AND f.deleted_at IS NULL
@@ -140,10 +141,9 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await this.actor(manager, userId, true)
       if (row.organizationId) await this.organization(manager, userId, row.organizationId)
       const before = await this.detailWith(manager, userId, id)
-      await this.record(manager, userId, id, 'BEFORE_CHANGE', { policyVersion: row.submittedData.policyVersion ?? '', fields: before.fields, documents: before.documents, accepted: row.submittedData.accepted ?? false, acceptedBy: row.submittedData.acceptedBy ?? null, acceptedAt: row.submittedData.acceptedAt ?? null, resultNotes: row.resultNotes, rejectionReason: row.rejectionReason })
+      await this.record(manager, userId, id, 'BEFORE_CHANGE', { legalVersion:row.submittedData.legalVersion??null,legalReceiptId:row.submittedData.legalReceiptId??null,legalHash:row.submittedData.legalHash??null,policyVersion: row.submittedData.policyVersion ?? '', fields: before.fields, documents: before.documents, accepted: row.submittedData.accepted ?? false, acceptedBy: row.submittedData.acceptedBy ?? null, acceptedAt: row.submittedData.acceptedAt ?? null, resultNotes: row.resultNotes, rejectionReason: row.rejectionReason })
       for (const doc of value.documents) await manager.query(`INSERT INTO public.verification_document(verification_id,document_type_id,file_id) VALUES($1,$2,$3) ON CONFLICT(verification_id,file_id) DO NOTHING`, [id, doc.documentTypeId, doc.fileId])
-      const submission = { ...value, acceptedBy: value.accepted ? userId : null, acceptedAt: value.accepted ? new Date().toISOString() : null }
-      if(submit)await recordLegalAcceptance(manager,userId,LEGAL_VERSION,'VERIFICATION',id,value.policyVersion)
+      const submission = { ...value, legalVersion:input.legalVersion, ...(submit?{legalReceiptId:await recordLegalAcceptance(manager,userId,input.legalVersion!,'VERIFICATION',id,value.policyVersion,row.version),legalHash:LEGAL_HASH}:{}), acceptedBy: value.accepted ? userId : null, acceptedAt: value.accepted ? new Date().toISOString() : null }
       if(submit)await manager.query('UPDATE public.verification_document SET is_valid=NULL,review_notes=NULL WHERE verification_id=$1 AND file_id=ANY($2::uuid[])',[id,value.documents.map(d=>d.fileId)])
       await manager.query(`UPDATE public.verification SET submitted_data=$2::jsonb, status=CASE WHEN $3 THEN 'PENDING'::verification_status ELSE status END,
         reviewed_by=CASE WHEN $3 THEN NULL ELSE reviewed_by END,reviewed_at=CASE WHEN $3 THEN NULL ELSE reviewed_at END,

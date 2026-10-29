@@ -41,7 +41,7 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
   const inviteC=await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:c.id,role:'MEMBER',expectedVersion:'2',reason,confirmed:true});await new OrganizationInvitations(database).act(c.id,inviteC.invitationId!,{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})
   const verificationTypes=await(await call('me/verifications/types',b.cookie)).json() as VerificationType[],type=verificationTypes.find(row=>row.code==='KYB_REPRESENTATIVE')!;assert.ok(type.policy)
   const started=await call('me/verifications',b.cookie,'POST',{verificationTypeId:type.id,organizationId});assert.equal(started.status,201);const verification=await started.json() as VerificationDetail;cases.push(verification.id)
-  const submission={policyVersion:type.policy!.version,fields:{},documents:[],accepted:false}
+  const submission={ legalVersion:'mvp-demo-legal-1.0-20261028',policyVersion:type.policy!.version,fields:{},documents:[],accepted:false}
   type Hook=(manager:EntityManager,text:string,parameters:unknown[]|undefined,execute:()=>Promise<unknown>)=>Promise<unknown>
   const instrument=(hook:Hook)=>({connection:()=>({transaction:<T>(work:(m:EntityManager)=>Promise<T>)=>source.transaction(async m=>{
    await m.query("SET LOCAL statement_timeout='8s'")

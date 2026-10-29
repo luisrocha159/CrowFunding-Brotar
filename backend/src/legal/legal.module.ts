@@ -1,3 +1,4 @@
+import {transactionRegisteredAccess} from '../roles/infrastructure/transaction-access'
 import {BadRequestException,Body,ConflictException,Controller,Get,Header,Injectable,Module,Put,Query,Req,UseGuards} from '@nestjs/common'
 import {Equals,IsString,Length} from 'class-validator'
 import {DatabaseModule} from '../shared/infrastructure/database/database.module'
@@ -22,12 +23,7 @@ export class LegalAgreements{
  async accept(actor:string,version:string,accepted:boolean){
   assertLegalAcceptance(version,accepted)
   await this.database.connection().transaction(async m=>{
-   // La cuenta se vuelve a comprobar tras la espera; no se cambia estado ni rol.
-   await m.query('SELECT id FROM public.app_user WHERE id=$1 FOR SHARE',[actor])
-   const [user]=await m.query(`SELECT 1 FROM public.app_user u WHERE u.id=$1 AND u.status IN ('ACTIVE','PENDING_VERIFICATION') AND u.deleted_at IS NULL
-    AND EXISTS(SELECT 1 FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.code='REGISTERED_USER' AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp() AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()))
-    AND NOT EXISTS(SELECT 1 FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.code='AUDITOR' AND ur.revoked_at IS NULL AND ur.granted_at<=clock_timestamp() AND (ur.expires_at IS NULL OR ur.expires_at>clock_timestamp()))`,[actor])
-   if(!user)throw new LegalAgreementRequired('Tu cuenta no permite registrar esta aceptación.')
+   await transactionRegisteredAccess(m,actor)
    await recordLegalAcceptance(m,actor,version,'ACCOUNT')
   })
   return this.status(actor)

@@ -1,3 +1,4 @@
+import {saveVerification} from '../src/features/verifications/verificationsClient'
 import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {renderToStaticMarkup} from 'react-dom/server'
@@ -21,4 +22,13 @@ test('condiciones: no envía aceptación falsa ni versión anterior',async()=>{
 test('condiciones: enlace y carga honestos, sin checkbox premarcado ni éxito anticipado',()=>{
  const html=renderToStaticMarkup(<MemoryRouter><LegalAcceptancePanel/></MemoryRouter>)
  assert.match(html,/Consultando tu aceptación/);assert.match(html,/\/condiciones/);assert.doesNotMatch(html,/Aceptación registrada/)
+})
+
+test('expediente: el cliente declara la versión legal que muestra su interfaz',async()=>{
+ const previous=globalThis.fetch
+ globalThis.fetch=async(_url,init)=>{
+  const body=JSON.parse(String(init?.body));assert.equal(body.legalVersion,LEGAL_VERSION);assert.equal(body.accepted,true)
+  return Response.json({id:'00000000-0000-4000-8000-000000000001',typeName:'Identidad',typeCode:'KYC_IDENTITY',status:'PENDING',updatedAt:LEGAL_PUBLISHED_AT,organizationId:null,organizationName:null,version:'2',fields:{},documents:[],history:[],revisions:[],resultNotes:null,rejectionReason:null,submittedAt:LEGAL_PUBLISHED_AT,policy:null})
+ }
+ try{await saveVerification('00000000-0000-4000-8000-000000000001','1',{policyVersion:'demo',legalVersion:'otra',fields:{},documents:[],accepted:true},true)}finally{globalThis.fetch=previous}
 })

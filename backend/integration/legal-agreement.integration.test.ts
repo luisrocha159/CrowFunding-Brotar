@@ -49,14 +49,23 @@ test('condiciones provisionales HTTP/PostgreSQL: textos exactos, aceptación exp
   const started=await call('me/verifications',cookie,'POST',{verificationTypeId:type.id});assert.equal(started.status,201);const detail=started.data as VerificationDetail;caseId=detail.id
   const docs=[]
   for(const d of type.policy.documents){const r=await call('files',cookie,'POST',{purpose:'VERIFICATION_DOCUMENT',visibility:'PRIVATE',originalName:'DEMO-acuerdo.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nDEMO respaldo sintetico').toString('base64')});assert.equal(r.status,201);files.push(r.data.id);docs.push({documentTypeId:d.documentTypeId,fileId:r.data.id})}
-  const submission={expectedVersion:detail.version,policyVersion:type.policy.version,fields:Object.fromEntries(type.policy.fields.map(f=>[f.key,'DEMO Participante voluntario'])),documents:docs,accepted:true,submit:true}
+  const submission={legalVersion:LEGAL_VERSION,expectedVersion:detail.version,policyVersion:type.policy.version,fields:Object.fromEntries(type.policy.fields.map(f=>[f.key,'DEMO Participante voluntario'])),documents:docs,accepted:true,submit:true}
   assert.equal((await call('me/verifications/'+caseId,cookie,'PUT',submission)).status,409)
   assert.equal((await source.query('SELECT status FROM verification WHERE id=$1',[caseId]))[0].status,'NOT_STARTED')
   assert.equal((await source.query('SELECT count(*)::int AS n FROM brotar_extension.legal_acceptance WHERE user_id=$1',[legacy]))[0].n,0)
   const accepts=await Promise.all([call('me/legal',cookie,'PUT',{version:LEGAL_VERSION,accepted:true}),call('me/legal',cookie,'PUT',{version:LEGAL_VERSION,accepted:true})]);assert.ok(accepts.every(r=>r.status===200&&r.data.accepted))
   assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.legal_acceptance WHERE user_id=$1 AND purpose='ACCOUNT'",[legacy]))[0].n,1)
-  const sent=await call('me/verifications/'+caseId,cookie,'PUT',submission);assert.equal(sent.status,200);assert.equal(sent.data.status,'PENDING')
+  const withoutSpecificVersion={...submission};delete (withoutSpecificVersion as Partial<typeof submission>).legalVersion
+  assert.equal((await call('me/verifications/'+caseId,cookie,'PUT',withoutSpecificVersion)).status,400,'No se infiere consentimiento específico de una versión no declarada.')
+  const declared={...submission,legalVersion:LEGAL_VERSION}
+  const sent=await call('me/verifications/'+caseId,cookie,'PUT',declared);assert.equal(sent.status,200);assert.equal(sent.data.status,'PENDING')
   const [receipt]=await source.query("SELECT policy_version,reference_id,document_codes,bundle_hash FROM brotar_extension.legal_acceptance WHERE user_id=$1 AND purpose='VERIFICATION'",[legacy]);assert.equal(receipt.policy_version,type.policy.version);assert.equal(receipt.reference_id,caseId);assert.deepEqual(receipt.document_codes,['IDENTITY']);assert.equal(receipt.bundle_hash,LEGAL_HASH)
+  await admin.query("UPDATE verification SET status='REQUIRES_INFO' WHERE id=$1",[caseId])
+  const revised=(await call('me/verifications/'+caseId,cookie)).data as VerificationDetail
+  assert.equal((await call('me/verifications/'+caseId,cookie,'PUT',{...declared,expectedVersion:revised.version})).status,200)
+  assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.legal_acceptance WHERE user_id=$1 AND purpose='VERIFICATION'",[legacy]))[0].n,2,'Cada reenvío legítimo conserva su propio recibo, no se descarta como duplicado.')
+  const finalDetail=(await call('me/verifications/'+caseId,cookie)).data as VerificationDetail
+  const receipts=finalDetail.revisions.filter(r=>r.operation==='SUBMIT').map(r=>r.legalReceipt);assert.equal(receipts.length,2);assert.ok(receipts.every(r=>r?.hash===LEGAL_HASH&&r.version===LEGAL_VERSION));assert.notEqual(receipts[0]?.id,receipts[1]?.id)
   assert.deepEqual((await source.query('SELECT r.code FROM user_role ur JOIN role r ON r.id=ur.role_id WHERE user_id=$1',[legacy])).map((r:{code:string})=>r.code),['REGISTERED_USER'])
   await assert.rejects(source.query('UPDATE brotar_extension.legal_acceptance SET accepted_at=now() WHERE user_id=$1',[legacy]),/permission denied/)
   await assert.rejects(source.query('DELETE FROM brotar_extension.legal_bundle'),/permission denied/)

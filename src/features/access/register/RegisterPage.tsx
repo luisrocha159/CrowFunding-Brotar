@@ -83,7 +83,7 @@ export function RegisterPage() {
     setErrors(current => ({ ...current, phoneCountryCode: next.phoneCountryCode, phoneNumber: next.phoneNumber }))
   }
   return <AccessShell title="Crea tu cuenta" subtitle="Registra tus datos en la base de pruebas de Brotar." intro="Convierte una idea en el comienzo de algo mejor"
-    notice={<><strong>Registro conectado.</strong> Estos datos sí se envían a la API y se guardan en PostgreSQL. Usa datos ficticios y una contraseña exclusiva de prueba. Puedes iniciar sesión después del registro, aunque tu cuenta siga pendiente de verificación.</>}>
+    notice={<><strong>Registro conectado.</strong> Estos datos sí se envían a la API y se guardan en PostgreSQL. Puedes usar tu correo propio para probar los mensajes; evita datos sensibles y usa una contraseña exclusiva de prueba. Puedes iniciar sesión después del registro, aunque tu cuenta siga pendiente de verificación.</>}>
     {status === 'success' ? <AccessSuccess title="Cuenta guardada en Brotar">
       <p>El usuario y su perfil se guardaron correctamente. Estado: <strong>pendiente de verificación</strong>.</p>
       <p>Ya puedes iniciar sesión, completar tu perfil y registrar una organización en borrador. Tu cuenta conserva el rol básico Usuario registrado; esto no verifica tu correo o identidad ni concede permisos de creador, patrocinador o administrador. No se envió ningún correo ni se inició una sesión automáticamente.</p>

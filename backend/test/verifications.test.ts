@@ -8,20 +8,20 @@ const policy: VerificationPolicy = {
 }
 test('política académica DEMO solo acepta campos sintéticos explícitos, nunca sustituye la legal',()=>{
  const demo={...policy,version:'mvp-demo-1.0-20261023'}
- const input={policyVersion:demo.version,fields:{name:'DEMO Persona ficticia'},documents:demo.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:'06ec727d-4664-45c9-b704-01880c7a8832'})),accepted:true}
+ const input={ legalVersion:'mvp-demo-legal-1.0-20261028',policyVersion:demo.version,fields:{name:'DEMO Persona ficticia'},documents:demo.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:'06ec727d-4664-45c9-b704-01880c7a8832'})),accepted:true}
  assert.equal(validateSubmission(demo,input).fields.name,'DEMO Persona ficticia')
  assert.throws(()=>validateSubmission(demo,{...input,fields:{name:'Persona real'}}),InvalidVerification)
  assert.throws(()=>validateSubmission(demo,{...input,accepted:false}),InvalidVerification)
 })
 const document = { documentTypeId: policy.documents[0]!.documentTypeId, fileId: '9b7c8ea5-126e-47c9-883c-f7ab30b459d8' }
 test('identidad: nunca acepta información con política ausente ni aprobación sin evidencia', () => {
-  const input = { policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
   assert.throws(() => validateSubmission(null, input), VerificationPolicyUnavailable)
   assert.throws(() => validateSubmission({ ...policy, evidenceReference: '' }, input), VerificationPolicyUnavailable)
   assert.throws(() => validateSubmission(policy, { ...input, policyVersion: 'old' }), VerificationPolicyUnavailable)
 })
 test('identidad: valida requisitos exactos y no recoge campos arbitrarios, archivos duplicados ni aceptación ausente', () => {
-  const input = { policyVersion: policy.version, fields: { name: ' Ana ' }, documents: [document], accepted: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', policyVersion: policy.version, fields: { name: ' Ana ' }, documents: [document], accepted: true }
   assert.deepEqual(validateSubmission(policy, input).fields, { name: 'Ana' })
   const invalid: VerificationSubmission[] = [
     { ...input, fields: { name: '' } }, { ...input, fields: { name: 'Ana', bankAccount: 'secret' } },
@@ -36,12 +36,12 @@ test('identidad: corrección permite únicamente casos sin enviar o con informac
 })
 
 test('identidad: datos con NUL se rechazan incluso al guardar borrador', () => {
-  const input = { policyVersion: policy.version, fields: { name: 'Ana\u0000X' }, documents: [document], accepted: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', policyVersion: policy.version, fields: { name: 'Ana\u0000X' }, documents: [document], accepted: true }
   assert.throws(() => validateSubmission(policy, input), InvalidVerification)
   assert.throws(() => validateSubmission(policy, input, false), InvalidVerification)
 })
 test('identidad: una política malformada se considera no disponible sin errores de tipo', () => {
-  const input = { policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
   const malformed = { ...policy, treatmentNotice: 42 } as unknown as VerificationPolicy
   assert.throws(() => validateSubmission(malformed, input), VerificationPolicyUnavailable)
 })
@@ -56,7 +56,7 @@ test('identidad: política se comprueba como datos desconocidos en todos sus cam
   assert.equal(approvedPolicy(policy), true)
 })
 test('identidad: rechaza sustitutos Unicode aislados y conserva Unicode válido y texto literal', () => {
-  const input = { policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
+  const input = { legalVersion:'mvp-demo-legal-1.0-20261028', policyVersion: policy.version, fields: { name: 'Ana' }, documents: [document], accepted: true }
   for (const name of ['A\uD800B', 'A\uDC00B']) assert.throws(() => validateSubmission(policy, { ...input, fields: { name } }), InvalidVerification)
   for (const name of ['Ana 🌱', '<script>alert(1)</script>']) assert.equal(validateSubmission(policy, { ...input, fields: { name } }).fields.name, name)
 })

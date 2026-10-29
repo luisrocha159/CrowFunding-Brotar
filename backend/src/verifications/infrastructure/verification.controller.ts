@@ -1,4 +1,4 @@
-import {LegalAgreementRequired} from '../../legal/domain/legal-agreement'
+import {InvalidLegalAgreement,LegalAgreementRequired} from '../../legal/domain/legal-agreement'
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, NotFoundException, Param, ParseUUIDPipe, Post, Put, Req, Res, StreamableFile, UseGuards } from '@nestjs/common'
 import { Type } from 'class-transformer'
 import { ArrayMaxSize, IsArray, IsBoolean, IsObject, IsOptional, IsString, IsUUID, Length, ValidateNested } from 'class-validator'
@@ -21,6 +21,7 @@ class VerificationDocumentDto {
 class SaveVerificationDto {
   @IsString() @Length(1,100) expectedVersion!: string
   @IsString() @Length(1,100) policyVersion!: string
+  @IsString() @Length(1,100) legalVersion!: string
   @IsObject() fields!: Record<string,string>
   @IsArray() @ArrayMaxSize(20) @ValidateNested({ each: true }) @Type(() => VerificationDocumentDto) documents!: VerificationDocumentDto[]
   @IsBoolean() accepted!: boolean
@@ -34,6 +35,7 @@ export class VerificationController {
     catch (error) {
       if(error instanceof FileUnavailable)throw new NotFoundException('Documento privado no disponible o sin integridad confirmada.')
       if(error instanceof FileAccessDenied)throw new ForbiddenException('No puedes consultar este documento.')
+      if(error instanceof InvalidLegalAgreement)throw new BadRequestException(error.message)
       if(error instanceof LegalAgreementRequired)throw new ConflictException(error.message)
       if (error instanceof VerificationForbidden) throw new ForbiddenException('Tu cuenta no permite esta operación.')
       if (error instanceof VerificationUnavailable) throw new NotFoundException('Verificación no disponible.')

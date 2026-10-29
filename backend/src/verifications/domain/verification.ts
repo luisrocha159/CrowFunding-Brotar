@@ -10,7 +10,7 @@ export interface VerificationPolicy {
   requiresAcceptance: boolean
 }
 export interface VerificationSubmission {
-  policyVersion: string; fields: Record<string, string>
+  policyVersion: string; legalVersion?: string; fields: Record<string, string>
   documents: { documentTypeId: string; fileId: string }[]; accepted: boolean
 }
 export const CAPTURE_TYPES = ['KYC_IDENTITY', 'KYB_LEGAL', 'KYB_REPRESENTATIVE'] as const
@@ -54,5 +54,5 @@ export function validateSubmission(policy: VerificationPolicy | null, input: Ver
     files.add(doc.fileId); types.add(doc.documentTypeId)
   }
   if (submitting && (policy.documents.some(doc => doc.required && !types.has(doc.documentTypeId)) || (policy.requiresAcceptance && !input.accepted))) throw new InvalidVerification()
-  return { policyVersion: policy.version, fields, documents: input.documents.map(doc => ({ documentTypeId: doc.documentTypeId, fileId: doc.fileId })), accepted: input.accepted }
+  return { ...(input.legalVersion===undefined?{}:{legalVersion:input.legalVersion}), policyVersion: policy.version, fields, documents: input.documents.map(doc => ({ documentTypeId: doc.documentTypeId, fileId: doc.fileId })), accepted: input.accepted }
 }

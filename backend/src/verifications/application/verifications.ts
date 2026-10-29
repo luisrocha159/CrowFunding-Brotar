@@ -6,7 +6,7 @@ export interface VerificationDetail extends VerificationSummary {
   version: string; resultNotes: string | null; rejectionReason: string | null; submittedAt: string | null
   policy: VerificationPolicy | null; fields: Record<string, string>; documents: VerificationDocument[]
   history: { status: string; at: string; reason: string | null }[]
-  revisions: { id: string; operation: string; recordedAt: string; policyVersion: string; fields: Record<string, string>; documents: VerificationDocument[]; resultNotes: string | null; rejectionReason: string | null }[]
+  revisions: { id: string; operation: string; recordedAt: string; policyVersion: string; legalReceipt?:{id:string;version:string;hash:string}|null; fields: Record<string, string>; documents: VerificationDocument[]; resultNotes: string | null; rejectionReason: string | null }[]
 }
 export interface PayoutSummary { id: string; organizationId: string | null; accountHolderName: string; bankName: string | null; last4: string | null; currency: string; status: string }
 export interface VerificationRepository {

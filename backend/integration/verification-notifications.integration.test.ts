@@ -52,7 +52,7 @@ test('S2-09: correo verificado, observaciones, corrección, reenvío y avisos pr
     }
     const fields = Object.fromEntries(type.policy.fields.map(f => [f.key, 'DEMO Persona de prueba']))
     const submit = async (updatedFields = fields) => {
-      detail = await value<VerificationDetail>(await request(`me/verifications/${detail.id}`, owner.cookie, { expectedVersion: detail.version, policyVersion: type.policy!.version, fields: updatedFields, documents, accepted: true, submit: true }, 'PUT'))
+      detail = await value<VerificationDetail>(await request(`me/verifications/${detail.id}`, owner.cookie, { legalVersion:'mvp-demo-legal-1.0-20261028', expectedVersion: detail.version, policyVersion: type.policy!.version, fields: updatedFields, documents, accepted: true, submit: true }, 'PUT'))
       assert.equal(detail.status, 'PENDING')
     }
     const review = async (decision: string) => {
