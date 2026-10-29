@@ -1,3 +1,5 @@
+> Corte local con condiciones provisionales: **40 migraciones**; ver README raíz §41. Instalación/migración normal incorpora textos y tablas de consentimiento, sin aceptaciones retroactivas ni cambios a políticas KYC históricas.
+
 **Corte local vigente 28/10/2026:** **39 migraciones**, RicardoDev sin publicar. Cierre S3-12/13/14: sucesión de novedades, rendición de meses terminados/resumen explícito e invitaciones aceptadas. Seguir README principal §3/§40; categorías incluidas en la preparación normal. No reinstalar SQL ni borrar volúmenes para actualizar. [Pruebas y recorridos](../../docs/cierre-s312-314-2026-10-28.md). Los cortes siguientes son históricos.
 
 **Corte integrado local 28/10/2026:** **36 migraciones**, RicardoDev sin publicar. Incluye soporte/correo y cuatro ampliaciones de Santiago; seguir README principal §3 y §39. Las categorías se preparan automáticamente; no restaurar SQL ni borrar volúmenes para actualizar. [Revisión y diferencias de alcance pendientes](../../docs/revision-integracion-santiago-2026-10-28.md). Los conteos siguientes son históricos.

@@ -8,10 +8,10 @@ Base: 116d686. Stack actual NestJS/React/PostgreSQL; sin dependencias nuevas.
 - Textos consultables, privados recibos/expedientes; no autoaprobar ni atribuir aprobación externa.
 - Migraciones preservan políticas/historial/datos; cambio legal no invalida identidades por accidente.
 
-- [ ] Documentos inmutables, dominio y pruebas rojas de versión/aceptación.
-- [ ] Migración 40, repositorio/controladores, integración registro y expedientes; pruebas PostgreSQL.
-- [ ] Páginas legales, aceptación propia, enlaces registro/verificación/cuenta; cliente y pruebas UI.
-- [ ] Regresión, revisión independiente única y correcciones verificadas; datos/instalación/README/estado local y commit sin push.
+- [x] Documentos inmutables, dominio y pruebas rojas de versión/aceptación.
+- [x] Migración 40, repositorio/controladores, integración registro y expedientes; pruebas PostgreSQL.
+- [x] Páginas legales, aceptación propia, enlaces registro/verificación/cuenta; cliente y pruebas UI.
+- [x] Regresión, revisión independiente única y correcciones verificadas; datos/instalación/README/estado local y commit sin push.
 
 ## Ledger
 - Ruling: completar con criterio propio autorizado, sin pedir otra aprobación — petición expresa de Ricardo y decisiones ya delegadas — costo: condiciones válidas solo para el ensayo del equipo, no autorización comercial.
@@ -29,3 +29,9 @@ Base: 116d686. Stack actual NestJS/React/PostgreSQL; sin dependencias nuevas.
 - Final: Ruling: comprobación visual/teclado no equivale a certificación de accesibilidad o comparación entre navegadores — no hay baseline ni auditoría axe completa — costo: esas comprobaciones transversales siguen en S3-19.
 - Final: Ruling: no atribuir auditoría integral de módulos previos a esta revisión — se prueba compatibilidad mediante regresión y controles existentes — costo: no se garantiza ausencia de cualquier vulnerabilidad en todo el producto.
 - Final: Ruling: DBA/infraestructura comprometidos fuera de la resistencia acreditada — la app impide escritura directa de textos/recibos y comprueba huellas, pero depende de administradores y secretos protegidos — costo: una toma privilegiada exige controles operativos adicionales.
+
+- Consolidado final:252 frontend+239 backend+8 ADMIN+52 integración completa=551 distintas;40 migraciones,215 rutas,114 tablas anteriores preservadas y cero aceptaciones retroactivas. Las tres correcciones Important pasaron RED→GREEN y la suite completa;32/36 alcances locales. No se suman repeticiones ni se publican cambios.
+
+- Final: fixed versión específica — legal-agreement.integration.test RED200→GREEN400, frontend legal.test declara versión visible, suite52/52.
+- Final: fixed recibo por reenvío — legal-agreement.integration.test RED1→GREEN2 recibos y referencias distintas, suite52/52.
+- Final: fixed bloqueo durante espera — legal-lock.integration.test RED200→GREEN403 y cero recibos nuevos, suite52/52.

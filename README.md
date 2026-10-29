@@ -1,6 +1,6 @@
 # Brotar · Base integrada del equipo
 
-> **Corte local vigente · 28/10/2026 · RicardoDev:** cierre de **S3-12/13/14**, sobre la integración Santiago/Ricardo/Alison. **39 migraciones y 212 rutas HTTP**. Instalación nueva §3; actualización y recorridos **§40**. Las categorías se preparan en el flujo normal. Sin push ni cambios en DEV/Trello; legal y aceptación integral pendientes. [Criterios, pruebas y demostración](docs/cierre-s312-314-2026-10-28.md).
+> **Corte local vigente · 28/10/2026 · RicardoDev:** condiciones provisionales propias del equipo integradas en registro y expedientes KYC/KYB. **40 migraciones y 215 rutas HTTP**. Instalación nueva §3; actualización y prueba **§41**. Las categorías y los textos se preparan en el flujo normal. Sin push ni cambios en DEV/Trello. El alcance es académico DEMO; aceptación general del MVP y operación comercial son cosas distintas. [Alcance y comprobaciones](docs/cierre-legal-provisional-2026-10-28.md).
 
 > **Ampliación local · panel y soporte · 25/10/2026:** sobre `55959ca`, el panel añade pagos, conciliación, desembolsos, devoluciones y disputas según responsabilidad; el titular puede responder a sus incidencias y recibir avisos por el canal de correo ya configurado. **32 migraciones, 182 rutas**; la instalación habitual las aplica en orden, sin pasos SQL nuevos ni variables adicionales. Frontend y backend deben actualizarse juntos. [Recorridos, validaciones y pruebas](docs/cierre-alison-panel-soporte-correo-2026-10-25.md). Solo RicardoDev local; sin push ni cambios en DEV. Legal definitivo continúa pendiente. Los bloques anteriores de integración que siguen conservan su corte de 31 migraciones.
 
@@ -1240,3 +1240,39 @@ Recorridos nuevos:
 - **Organizaciones → Miembros:** altas y promociones a ADMIN generan invitación, sin acceso anticipado. **Mi cuenta → Invitaciones a organizaciones:** el destinatario acepta/rechaza; vence en siete días. Bajas y demociones son inmediatas. Propiedad/representación formal conserva su circuito independiente.
 
 Frontend/API deben pertenecer a este mismo corte. Tras compilar, `node scripts/check-http-contracts.mjs` comprueba **212 rutas**, versión `sprint3-demo-0.14`. No trae cuentas sintéticas de QA ni credenciales Gmail en Git. Legal y cierre global del MVP permanecen pendientes.
+
+
+## 41. Condiciones provisionales del equipo · registro y KYC/KYB
+
+Este corte adopta textos propios para el **MVP académico de pruebas** por decisión de Ricardo. No requiere documentos externos que el cliente no entregó, ni se presenta como su aprobación jurídica. Se conserva la implementación anterior. [ADR-016 y fuentes](docs/decisiones/ADR-016-condiciones-provisionales-del-equipo.md), [textos publicados](docs/legal/01_Condiciones_MVP_Provisionales.md) y [criterios de cierre](docs/cierre-legal-provisional-2026-10-28.md).
+
+**Instalación nueva:** seguir §3 usando este mismo corte de frontend/backend. El procedimiento normal ejecuta **40 migraciones**, prepara cinco categorías y publica la versión `mvp-demo-legal-1.0-20261028`. No se inserta aceptación para ninguna cuenta existente ni se requiere un SQL o archivo de términos separado.
+
+**V2 existente:** detener la API, conservar el `.env` propio y respaldar base y archivos fuera de Git. Desde `backend/`:
+
+```powershell
+corepack.cmd pnpm install --frozen-lockfile
+corepack.cmd pnpm run check
+node scripts/migrate.mjs up
+node scripts/migrate.mjs status
+node scripts/prepare-sprint2.mjs
+node scripts/verify-provisional-v2.mjs
+corepack.cmd pnpm run dev
+```
+
+Desde la raíz, en otra terminal:
+
+```powershell
+bun install --frozen-lockfile
+bun run check
+bun run dev
+```
+
+Comprobar `http://127.0.0.1:5173/api/health/ready` (200, base conectada) y `/condiciones` (tres documentos, versión y SHA-256). `status` debe listar **40 migraciones y ninguna pendiente**. La nueva es `ProvisionalLegalAgreement1793145600003`; no borra usuarios, documentos o aprobaciones anteriores. No reinstalar SQL, sobrescribir `.env`, usar `down -v` ni habilitar `ALLOW_DB_TEST_WRITES` en la base personal.
+
+- **Registro nuevo:** leer los textos enlazados, marcar personalmente la aceptación y crear cuenta. Se conserva el rol básico; el recibo versionado se guarda en la misma transacción. Correo propio voluntario para ensayar Gmail; documentos, identidades/destinos de verificación y operaciones económicas ficticios.
+- **Cuenta anterior:** Mi cuenta → Condiciones y privacidad → leer y registrar aceptación. Sin marcarla no se presupone consentimiento. Recargar conserva versión, fecha y huella. AUDITOR conserva lectura.
+- **KYC/KYB:** Mi verificación → caso → completar requisitos/documentos sintéticos privados → confirmar tratamiento del expediente indicando política y versión legal → enviar. El cliente declara `legalVersion`; ausencia o versión anterior se rechaza. La aceptación general vigente es necesaria además de la específica. Corregir/reenvíar genera otro recibo ligado a esa revisión, sin sobrescribir el anterior; se consulta en Estados y versiones anteriores. No se concede un rol, una aprobación de identidad ni un desembolso por consentir.
+- **Privacidad:** Mis incidencias/Soporte → Otro → asunto Privacidad. La atención, revisión de conservación y rotación de backups son procedimientos manuales del operador, descritos en ADR-016. No se anuncia una purga integral automática inexistente.
+
+`node scripts/check-http-contracts.mjs` verifica **215 rutas**, contrato `sprint3-demo-0.15`. `node scripts/export-legal.mjs` regenera los tres Markdown desde la publicación inmutable, después de compilar. No editar su versión 1.0 en sitio: un cambio material requiere otra versión/migración y aceptación explícita. Git no incluye credenciales Gmail ni el respaldo/datos de tu base. Este incremento permanece en RicardoDev local y no constituye entrega general S3-20 ni aceptación S3-21.

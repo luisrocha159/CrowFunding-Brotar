@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-28",
+  "branch": "RicardoDev",
+  "base": "116d686",
+  "codeCommit": "8c96269",
+  "published": false,
+  "trelloChanged": false,
+  "tasks": [
+    "S1-11",
+    "S2-06",
+    "S2-07"
+  ],
+  "scope": "Condiciones propias provisionales de MVP académico DEMO; sin aprobación jurídica externa ni autorización comercial.",
+  "tests": {
+    "frontend": 252,
+    "backend": 239,
+    "localAdmin": 8,
+    "postgresHttp": 52,
+    "totalDistinct": 551,
+    "failures": 0,
+    "repetitionsAdded": false
+  },
+  "integrationLogSha256": "9a3de5bc0ba5ddfa771bfba739d7decd65659d4bea271d8b1deccaa6b7c40ea0",
+  "migrations": 40,
+  "httpRoutes": 215,
+  "categories": 5,
+  "previousTablesUnchanged": 114,
+  "retroactiveAcceptancesCreated": 0,
+  "legalVersion": "mvp-demo-legal-1.0-20261028",
+  "legalHash": "c4a27315ee8d3a4eb70cd065276921fb82f2a4fcee0c329f180ec1f8994c91ec",
+  "review": {
+    "independentReviews": 1,
+    "importantFixedWithRedGreen": 3,
+    "deferredMinors": 0
+  },
+  "ui": "Registro/aceptación propia/recarga/teclado comprobados; no certifica toda la accesibilidad ni sustituye S3-19."
+}

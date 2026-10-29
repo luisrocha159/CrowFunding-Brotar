@@ -1,4 +1,18 @@
-# Contratos del Sprint 3 · 0.14 · RicardoDev local
+# Contratos del Sprint 3 · 0.15 · RicardoDev local
+
+## Extensión 0.15 · Condiciones provisionales · 28/10/2026
+
+40 migraciones y 215 rutas. Textos propios del MVP DEMO: [ADR-016](decisiones/ADR-016-condiciones-provisionales-del-equipo.md). No se atribuye aprobación externa ni autorización comercial. Frontend y API requieren el mismo corte.
+
+- `GET /api/legal/documents?version=...`: público, sin caché; devuelve `{version,mode:'DEMO',publishedAt,documents:[{code,title,sections:[{title,text}]}],hash}`. Versión/hashes comprobados en servidor; error no se presenta como contenido publicado.
+- `POST /api/auth/register`: añade `legalVersion:string` obligatorio y conserva `demoConsent:true` como confirmación explícita de los textos que muestra ese cliente. Versión ausente/anterior o confirmación falsa:400. Cuenta/rol básico/recibo son atómicos. No se rellena `app_user.accepted_terms_at`: la evidencia versionada está en la extensión.
+- `GET /api/me/legal`: REGISTERED_USER, recibos propios ACCOUNT y estado `{version,accepted,history:[{version,acceptedAt,hash,source}]}`. No acepta un actor del cliente ni devuelve recibos ajenos.
+- `PUT /api/me/legal`: `{version,accepted:true}`; rol/sesión/origen/cuota, cuenta/rol/bloqueo vigentes tras espera. Idempotente para la misma cuenta y versión; AUDITOR no escribe. Respuesta releída y validada; un fallo no implica aceptación.
+- `PUT /api/me/verifications/:id`: añade `legalVersion:string` obligatorio junto a `expectedVersion,policyVersion,fields,documents,accepted,submit`. Al presentar exige versión legal exacta declarada, aceptación general y específica. Un recibo nuevo para cada revisión de origen; reintento de versión consumida devuelve409 y no duplica el envío.
+- Historial privado `revisions[].legalReceipt`: opcional/nulo para legado; si existe `{id,version,hash}` ligado a esa revisión. Las instantáneas retienen versión legal, recibo y huella; las políticas KYC/KYB sintéticas y aprobaciones previas no se modifican ni se reinterpretan como aceptación nueva.
+
+Las extensiones siguientes se conservan como cortes históricos.
+
 
 ## Extensión 0.14 · Cierre de S3-12/13/14 · 28/10/2026
 
