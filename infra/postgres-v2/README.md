@@ -1,6 +1,6 @@
 # PostgreSQL V2 vigente
 
-Infraestructura de la entrega local de RicardoDev, 29/10/2026. Docker ejecuta **PostgreSQL 18.6**; API y frontend se ejecutan en el anfitrión. Instalar con [README principal](../../README.md#3-primera-instalación-completa).
+Infraestructura de la entrega DEV, 30/10/2026. Docker ejecuta **PostgreSQL 18.6**; API y frontend se ejecutan en el anfitrión. Instalar con [README principal](../../README.md#3-primera-instalación-completa).
 
 - Esquema oficial: official-schema.sql; SHA-256 5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88. No sustituir por un dump poblado.
 - Proyecto normal brotar-provisional-v2; base brotar_db; puerto 127.0.0.1:15433; rol de aplicación limitado brotar_app.

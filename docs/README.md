@@ -1,8 +1,11 @@
 # Documentación vigente de Brotar
 
-Entrega local del MVP académico DEMO, RicardoDev, 29/10/2026. Este índice identifica los documentos finales; los informes fechados conservan el estado de su propio corte y no sustituyen esta entrega.
+Entrega DEV del MVP académico DEMO, 30/10/2026. Este índice identifica los documentos finales; los informes fechados conservan el estado de su propio corte y no sustituyen esta entrega.
 
 ## Instalar y presentar
+
+- [Corte vigente DEV](entrega-dev-2026-10-30.md) y [tres recorridos manuales del equipo](pruebas-manuales-equipo-2026-10-30.md).
+- [Inventario de cobertura manual](pruebas-manuales-equipo.json) y [plantilla de resultados](pruebas-manuales-equipo.csv), pendientes de ejecución humana.
 
 - [README principal](../README.md) y [correo del equipo](correo-equipo-entrega-final.md).
 - [Registro de entrega S3-20](entrega-final-s3-20-2026-10-29.md).
@@ -14,7 +17,7 @@ Entrega local del MVP académico DEMO, RicardoDev, 29/10/2026. Este índice iden
 
 ## Fuentes y comprobaciones
 
-- [Planificación canónica local](planificacion-sprints.json):64 historias y67 tareas únicas; conserva responsables y snapshot histórico de Trello. La publicación queda separada de la preparación local.
+- [Planificación canónica local](planificacion-sprints.json):64 historias y67 tareas únicas; conserva responsables y snapshot histórico de Trello. El cierre técnico/publicación está separado de la ronda manual adicional del equipo.
 - [Guía general original del MVP](requisitos/Guia_Contexto_y_Alcance_MVP_Crowdfunding.pdf).
 - [Contrato general](contratos-sprint-3.md) e [inventario HTTP](contratos-http-sprint3.json).
 - [Condiciones provisionales adoptadas](decisiones/ADR-016-condiciones-provisionales-del-equipo.md) y [reglas DEMO](decisiones/ADR-013-definiciones-integracion-mvp-demo.md).

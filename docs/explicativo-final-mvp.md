@@ -1,6 +1,6 @@
 # Documento explicativo final de Brotar
 
-Proyecto de Sistemas II. Equipo: Ricardo Núñez del Prado Justiniano, Santiago Rocha Mejia y Alison Pizarro Apaza. Corte local de entrega: 29 de octubre de 2026, RicardoDev. Dirigido al docente y al equipo que instalará y revisará la aplicación.
+Proyecto de Sistemas II. Equipo: Ricardo Núñez del Prado Justiniano, Santiago Rocha Mejia y Alison Pizarro Apaza. Corte de entrega DEV: 30 de octubre de 2026. Dirigido al docente y al equipo que instalará y revisará la aplicación.
 
 ## Resultado y alcance
 
@@ -125,7 +125,7 @@ S3-20 repite instalación y checks desde un clon local real, con dependencias co
 
 El backlog final y los PDF son derivados de las fuentes canónicas del repositorio. El PDF de pantallas incluye el inventario completo y capturas representativas reales identificadas, separado del prototipo Figma histórico. Figma es referencia de coordinación, no evidencia de que todas las pantallas sean visualmente idénticas.
 
-La entrega local está preparada; la publicación de S3-20 queda pendiente por instrucción expresa. No hay push, modificación de DEV ni cambios en Trello. Para una futura distribución se revisarán manifiesto, código y paquete público sin secretos; el correo compartido se entrega por un canal privado independiente.
+El corte del 30/10/2026 publica en DEV la entrega S3-20 por autorización expresa de Ricardo. Se conservan las evidencias fechadas de preparación local y aceptación S3-21. La publicación no atribuye a los compañeros pruebas manuales que todavía no han realizado: la guía nueva reparte las 73 rutas entre Alison, Santiago y Ricardo con resultados iniciales POR_PROBAR. El correo compartido sigue en un paquete privado independiente y Trello conserva su estado hasta una sincronización autorizada aparte.
 
 ## Fuentes de consulta
 

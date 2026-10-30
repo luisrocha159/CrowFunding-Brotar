@@ -1,0 +1,270 @@
+{
+  "task": "S3-20",
+  "date": "2026-10-30",
+  "timezone": "America/La_Paz",
+  "targetBranch": "DEV",
+  "sourceBranch": "RicardoDev",
+  "authorization": "Solicitud explícita del usuario para publicar en DEV",
+  "previousRemoteDev": "99d70d7168654881b05ba4505ac3e0a4a0797e42",
+  "cleanInstall": {
+    "exitCode": 0,
+    "qa": "C:/Users/rnune/AppData/Local/Temp/brotar-s320-dev-release-qa-20261030",
+    "steps": [
+      {
+        "command": "bun.exe",
+        "args": [
+          "install",
+          "--frozen-lockfile"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "cmd.exe",
+        "args": [
+          "/d",
+          "/s",
+          "/c",
+          "corepack.cmd pnpm install --frozen-lockfile"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "cmd.exe",
+        "args": [
+          "/d",
+          "/s",
+          "/c",
+          "corepack.cmd pnpm run check"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Program Files\\nodejs\\node.exe",
+        "args": [
+          "scripts/adopt-provisional-v2.mjs",
+          "install",
+          "../infra/postgres-v2/official-schema.sql"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Program Files\\nodejs\\node.exe",
+        "args": [
+          "scripts/migrate.mjs",
+          "up"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Program Files\\nodejs\\node.exe",
+        "args": [
+          "scripts/prepare-sprint2.mjs"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Program Files\\nodejs\\node.exe",
+        "args": [
+          "scripts/verify-provisional-v2.mjs"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Program Files\\nodejs\\node.exe",
+        "args": [
+          "scripts/adopt-provisional-v2.mjs",
+          "activate"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "bun.exe",
+        "args": [
+          "run",
+          "check"
+        ],
+        "exitCode": 0
+      }
+    ],
+    "sourceCommit": "3cc7b5f739e9337e82ac8fcab8ed938d6db3cd92",
+    "totalRepeatedTests": 510,
+    "frontend": 261,
+    "backend": 241,
+    "localAdmin": 8,
+    "reusedNodeModules": false,
+    "migrations": 40
+  },
+  "smokeProbe": {
+    "exitCode": 0,
+    "apiPort": 53723,
+    "webPort": 53724,
+    "categories": 5,
+    "steps": [
+      "API ready 200",
+      "Category catalog requires an authenticated account",
+      "Provisional legal documents available",
+      "Registration persists and duplicate email rejected",
+      "Authenticated category catalog from DB:at least5",
+      "Documented local ADMIN bootstrap and authorized dashboard",
+      "Session persists across API restart",
+      "Vite UI 200 and frontend proxy to ready API 200"
+    ],
+    "smtpLoadedIntoProbe": false,
+    "messageSent": false
+  },
+  "smtp": {
+    "exitCode": 0,
+    "importedSevenMailKeys": true,
+    "databaseSettingsPreserved": true,
+    "tlsAuthentication": true,
+    "messageSent": false
+  },
+  "update": {
+    "exitCode": 0,
+    "envPreserved": true,
+    "repeatedMigrationsAndCatalogPreparation": true,
+    "steps": [
+      {
+        "command": "docker",
+        "args": [
+          "compose",
+          "--env-file",
+          "infra/postgres-v2/.env",
+          "-f",
+          "infra/postgres-v2/compose.yaml",
+          "up",
+          "-d",
+          "--wait"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "node",
+        "args": [
+          "scripts/migrate.mjs",
+          "up"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "node",
+        "args": [
+          "scripts/prepare-sprint2.mjs"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "node",
+        "args": [
+          "scripts/migrate.mjs",
+          "status"
+        ],
+        "exitCode": 0
+      },
+      {
+        "command": "node",
+        "args": [
+          "scripts/verify-provisional-v2.mjs"
+        ],
+        "exitCode": 0
+      }
+    ]
+  },
+  "runtimeIntegrity": {
+    "files": 462,
+    "equivalent": true,
+    "lineEndingOnlyDifferences": 2,
+    "comparison": "LF/CRLF solo para tipos de texto conocidos; SQL oficial y binarios byte a byte",
+    "sha256": "dc02756b7fb0ccd7e4d9ba1c0f52b8b0f543113fa55517714d9f392c03b54ea5"
+  },
+  "previousIntegration": {
+    "file": "docs/evidencias/s3-21/resumen.json",
+    "passed": 55,
+    "distinctTotal": 565,
+    "repeatedThisTurn": false
+  },
+  "manual": {
+    "state": "POR_PROBAR",
+    "routes": 73,
+    "counts": {
+      "Ricardo": 27,
+      "Alison": 30,
+      "Santiago": 16
+    },
+    "unassigned": 0,
+    "duplicates": 0,
+    "source": "src/app/routes/router.tsx"
+  },
+  "pdfReview": {
+    "pages": [
+      {
+        "file": "output\\pdf\\Manual_Instalacion_y_Correo_Brotar.pdf",
+        "pages": 7,
+        "renderedPages": 7,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Documento_Explicativo_Final_Brotar.pdf",
+        "pages": 7,
+        "renderedPages": 7,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Product_Backlog_Final_Brotar.pdf",
+        "pages": 21,
+        "renderedPages": 21,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Pantallas_Finales_MVP_Brotar.pdf",
+        "pages": 19,
+        "renderedPages": 19,
+        "emptyPages": 0
+      }
+    ],
+    "allPagesRenderedAndVisuallyReviewed": true
+  },
+  "readmePowerShellBlocks": 13,
+  "trelloChanged": false,
+  "filesDoNotIncludePrivateMail": true,
+  "secretHistory": {
+    "mode": "history",
+    "publicPrivateValuesFound": 0,
+    "publicForbiddenPaths": 0,
+    "privateZipEntries": 3,
+    "privateMailKeys": 7,
+    "files": 1003,
+    "pdfs": 4,
+    "docx": 0
+  },
+  "logs": [
+    {
+      "privateLog": "tmp/s330-install.log",
+      "sha256": "63d7eaa6fb88877cf3ec182af38ab961c2d5bd26cc4709596bcbdaa9c916074b"
+    },
+    {
+      "privateLog": "tmp/s330-probe.log",
+      "sha256": "fb9ca7598715447d4f6253dea2fce5777821f1992cf4960c4e43532144f02f96"
+    },
+    {
+      "privateLog": "tmp/s330-smtp.log",
+      "sha256": "0535d67f818c64c25a29bf0ca653c35681d08101d99a7c4bd9114c1b4346d75c"
+    },
+    {
+      "privateLog": "tmp/s330-update.log",
+      "sha256": "12834c8095538efc5a04a1a913f1bef6b690b4b333f9e638f0b6f0b788ea5d1b"
+    },
+    {
+      "privateLog": "tmp/s330-doc-audit-final.log",
+      "sha256": "4f878eaa9e94132eb901251f452677afe21462e3fa165c9e7df5864a5f62bb8e"
+    }
+  ],
+  "remoteVerification": "Tras el push, comparar git rev-parse DEV con git ls-remote origin refs/heads/DEV; resultado de sesión separado para evitar autorreferencia al commit.",
+  "documentation": {
+    "auditExitCode": 0,
+    "allLocalLinksResolve": true,
+    "readmePowerShellBlocksParsed": 13,
+    "genericWarningsReviewed": true,
+    "pdfVisualPages": 54
+  }
+}

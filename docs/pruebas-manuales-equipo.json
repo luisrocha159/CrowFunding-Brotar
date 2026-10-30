@@ -1,0 +1,381 @@
+{
+  "cutoff": "2026-10-30",
+  "source": "src/app/routes/router.tsx",
+  "historicalMatrix": "docs/evidencias/s3-19/matriz-casos.json",
+  "scope": "Ronda manual adicional pendiente; no sustituye evidencias automáticas previas.",
+  "counts": {
+    "Ricardo": 27,
+    "Alison": 30,
+    "Santiago": 16
+  },
+  "routePatterns": 73,
+  "unassigned": 0,
+  "duplicates": 0,
+  "routes": [
+    {
+      "owner": "Alison",
+      "pattern": "/",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/condiciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos/:id/cierre",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/cierre-campanas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/cierre-campanas/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-campanas/ciclo",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-campanas/ciclo/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/ciclo-campanas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/ciclo-campanas/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-desembolsos",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-desembolsos/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos/:campaignId/desembolsos",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/desembolsos",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/desembolsos/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/como-funciona",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/para-creadores",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/explorar",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/explorar/buscar",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/campanas/:id/rendicion-publica",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/proyectos/:slug",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/iniciar-sesion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mi-cuenta",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/verificar-correo",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-incidencias",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-incidencias/nueva",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-incidencias/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/soporte",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/soporte/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-aportes",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-aportes/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-aportes/:id/comprobante",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/panel-patrocinador",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/simulacion-apoyo",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/apoyo-demo",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mi-verificacion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/verificaciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/verificaciones/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-devoluciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-devoluciones/nueva",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-devoluciones/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/devoluciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/devoluciones/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-disputas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-disputas/nueva",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-disputas/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/disputas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/disputas/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/panel-creador",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos/:id/rendicion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/rendicion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/rendicion/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/publicaciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos/:id/avances",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/catalogos",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/personas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/mis-guardados",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-organizaciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/crear-campana",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-invitaciones",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mis-proyectos/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/campanas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/campanas/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/usuarios",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/finanzas",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/conciliacion",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/conciliacion/:id",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Ricardo",
+      "pattern": "/administracion/auditoria",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Santiago",
+      "pattern": "/mi-campana/portada",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/registro",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "/recuperar-contrasena",
+      "result": "POR_PROBAR"
+    },
+    {
+      "owner": "Alison",
+      "pattern": "*",
+      "result": "POR_PROBAR"
+    }
+  ]
+}

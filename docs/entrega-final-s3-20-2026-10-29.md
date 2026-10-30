@@ -1,5 +1,7 @@
 # Entrega final local de Brotar
 
+> Informe histórico del corte local 3cc7b5f del 29/10/2026. Su indicación de no publicar y sus hashes describen ese commit. La autorización posterior del 30/10/2026 y los PDF vigentes se documentan en [entrega DEV](entrega-dev-2026-10-30.md); no usar este informe como estado remoto actual.
+
 S3-20, RicardoDev, corte del 29/10/2026. El usuario pidió preparar toda la entrega sin subir código. El resultado local reúne instrucciones, configuración, backlog, explicativo y pantallas. **La publicación permanece pendiente por instrucción expresa**; no se confunde un ZIP local con un push o actualización de DEV/Trello.
 
 ## Contenido vigente

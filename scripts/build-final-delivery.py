@@ -56,8 +56,8 @@ def table(rows, widths=None):
 def page(canvas, doc):
     width,height=canvas._pagesize
     canvas.saveState();canvas.setFont('Body',8);canvas.setFillColor(colors.HexColor('#45534C'))
-    canvas.drawString(48,height-30,'BROTAR  |  Entrega local del MVP académico DEMO')
-    canvas.drawString(48,26,'Corte 29/10/2026  |  RicardoDev  |  Sin publicación remota')
+    canvas.drawString(48,height-30,'BROTAR  |  Entrega DEV del MVP académico DEMO')
+    canvas.drawString(48,26,'Corte 30/10/2026  |  DEV  |  Publicación autorizada')
     canvas.drawRightString(width-48,26,str(doc.page));canvas.restoreState()
 
 def build(name, story):
@@ -71,7 +71,7 @@ def build(name, story):
 def cover(title, intro):
     out=[Spacer(1,55),paragraph('BROTAR','SectionFinal'),paragraph(title,'TitleFinal'),paragraph(intro),Spacer(1,25)]
     for text in ['Proyecto de Sistemas II','Ricardo Núñez del Prado Justiniano','Santiago Rocha Mejia','Alison Pizarro Apaza',
-        'Corte local 29 de octubre de 2026','Rama RicardoDev - preparación S3-20 sin push','Recorrido S3-21 aceptado por Ricardo para el alcance académico DEMO']:
+        'Corte DEV 30 de octubre de 2026','Entrega S3-20 en DEV autorizada por Ricardo','Recorrido S3-21 aceptado por Ricardo para el alcance académico DEMO']:
         out.append(paragraph(text))
     out.extend([Spacer(1,20),paragraph('Pagos y expedientes de prueba. Condiciones provisionales del equipo. La contraseña Gmail se entrega en un paquete privado separado; no está en estos documentos.','SmallText'),PageBreak()])
     return out
@@ -101,7 +101,9 @@ def markdown(text):
             widths={2:[175,341],3:[125,195,196]}.get(len(rows[0]))
             out.extend([table(rows,widths),Spacer(1,12)]);continue
         if line.startswith('# '):i+=1;continue
-        if line.startswith('## '):out.append(paragraph(line[3:],'SectionFinal'))
+        if line.startswith('## '):
+            if line.startswith('## 3. Primera instalación completa'):out.append(PageBreak())
+            out.append(paragraph(line[3:],'SectionFinal'))
         elif line.startswith('### '):out.append(paragraph(line[4:],'SubFinal'))
         elif line.startswith('- '):out.append(paragraph('- '+line[2:]))
         else:
@@ -114,19 +116,19 @@ def markdown(text):
 def main():
     build('Manual_Instalacion_y_Correo_Brotar.pdf',cover('Manual de instalación y correo','Guía para instalar una copia propia, preparar PostgreSQL, iniciar frontend y backend e importar el correo autorizado sin copiar credenciales de base.')+markdown((ROOT/'README.md').read_text(encoding='utf8')))
     build('Documento_Explicativo_Final_Brotar.pdf',cover('Documento explicativo final del MVP','Descripción del sistema integrado, decisiones académicas, arquitectura, responsabilidades, reglas, validaciones y evidencia de funcionamiento.')+markdown((ROOT/'docs/explicativo-final-mvp.md').read_text(encoding='utf8')))
-    out=cover('Product Backlog final de Brotar','Inventario de 64 historias de usuario y 67 tareas únicas. Mantiene criterios originales, responsables y relaciones; distingue implementación académica local, preparación de entrega y publicación pendiente.')
-    out+=[paragraph('Cómo interpretar el estado','SectionFinal'),paragraph('La planificación JSON es la fuente canónica local. El campo state de las tarjetas conserva una instantánea histórica de Trello; no se presenta como sincronización actual. Las 35 tareas técnicas y de aceptación de Sprint 3 están cerradas en el alcance DEMO; S3-20 está preparada localmente y conserva publicación pendiente por instrucción del usuario.'),
+    out=cover('Product Backlog final de Brotar','Inventario de 64 historias de usuario y 67 tareas únicas. Mantiene criterios originales, responsables y relaciones; distingue implementación académica local, cierre técnico, publicación y revisión manual adicional.')
+    out+=[paragraph('Cómo interpretar el estado','SectionFinal'),paragraph('La planificación JSON es la fuente canónica local. El campo state de las tarjetas conserva una instantánea histórica de Trello; no se presenta como sincronización actual. Las 36 tareas de Sprint 3 están cerradas en el alcance académico DEMO, incluida entrega S3-20 autorizada para DEV. La nueva ronda manual del equipo sobre 73 rutas permanece POR_PROBAR y no se atribuye aceptación a sus integrantes.'),
         paragraph('Los criterios originales pueden proponer capacidades comerciales o verificaciones más amplias. El ensayo adopta pagos/documentos sintéticos y condiciones provisionales propias, sin SMS ni proveedor real. La revisión técnica no es certificación WCAG o jurídica. Estos límites se aplican también cuando una historia figura integrada en el alcance académico.'),
         paragraph('Tareas y responsables','SectionFinal')]
     out[-1].keepWithNext=False
     rows=[['ID','Tarea e historias','Responsable','Estado local']]
     for task in PLAN['tasks']:
-        state='Preparada local; publicar pendiente' if task['id']=='S3-20' else 'Cierre técnico DEMO'
+        state='Entrega autorizada DEV' if task['id']=='S3-20' else 'Cierre técnico DEMO'
         rows.append([task['id'],task['title']+'\n'+', '.join(task.get('stories',[])),task.get('owner','Equipo'),state])
     out.extend([table(rows,[52,288,76,100]),Spacer(1,16),paragraph('Historias y criterios originales','SectionFinal')])
     for story in PLAN['stories']:
         out.append(paragraph(story['id']+' '+story['title'],'SubFinal'))
-        scope='Entrega local preparada; distribución autorizada pendiente' if story['id']=='BG-63' else 'Recorrido validado y aceptado por Ricardo' if story['id']=='BG-64' else 'Integrada en el alcance académico DEMO de las tareas relacionadas'
+        scope='Entrega S3-20 autorizada para DEV; ronda manual adicional pendiente' if story['id']=='BG-63' else 'Recorrido validado y aceptado por Ricardo' if story['id']=='BG-64' else 'Integrada en el alcance académico DEMO de las tareas relacionadas'
         meta=paragraph('Estado local: '+scope+'. Tareas: '+', '.join(story.get('tasks',[]))+'. Estado histórico conservado: '+story.get('state','Sin dato')+'.','SmallText')
         meta.keepWithNext=True
         out.append(meta)

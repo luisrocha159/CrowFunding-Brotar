@@ -1,4 +1,4 @@
-> Corte vigente local 29/10/2026:40 migraciones y215 rutas HTTP; S3-21 aceptada y entrega S3-20 preparada sin publicación. Seguir README raíz para ejecutar. DEV conserva su corte publicado; no hacer push/PR hasta autorización. El correo compartido se importa desde un paquete privado separado, nunca desde Git. Los repartos y entregas antiguos citados abajo son antecedentes.
+> Corte DEV 30/10/2026: 40 migraciones y 215 rutas HTTP; S3-21 aceptada y publicación de S3-20 autorizada por Ricardo. Seguir README raíz y la guía de tres recorridos manuales. Conservar trabajo propio y usar pull --ff-only; no forzar ni borrar datos para actualizar. El correo se importa desde el paquete privado independiente, nunca desde Git. Los repartos y entregas anteriores citados abajo son antecedentes.
 
 # Contribuir a Brotar
 

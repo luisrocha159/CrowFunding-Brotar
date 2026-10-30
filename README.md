@@ -1,8 +1,8 @@
 # Brotar
 
-Entrega local del MVP académico de crowdfunding. **RicardoDev**, 29/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son DEMO**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+Entrega del MVP académico de crowdfunding para **DEV**, 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son DEMO**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
-La preparación de S3-20 se entrega localmente. **No hay push, cambio de DEV ni actualización de Trello.** El historial publicado en DEV conserva su corte anterior; el último código de esta carpeta aún no se descarga desde GitHub.
+Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
 ## 1. Qué incluye
 
@@ -32,7 +32,15 @@ Comprobar en PowerShell: `git --version`, `node --version`, `bun --version`, `do
 
 ## 3. Primera instalación completa
 
-Abrir PowerShell en la raíz del código recibido. Este corte se comparte como copia/ZIP local; cuando se publique, se podrá clonar RicardoDev desde el repositorio. **Comprobar exit 0 antes de continuar con cada comando.** No copiar .env de otra computadora.
+En una carpeta nueva, obtener DEV en PowerShell:
+
+```powershell
+git clone --branch DEV --single-branch `
+  https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar
+cd Brotar
+```
+
+Si ya se tiene el código, abrir PowerShell en su raíz y seguir la sección 5 para actualizar una instalación existente. **Comprobar exit 0 antes de continuar con cada comando.** No copiar .env de otra computadora.
 
 ```powershell
 bun install --frozen-lockfile
@@ -105,9 +113,20 @@ En otra terminal de la raíz: `bun run dev`. Conservar .env, volumen Docker y ba
 
 ## 5. Actualizar una copia existente
 
-Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar.
+Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar DEV sin forzar:
 
 ```powershell
+git status --short
+git fetch origin
+git switch DEV
+git pull --ff-only origin DEV
+```
+
+Si hay trabajo propio o el pull no puede avanzar, conservarlo y revisar CONTRIBUTING; no hacer reset ni forzar. Iniciar Docker Desktop y, desde la raíz, actualizar dependencias y base existente:
+
+```powershell
+docker compose --env-file infra/postgres-v2/.env `
+  -f infra/postgres-v2/compose.yaml up -d --wait
 bun install --frozen-lockfile
 cd backend
 corepack pnpm install --frozen-lockfile
@@ -173,6 +192,7 @@ Caso integral aceptado: registro/contacto/KYC DEMO → campaña → corrección/
 ## 9. Documentos finales
 
 - [Entrega y comprobaciones S3-20](docs/entrega-final-s3-20-2026-10-29.md).
+- [Publicación vigente en DEV](docs/entrega-dev-2026-10-30.md) y [tres recorridos manuales del equipo](docs/pruebas-manuales-equipo-2026-10-30.md).
 - [Manual de instalación y correo](output/pdf/Manual_Instalacion_y_Correo_Brotar.pdf).
 - [Product Backlog final](output/pdf/Product_Backlog_Final_Brotar.pdf) y [fuente con 64 historias/67 tareas](docs/planificacion-sprints.json).
 - [Documento explicativo final](output/pdf/Documento_Explicativo_Final_Brotar.pdf).

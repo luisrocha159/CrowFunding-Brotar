@@ -1,0 +1,122 @@
+{
+  "task": "S3-20",
+  "source": "Bytes del índice Git; no incluye este manifiesto para evitar referencia circular.",
+  "publication": false,
+  "secretCheck": {
+    "mode": "index",
+    "publicPrivateValuesFound": 0,
+    "publicForbiddenPaths": 0,
+    "privateZipEntries": 3,
+    "privateMailKeys": 7,
+    "files": 914,
+    "pdfs": 17,
+    "docx": 9
+  },
+  "files": [
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 8956,
+      "sha256": "9972ea3ee6ef3abfc6ef3812ec8615e6d918646c40fb8febbfa0ede269417e0f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13109,
+      "sha256": "a3e97f50b6552b8c805c0717c544f1aec6f00b2d848a439eddf8a06bf526d70f"
+    },
+    {
+      "path": "backend/README.md",
+      "bytes": 2915,
+      "sha256": "cda346489fabefef3340be99376cb83f614ca4e94bf7a0016f20a2cf7f94964f"
+    },
+    {
+      "path": "backend/pnpm-lock.yaml",
+      "bytes": 80821,
+      "sha256": "8cac47dcd7767f7fb895554ce0a8ae1330964a42c92b8da6fc42fd78c34704e3"
+    },
+    {
+      "path": "bun.lock",
+      "bytes": 45691,
+      "sha256": "148c100d08a903bba7d8428f98722c82f07c519c542ad0453956367a0295f9c6"
+    },
+    {
+      "path": "docs/README.md",
+      "bytes": 2502,
+      "sha256": "f082ca62247f98f033f82ee1954d248cd324c8985c9c445ed63cd1b733e83aff"
+    },
+    {
+      "path": "docs/entrega-dev-2026-10-30.md",
+      "bytes": 5357,
+      "sha256": "e587c9855472bd6dc920a95aa1ca4b1ca8eed070960e5299afd58c8ffbe3dc76"
+    },
+    {
+      "path": "docs/entrega-final-s3-20-2026-10-29.md",
+      "bytes": 6586,
+      "sha256": "f4c504444216ed63dd374626644ceb6f849065f1a753953a80487abf8823a493"
+    },
+    {
+      "path": "docs/evidencias/entrega-dev-2026-10-30/resumen.json",
+      "bytes": 6816,
+      "sha256": "3cfea77b6f523fa8dab87f92ef2c71e2263ed71fb72054de4fe9b89b97b62c54"
+    },
+    {
+      "path": "docs/explicativo-final-mvp.md",
+      "bytes": 16637,
+      "sha256": "5bfcf26d7424b6093fe3ec14b6dd5290f3fc5d2d76df49102f2ed65332a26964"
+    },
+    {
+      "path": "docs/planificacion-sprints.json",
+      "bytes": 141572,
+      "sha256": "7e039a8040eb622a493eaf79d25b6413d01787ba726bdeb15f464aeda99881b6"
+    },
+    {
+      "path": "docs/pruebas-manuales-equipo-2026-10-30.md",
+      "bytes": 20833,
+      "sha256": "d6a800feb6089e64f9702ef8dc11c370538d142a6c21c16c15cf25a654f451b5"
+    },
+    {
+      "path": "docs/pruebas-manuales-equipo.csv",
+      "bytes": 3954,
+      "sha256": "b3ec17dd1ab39ae8b101e1ce87eeb3f23c4cf23391822a20d28b4d192857db26"
+    },
+    {
+      "path": "docs/pruebas-manuales-equipo.json",
+      "bytes": 8410,
+      "sha256": "8a1805039977f296c687a207608c0e8f5a9acc8e86f5573371a490fd6e98fc61"
+    },
+    {
+      "path": "infra/postgres-v2/README.md",
+      "bytes": 1630,
+      "sha256": "dbe29a7effaaee07008487bf8225353e8a02f8a686957dcdabec01fc525501fc"
+    },
+    {
+      "path": "infra/postgres-v2/official-schema.sql",
+      "bytes": 87084,
+      "sha256": "5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88"
+    },
+    {
+      "path": "output/pdf/Documento_Explicativo_Final_Brotar.pdf",
+      "bytes": 91400,
+      "sha256": "714fd6ae1740c5148559b3a440de78f9d1c2d47aaa94232698e0caf5be8cf352"
+    },
+    {
+      "path": "output/pdf/Manual_Instalacion_y_Correo_Brotar.pdf",
+      "bytes": 94969,
+      "sha256": "7cc9b404805869600f8c6c461bf5757aaaa1fcde3e610051dbe6c784afb6be7f"
+    },
+    {
+      "path": "output/pdf/Pantallas_Finales_MVP_Brotar.pdf",
+      "bytes": 5543405,
+      "sha256": "391a5a6056cffb99a79c994fda75e1960266f2dc376b6bffa3906f7c11c69f0a"
+    },
+    {
+      "path": "output/pdf/Product_Backlog_Final_Brotar.pdf",
+      "bytes": 120103,
+      "sha256": "83e8ede33d59189383a5dc07c68d064ba8baaa8a933e32eaad0c8583b867f834"
+    },
+    {
+      "path": "scripts/build-final-delivery.py",
+      "bytes": 14468,
+      "sha256": "8ef71c88b8c79d54379957f17d2651101d9649408af5fab85f568e411abd65be"
+    }
+  ]
+}

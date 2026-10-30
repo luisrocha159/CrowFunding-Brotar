@@ -1,6 +1,6 @@
 # Backend Brotar
 
-API NestJS del MVP académico DEMO, corte local de RicardoDev del 29/10/2026. **40 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; preparación de entrega local S3-20, sin push.
+API NestJS del MVP académico DEMO, corte DEV del 30/10/2026. **40 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz.
 
 ## Instalar y arrancar
 
