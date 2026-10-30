@@ -9,7 +9,7 @@ import {smtpRecoveryConfig,smtpRecoveryTransport} from '../auth/infrastructure/s
 const hash=(token:string)=>createHash('sha256').update(token).digest('hex')
 export interface ContactNotice {id:string;title:string;body:string;entityName:string;createdAt:Date;readAt:Date|null;delivery:string;attempts:number}
 const labels:Record<string,string>={CAMPAIGN:'campaña',VERIFICATION:'verificación',PAYMENT:'pago DEMO',REFUND:'devolución DEMO',DISPUTE:'reclamación',DISBURSEMENT:'desembolso DEMO',REWARD_FULFILLMENT:'recompensa'}
-const states:Record<string,string>={DRAFT:'borrador',SUBMITTED:'enviada',PENDING_REVIEW:'pendiente de revisión',IN_REVIEW:'en revisión',REQUIRES_CHANGES:'con observaciones',REQUIRES_INFO:'se requiere información',APPROVED:'aprobada',REJECTED:'rechazada',PUBLISHED:'publicada',ACTIVE:'activa',FUNDED:'meta alcanzada',SUCCESSFUL:'financiada',FAILED:'fallida',CANCELLED:'cancelada',EXPIRED:'vencida',CLOSED:'cerrada',COMPLETED:'completada',EXECUTING:'en ejecución',IN_EXECUTION:'en ejecución',PENDING:'pendiente',PROCESSING:'en proceso',CONFIRMED:'confirmado',SUCCEEDED:'completado',REFUNDED:'devuelto',REQUESTED:'solicitada',OPEN:'abierta',RESOLVED:'resuelta',FULFILLED:'cumplida'}
+const states:Record<string,string>={DRAFT:'borrador',SUBMITTED:'enviada',PENDING_REVIEW:'pendiente de revisión',IN_REVIEW:'en revisión',REQUIRES_CHANGES:'con observaciones',CHANGES_REQUESTED:'con observaciones',PENDING_VERIFICATION:'pendiente de verificación',FUNDING_ENDED:'financiamiento finalizado',NOT_STARTED:'sin iniciar',INITIATED:'iniciado',DISPUTED:'en disputa',UNDER_REVIEW:'en revisión',AWAITING_RESPONSE:'esperando respuesta',ESCALATED:'escalada',IN_PROGRESS:'en atención',REQUIRES_INFO:'se requiere información',APPROVED:'aprobada',REJECTED:'rechazada',PUBLISHED:'publicada',ACTIVE:'activa',FUNDED:'meta alcanzada',SUCCESSFUL:'financiada',FAILED:'fallida',CANCELLED:'cancelada',EXPIRED:'vencida',CLOSED:'cerrada',COMPLETED:'completada',EXECUTING:'en ejecución',IN_EXECUTION:'en ejecución',PENDING:'pendiente',PROCESSING:'en proceso',CONFIRMED:'confirmado',SUCCEEDED:'completado',REFUNDED:'devuelto',REQUESTED:'solicitada',OPEN:'abierta',RESOLVED:'resuelta',FULFILLED:'cumplida'}
 export function stateNotice(entity:string,state:string){return {title:`Cambio en tu ${labels[entity]??'registro'}`,body:`Estado registrado: ${states[state]??state}. Consulta los detalles y las observaciones en Brotar. Los movimientos económicos de este MVP son simulaciones; este aviso no acredita transferencias reales.`}}
 export function supportNotice(kind:'MESSAGE'|'STATUS',status:string){
  const names:Record<string,string>={OPEN:'abierta',IN_PROGRESS:'en atención',AWAITING_RESPONSE:'esperando tu respuesta',RESOLVED:'resuelta',CLOSED:'cerrada'}
@@ -40,7 +40,7 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
  onModuleInit(){if(process.env.DATABASE_ENABLED==='false'||process.env.NODE_ENV==='test'||process.env.ALLOW_DB_TEST_WRITES==='true')return;this.timer=setInterval(()=>{void this.tick().catch(()=>console.error('No se pudo procesar la cola de notificaciones; revisar disponibilidad del servicio.'))},15000);this.timer.unref()}
  onModuleDestroy(){if(this.timer)clearInterval(this.timer)}
  async status(user:string){
-  const [row]=await this.db.connection().query(`SELECT u.email,CASE WHEN p.verified_email=u.email THEN u.email_verified_at END AS "verifiedAt",u.phone_verified_at AS "phoneVerifiedAt",COALESCE(p.enabled,false) AS "emailNotifications"
+  const [row]=await this.db.connection().query(`SELECT u.email,CASE WHEN p.verified_email=u.email THEN u.email_verified_at END AS "verifiedAt",u.phone_verified_at AS "phoneVerifiedAt",COALESCE(p.enabled AND p.verified_email=u.email AND u.email_verified_at IS NOT NULL,false) AS "emailNotifications"
    FROM public.app_user u LEFT JOIN brotar_extension.mail_preference p ON p.user_id=u.id WHERE u.id=$1`,[user])
   return {...row,channelAvailable:this.sender.available(),phoneChannelAvailable:false}
  }
@@ -100,7 +100,8 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
  async collect(){return this.db.connection().transaction(async m=>{
   const [lock]=await m.query('SELECT pg_try_advisory_xact_lock(193026) AS locked');if(!lock.locked)return 0
   // Anti-join, no cursor de secuencia: una transacción que confirma tarde no pierde su evento.
-  const history=await m.query(`SELECT h.* FROM public.status_history h WHERE NOT EXISTS(SELECT 1 FROM brotar_extension.notification_source s WHERE s.history_id=h.id) ORDER BY h.id LIMIT 100`)
+  // Keep PostgreSQL microseconds: converting through JS Date would truncate them.
+  const history=await m.query(`SELECT h.*,h.changed_at::text AS event_time FROM public.status_history h WHERE NOT EXISTS(SELECT 1 FROM brotar_extension.notification_source s WHERE s.history_id=h.id) ORDER BY h.id LIMIT 100`)
   for(const h of history){
    let owner: {id:string}|undefined
    const queries:Record<string,string>={
@@ -115,21 +116,21 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
    if(h.from_status!==null&&queries[h.entity_type]) [owner]=await m.query(queries[h.entity_type]!,[h.entity_id])
    if(owner?.id){
     const notice=stateNotice(h.entity_type,h.to_status)
-    const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id) VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,$4,$5) RETURNING id`,[owner.id,notice.title,notice.body,h.entity_type,h.entity_id])
+    const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id,created_at) VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,$4,$5,$6) RETURNING id`,[owner.id,notice.title,notice.body,h.entity_type,h.entity_id,h.event_time])
     // Solo quien solicitó avisos y conserva un correo verificado. La UI sigue disponible sin SMTP.
     await this.queue(m,n.id,owner.id)
    }
    await m.query('INSERT INTO brotar_extension.notification_source(history_id) VALUES($1)',[h.id])
   }
-  const pending:{id:string;recipient_user_id:string;case_id:string;kind:'MESSAGE'|'STATUS';status:string}[]=await m.query(`SELECT e.* FROM brotar_extension.support_mail_event e
+  const pending:{id:string;recipient_user_id:string;case_id:string;kind:'MESSAGE'|'STATUS';status:string;event_time:string}[]=await m.query(`SELECT e.*,e.created_at::text AS event_time FROM brotar_extension.support_mail_event e
    WHERE e.processed_at IS NULL ORDER BY e.created_at,e.id LIMIT 100 FOR UPDATE OF e SKIP LOCKED`)
   for(const event of pending){
    let notification:string|null=null
    const [owner]=await m.query('SELECT user_id FROM public.support_case WHERE id=$1 AND user_id=$2',[event.case_id,event.recipient_user_id])
    if(owner){
     const notice=supportNotice(event.kind,event.status)
-    const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id)
-     VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,'SUPPORT_CASE',$4) RETURNING id`,[owner.user_id,notice.title,notice.body,event.case_id])
+    const [n]=await m.query(`INSERT INTO public.notification(user_id,event_code,channel,title,body,entity_name,entity_id,created_at)
+     VALUES($1,'STATE_CHANGED','IN_APP',$2,$3,'SUPPORT_CASE',$4,$5) RETURNING id`,[owner.user_id,notice.title,notice.body,event.case_id,event.event_time])
     notification=n.id;await this.queue(m,n.id,owner.user_id)
    }
    await m.query('UPDATE brotar_extension.support_mail_event SET notification_id=$2,processed_at=clock_timestamp() WHERE id=$1',[event.id,notification])

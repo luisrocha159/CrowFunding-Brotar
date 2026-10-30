@@ -25,3 +25,9 @@ La recuperación conserva el contrato público uniforme para no enumerar cuentas
 ## Límites de cierre
 
 S1-12 puede cerrarse técnicamente tras el ensayo real. El bloque de correo de S3-26 queda implementado y probado para los eventos existentes; su cierre integral conserva pendientes legal definitivo y revalidación con los módulos que entreguen los compañeros. S3-19/S3-21 siguen abiertos. Publicar RicardoDev no publica DEV ni cierra automáticamente S3-20. Las nuevas operaciones del equipo deben registrar sus cambios reales en el historial y probar destinatario, propiedad, permisos y contenido antes de añadir otros avisos. No se construyen en este incremento esos módulos pendientes.
+
+## Revalidación local · 29/10/2026
+
+S3-26 se cierra para el criterio académico provisional adoptado por el equipo: condiciones propias versionadas en S1-11/S2-06/S2-07 y módulos integrados. Se conserva el alcance histórico anterior con su fecha. Se completan etiquetas de estados, suscripción efectiva ligada al correo actual, validación de las respuestas del cliente y fechas originales de avisos nuevos con precisión PostgreSQL. Las preferencias ya existentes no se eliminan, los avisos históricos no se reescriben y no se reenvía historial. No cambia el contrato de seis rutas ni se añaden migraciones.
+
+Las pruebas dirigidas conectan campaña,identidad de persona/organización y soporte con destinatarios correctos,privacidad,errores y reintentos. TLS/autenticación Gmail se revalidaron sin nuevo envío;las pruebas adversas/visuales usan transporte sustituido y no acreditan posesión de un buzón real. Teléfono sin SMS permanece explícito. Evidencia:[cierre S3-26](../cierre-s3-26-contactos-2026-10-29.md). S3-19 está cerrado en su alcance técnico;S3-21 y S3-20 permanecen pendientes. No implica aprobación jurídica externa ni actividad comercial.

@@ -17,7 +17,9 @@ test('S2-09: correo verificado, observaciones, corrección, reenvío y avisos pr
   assert.ok(config.enabled && process.env.ALLOW_DB_TEST_WRITES === 'true'); assert.notEqual(process.env.NODE_ENV, 'production')
   const target = readTestDatabaseTarget(config); assert.match(target.project, /qa/)
   const sql = (query: string) => execFileSync('docker', ['exec', '-i', target.container, 'psql', '-X', '-At', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'], { input: query, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
-  const app = await NestFactory.create(AppModule, { logger: false }); configureHttp(app, readEnvironment({ NODE_ENV: 'test' })); await app.listen(0, '127.0.0.1')
+  const app = await NestFactory.create(AppModule, { logger: false }); configureHttp(app, readEnvironment({ NODE_ENV: 'test' }))
+  const ip=`verification-mail-${randomUUID()}`;app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:ip});next()})
+  await app.listen(0, '127.0.0.1')
   const base = await app.getUrl(), users: string[] = [], files: string[] = [], cases: string[] = []
   const messages: { to: string; text: string }[] = [], mail = app.get(ContactMail), sender = app.get(ContactMailSender)
   sender.available = () => true; sender.origin = () => 'http://127.0.0.1:5173'

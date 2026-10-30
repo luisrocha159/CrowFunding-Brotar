@@ -1,12 +1,12 @@
 {
-  "version": "2.15",
+  "version": "2.16",
   "localProgressSprint3": {
     "date": "2026-10-29",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "258 pruebas frontend +239 backend +8 ADMIN +52 escenarios distintos PostgreSQL/HTTP =557 aprobadas, sin sumar repeticiones. Integración:47/52 iniciales y cinco casos revalidados con corrección de entorno/configuración del test. Lint/tipos/builds aprobados. Matriz navegador243/243,81 casos,73 rutas,375/768/1440px; sin violaciones axe detectadas, excepciones de script o desbordamientos globales. Incompletos de contraste y métricas de desarrollo conservados sin declarar certificación WCAG/CWV. Sin push/Trello ni correo externo de QA.",
-    "evidence": "cierre-s3-19-qa-global-2026-10-29.md",
-    "previousEvidence": "cierre-legal-provisional-2026-10-28.md",
+    "verification": "S3-26:261 frontend+241 backend+8 ADMIN+5 integraciones dirigidas=515 pruebas distintas aprobadas en este cierre;lint/tipos/builds exit0. TLS/autenticación Gmail revalidadas sin envío nuevo;recepción real previa documentada el24/10. Transporte sustituido solo en QA para errores/avisos/captura visual;no acredita buzón real. Tokens,titular,cuotas,preferencias,cronología exacta,cola/reintentos,privacidad,perfil,KYC/KYB y soporte comprobados. Se conserva aparte S3-19:243 comprobaciones UI/73 rutas;no se afirma otra pasada global. Sin push/Trello.",
+    "evidence": "cierre-s3-26-contactos-2026-10-29.md",
+    "previousEvidence": "cierre-s3-19-qa-global-2026-10-29.md",
     "rules": "decisiones/ADR-016-condiciones-provisionales-del-equipo.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
     "previousAuditEvidence": "avance-auditoria-s3-15-16-18-2026-10-19.md",
@@ -45,7 +45,7 @@
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
       "S3-24": "Cierre técnico DEMO del panel: paginación, ámbitos personales/institucionales autorizados, totales por moneda y DEMO, pendientes/enlaces a módulos combinados. No cierra S3-21.",
       "S3-25": "Cierre técnico local: agregados reales de revisión, identidad, soporte, rendición/cierre, pagos, conciliación, desembolsos, devoluciones y disputas. Responsabilidad/privacidad de nueve perfiles, auditor en consulta, fecha de instantánea, actualización, cero/error honestos y enlaces a bandejas con filtros. Conteos por estado y pagos distintos; MATCHED no es pendiente. Operaciones económicas solo DEMO.",
-      "S3-26": "En curso global: correo real autorizado, verificación de dirección, preferencias/outbox y soporte operativos; condiciones provisionales integradas en registro/KYC/KYB. Falta cerrar evidencia y aceptación transversal de contactos/avisos con el recorrido definitivo. Teléfono opcional sin SMS; no queda un bloqueo por esperar legal externo para el MVP académico.",
+      "S3-26": "Cierre técnico local del MVP académico:correo propio con token temporal de un uso,titular/cuotas/reenvío,contacto cambiado sin distintivo/suscripción heredados,preferencias y lectura propias,estados actuales en español y cronología del evento,cola durable/reintentos/privacidad. Decisión de campaña,KYC/KYB y soporte conectados;perfil/teléfono revalidados.515 pruebas dirigidas/unitarias aprobadas;TLS Gmail vigente y recepción previa documentada. Transporte de QA no acredita buzón real;SMS no autorizado ni simulado. Legal provisional propio integrado. Aceptación global permanece en S3-21.",
       "S1-11": "Cierre técnico del acuerdo PROVISIONAL del equipo para MVP académico DEMO: términos/privacidad propios versionados, publicados y exportados de una fuente; registro requiere versión declarada/confirmación; cuenta/rol/recibo/auditoría atómicos. Recibo propio e incorporación explícita de cuentas anteriores sin backfill. No acredita aprobación externa ni habilita actividad comercial.",
       "S1-12": "Cierre técnico: Gmail autorizado con TLS, recepción comprobada, recuperación HTTP → correo → reset → login nuevo, token temporal de un uso, rechazo de reutilización y revocación de sesión previa. Clave exclusivamente local; importador privado de solo correo y README actualizados."
     },
@@ -84,9 +84,10 @@
       "S1-11",
       "S2-06",
       "S2-07",
-      "S3-19"
+      "S3-19",
+      "S3-26"
     ],
-    "scope": "33 alcances con cierre técnico DEMO de36. Alison9/9, Santiago9/9 y Ricardo15/18 en el criterio académico provisional adoptado; asignaciones originales conservadas. Pendientes/en curso S3-20/21/26 de entrega/aceptación transversal. No equivale a aprobación jurídica/comercial, certificación WCAG/CWV ni aceptación total. state conserva instantánea histórica del tablero; sin sincronización Trello.",
+    "scope": "34 alcances con cierre técnico DEMO de36. Alison9/9,Santiago9/9,Ricardo16/18;asignaciones originales conservadas. Quedan S3-21(recorrido/aceptación integral) y S3-20(entrega final). No equivale a aprobación jurídica/comercial,WCAG/CWV ni aceptación total. state conserva instantánea histórica del tablero;sin sincronización Trello.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -142,7 +143,8 @@
       "externalApproval": false,
       "commercialAuthorization": false,
       "evidence": "cierre-legal-provisional-2026-10-28.md"
-    }
+    },
+    "contactsEvidence": "cierre-s3-26-contactos-2026-10-29.md"
   },
   "delivery": {
     "date": "2026-10-16",

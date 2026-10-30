@@ -61,6 +61,7 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
   assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_mail_event WHERE case_id='${caseId}'`),'2','El titular no se envía un correo a sí mismo.')
   await Promise.all([mail.collect(),mail.collect()]);const notices=()=>mail.notices(owner.id)
   assert.equal((await notices()).filter(n=>n.entityName==='SUPPORT_CASE').length,2)
+  assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_mail_event e JOIN public.notification n ON n.id=e.notification_id WHERE e.case_id='${caseId}' AND n.created_at<>e.created_at`),'0','Los avisos conservan la fecha y precisión del evento de soporte.')
   assert.equal((await mail.notices(other.id)).filter(n=>n.entityName==='SUPPORT_CASE').length,0)
   fail=true;await mail.tick();assert.equal(sql(`SELECT count(*) FROM brotar_extension.mail_delivery d JOIN public.notification n ON n.id=d.notification_id WHERE n.entity_id='${caseId}' AND d.result='RETRY' AND d.attempts=1`),'2')
   sql(`UPDATE brotar_extension.mail_delivery SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE notification_id IN(SELECT id FROM public.notification WHERE entity_id='${caseId}');`)

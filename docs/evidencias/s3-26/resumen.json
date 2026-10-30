@@ -1,0 +1,108 @@
+{
+  "task": "S3-26",
+  "date": "2026-10-29",
+  "branch": "RicardoDev",
+  "published": false,
+  "trelloChanged": false,
+  "status": "Cierre técnico MVP académico DEMO",
+  "checks": {
+    "frontend": 261,
+    "backend": 241,
+    "localAdmin": 8,
+    "targetedIntegration": 5,
+    "totalDistinctInThisClosure": 515,
+    "failedFinal": 0,
+    "skippedIntegration": 0,
+    "scope": "No se afirma una nueva pasada de toda la suite de integraciones ni de todas las rutas; se conserva por separado el corte S3-19."
+  },
+  "smtp": {
+    "newConnectionCheck": "TLS/autenticación real verificada, sin enviar correo",
+    "realDeliveryEvidence": "docs/correo-operativo-2026-10-24.md, evidencia previa con recepción confirmada",
+    "failureAndBrowserTests": "ContactMailSender sustituido; destinatarios sintéticos; no acredita posesión real ni entrega externa"
+  },
+  "browserObserved": [
+    "Preferencia deshabilitada mientras falta verificar",
+    "Solicitar enlace mediante Enter",
+    "Abrir enlace no verifica automáticamente; fragmento retirado",
+    "Confirmar mediante Enter y mensaje de éxito",
+    "Activar avisos;confirmación y checkbox persistido",
+    "Avisos de revisión KYC visibles;reproducción del orden por lote"
+  ],
+  "browserLimit": "Herramienta retirada antes de repetir tras corrección temporal; esa corrección se valida PostgreSQL/HTTP. No se inventa segunda pasada visual. Matriz móvil/teclado general previa en S3-19.",
+  "security": [
+    "Titular/sesión/origen/DTO",
+    "Caducidad/uso único/reenvío/cuotas",
+    "Sin roles concedidos por verificar correo",
+    "Contacto sustituido invalida distintivo/suscripción efectiva",
+    "Opt-out y cola sin canal",
+    "Privacidad,rollback,reintento/agotamiento y concurrencia",
+    "Teléfono opcional,sin SMS ni distintivo falso"
+  ],
+  "schema": {
+    "migrations": 40,
+    "httpRoutes": 215,
+    "newMigrations": 0
+  },
+  "remainingTasks": [
+    "S3-21",
+    "S3-20"
+  ],
+  "executions": [
+    {
+      "privateLog": "tmp/s326-front-check.log",
+      "sha256": "6047ae4faf0c6a4d418c6df6ee0b200a38f9c8f8eb5aeca22460e9eb0a626ac9",
+      "result": "Exit0:261 aprobadas;lint/tipos/build."
+    },
+    {
+      "privateLog": "tmp/s326-back-check.log",
+      "sha256": "cc1c13a1e14364720efb668511d7f2d9b22b18f3a600278d84eb7832726e8004",
+      "result": "Exit0:241 backend+8 ADMIN;lint/tipos/build."
+    },
+    {
+      "privateLog": "tmp/s326-integration.log",
+      "sha256": "ac11440993bb1db0d6e01cc9ddd31c620fba884c0f7130f1e78d16bb5d11600a",
+      "result": "Exit0:5/5 integraciones;0 fallos/omitidas."
+    },
+    {
+      "privateLog": "tmp/s326-smtp-connection.log",
+      "sha256": "116acd3a6577733f837cd0e75580c30624f3b45956fca65e67d152fd6020dd09",
+      "result": "Exit0:TLS y autenticación reales;sin envío."
+    },
+    {
+      "privateLog": "tmp/s326-client-red.log",
+      "sha256": "d711169d32ce7e313131c0bedc77e3d9d546e713b16c5556137a985d9195d32e",
+      "result": "Rojo esperado antes de validar los cuerpos del cliente."
+    },
+    {
+      "privateLog": "tmp/s326-states-red.log",
+      "sha256": "256b70b971ea980d264e99920aeed02e9203713e8a8b1a4f072d484fa2da0048",
+      "result": "Rojo esperado: códigos reales sin traducción."
+    },
+    {
+      "privateLog": "tmp/s326-order-red.log",
+      "sha256": "4438636f28fdcf59e2e86a414d4ac5857bf3353e8b9aa88e42188dc43cba704c",
+      "result": "Rojo esperado: fecha del lote en lugar del evento."
+    },
+    {
+      "privateLog": "tmp/s326-integration-precision-red.log",
+      "sha256": "4d7bb38ba49d312b3e43227ce9f5ec183d49de824a1dad3c820137314a9c8975",
+      "result": "Rojo de precisión: pérdida de microsegundos por conversión JS Date."
+    },
+    {
+      "privateLog": "tmp/s326-integration-initial-rate-limit.log",
+      "sha256": "26e63511e743ba9a99166ff9d7ad9a549114ec838c0290ade3e15836d051fd5e",
+      "result": "Primera pasada:2/4;aislamiento de cuotas corregido."
+    },
+    {
+      "privateLog": "tmp/s326-integration-kyb-prerequisite.log",
+      "sha256": "8b99b7674a112d94d80ab7f9ec754641b281520c39cb66e53967053cd6eb9151",
+      "result": "Pasada3/4:fixture sin KYC previo;se añadió el recorrido autorizado."
+    },
+    {
+      "privateLog": "tmp/s326-integration-interrupted.log",
+      "sha256": "7012b4a0056f856eb200e90868ec27e54ce003790b32db1553e206f72b9ca4b0",
+      "result": "Pasada interrumpida;no se cuenta como aprobada."
+    }
+  ],
+  "apiRestartEvidence": "persistencia-reinicio.json"
+}

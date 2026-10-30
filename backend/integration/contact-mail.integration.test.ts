@@ -18,7 +18,9 @@ test('correo integrado: titular, caducidad, reenvío, privilegios, preferencias,
  assert.equal(execFileSync('docker',['inspect','--format','{{index .Config.Labels "com.docker.compose.project"}}',target.container],{encoding:'utf8'}).trim(),target.project)
  const admin=(sql:string)=>execFileSync('docker',['exec','-i',target.container,'psql','-X','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:sql,stdio:['pipe','pipe','pipe'],timeout:10000})
  const source=createDataSource(config);await source.initialize()
- const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl()
+ const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}))
+ const ip=`contact-mail-${randomUUID()}`;app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:ip});next()})
+ await app.listen(0,'127.0.0.1');const base=await app.getUrl()
  const sender=app.get(ContactMailSender),mail=app.get(ContactMail),suffix=randomUUID(),password=randomBytes(24).toString('hex'),users:string[]=[],cookies:string[]=[]
  let available=true,fail=false;const messages:{to:string;subject:string;text:string}[]=[]
  sender.available=()=>available;sender.origin=()=>'http://127.0.0.1:5173';sender.send=async(to,subject,text)=>{if(fail)throw new Error('SMTP simulated failure (not logged)');messages.push({to,subject,text})}
@@ -72,6 +74,7 @@ test('correo integrado: titular, caducidad, reenvío, privilegios, preferencias,
   // Cambiar la dirección en un proceso autorizado invalida el distintivo y los enlaces anteriores.
   admin(`UPDATE public.app_user SET email='changed-${suffix}@example.invalid' WHERE id='${users[0]}';`)
   assert.equal((await mail.status(users[0]!)).verifiedAt,null);await assert.rejects(()=>mail.preference(users[0]!,true))
+  assert.equal((await mail.status(users[0]!)).emailNotifications,false,'La dirección nueva no hereda visualmente la suscripción del contacto anterior.')
   // Un fallo de SMTP anula el enlace; el siguiente envío también revoca los anteriores.
   fail=true;await assert.rejects(()=>mail.request(users[1]!))
   assert.equal((await source.query(`SELECT count(*)::int AS n FROM public.user_token WHERE user_id=$1 AND token_type='EMAIL_VERIFICATION' AND revoked_at IS NULL`,[users[1]]))[0].n,0)

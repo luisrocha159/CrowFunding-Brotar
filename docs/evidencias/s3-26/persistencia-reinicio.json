@@ -1,0 +1,9 @@
+{
+  "database": "QA15448",
+  "afterApiRestart": true,
+  "afterFreshLogin": true,
+  "syntheticVerificationPersisted": true,
+  "preferencePersisted": true,
+  "realSmtpConfiguredInQa": false,
+  "phoneChannel": false
+}
