@@ -2,7 +2,7 @@
 
 Ricardo · RicardoDev · 29/10/2026 (America/La_Paz). Corte base `7c4222d` más este incremento local. No se publica código, no se modifica DEV y no se sincroniza Trello. El alcance adoptado es el MVP académico DEMO con condiciones provisionales propias del equipo.
 
-**Estado:** validación técnica aprobada; aceptación humana pendiente de registro. **565 pruebas distintas aprobadas: 261 frontend + 241 backend + 8 ADMIN + 55 de la suite de integración**, con cero fallos y omitidas en la pasada final. Lint, tipos y builds terminaron con exit 0; 215 contratos HTTP verificados. [Resultados y hashes](evidencias/s3-21/resumen.json). No se suman repeticiones, observaciones UI ni rutas HTTP como pruebas adicionales.
+**Estado: S3-21 completada para el corte académico DEMO.** Validación técnica aprobada y aceptación expresa de Ricardo registrada sobre `dc8001c`. **565 pruebas distintas aprobadas: 261 frontend + 241 backend + 8 ADMIN + 55 de la suite de integración**, con cero fallos y omitidas en la pasada final. Lint, tipos y builds terminaron con exit 0; 215 contratos HTTP verificados. [Resultados y hashes](evidencias/s3-21/resumen.json) · [Acta de aceptación](evidencias/s3-21/aceptacion.json). No se suman repeticiones, observaciones UI ni rutas HTTP como pruebas adicionales.
 
 ## Criterios de BG-64 y resultado
 
@@ -10,7 +10,7 @@ Ricardo · RicardoDev · 29/10/2026 (America/La_Paz). Corte base `7c4222d` más 
 | --- | --- | --- |
 | CA1: conectar registro, campaña, revisión, publicación, aporte, resultado, seguimiento y gestión interna | Una campaña nueva realiza el recorrido completo mediante HTTP y PostgreSQL reales. Se inspeccionan después sus registros en la interfaz. | **Validado técnicamente.** |
 | CA2: alternativas de error, permisos y proveedores simulados | Rechazos y límites en el mismo caso, más suite general. Se documentan transporte, reloj, dinero y evidencias sintéticas. | **Validado técnicamente.** No acredita integración bancaria ni identidad real. |
-| CA3: revisión de responsables y evidencia de aceptación | Acta preparada al final de este documento, asociada a este corte y sus evidencias. | **Pendiente de respuesta humana.** Una prueba automática no puede aceptar el producto en nombre del equipo. |
+| CA3: revisión de responsables y evidencia de aceptación | Respuesta humana expresa de Ricardo al resultado documentado y sus límites, asociada a dc8001c. | **Aceptado por Ricardo para este corte académico DEMO.** No se atribuye revisión o aprobación a otros integrantes, líderes o cliente. |
 
 La entrega general S3-20 continúa aparte. El orden solicitado permite ensayar el corte local antes de publicarlo; no transforma una entrega aún no publicada en aceptación externa.
 
@@ -154,15 +154,17 @@ En el entorno QA conservado, abrir `http://127.0.0.1:5198`. Las cuentas sintéti
 5. **AUDITOR:** Ciclo de campañas → esa campaña: Cerrada y seis eventos conservados. Consulta sin formularios de operación; contraste con API que devuelve 403 al intentar autorizar dinero.
 6. Contrastar el caso y los límites con el resumen de pruebas. Registrar observaciones concretas y si se acepta el **alcance académico DEMO** de este corte, sin atribuir recepción de correo nueva, dinero real o aprobación comercial.
 
-## Registro de aceptación pendiente
+## Registro de aceptación
 
 | Dato | Registro actual |
 | --- | --- |
-| Corte revisado | RicardoDev local, base 7c4222d más este incremento; commit de cierre en Git local |
+| Corte revisado | RicardoDev local, commit técnico `dc8001c`, sobre base `7c4222d` |
 | Evidencias | recorrido-integral.json, interfaz-observada.json, resumen.json y capturas enlazadas |
-| Responsable que acepta | Pendiente; no se atribuye a Ricardo, Alison, Santiago ni líderes sin respuesta |
-| Fecha/respuesta | Pendiente |
-| Observaciones o reservas | Pendiente de la revisión del responsable |
-| Decisión | **PENDING** |
+| Responsable que acepta | Ricardo, usuario responsable de este corte |
+| Fecha/respuesta | 29/10/2026, America/La_Paz. Respuesta explícita en esta conversación: «Acepto este corte del MVP académico DEMO». |
+| Observaciones o reservas | La respuesta de aceptación no incluyó observaciones adicionales. |
+| Decisión | **ACCEPTED**, únicamente para el alcance académico DEMO documentado |
 
-Para cerrar CA3 hace falta una respuesta trazable del responsable tras revisar este resultado: aceptar el alcance académico DEMO o señalar los defectos que faltan. Este documento ya deja concreto qué se está sometiendo a revisión. Hasta registrar esa respuesta, S3-21 permanece validada técnicamente/en revisión y no se cuenta como aceptación formal del MVP. S3-20 conserva la entrega final pendiente; este incremento no la publica por adelantado.
+La aceptación consta en [aceptacion.json](evidencias/s3-21/aceptacion.json), con el commit técnico completo, la respuesta y el alcance. Los JSON del ensayo conservan humanAcceptance=PENDING como salida histórica anterior a esta respuesta; no se reescriben las pruebas para simular una firma automática. La aceptación humana se registra después y por separado.
+
+S3-21 queda completada para el MVP académico DEMO por aceptación de Ricardo. No se afirma que otros miembros hayan revisado el corte ni que exista aprobación jurídica/comercial externa. El estado local queda en **35/36 tareas; Ricardo 17/18, Alison 9/9 y Santiago 9/9**, conservando las asignaciones originales. **S3-20 mantiene la entrega final pendiente**; este incremento no publica código ni cambia DEV o Trello.

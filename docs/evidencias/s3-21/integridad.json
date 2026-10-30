@@ -1,6 +1,10 @@
 {
   "files": [
     {
+      "file": "aceptacion.json",
+      "sha256": "9d0974cf2e9cb88274c880ac27b8ac595021dd375fa2ad9f8eac4dbfb0952ab6"
+    },
+    {
       "file": "campana-publica-movil.jpg",
       "sha256": "80894c0a31f1f236aa048d723c37a0538bfa297219c6ba48bd040313d820fb70"
     },
@@ -30,7 +34,7 @@
     },
     {
       "file": "resumen.json",
-      "sha256": "c3cf972eb553ee735de8672511beb12e00dc2ff1c28840bd50f197c71e81446a"
+      "sha256": "9a60ca6d557cca9ae1f5651888a252b7c723086bf7aa9a3383f4bf6e689a60b7"
     }
   ]
 }

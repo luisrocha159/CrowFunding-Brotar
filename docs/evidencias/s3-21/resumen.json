@@ -7,7 +7,7 @@
   "base": "7c4222dfb7016612103d92d42f60d60edf01663d",
   "published": false,
   "trelloChanged": false,
-  "status": "Validación técnica DEMO aprobada; aceptación humana pendiente",
+  "status": "S3-21 completada: validación técnica y aceptación de Ricardo del corte académico DEMO",
   "checks": {
     "frontend": 261,
     "backend": 241,
@@ -119,14 +119,20 @@
     "Ensayo de arranque libera su contenedor/red sin borrar volumen."
   ],
   "humanAcceptance": {
-    "state": "PENDING",
-    "responsible": null,
-    "date": null,
-    "response": null,
-    "source": "BG-64 CA3; registro preparado en validacion-integral-s3-21-2026-10-29.md"
+    "task": "S3-21",
+    "state": "ACCEPTED",
+    "responsible": "Ricardo (usuario responsable de este corte)",
+    "date": "2026-10-29",
+    "timezone": "America/La_Paz",
+    "recordedAt": "2026-10-30T03:44:28.008Z",
+    "reviewedCommit": "dc8001c6fd97ce0b3cf1ebf296a42bf7f46bcaef",
+    "source": "Respuesta explícita del usuario a la pregunta de aceptación BG-64 CA3 en esta conversación",
+    "response": "Acepto este corte del MVP académico DEMO",
+    "scope": "Corte académico DEMO de RicardoDev con pagos simulados y condiciones provisionales propias; no se atribuye aprobación a otros integrantes, líderes o cliente.",
+    "published": false,
+    "trelloChanged": false
   },
   "remaining": [
-    "S3-21:aceptación humana del resultado",
     "S3-20:entrega general/publicación autorizada"
   ],
   "executions": [
@@ -253,5 +259,6 @@
     },
     "humanAcceptance": "PENDING",
     "clockAdjustment": "Solo ends_at de esta campaña; no se insertan estados de negocio aprobados."
-  }
+  },
+  "acceptanceNote": "Los JSON de ejecución conservan humanAcceptance PENDING como salida histórica anterior a la respuesta humana; aceptacion.json registra la decisión posterior sin reescribir las pruebas."
 }

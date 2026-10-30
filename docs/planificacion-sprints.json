@@ -1,10 +1,10 @@
 {
-  "version": "2.17",
+  "version": "2.18",
   "localProgressSprint3": {
     "date": "2026-10-29",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "S3-21:261 frontend+241 backend+8 ADMIN+55 integraciones=565 pruebas distintas aprobadas en pasada final;sin fallos/omitidas;lint/tipos/build exit0;215 contratos verificados. Caso nuevo entre8 cuentas,corrección/publicación/aporte/desembolso/avance/rendición/cierre,API reiniciada2 veces,importes12BOB consistentes.12 comprobaciones UI finales/7 rutas. Corregidos primer arranque TCP,jerarquía pública y limpieza KYB de QA;conservados intentos fallidos. Transporte capturado sin SMTP ni dinero real. CA3 aceptación humana PENDING;sin push/DEV/Trello.",
+    "verification": "S3-21:261 frontend+241 backend+8 ADMIN+55 integraciones=565 pruebas distintas aprobadas en pasada final;sin fallos/omitidas;lint/tipos/build exit0;215 contratos verificados. Caso nuevo entre8 cuentas,corrección/publicación/aporte/desembolso/avance/rendición/cierre,API reiniciada2 veces,importes12BOB consistentes.12 comprobaciones UI finales/7 rutas. Corregidos primer arranque TCP,jerarquía pública y limpieza KYB de QA;conservados intentos fallidos. Transporte capturado sin SMTP ni dinero real. CA3 aceptada expresamente por Ricardo para el corte académico DEMO dc8001c;sin push/DEV/Trello.",
     "evidence": "validacion-integral-s3-21-2026-10-29.md",
     "previousEvidence": "cierre-s3-26-contactos-2026-10-29.md",
     "rules": "decisiones/ADR-016-condiciones-provisionales-del-equipo.md",
@@ -41,7 +41,7 @@
       "S3-18": "Cierre transversal revalidado del corte: contrato0.15,215 rutas,40 migraciones no destructivas; clientes/API coordinados, instalación/readiness/recuperación probados y consentimiento integrado. No certifica aceptación global ni futura producción.",
       "S3-19": "Cierre técnico DEMO local: matriz completa de73 rutas/81 casos a375/768/1440px,243 comprobaciones requeridas; teclado, foco, errores, permisos y datos persistidos, incluidas finanzas/soporte. Hallazgos reproducidos y corregidos;557 pruebas distintas aprobadas con resultado compuesto de integración documentado. No certifica accesibilidad/rendimiento de producción ni aceptación integral S3-21.",
       "S3-20": "Pendiente de entrega general: consolidar documentación/backlog/pantallas finales y publicación autorizada del corte definitivo. README y evidencia de cada incremento actualizados localmente; este cierre no se sube a GitHub ni modifica DEV/Trello.",
-      "S3-21": "Recorrido técnico DEMO validado localmente:una campaña nueva conecta registro,contacto/KYC,campaña/corrección/revisión/publicación,aporte único,soporte,resultado/desembolso,seguimiento/recompensa/rendición/cierre y persistencia;negativas y simulaciones documentadas.565 pruebas distintas aprobadas,12 observaciones UI finales. CA3:aceptación del responsable aún pendiente;no se inventa firma ni se cuenta como aceptación formal del MVP.",
+      "S3-21": "Recorrido técnico DEMO validado localmente:una campaña nueva conecta registro,contacto/KYC,campaña/corrección/revisión/publicación,aporte único,soporte,resultado/desembolso,seguimiento/recompensa/rendición/cierre y persistencia;negativas y simulaciones documentadas.565 pruebas distintas aprobadas,12 observaciones UI finales. CA3:aceptación expresa de Ricardo registrada para el corte académico DEMO dc8001c;acta y respuesta trazable conservadas. No se atribuye aprobación a otros responsables ni habilitación comercial.",
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
       "S3-24": "Cierre técnico DEMO del panel: paginación, ámbitos personales/institucionales autorizados, totales por moneda y DEMO, pendientes/enlaces a módulos combinados. No cierra S3-21.",
       "S3-25": "Cierre técnico local: agregados reales de revisión, identidad, soporte, rendición/cierre, pagos, conciliación, desembolsos, devoluciones y disputas. Responsabilidad/privacidad de nueve perfiles, auditor en consulta, fecha de instantánea, actualización, cero/error honestos y enlaces a bandejas con filtros. Conteos por estado y pagos distintos; MATCHED no es pendiente. Operaciones económicas solo DEMO.",
@@ -85,9 +85,10 @@
       "S2-06",
       "S2-07",
       "S3-19",
-      "S3-26"
+      "S3-26",
+      "S3-21"
     ],
-    "scope": "34 alcances con cierre técnico DEMO de36. Alison9/9,Santiago9/9,Ricardo16/18;S3-21 tiene recorrido técnico validado y está en revisión por aceptación humana CA3;S3-20 conserva entrega final pendiente. Asignaciones originales e instantánea histórica state del tablero conservadas;sin sincronización Trello. No equivale a aprobación jurídica/comercial,WCAG/CWV ni operación bancaria.",
+    "scope": "35 alcances completados del MVP académico DEMO de36. Alison9/9,Santiago9/9,Ricardo17/18;S3-21 tiene recorrido técnico validado y aceptación expresa de Ricardo para el corte dc8001c. Queda S3-20:entrega final/publicación autorizada. Asignaciones originales e instantánea histórica state del tablero conservadas;sin sincronización Trello. No equivale a aprobación externa,jurídica/comercial,WCAG/CWV ni operación bancaria.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -145,16 +146,21 @@
       "evidence": "cierre-legal-provisional-2026-10-28.md"
     },
     "contactsEvidence": "cierre-s3-26-contactos-2026-10-29.md",
-    "reviewReadyDemoTasks": [
-      "S3-21"
-    ],
+    "reviewReadyDemoTasks": [],
     "s321Acceptance": {
-      "state": "PENDING",
-      "source": "BG-64 CA3",
-      "evidence": "validacion-integral-s3-21-2026-10-29.md",
-      "responsible": null,
-      "date": null,
-      "published": false
+      "task": "S3-21",
+      "state": "ACCEPTED",
+      "responsible": "Ricardo (usuario responsable de este corte)",
+      "date": "2026-10-29",
+      "timezone": "America/La_Paz",
+      "recordedAt": "2026-10-30T03:44:28.008Z",
+      "reviewedCommit": "dc8001c6fd97ce0b3cf1ebf296a42bf7f46bcaef",
+      "source": "Respuesta explícita del usuario a la pregunta de aceptación BG-64 CA3 en esta conversación",
+      "response": "Acepto este corte del MVP académico DEMO",
+      "scope": "Corte académico DEMO de RicardoDev con pagos simulados y condiciones provisionales propias; no se atribuye aprobación a otros integrantes, líderes o cliente.",
+      "published": false,
+      "trelloChanged": false,
+      "evidence": "validacion-integral-s3-21-2026-10-29.md"
     }
   },
   "delivery": {

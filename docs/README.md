@@ -1,6 +1,6 @@
 # Recorrido integral local · S3-21 · 29/10/2026
 
-[Escenario entre roles, validaciones, instalación nueva, pruebas y aceptación](validacion-integral-s3-21-2026-10-29.md). Una misma campaña conecta registro, revisión, publicación, aporte DEMO, soporte, desembolso, avance, rendición y cierre. Evidencia automática y lectura visual separadas de la aceptación humana; sin push ni cambios en DEV/Trello. El resto de este índice conserva sus cortes históricos.
+[Escenario entre roles, validaciones, instalación nueva, pruebas y aceptación](validacion-integral-s3-21-2026-10-29.md). Una misma campaña conecta registro, revisión, publicación, aporte DEMO, soporte, desembolso, avance, rendición y cierre. **S3-21 completada para el corte académico DEMO:565 pruebas aprobadas y aceptación expresa de Ricardo registrada por separado.** Queda S3-20; sin push ni cambios en DEV/Trello. El resto de este índice conserva sus cortes históricos.
 
 # S3-10 / S3-25 - corte local - 25/10/2026
 

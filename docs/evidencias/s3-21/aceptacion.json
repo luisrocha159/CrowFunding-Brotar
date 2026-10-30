@@ -1,0 +1,14 @@
+{
+  "task": "S3-21",
+  "state": "ACCEPTED",
+  "responsible": "Ricardo (usuario responsable de este corte)",
+  "date": "2026-10-29",
+  "timezone": "America/La_Paz",
+  "recordedAt": "2026-10-30T03:44:28.008Z",
+  "reviewedCommit": "dc8001c6fd97ce0b3cf1ebf296a42bf7f46bcaef",
+  "source": "Respuesta explícita del usuario a la pregunta de aceptación BG-64 CA3 en esta conversación",
+  "response": "Acepto este corte del MVP académico DEMO",
+  "scope": "Corte académico DEMO de RicardoDev con pagos simulados y condiciones provisionales propias; no se atribuye aprobación a otros integrantes, líderes o cliente.",
+  "published": false,
+  "trelloChanged": false
+}
