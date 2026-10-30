@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "file": "campana-publica-movil.jpg",
+      "sha256": "80894c0a31f1f236aa048d723c37a0538bfa297219c6ba48bd040313d820fb70"
+    },
+    {
+      "file": "cierre-creador-escritorio.webp",
+      "sha256": "99bb387bae391d489beec9b10daab579e2a0d635522dcc9c6a15dae6aa2a351b"
+    },
+    {
+      "file": "cierre-creador-movil.jpg",
+      "sha256": "cb40345b1fac625b503ca75b8f6a99e6cc8e91d76a8a841322da25943a4d10f9"
+    },
+    {
+      "file": "desembolso-movil.jpg",
+      "sha256": "2afc46a6b76dc261660ff5a320c9fcb18fd6d1cde891850b10c3ef218e23ece3"
+    },
+    {
+      "file": "interfaz-observada.json",
+      "sha256": "2c8ad12843d70fdcf75f4bedb6be210be546e328db11ab6e9fb91eb1a6bc2eac"
+    },
+    {
+      "file": "recorrido-integral.json",
+      "sha256": "40c49af9a055816099a6f69b5e8fe44a873b24f887683481d01dd59bd0aa05ae"
+    },
+    {
+      "file": "recorrido-regresion-final.json",
+      "sha256": "0c609d474a88c556c2e32a7f76e5d4a3060914002819c9e94fa66dabac1e7366"
+    },
+    {
+      "file": "resumen.json",
+      "sha256": "c3cf972eb553ee735de8672511beb12e00dc2ff1c28840bd50f197c71e81446a"
+    }
+  ]
+}

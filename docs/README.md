@@ -1,3 +1,7 @@
+# Recorrido integral local · S3-21 · 29/10/2026
+
+[Escenario entre roles, validaciones, instalación nueva, pruebas y aceptación](validacion-integral-s3-21-2026-10-29.md). Una misma campaña conecta registro, revisión, publicación, aporte DEMO, soporte, desembolso, avance, rendición y cierre. Evidencia automática y lectura visual separadas de la aceptación humana; sin push ni cambios en DEV/Trello. El resto de este índice conserva sus cortes históricos.
+
 # S3-10 / S3-25 - corte local - 25/10/2026
 
 **Ampliación posterior de este mismo corte:** [Cierre local de panel, conversación y correo de soporte](cierre-alison-panel-soporte-correo-2026-10-25.md), contrato 0.12, 32 migraciones y 182 rutas. Completa los pendientes de panel y respuesta/correo encontrados en la revisión siguiente. Legal y aceptación integral siguen pendientes; sin push ni cambios en DEV/Trello.

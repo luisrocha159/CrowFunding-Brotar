@@ -1,0 +1,53 @@
+{
+  "scenario": "S3-21 integral",
+  "mode": "DEMO",
+  "campaignId": "66752d24-de47-46a7-826a-1a5280b6e571",
+  "slug": "camp-66752d24-de47-46a7-826a-1a5280b6e571",
+  "contributionId": "42fd1b1c-cde0-4118-8a17-eccecc9dfc38",
+  "disbursementId": "5d5445e6-dcc0-4414-b8b5-82cb21f35ac7",
+  "finalReportId": "ba6864c8-cde8-41c1-a19c-ab125996e383",
+  "steps": [
+    {
+      "stage": "Registro y responsabilidades",
+      "result": "Ocho cuentas por HTTP; roles internos separados y CREATOR concedido por ADMIN, sin autoescalamiento."
+    },
+    {
+      "stage": "Correo e identidad DEMO",
+      "result": "Token propio de un uso y captura/revisión KYC independiente; transporte sustituido, sin buzón real acreditado."
+    },
+    {
+      "stage": "Campaña completa y revisión",
+      "result": "Dos actividades/hito, indicador, presupuesto, fechas, portada y recompensa; observación/corrección/ronda2, aprobación privada y publicación separadas."
+    },
+    {
+      "stage": "Aporte DEMO",
+      "result": "Campaña persistida tras reinicio; aporte/recibo ficticios, idempotencia, pago confirmado y cupo único comprobados."
+    },
+    {
+      "stage": "Soporte conectado",
+      "result": "Incidencia del aportante, respuesta privada de SUPPORT e historial/resolución sin mover dinero."
+    },
+    {
+      "stage": "Resultado y desembolso",
+      "result": "Vencimiento acelerado explícito; meta real computada, ejecución con KYC, destino ficticio revisado y desembolso completo por FINANCE."
+    },
+    {
+      "stage": "Seguimiento, recompensa y cierre",
+      "result": "Dos actividades/hito e indicador completados; novedad pública, recompensa acreditada, rendición final revisada por REVIEWER y cierre terminal por ADMIN."
+    },
+    {
+      "stage": "Persistencia y trazabilidad",
+      "result": "API reiniciada dos veces; campaña CLOSED, aporte único12.00, desembolso COMPLETED, informe APPROVED y AUDITOR en lectura persistidos."
+    }
+  ],
+  "final": {
+    "campaign": "CLOSED",
+    "contributionCount": 1,
+    "raised": "12.00",
+    "disbursed": "12.00",
+    "expenses": "12.00",
+    "currency": "BOB"
+  },
+  "humanAcceptance": "PENDING",
+  "clockAdjustment": "Solo ends_at de esta campaña; no se insertan estados de negocio aprobados."
+}

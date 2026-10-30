@@ -1,5 +1,7 @@
 > Corte local con condiciones provisionales: **40 migraciones**; ver README raíz §41. Instalación/migración normal incorpora textos y tablas de consentimiento, sin aceptaciones retroactivas ni cambios a políticas KYC históricas.
 
+> **S3-21 · arranque nuevo:** el healthcheck usa `pg_isready -h 127.0.0.1` para esperar el servidor TCP definitivo. El servidor temporal de inicialización acepta sockets Unix antes de que termine la preparación; ese estado ya no se toma como disponibilidad para el instalador. No cambia contraseñas, volúmenes ni esquema. [Ensayo y repetición](../../docs/validacion-integral-s3-21-2026-10-29.md).
+
 **Corte local vigente 28/10/2026:** **39 migraciones**, RicardoDev sin publicar. Cierre S3-12/13/14: sucesión de novedades, rendición de meses terminados/resumen explícito e invitaciones aceptadas. Seguir README principal §3/§40; categorías incluidas en la preparación normal. No reinstalar SQL ni borrar volúmenes para actualizar. [Pruebas y recorridos](../../docs/cierre-s312-314-2026-10-28.md). Los cortes siguientes son históricos.
 
 **Corte integrado local 28/10/2026:** **36 migraciones**, RicardoDev sin publicar. Incluye soporte/correo y cuatro ampliaciones de Santiago; seguir README principal §3 y §39. Las categorías se preparan automáticamente; no restaurar SQL ni borrar volúmenes para actualizar. [Revisión y diferencias de alcance pendientes](../../docs/revision-integracion-santiago-2026-10-28.md). Los conteos siguientes son históricos.
@@ -49,15 +51,9 @@ node scripts/migrate.mjs up
 node scripts/prepare-sprint2.mjs
 node scripts/migrate.mjs status
 node scripts/verify-provisional-v2.mjs
-$env:ALLOW_DB_TEST_WRITES='true'
-$env:DB_TEST_RESTART='false'
-try {
-  node --env-file=../infra/postgres-v2/.env.backend --test --test-concurrency=1 dist-test/integration/*.test.js
-} finally {
-  Remove-Item Env:\ALLOW_DB_TEST_WRITES
-  Remove-Item Env:\DB_TEST_RESTART
-}
 ```
+
+Las integraciones con escritura van en una **copia QA nueva y separada**, con proyecto Compose que contenga `qa`, puerto y archivos propios, sin API ni SMTP de uso personal. No ejecutar la suite global sobre datos de demostración ya guardados. Seguir [el procedimiento de S3-21](../../docs/validacion-integral-s3-21-2026-10-29.md#repetir-la-validación-automática), que también incluye los flags temporales y su retirada.
 
 **Detente si un comando falla.** Solo cuando verificación y tests pasen, y con la API detenida:
 

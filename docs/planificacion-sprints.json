@@ -1,12 +1,12 @@
 {
-  "version": "2.16",
+  "version": "2.17",
   "localProgressSprint3": {
     "date": "2026-10-29",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "S3-26:261 frontend+241 backend+8 ADMIN+5 integraciones dirigidas=515 pruebas distintas aprobadas en este cierre;lint/tipos/builds exit0. TLS/autenticación Gmail revalidadas sin envío nuevo;recepción real previa documentada el24/10. Transporte sustituido solo en QA para errores/avisos/captura visual;no acredita buzón real. Tokens,titular,cuotas,preferencias,cronología exacta,cola/reintentos,privacidad,perfil,KYC/KYB y soporte comprobados. Se conserva aparte S3-19:243 comprobaciones UI/73 rutas;no se afirma otra pasada global. Sin push/Trello.",
-    "evidence": "cierre-s3-26-contactos-2026-10-29.md",
-    "previousEvidence": "cierre-s3-19-qa-global-2026-10-29.md",
+    "verification": "S3-21:261 frontend+241 backend+8 ADMIN+55 integraciones=565 pruebas distintas aprobadas en pasada final;sin fallos/omitidas;lint/tipos/build exit0;215 contratos verificados. Caso nuevo entre8 cuentas,corrección/publicación/aporte/desembolso/avance/rendición/cierre,API reiniciada2 veces,importes12BOB consistentes.12 comprobaciones UI finales/7 rutas. Corregidos primer arranque TCP,jerarquía pública y limpieza KYB de QA;conservados intentos fallidos. Transporte capturado sin SMTP ni dinero real. CA3 aceptación humana PENDING;sin push/DEV/Trello.",
+    "evidence": "validacion-integral-s3-21-2026-10-29.md",
+    "previousEvidence": "cierre-s3-26-contactos-2026-10-29.md",
     "rules": "decisiones/ADR-016-condiciones-provisionales-del-equipo.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
     "previousAuditEvidence": "avance-auditoria-s3-15-16-18-2026-10-19.md",
@@ -41,7 +41,7 @@
       "S3-18": "Cierre transversal revalidado del corte: contrato0.15,215 rutas,40 migraciones no destructivas; clientes/API coordinados, instalación/readiness/recuperación probados y consentimiento integrado. No certifica aceptación global ni futura producción.",
       "S3-19": "Cierre técnico DEMO local: matriz completa de73 rutas/81 casos a375/768/1440px,243 comprobaciones requeridas; teclado, foco, errores, permisos y datos persistidos, incluidas finanzas/soporte. Hallazgos reproducidos y corregidos;557 pruebas distintas aprobadas con resultado compuesto de integración documentado. No certifica accesibilidad/rendimiento de producción ni aceptación integral S3-21.",
       "S3-20": "Pendiente de entrega general: consolidar documentación/backlog/pantallas finales y publicación autorizada del corte definitivo. README y evidencia de cada incremento actualizados localmente; este cierre no se sube a GitHub ni modifica DEV/Trello.",
-      "S3-21": "Pendiente: ejecutar y documentar el recorrido integral entre roles con fallos/límites y registrar aceptación del MVP completo. Los módulos y la política académica provisional ya están disponibles; no se exige esperar textos externos para este ensayo.",
+      "S3-21": "Recorrido técnico DEMO validado localmente:una campaña nueva conecta registro,contacto/KYC,campaña/corrección/revisión/publicación,aporte único,soporte,resultado/desembolso,seguimiento/recompensa/rendición/cierre y persistencia;negativas y simulaciones documentadas.565 pruebas distintas aprobadas,12 observaciones UI finales. CA3:aceptación del responsable aún pendiente;no se inventa firma ni se cuenta como aceptación formal del MVP.",
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
       "S3-24": "Cierre técnico DEMO del panel: paginación, ámbitos personales/institucionales autorizados, totales por moneda y DEMO, pendientes/enlaces a módulos combinados. No cierra S3-21.",
       "S3-25": "Cierre técnico local: agregados reales de revisión, identidad, soporte, rendición/cierre, pagos, conciliación, desembolsos, devoluciones y disputas. Responsabilidad/privacidad de nueve perfiles, auditor en consulta, fecha de instantánea, actualización, cero/error honestos y enlaces a bandejas con filtros. Conteos por estado y pagos distintos; MATCHED no es pendiente. Operaciones económicas solo DEMO.",
@@ -87,7 +87,7 @@
       "S3-19",
       "S3-26"
     ],
-    "scope": "34 alcances con cierre técnico DEMO de36. Alison9/9,Santiago9/9,Ricardo16/18;asignaciones originales conservadas. Quedan S3-21(recorrido/aceptación integral) y S3-20(entrega final). No equivale a aprobación jurídica/comercial,WCAG/CWV ni aceptación total. state conserva instantánea histórica del tablero;sin sincronización Trello.",
+    "scope": "34 alcances con cierre técnico DEMO de36. Alison9/9,Santiago9/9,Ricardo16/18;S3-21 tiene recorrido técnico validado y está en revisión por aceptación humana CA3;S3-20 conserva entrega final pendiente. Asignaciones originales e instantánea histórica state del tablero conservadas;sin sincronización Trello. No equivale a aprobación jurídica/comercial,WCAG/CWV ni operación bancaria.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -144,7 +144,18 @@
       "commercialAuthorization": false,
       "evidence": "cierre-legal-provisional-2026-10-28.md"
     },
-    "contactsEvidence": "cierre-s3-26-contactos-2026-10-29.md"
+    "contactsEvidence": "cierre-s3-26-contactos-2026-10-29.md",
+    "reviewReadyDemoTasks": [
+      "S3-21"
+    ],
+    "s321Acceptance": {
+      "state": "PENDING",
+      "source": "BG-64 CA3",
+      "evidence": "validacion-integral-s3-21-2026-10-29.md",
+      "responsible": null,
+      "date": null,
+      "published": false
+    }
   },
   "delivery": {
     "date": "2026-10-16",

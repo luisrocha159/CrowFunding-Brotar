@@ -90,6 +90,10 @@ test('S3-26 transversal: correo propio → decisión real → cola/reinicio/rein
   await app.close();removeDemoIdentityFixtures(sql,users)
   for(const org of orgs)sql(`DELETE FROM public.verification_document WHERE verification_id IN(SELECT id FROM public.verification WHERE organization_id='${org}');DELETE FROM brotar_extension.verification_revision WHERE verification_id IN(SELECT id FROM public.verification WHERE organization_id='${org}');DELETE FROM public.verification WHERE organization_id='${org}';DELETE FROM public.organization WHERE id='${org}';`)
   for(const id of campaigns)sql(`DELETE FROM public.status_history WHERE entity_type='CAMPAIGN' AND entity_id='${id}';DELETE FROM public.campaign WHERE id='${id}';`)
-  for(const id of users)sql(`DELETE FROM public.audit_log WHERE actor_user_id='${id}';DELETE FROM public.app_user WHERE id='${id}';`)
+  for(const id of users){
+   sql(`UPDATE public.file_asset SET deleted_at=COALESCE(deleted_at,clock_timestamp()) WHERE uploaded_by='${id}';`)
+   assert.equal(sql(`SELECT count(*) FROM public.file_asset WHERE uploaded_by='${id}' AND deleted_at IS NULL`),'0','El fixture debe retirar también archivos KYB antes de eliminar al titular.')
+   sql(`DELETE FROM public.audit_log WHERE actor_user_id='${id}';DELETE FROM public.app_user WHERE id='${id}';`)
+  }
  }
 })

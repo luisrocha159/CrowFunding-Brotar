@@ -8,5 +8,5 @@ export function VerificationBadges({campaignId}:{campaignId:string}){
  }).catch(()=>{if(!c.signal.aborted)setError(true)});return()=>c.abort()},[campaignId])
  if(error)return <p>No se pudieron consultar los distintivos de revisión DEMO.</p>
  if(!labels.length)return null
- return <section aria-label="Revisión documental DEMO"><h3>Revisión documental de prueba</h3><ul>{labels.map(label=><li key={label}>{label}</li>)}</ul><p>Documentos sintéticos revisados; no acreditan identidad real, solvencia ni garantizan el proyecto.</p></section>
+ return <section aria-label="Revisión documental DEMO"><h2>Revisión documental de prueba</h2><ul>{labels.map(label=><li key={label}>{label}</li>)}</ul><p>Documentos sintéticos revisados; no acreditan identidad real, solvencia ni garantizan el proyecto.</p></section>
 }

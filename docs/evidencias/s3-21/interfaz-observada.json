@@ -1,0 +1,1863 @@
+{
+  "scope": "Misma campaña creada por API; lectura real en navegador, no creación completa mediante formularios.",
+  "method": "Esperar texto inequívoco de datos finales después de cada navegación/emulación, antes de medir y capturar.",
+  "initialObservations": [
+    {
+      "role": "creador",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/cierre",
+        "width": 375,
+        "checkedAt": "2026-10-30T02:50:32.439Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Preparar cierre de campaña DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "creador",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/cierre",
+        "width": 1440,
+        "checkedAt": "2026-10-30T02:52:16.787Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Preparar cierre de campaña DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "creador",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/avances",
+        "width": 1440,
+        "checkedAt": "2026-10-30T02:53:42.141Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/progress",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/progress",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/reward-tracking",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/reward-tracking",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Avances y novedades | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 45
+      }
+    },
+    {
+      "role": "aportante",
+      "ready": true,
+      "report": {
+        "path": "/mis-aportes/e4d8526a-b098-448c-8b0c-5341bad42e52/comprobante",
+        "width": 1440,
+        "checkedAt": "2026-10-30T02:58:06.871Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Comprobante informativo | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "aportante",
+      "ready": true,
+      "report": {
+        "path": "/mis-aportes/e4d8526a-b098-448c-8b0c-5341bad42e52/comprobante",
+        "width": 375,
+        "checkedAt": "2026-10-30T02:58:24.007Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Comprobante informativo | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "aportante-soporte",
+      "ready": true,
+      "report": {
+        "path": "/mis-incidencias/4e52d9b8-8cb9-4ab8-9625-24cc10294cbd",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:07:21.647Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/roles",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/roles",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/support-cases",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/roles",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/support-cases/4e52d9b8-8cb9-4ab8-9625-24cc10294cbd",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Detalle de incidencia | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 43
+      }
+    },
+    {
+      "role": "finanzas-desembolso",
+      "ready": true,
+      "report": {
+        "path": "/administracion/desembolsos/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:08:24.015Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Desembolsos DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "finanzas-desembolso",
+      "ready": true,
+      "report": {
+        "path": "/administracion/desembolsos/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:08:42.146Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Desembolsos DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "auditor-ciclo",
+      "ready": true,
+      "report": {
+        "path": "/administracion/ciclo-campanas/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:09:15.358Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Ciclo de campañas DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "auditor-ciclo",
+      "ready": true,
+      "report": {
+        "path": "/administracion/ciclo-campanas/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:09:37.535Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Ciclo de campañas DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "visitante-publico",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:09:41.632Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [
+          {
+            "id": "heading-order",
+            "impact": "moderate",
+            "help": "Heading levels should only increase by one",
+            "nodes": [
+              {
+                "target": [
+                  "section[aria-label=\"Revisión documental DEMO\"] > h3"
+                ],
+                "summary": "Fix any of the following:\n  Heading order invalid"
+              }
+            ]
+          }
+        ],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 49
+      }
+    },
+    {
+      "role": "visitante-publico",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:10:00.281Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [
+          {
+            "id": "heading-order",
+            "impact": "moderate",
+            "help": "Heading levels should only increase by one",
+            "nodes": [
+              {
+                "target": [
+                  "section[aria-label=\"Revisión documental DEMO\"] > h3"
+                ],
+                "summary": "Fix any of the following:\n  Heading order invalid"
+              }
+            ]
+          }
+        ],
+        "incomplete": [],
+        "passes": 46
+      }
+    },
+    {
+      "role": "visitante-publico-corregido",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:10:58.179Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 46
+      }
+    },
+    {
+      "role": "visitante-publico-corregido",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:11:00.286Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 49
+      }
+    }
+  ],
+  "finalObservations": [
+    {
+      "role": "creador",
+      "expectedVisible": "Cerrada",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/cierre",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:16:15.492Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Preparar cierre de campaña DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "creador",
+      "expectedVisible": "Cerrada",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/cierre",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:16:50.011Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/campaign-closure/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Preparar cierre de campaña DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "creador",
+      "expectedVisible": "DEMO Huerto finalizado con evidencia",
+      "ready": true,
+      "report": {
+        "path": "/mis-proyectos/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/avances",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:16:51.860Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/progress",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/progress",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/reward-tracking",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/reward-tracking",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Avances y novedades | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 45
+      }
+    },
+    {
+      "role": "aportante",
+      "expectedVisible": "BRT-C-00005089",
+      "ready": true,
+      "report": {
+        "path": "/mis-aportes/e4d8526a-b098-448c-8b0c-5341bad42e52/comprobante",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:17:22.382Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Comprobante informativo | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "aportante",
+      "expectedVisible": "BRT-C-00005089",
+      "ready": true,
+      "report": {
+        "path": "/mis-aportes/e4d8526a-b098-448c-8b0c-5341bad42e52/comprobante",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:17:24.098Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/me/contributions/e4d8526a-b098-448c-8b0c-5341bad42e52/receipt",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Comprobante informativo | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "aportante",
+      "expectedVisible": "Resuelta",
+      "ready": true,
+      "report": {
+        "path": "/mis-incidencias/4e52d9b8-8cb9-4ab8-9625-24cc10294cbd",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:17:27.204Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/roles",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/roles",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/me/support-cases/4e52d9b8-8cb9-4ab8-9625-24cc10294cbd",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Detalle de incidencia | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 43
+      }
+    },
+    {
+      "role": "finanzas",
+      "expectedVisible": "BRT-P-0000013",
+      "ready": true,
+      "report": {
+        "path": "/administracion/desembolsos/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:17:34.157Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Desembolsos DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "finanzas",
+      "expectedVisible": "BRT-P-0000013",
+      "ready": true,
+      "report": {
+        "path": "/administracion/desembolsos/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:17:35.724Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/finance/disbursements/ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Desembolsos DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "auditor",
+      "expectedVisible": "Cerrada",
+      "ready": true,
+      "report": {
+        "path": "/administracion/ciclo-campanas/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:17:42.428Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Ciclo de campañas DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 46
+      }
+    },
+    {
+      "role": "auditor",
+      "expectedVisible": "Cerrada",
+      "ready": true,
+      "report": {
+        "path": "/administracion/ciclo-campanas/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:17:44.554Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/access/permissions",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/admin/campaign-cycle/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "Ciclo de campañas DEMO | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 40
+      }
+    },
+    {
+      "role": "visitante",
+      "expectedVisible": "Campaña cerrada",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 1440,
+        "checkedAt": "2026-10-30T03:18:01.929Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "nodes": [
+              {
+                "target": [
+                  "button[type=\"submit\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ],
+        "passes": 49
+      }
+    },
+    {
+      "role": "visitante",
+      "expectedVisible": "Campaña cerrada",
+      "ready": true,
+      "report": {
+        "path": "/proyectos/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+        "width": 375,
+        "checkedAt": "2026-10-30T03:18:03.848Z",
+        "settled": true,
+        "http": [
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/auth/me",
+            "method": "GET",
+            "status": 401
+          },
+          {
+            "path": "/api/campaigns/public/camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 0,
+            "cancelled": true
+          },
+          {
+            "path": "/api/verification-badges/campaigns/8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/gallery",
+            "method": "GET",
+            "status": 200
+          },
+          {
+            "path": "/api/campaigns/public/8eddcfe7-84eb-4cd4-9b25-09527f9b5381/updates",
+            "method": "GET",
+            "status": 200
+          }
+        ],
+        "scriptErrors": 0,
+        "documentTitle": "DEMO Huerto integral Ñandú 502dd8fd | Brotar",
+        "main": 1,
+        "h1": 1,
+        "overflow": [],
+        "horizontalOverflow": false,
+        "violations": [],
+        "incomplete": [],
+        "passes": 46
+      }
+    }
+  ]
+}

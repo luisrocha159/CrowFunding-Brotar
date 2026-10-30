@@ -1,0 +1,257 @@
+{
+  "task": "S3-21",
+  "date": "2026-10-29",
+  "timezone": "America/La_Paz",
+  "recordedAt": "2026-10-30T03:41:11.568Z",
+  "branch": "RicardoDev",
+  "base": "7c4222dfb7016612103d92d42f60d60edf01663d",
+  "published": false,
+  "trelloChanged": false,
+  "status": "Validación técnica DEMO aprobada; aceptación humana pendiente",
+  "checks": {
+    "frontend": 261,
+    "backend": 241,
+    "localAdmin": 8,
+    "integration": 55,
+    "totalDistinct": 565,
+    "failedFinal": 0,
+    "skippedFinal": 0,
+    "note": "El escenario integral y el arranque nuevo están incluidos en las55 integraciones; no se suman repeticiones,observaciones UI ni215 rutas como pruebas extra."
+  },
+  "schema": {
+    "migrations": 40,
+    "httpRoutes": 215,
+    "newMigrations": 0
+  },
+  "browser": {
+    "distinctRoutes": 7,
+    "finalObservations": 12,
+    "initialDiagnosticObservations": 14,
+    "observedRoles": [
+      "CREATOR",
+      "REGISTERED_USER aportante",
+      "FINANCE",
+      "AUDITOR",
+      "ANONYMOUS"
+    ],
+    "widths": [
+      375,
+      1440
+    ],
+    "violationsFinal": 0,
+    "horizontalOverflowFinal": 0,
+    "scriptErrorsFinal": 0,
+    "limit": "Datos creados por API y consultados en navegador con sesión normal; no grabación completa de formularios ni certificación WCAG."
+  },
+  "scenario": {
+    "scenario": "S3-21 integral",
+    "mode": "DEMO",
+    "campaignId": "8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+    "slug": "camp-8eddcfe7-84eb-4cd4-9b25-09527f9b5381",
+    "contributionId": "e4d8526a-b098-448c-8b0c-5341bad42e52",
+    "disbursementId": "ef2a23f2-ef17-4547-b50d-3949ad1e1226",
+    "finalReportId": "f8f2fe4a-7382-4fe5-98c4-29b71bf69626",
+    "steps": [
+      {
+        "stage": "Registro y responsabilidades",
+        "result": "Ocho cuentas por HTTP; roles internos separados y CREATOR concedido por ADMIN, sin autoescalamiento."
+      },
+      {
+        "stage": "Correo e identidad DEMO",
+        "result": "Token propio de un uso y captura/revisión KYC independiente; transporte sustituido, sin buzón real acreditado."
+      },
+      {
+        "stage": "Campaña completa y revisión",
+        "result": "Dos actividades/hito, indicador, presupuesto, fechas, portada y recompensa; observación/corrección/ronda2, aprobación privada y publicación separadas."
+      },
+      {
+        "stage": "Aporte DEMO",
+        "result": "Campaña persistida tras reinicio; aporte/recibo ficticios, idempotencia, pago confirmado y cupo único comprobados."
+      },
+      {
+        "stage": "Soporte conectado",
+        "result": "Incidencia del aportante, respuesta privada de SUPPORT e historial/resolución sin mover dinero."
+      },
+      {
+        "stage": "Resultado y desembolso",
+        "result": "Vencimiento acelerado explícito; meta real computada, ejecución con KYC, destino ficticio revisado y desembolso completo por FINANCE."
+      },
+      {
+        "stage": "Seguimiento, recompensa y cierre",
+        "result": "Dos actividades/hito e indicador completados; novedad pública, recompensa acreditada, rendición final revisada por REVIEWER y cierre terminal por ADMIN."
+      },
+      {
+        "stage": "Persistencia y trazabilidad",
+        "result": "API reiniciada dos veces; campaña CLOSED, aporte único12.00, desembolso COMPLETED, informe APPROVED y AUDITOR en lectura persistidos."
+      }
+    ],
+    "final": {
+      "campaign": "CLOSED",
+      "contributionCount": 1,
+      "raised": "12.00",
+      "disbursed": "12.00",
+      "expenses": "12.00",
+      "currency": "BOB"
+    },
+    "humanAcceptance": "PENDING",
+    "clockAdjustment": "Solo ends_at de esta campaña; no se insertan estados de negocio aprobados."
+  },
+  "environment": {
+    "visible": {
+      "databasePort": 15448,
+      "apiPort": 3198,
+      "frontendPort": 5198,
+      "project": "brotar-legal-final-qa-20261028"
+    },
+    "finalRegression": {
+      "databasePort": 15454,
+      "project": "brotar-s321-qa-final-20261029",
+      "personalDatabaseUsed": false,
+      "smtpLoaded": false,
+      "apiBackground": false
+    },
+    "setupLimit": "Configuración/base nuevas; dependencias y compilados validados reutilizados mediante enlaces QA. No se presenta como segunda instalación limpia de pnpm."
+  },
+  "fixes": [
+    "Healthcheck espera el servidor TCP definitivo de PostgreSQL.",
+    "Jerarquía h2 del distintivo documental público.",
+    "Fixture correo/KYB retira solo archivos propios antes de eliminar titulares.",
+    "Ensayo de arranque libera su contenedor/red sin borrar volumen."
+  ],
+  "humanAcceptance": {
+    "state": "PENDING",
+    "responsible": null,
+    "date": null,
+    "response": null,
+    "source": "BG-64 CA3; registro preparado en validacion-integral-s3-21-2026-10-29.md"
+  },
+  "remaining": [
+    "S3-21:aceptación humana del resultado",
+    "S3-20:entrega general/publicación autorizada"
+  ],
+  "executions": [
+    {
+      "privateLog": "tmp/s321-front-check.log",
+      "sha256": "826b2970408d6e526a4e4fec2961b82a5e31fbf37407db9526b2b629f3287d62",
+      "result": "Exit0:261 pruebas, lint/tipos/build; advertencia de bundle conservada."
+    },
+    {
+      "privateLog": "tmp/s321-back-check.log",
+      "sha256": "74eed4503055287c8c434a88d7d6086dcedb4e9a8b5fe0a64771e178c3720f92",
+      "result": "Exit0:241 backend+8 ADMIN, lint/tipos/build."
+    },
+    {
+      "privateLog": "tmp/s321-regression-final.log",
+      "sha256": "1633f90ebfab72f78d267bf69da7ccefb130e94d3c483211c8e35b213ee92b24",
+      "result": "Exit0:55/55, sin fallos ni omitidas, pasada completa después de corregir limpieza KYB."
+    },
+    {
+      "privateLog": "tmp/s321-integral.log",
+      "sha256": "717ccf09633914cdfe2f35efd6c76b1b7e4caa7be688eb9473a67e58448e8bae",
+      "result": "Exit0:caso único retenido para revisión visual; transporte sintético."
+    },
+    {
+      "privateLog": "tmp/s321-contracts.log",
+      "sha256": "58570328910dfc10edbb0f46fc42b31354f95010703942cb371b8730baebade9",
+      "result": "Exit0:215 contratos HTTP verificados sin puerto ni BD."
+    },
+    {
+      "privateLog": "tmp/s321-startup-red.log",
+      "sha256": "9f6049ebf308144d8bb23b4ef91147efb8e73ce8855d2ac188dc1b467d48e5bd",
+      "result": "Fallo esperado: healthcheck antiguo anuncia healthy sin TCP."
+    },
+    {
+      "privateLog": "tmp/s321-startup-green.log",
+      "sha256": "0b06467a525b859025403a8d0b39aa77e28fd3f396eb22e48928b21c95e533d8",
+      "result": "Exit0:el mismo ensayo pasa con espera TCP."
+    },
+    {
+      "privateLog": "tmp/s321-clean-install.log",
+      "sha256": "0d2d16015720726121e37d4c0f24165451d21c17a9c8dd517f3959381e280ff6",
+      "result": "Intento inicial fallido: carrera del servidor temporal de PostgreSQL."
+    },
+    {
+      "privateLog": "tmp/s321-fresh-install.log",
+      "sha256": "89bf4592400f7557d517b0b997da39f2c0791ccf62da13e16efb5a433772f847",
+      "result": "Exit0:instalación nueva QA15451 tras corrección,40 migraciones y catálogo."
+    },
+    {
+      "privateLog": "tmp/s321-final-install.log",
+      "sha256": "c032cc0bbbd7c22d591856c35e637ad6fa1679df2e4dd6ebaa757c213441cd55",
+      "result": "Exit0:instalación final QA15454 tras liberar solo redes propias del ensayo."
+    },
+    {
+      "privateLog": "tmp/s321-regression-populated-qa.log",
+      "sha256": "590113c9a609811ac511f458216d658d73cbb696523311c1577622cda06aed04",
+      "result": "49/54:datos QA anteriores interferían en retención,agregados y recuperación de archivos."
+    },
+    {
+      "privateLog": "tmp/s321-regression.log",
+      "sha256": "575ca319e6e8ec978a0256584ee31e05359bf98e15b2ca38d048ad7925c6d089",
+      "result": "54/55:recuperación detectó archivos KYB activos de un fixture previo."
+    },
+    {
+      "privateLog": "tmp/s321-fixture-red.log",
+      "sha256": "6844e4eae2013228b18c7b401b419c6a4fd7dc8ca697ea79f1e069d3464ffc94",
+      "result": "Fallo esperado:2 archivos KYB activos frente a0 antes de la corrección."
+    },
+    {
+      "privateLog": "tmp/s321-fixture-green.log",
+      "sha256": "38df435abc8dc62960dfbaf1fadf456ad5c35f8b4c70d311e494cea2100b82eb",
+      "result": "Exit0:correo/KYB seguido de recuperación con archivos,2/2."
+    }
+  ],
+  "finalRegressionScenario": {
+    "scenario": "S3-21 integral",
+    "mode": "DEMO",
+    "campaignId": "66752d24-de47-46a7-826a-1a5280b6e571",
+    "slug": "camp-66752d24-de47-46a7-826a-1a5280b6e571",
+    "contributionId": "42fd1b1c-cde0-4118-8a17-eccecc9dfc38",
+    "disbursementId": "5d5445e6-dcc0-4414-b8b5-82cb21f35ac7",
+    "finalReportId": "ba6864c8-cde8-41c1-a19c-ab125996e383",
+    "steps": [
+      {
+        "stage": "Registro y responsabilidades",
+        "result": "Ocho cuentas por HTTP; roles internos separados y CREATOR concedido por ADMIN, sin autoescalamiento."
+      },
+      {
+        "stage": "Correo e identidad DEMO",
+        "result": "Token propio de un uso y captura/revisión KYC independiente; transporte sustituido, sin buzón real acreditado."
+      },
+      {
+        "stage": "Campaña completa y revisión",
+        "result": "Dos actividades/hito, indicador, presupuesto, fechas, portada y recompensa; observación/corrección/ronda2, aprobación privada y publicación separadas."
+      },
+      {
+        "stage": "Aporte DEMO",
+        "result": "Campaña persistida tras reinicio; aporte/recibo ficticios, idempotencia, pago confirmado y cupo único comprobados."
+      },
+      {
+        "stage": "Soporte conectado",
+        "result": "Incidencia del aportante, respuesta privada de SUPPORT e historial/resolución sin mover dinero."
+      },
+      {
+        "stage": "Resultado y desembolso",
+        "result": "Vencimiento acelerado explícito; meta real computada, ejecución con KYC, destino ficticio revisado y desembolso completo por FINANCE."
+      },
+      {
+        "stage": "Seguimiento, recompensa y cierre",
+        "result": "Dos actividades/hito e indicador completados; novedad pública, recompensa acreditada, rendición final revisada por REVIEWER y cierre terminal por ADMIN."
+      },
+      {
+        "stage": "Persistencia y trazabilidad",
+        "result": "API reiniciada dos veces; campaña CLOSED, aporte único12.00, desembolso COMPLETED, informe APPROVED y AUDITOR en lectura persistidos."
+      }
+    ],
+    "final": {
+      "campaign": "CLOSED",
+      "contributionCount": 1,
+      "raised": "12.00",
+      "disbursed": "12.00",
+      "expenses": "12.00",
+      "currency": "BOB"
+    },
+    "humanAcceptance": "PENDING",
+    "clockAdjustment": "Solo ends_at de esta campaña; no se insertan estados de negocio aprobados."
+  }
+}
