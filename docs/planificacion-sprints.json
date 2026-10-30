@@ -1,12 +1,12 @@
 {
-  "version": "2.18",
+  "version": "2.19",
   "localProgressSprint3": {
     "date": "2026-10-29",
     "branch": "RicardoDev",
     "published": false,
-    "verification": "S3-21:261 frontend+241 backend+8 ADMIN+55 integraciones=565 pruebas distintas aprobadas en pasada final;sin fallos/omitidas;lint/tipos/build exit0;215 contratos verificados. Caso nuevo entre8 cuentas,corrección/publicación/aporte/desembolso/avance/rendición/cierre,API reiniciada2 veces,importes12BOB consistentes.12 comprobaciones UI finales/7 rutas. Corregidos primer arranque TCP,jerarquía pública y limpieza KYB de QA;conservados intentos fallidos. Transporte capturado sin SMTP ni dinero real. CA3 aceptada expresamente por Ricardo para el corte académico DEMO dc8001c;sin push/DEV/Trello.",
-    "evidence": "validacion-integral-s3-21-2026-10-29.md",
-    "previousEvidence": "cierre-s3-26-contactos-2026-10-29.md",
+    "verification": "S3-20:clon local real adcb5b1 sin reutilizar node_modules;Bun/pnpm congelados,40migraciones,prepare/verify/activate;261frontend+241backend+8ADMIN=510checks repetidos exit0. Catálogos autenticados5,registro/duplicado,ADMIN local,dashboard,sesión tras reinicio y proxyVite→ready200. Importación de7claves de correo conserva DB;TLS/autenticación Gmail exit0,sin envío. Código funcional equivalente al clon por SHA-256, normalizando solo LF/CRLF de texto y con el alcance probado en S3-21(55integraciones previas,565distintas);no se inventa otra pasada global. PDF/enlaces/paquetes se comprueban en evidencia S3-20. Sin push/DEV/Trello.",
+    "evidence": "entrega-final-s3-20-2026-10-29.md",
+    "previousEvidence": "validacion-integral-s3-21-2026-10-29.md",
     "rules": "decisiones/ADR-016-condiciones-provisionales-del-equipo.md",
     "auditEvidence": "cierre-transversal-s3-15-18-2026-10-24.md",
     "previousAuditEvidence": "avance-auditoria-s3-15-16-18-2026-10-19.md",
@@ -40,7 +40,7 @@
       "S3-16": "Cierre técnico transversal del corte integrado: responsabilidades, pertenencia y separación de funciones de las API actuales; AUDITOR también en perfil, concesiones residuales sin ampliar matriz, revalidación tras bloqueos y caducidad, permisos explícitos de consultas y navegación. Matriz de nueve perfiles y negativas HTTP aprobadas. Nuevas funciones del equipo deben pasar otra vez estas garantías.",
       "S3-18": "Cierre transversal revalidado del corte: contrato0.15,215 rutas,40 migraciones no destructivas; clientes/API coordinados, instalación/readiness/recuperación probados y consentimiento integrado. No certifica aceptación global ni futura producción.",
       "S3-19": "Cierre técnico DEMO local: matriz completa de73 rutas/81 casos a375/768/1440px,243 comprobaciones requeridas; teclado, foco, errores, permisos y datos persistidos, incluidas finanzas/soporte. Hallazgos reproducidos y corregidos;557 pruebas distintas aprobadas con resultado compuesto de integración documentado. No certifica accesibilidad/rendimiento de producción ni aceptación integral S3-21.",
-      "S3-20": "Pendiente de entrega general: consolidar documentación/backlog/pantallas finales y publicación autorizada del corte definitivo. README y evidencia de cada incremento actualizados localmente; este cierre no se sube a GitHub ni modifica DEV/Trello.",
+      "S3-20": "Preparación local completada:README operativo e índices consolidados,manual/backlog64historias/67tareas/explicativo/PDF de73rutas con capturas representativas,referencia Figma accesible,configuración pública sin secretos y paquete privado Gmail separado. Clon real con dependencias nuevas:510checks;API/BD/categorías/admin/sesión/proxy probados;importación privada y TLS/autenticación verificadas sin envío. Publicación remota sigue pendiente por instrucción expresa;sin push ni cambio de DEV/Trello.",
       "S3-21": "Recorrido técnico DEMO validado localmente:una campaña nueva conecta registro,contacto/KYC,campaña/corrección/revisión/publicación,aporte único,soporte,resultado/desembolso,seguimiento/recompensa/rendición/cierre y persistencia;negativas y simulaciones documentadas.565 pruebas distintas aprobadas,12 observaciones UI finales. CA3:aceptación expresa de Ricardo registrada para el corte académico DEMO dc8001c;acta y respuesta trazable conservadas. No se atribuye aprobación a otros responsables ni habilitación comercial.",
       "S3-23": "Cierre técnico DEMO local: fin de recaudación/modelo/meta, obligaciones, ejecución/cancelación y cierre terminal con validaciones, auditoría/idempotencia e interfaz. Dependencias mínimas añadidas: rendición final revisada con gastos/evidencias, cumplimiento documentado y resolución de incidencia no financiera. Flujos HTTP reales de persona/organización y prueba visual aprobados; no cierra módulos completos de compañeros ni correo/legal/dinero real.",
       "S3-24": "Cierre técnico DEMO del panel: paginación, ámbitos personales/institucionales autorizados, totales por moneda y DEMO, pendientes/enlaces a módulos combinados. No cierra S3-21.",
@@ -88,7 +88,7 @@
       "S3-26",
       "S3-21"
     ],
-    "scope": "35 alcances completados del MVP académico DEMO de36. Alison9/9,Santiago9/9,Ricardo17/18;S3-21 tiene recorrido técnico validado y aceptación expresa de Ricardo para el corte dc8001c. Queda S3-20:entrega final/publicación autorizada. Asignaciones originales e instantánea histórica state del tablero conservadas;sin sincronización Trello. No equivale a aprobación externa,jurídica/comercial,WCAG/CWV ni operación bancaria.",
+    "scope": "35/36 tareas de Sprint3 con cierre técnico/aceptación académico DEMO;Alison9/9,Santiago9/9,Ricardo17/18. S3-20 tiene preparación local completa:solo resta publicación/distribución en el destino autorizado,expresamente diferida. No hay tareas funcionales nuevas pendientes de este corte;se conservan límites DEMO,asignaciones originales y snapshot histórico state de Trello. No equivale a aprobación externa,jurídica/comercial,WCAG/CWV ni operación bancaria.",
     "previousPublication": {
       "date": "2026-10-24",
       "branch": "RicardoDev",
@@ -161,7 +161,11 @@
       "published": false,
       "trelloChanged": false,
       "evidence": "validacion-integral-s3-21-2026-10-29.md"
-    }
+    },
+    "preparedLocalTasks": [
+      "S3-20"
+    ],
+    "localPreparationComplete": true
   },
   "delivery": {
     "date": "2026-10-16",
@@ -171,7 +175,7 @@
     "acceptance": "La publicación de código no certifica aceptación externa ni el MVP completo. Consultar la evidencia de la entrega y su commit remoto."
   },
   "cutoff": "2026-10-15",
-  "status": "Sprint 2 implementado en su alcance técnico; Sprint 3 reúne el cierre integral del MVP. 64 historias, 67 tareas únicas; S1-11 y S1-12 se arrastran sin duplicarse. Capacidad, fechas, proveedores y aprobaciones aplicables siguen pendientes.",
+  "status": "MVP académico DEMO integrado y aceptado por Ricardo en S3-21; preparación local de S3-20 completada. Publicación remota diferida por instrucción expresa; sin cambios en DEV/Trello.64 historias y67 tareas únicas; no representa habilitación comercial.",
   "trelloSync": {
     "date": "2026-10-24",
     "boardUrl": "https://trello.com/b/37xCrdes/crowudfunding",
@@ -2750,5 +2754,14 @@
     "acceptanceTask": "S3-21",
     "scopeGuide": "plan-sprint-3-cierre-mvp-2026-10-15.md",
     "capacity": "M/L preliminares; no equivale a horas o fechas comprometidas. Dividir ejecución en más iteraciones si la capacidad lo requiere, sin declarar el MVP cerrado antes de cumplir sus criterios."
+  },
+  "cutoffPurpose": "Fecha original de planificación; el corte local vigente se registra en localProgressSprint3.",
+  "localDelivery": {
+    "date": "2026-10-29",
+    "branch": "RicardoDev",
+    "prepared": true,
+    "published": false,
+    "evidence": "entrega-final-s3-20-2026-10-29.md",
+    "instruction": "Preparar entrega y correo interno; no subir nada todavía."
   }
 }

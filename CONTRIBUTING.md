@@ -1,3 +1,5 @@
+> Corte vigente local 29/10/2026:40 migraciones y215 rutas HTTP; S3-21 aceptada y entrega S3-20 preparada sin publicación. Seguir README raíz para ejecutar. DEV conserva su corte publicado; no hacer push/PR hasta autorización. El correo compartido se importa desde un paquete privado separado, nunca desde Git. Los repartos y entregas antiguos citados abajo son antecedentes.
+
 # Contribuir a Brotar
 
 ## Ramas y responsabilidad
@@ -50,7 +52,7 @@ git pull --ff-only origin DEV
 Si `--ff-only` se detiene, la rama tiene commits divergentes: no fuerces el pull ni el push. Inspecciona `git log --oneline --left-right DEV...origin/DEV` y coordina la integración.
 
 3. Para seguir en tu rama personal, usa el bloque de la sección siguiente: incorpora `origin/DEV` con merge, no reemplaces la rama con DEV.
-4. Reinstala dependencias congeladas en cada directorio y aplica las nuevas migraciones a tu base existente según README §21. No copies ningún `.env` ajeno ni repitas la restauración SQL para actualizar.
+4. Reinstala dependencias congeladas en cada directorio y aplica las nuevas migraciones a tu base existente según README de actualización. No copies ningún `.env` ajeno ni repitas la restauración SQL para actualizar.
 
 ## Antes de cada tarea
 
@@ -138,7 +140,7 @@ No editar simultáneamente routers, contratos compartidos o configuración sin a
 
 Usar la base local oficial V2 de cada persona. Nunca compartir `.env`, contraseñas, tokens, dumps ni datos personales en Git/Trello. El SQL oficial revisado de estructura y catálogos se distribuye como `infra/postgres-v2/official-schema.sql`; no sustituirlo por un backup de una base poblada.
 
-No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. La entrega DEV del 16/10 tiene siete migraciones; el avance local S3 de RicardoDev añade cuatro (once en total). Seguir `infra/postgres-v2/MIGRACIONES.md` y README §24–26. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos de S3 están en `docs/contratos-sprint-3.md`. Auditar en la misma transacción con contexto local de actor; no registrar cuerpos, contraseñas, tokens, documentos ni payloads del proveedor. No conceder UPDATE/DELETE de `audit_log` a la aplicación ni retroatribuir actores a registros heredados.
+No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. El corte publicado en DEV del 16/10 conserva siete migraciones; RicardoDev local requiere 40 migraciones acumulativas. Seguir `infra/postgres-v2/MIGRACIONES.md` y la sección 5 del README vigente. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos de S3 están en `docs/contratos-sprint-3.md`. Auditar en la misma transacción con contexto local de actor; no registrar cuerpos, contraseñas, tokens, documentos ni payloads del proveedor. No conceder UPDATE/DELETE de `audit_log` a la aplicación ni retroatribuir actores a registros heredados.
 
 No versionar `node_modules`, `dist`, `dist-test`, cobertura o temporales. Conservar los dos lockfiles y usar el gestor correspondiente. No actualizar dependencias sin necesidad y sin pruebas.
 

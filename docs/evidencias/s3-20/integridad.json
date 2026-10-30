@@ -1,0 +1,147 @@
+{
+  "task": "S3-20",
+  "source": "Bytes del índice Git; no incluye este manifiesto para evitar referencia circular.",
+  "publication": false,
+  "secretCheck": {
+    "mode": "index",
+    "publicPrivateValuesFound": 0,
+    "publicForbiddenPaths": 0,
+    "privateZipEntries": 3,
+    "privateMailKeys": 7,
+    "files": 908,
+    "pdfs": 17,
+    "docx": 9
+  },
+  "files": [
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 8919,
+      "sha256": "3349d4a63ed1b711e6820b273f878d0a20e890275b30eb2479f3fdcf272c7e7b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 12187,
+      "sha256": "c64ad0d059325f8e57c93a3a8a7008d331447b0ae1eda0a15877eb6d84407fc9"
+    },
+    {
+      "path": "README_HISTORICO.md",
+      "bytes": 158097,
+      "sha256": "5136a534f03baf50bddeb4b7d21b921b3fa207d73a6468b98eba83a9ce9f747a"
+    },
+    {
+      "path": "backend/README.md",
+      "bytes": 2897,
+      "sha256": "90120e19ab9503a262098d8d0a7ec927267eaf781b5bc291df5642ceb078c059"
+    },
+    {
+      "path": "backend/README_HISTORICO.md",
+      "bytes": 14943,
+      "sha256": "e09e8f384e0d8a1f790e62d5f4ff7de980fb5fcb14d40fef39c499d29619766e"
+    },
+    {
+      "path": "backend/pnpm-lock.yaml",
+      "bytes": 80821,
+      "sha256": "8cac47dcd7767f7fb895554ce0a8ae1330964a42c92b8da6fc42fd78c34704e3"
+    },
+    {
+      "path": "bun.lock",
+      "bytes": 45691,
+      "sha256": "148c100d08a903bba7d8428f98722c82f07c519c542ad0453956367a0295f9c6"
+    },
+    {
+      "path": "docs/README.md",
+      "bytes": 2199,
+      "sha256": "1d30eba57c909226a98f2fb712c918e2938a50aacf11009fa136004994e57eb8"
+    },
+    {
+      "path": "docs/README_HISTORICO.md",
+      "bytes": 22009,
+      "sha256": "98a5505a50875b9dc7e6ef59964504aa0a783f0a193531cdfd3d3124149b7ed7"
+    },
+    {
+      "path": "docs/correo-equipo-entrega-final.md",
+      "bytes": 2977,
+      "sha256": "b08194f173b4e7e8f195cb8ed323cbc4f34a252fc9e3fb886a45edd258dcd9f6"
+    },
+    {
+      "path": "docs/entrega-final-s3-20-2026-10-29.md",
+      "bytes": 6291,
+      "sha256": "60741a74fdf15b1316e9b8780753e6006ab2b2834db23cbf625c27a949641735"
+    },
+    {
+      "path": "docs/evidencias/s3-20/figma.json",
+      "bytes": 283,
+      "sha256": "304d74c6879e7b5c826e82fff60445a777c1981b9e10af77fb7b4507b40448c8"
+    },
+    {
+      "path": "docs/evidencias/s3-20/login-escritorio.webp",
+      "bytes": 25678,
+      "sha256": "ee71a4822c83b23bdc547b4a89d5db6f3d0d0b2a64fb20cefedc47753e07dc67"
+    },
+    {
+      "path": "docs/evidencias/s3-20/registro-escritorio.webp",
+      "bytes": 31808,
+      "sha256": "e901daf64b28ac31189c63bea05f1fa50e28c5220328fd63269cdfd3f033814b"
+    },
+    {
+      "path": "docs/evidencias/s3-20/resumen.json",
+      "bytes": 4493,
+      "sha256": "c5345813df063c65a31292731561ec18dc748b47dd518ff64ede72ca395c7500"
+    },
+    {
+      "path": "docs/evidencias/s3-20/runtime-integrity.json",
+      "bytes": 201211,
+      "sha256": "c855e55adbdc91d5db533d8b2b915ed527e8d744e97d6dfaad041cfa6e02a85d"
+    },
+    {
+      "path": "docs/explicativo-final-mvp.md",
+      "bytes": 16463,
+      "sha256": "2887ad83d8b542b3dce2adf7627a89db60ae00f93f96736e6a1738e678c915b8"
+    },
+    {
+      "path": "docs/planificacion-sprints.json",
+      "bytes": 140983,
+      "sha256": "ec10b1d3fc30f05e182be74af969bed8f48df47f4bb2cc551379f620ac811642"
+    },
+    {
+      "path": "infra/postgres-v2/README.md",
+      "bytes": 1646,
+      "sha256": "a6294e9f6136cf6ca7b69cda414c3a2b5b836fa7bef8b407aa45a9911125b203"
+    },
+    {
+      "path": "infra/postgres-v2/README_HISTORICO.md",
+      "bytes": 13958,
+      "sha256": "797344352409a5adfe217e9141ac274ce97dd709ea67315c4e55edb848e512ab"
+    },
+    {
+      "path": "infra/postgres-v2/official-schema.sql",
+      "bytes": 87084,
+      "sha256": "5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88"
+    },
+    {
+      "path": "output/pdf/Documento_Explicativo_Final_Brotar.pdf",
+      "bytes": 91381,
+      "sha256": "7f19bdfc95ec754c9f6dbc8afe44f685b684bb15f7e98b384ec5417d69d76796"
+    },
+    {
+      "path": "output/pdf/Manual_Instalacion_y_Correo_Brotar.pdf",
+      "bytes": 93037,
+      "sha256": "5261e1af7c32b79e95d2049ba4a8ed8447e46289e23f5519b4715c88151f0584"
+    },
+    {
+      "path": "output/pdf/Pantallas_Finales_MVP_Brotar.pdf",
+      "bytes": 5543578,
+      "sha256": "8c65fa73f265be2405c422ed6b35bdff499e6ef0c3cc1fcfd5ebc29b6dfe5614"
+    },
+    {
+      "path": "output/pdf/Product_Backlog_Final_Brotar.pdf",
+      "bytes": 120188,
+      "sha256": "6c8dbf1851b720977b29f2a5883f484d9d1a24175e20afd9820908729739fbc6"
+    },
+    {
+      "path": "scripts/build-final-delivery.py",
+      "bytes": 14321,
+      "sha256": "5020949641d7c4b1dbf6d5f7d7021f00607755b01ec9fc347387aee7e43a12b9"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "task": "S3-20",
+  "date": "2026-10-29",
+  "recordedAt": "2026-10-30T04:13:51.640Z",
+  "branch": "RicardoDev",
+  "status": "Preparación local completada; publicación pendiente por instrucción",
+  "published": false,
+  "trelloChanged": false,
+  "devChanged": false,
+  "sourceVerified": "adcb5b1e0d50fc2624bf6a3b0bd62b73fa19c315",
+  "requirements": {
+    "readme": true,
+    "lockfiles": true,
+    "migrations": 40,
+    "httpRoutes": 215,
+    "stories": 64,
+    "tasks": 67,
+    "screenRoutes": 73,
+    "figmaAccessible": true,
+    "privateMailSeparate": true,
+    "publication": false
+  },
+  "cleanInstall": {
+    "realLocalClone": true,
+    "frozenFrontendDependencies": true,
+    "frozenBackendDependencies": true,
+    "reusedNodeModules": false,
+    "exitCode": 0,
+    "backendChecks": 241,
+    "adminChecks": 8,
+    "frontendChecks": 261,
+    "totalRepeatedChecks": 510,
+    "project": "brotar-s320-qa-entrega-20261029",
+    "databasePort": 15456
+  },
+  "smokeProbe": {
+    "exitCode": 0,
+    "apiPort": "ephemeral QA",
+    "webPort": "ephemeral QA",
+    "categories": 5,
+    "steps": [
+      "API ready 200",
+      "Category catalog requires an authenticated account",
+      "Provisional legal documents available",
+      "Registration persists and duplicate email rejected",
+      "Authenticated category catalog from DB:at least5",
+      "Documented local ADMIN bootstrap and authorized dashboard",
+      "Session persists across API restart",
+      "Vite UI 200 and frontend proxy to ready API 200"
+    ],
+    "smtpLoadedIntoProbe": false,
+    "messageSent": false
+  },
+  "smtp": {
+    "exitCode": 0,
+    "importedSevenMailKeys": true,
+    "databaseSettingsPreserved": true,
+    "tlsAuthentication": true,
+    "messageSent": false,
+    "wrapperVerified": true,
+    "realDeliveryEvidence": "docs/correo-operativo-2026-10-24.md; evidencia previa con su fecha, no recepción nueva"
+  },
+  "regression": {
+    "newFullIntegrationRun": false,
+    "previousFullRun": "docs/evidencias/s3-21/resumen.json",
+    "previousIntegrationPassed": 55,
+    "previousDistinctPassed": 565,
+    "runtimeComparedToCloneFiles": 462,
+    "allRuntimeFilesEquivalent": true,
+    "textLineEndingOnlyDifferences": 2,
+    "comparison": "LF/CRLF normalized only for known text files; binary assets and official SQL compared byte-for-byte."
+  },
+  "pdfReview": {
+    "state": "Completed",
+    "allPagesRendered": true,
+    "visualInspectionCompleted": true,
+    "pages": [
+      {
+        "file": "output\\pdf\\Manual_Instalacion_y_Correo_Brotar.pdf",
+        "pages": 6,
+        "renderedPages": 6,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Documento_Explicativo_Final_Brotar.pdf",
+        "pages": 7,
+        "renderedPages": 7,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Product_Backlog_Final_Brotar.pdf",
+        "pages": 21,
+        "renderedPages": 21,
+        "emptyPages": 0
+      },
+      {
+        "file": "output\\pdf\\Pantallas_Finales_MVP_Brotar.pdf",
+        "pages": 19,
+        "renderedPages": 19,
+        "emptyPages": 0
+      }
+    ],
+    "method": "Poppler 90dpi; todas las páginas inspeccionadas en hojas de contacto y comandos revisados a tamaño completo. Sin páginas vacías, recortes de texto ni tablas superpuestas. Capturas representativas con recortes identificados.",
+    "reviewedAt": "2026-10-30T04:29:05.384Z"
+  },
+  "remaining": "Publicación del corte fuera de este turno; no autorizada",
+  "executions": [
+    {
+      "privateLog": "tmp/s320-install.log",
+      "sha256": "cebf3c84171fc7466fe4598fa3405b02fea343d16470a2228062280a05b0c71d"
+    },
+    {
+      "privateLog": "tmp/s320-smtp.log",
+      "sha256": "0535d67f818c64c25a29bf0ca653c35681d08101d99a7c4bd9114c1b4346d75c"
+    },
+    {
+      "privateLog": "tmp/s320-probe.log",
+      "sha256": "8086758d74283e33576547291da5f98d504ad3d27d366b148518d5172316ae61"
+    },
+    {
+      "privateLog": "tmp/s320-private-wrapper.log",
+      "sha256": "4cf38d57d77c9ce367cd6fb7dba0d5adb2db9b10c88d70313b5899f34a59b592"
+    },
+    {
+      "privateLog": "tmp/s320-doc-audit.log",
+      "sha256": "4f878eaa9e94132eb901251f452677afe21462e3fa165c9e7df5864a5f62bb8e"
+    }
+  ],
+  "documentation": {
+    "localMarkdownFileLinksResolve": true,
+    "powerShellBlocksParsed": 11,
+    "deterministicAuditExitCode": 0,
+    "genericGovernanceWarningsReviewed": true,
+    "note": "No se añadieron fuentes de estado paralelas; los informes históricos conservan su propio corte."
+  }
+}
