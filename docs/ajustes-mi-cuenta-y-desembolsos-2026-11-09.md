@@ -1,6 +1,6 @@
 # Mi cuenta y desembolsos: jerarquía de información
 
-Corte del 9 de noviembre de 2026 en `RicardoDev`. Cambios de presentación solicitados durante el recorrido manual. Rama de entrega: `RicardoDev`; integración con DEV pendiente.
+Corte del 9 de noviembre de 2026 en `RicardoDev`. Cambios de presentación solicitados durante el recorrido manual. Origen: `RicardoDev`; rama de entrega integrada: `DEV`.
 
 ## Mi cuenta
 

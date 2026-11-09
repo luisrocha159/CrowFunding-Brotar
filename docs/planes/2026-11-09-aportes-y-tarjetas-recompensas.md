@@ -17,6 +17,6 @@ Solicitud de Ricardo: reemplazar el desplegable por tarjetas que se habiliten se
 - Regresión de validaciones frontend/backend para donación, recompensa opcional y preventa obligatoria.
 - Integración con importe inferior al mínimo de recompensa, aportación sin recompensa, confirmación y comprobante, sin consumir cupos; selección de recompensa con mínimo/cupo y concurrencia.
 - Navegador: importes vacío, inferior, exacto y superior; cambio de recompensa; disminución posterior; navegación por teclado y ancho móvil.
-- Rama de entrega: `RicardoDev`; integración con DEV pendiente.
+- Origen: `RicardoDev`; rama de entrega integrada: `DEV`.
 
 Resultado: tarjetas integradas con el resumen del aporte y comprobaciones de importe, modalidad y cupos superadas. El QR del resumen se implementó por separado y añade sus propias dependencias; el diseño de tarjetas sigue usando React y CSS existentes. [Resultados y evidencia](../aportes-verificacion-qr-2026-11-09.md).

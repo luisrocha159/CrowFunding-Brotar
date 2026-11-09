@@ -2,7 +2,7 @@
 
 La revisión visual posterior de Mi cuenta y desembolsos se documenta en [Jerarquía de información y comprobaciones](ajustes-mi-cuenta-y-desembolsos-2026-11-09.md).
 
-Corte del 9 de noviembre de 2026. Rama de entrega: `RicardoDev`; integración con DEV pendiente. Complementa las correcciones de presentación e identidad de la misma fecha.
+Corte del 9 de noviembre de 2026. Origen: `RicardoDev`; rama de entrega integrada: `DEV`. Complementa las correcciones de presentación e identidad de la misma fecha.
 
 ## Aportar y elegir recompensa
 

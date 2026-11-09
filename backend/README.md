@@ -1,6 +1,6 @@
 # Backend Brotar
 
-API NestJS del MVP académico de pruebas, corte DEV del 30/10/2026 y actualización RicardoDev del 09/11/2026. **41 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz. Los ajustes de presentación y condiciones 1.1 todavía no están publicados en DEV; [instrucciones de actualización](../docs/ajustes-presentacion-y-verificacion-2026-11-09.md).
+API NestJS del MVP académico de pruebas, corte DEV del 30/10/2026 y actualización DEV del 09/11/2026, integrada desde RicardoDev. **41 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz. Los ajustes de presentación, condiciones 1.1, métodos de pago y paneles están integrados en DEV; [instrucciones de actualización](../docs/ajustes-presentacion-y-verificacion-2026-11-09.md).
 
 ## Instalar y arrancar
 

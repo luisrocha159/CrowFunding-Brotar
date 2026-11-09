@@ -1,6 +1,6 @@
-# Ajustes locales de presentación y verificación · 09/11/2026
+# Ajustes de presentación y verificación · 09/11/2026
 
-Rama de trabajo: `RicardoDev`. Estos cambios se preparan en local; este registro no acredita su publicación en DEV.
+Origen: `RicardoDev`. Este corte está integrado en `DEV`; consultar el [registro de integración](entrega-dev-2026-11-09.md). Las comprobaciones descritas corresponden al desarrollo y validación del cambio.
 
 ## Cambios de interfaz
 

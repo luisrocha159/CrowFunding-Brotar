@@ -1,10 +1,10 @@
 # Brotar
 
-Actualización del MVP académico de crowdfunding para **RicardoDev**, 09/11/2026, sobre la entrega DEV del 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+Actualización del MVP académico de crowdfunding para **DEV**, 09/11/2026, sobre la entrega DEV del 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
 Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
-Actualización del 09/11/2026 en RicardoDev: presentación sin el rótulo anterior, acceso administrativo desde el perfil y captura de identidad con errores por campo, sin prefijo obligatorio. [Cambios, actualización y condiciones 1.1](docs/ajustes-presentacion-y-verificacion-2026-11-09.md). Integración de este corte con DEV pendiente.
+Actualización del 09/11/2026 en DEV, integrada desde RicardoDev: presentación sin el rótulo anterior, acceso administrativo desde el perfil y captura de identidad con errores por campo, sin prefijo obligatorio. [Cambios, actualización y condiciones 1.1](docs/ajustes-presentacion-y-verificacion-2026-11-09.md). Este corte integra los cambios completos de RicardoDev en DEV. [Registro de integración](docs/entrega-dev-2026-11-09.md).
 
 También incluye recompensas mediante tarjetas según el importe, opción de aportar sin recompensa, correo del remitente en la revisión privada y QR escaneable que identifica el aporte simulado. [Uso, dependencias y comprobaciones](docs/aportes-verificacion-qr-2026-11-09.md). El método elegido se conserva en el pago y el comprobante. [Mi cuenta por secciones y desembolsos con resumen e historial](docs/ajustes-mi-cuenta-y-desembolsos-2026-11-09.md). El QR no realiza cobros bancarios; no necesita nuevas variables de configuración.
 
@@ -36,10 +36,10 @@ Comprobar en PowerShell: `git --version`, `node --version`, `bun --version`, `do
 
 ## 3. Primera instalación completa
 
-En una carpeta nueva, obtener este corte de RicardoDev en PowerShell:
+En una carpeta nueva, obtener este corte de DEV en PowerShell:
 
 ```powershell
-git clone --branch RicardoDev --single-branch `
+git clone --branch DEV --single-branch `
   https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar
 cd Brotar
 ```
@@ -117,13 +117,13 @@ En otra terminal de la raíz: `bun run dev`. Conservar .env, volumen Docker y ba
 
 ## 5. Actualizar una copia existente
 
-Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar RicardoDev sin forzar:
+Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar DEV sin forzar:
 
 ```powershell
 git status --short
 git fetch origin
-git switch RicardoDev
-git pull --ff-only origin RicardoDev
+git switch DEV
+git pull --ff-only origin DEV
 ```
 
 Si hay trabajo propio o el pull no puede avanzar, conservarlo y revisar CONTRIBUTING; no hacer reset ni forzar. Iniciar Docker Desktop y, desde la raíz, actualizar dependencias y base existente:
@@ -193,12 +193,12 @@ Checks sin datos: `bun run check` en raíz y `corepack pnpm run check` en backen
 
 Caso integral aceptado: registro/contacto/KYC de prueba → campaña → corrección/revisión → publicación separada → aporte único → soporte → resultado/desembolso → avance/recompensa/rendición → cierre. **565 pruebas distintas aprobadas en S3-21**, no se suman repeticiones. [Resultados](docs/evidencias/s3-21/resumen.json) y [aceptación](docs/evidencias/s3-21/aceptacion.json).
 
-Actualización RicardoDev del 09/11/2026: **273 pruebas frontend, 244 backend y 8 de herramientas locales**, lint, tipos y compilaciones correctos. Se comprobaron en PostgreSQL aislado los escenarios afectados de presentación, consentimiento, revisión, aportes, método de pago, reintentos, ciclo y desembolsos. El alcance de cada ronda y las revisiones visuales de escritorio/móvil se detallan en los documentos de ajustes enlazados al inicio. Estos resultados complementan el corte S3-21; no representan una nueva aceptación manual del equipo.
+Comprobaciones del código integrado el 09/11/2026 (origen RicardoDev): **273 pruebas frontend, 244 backend y 8 de herramientas locales**, lint, tipos y compilaciones correctos. Se comprobaron en PostgreSQL aislado los escenarios afectados de presentación, consentimiento, revisión, aportes, método de pago, reintentos, ciclo y desembolsos. El alcance de cada ronda y las revisiones visuales de escritorio/móvil se detallan en los documentos de ajustes enlazados al inicio. Estos resultados complementan el corte S3-21; no representan una nueva aceptación manual del equipo.
 
 ## 9. Documentos finales
 
 - [Entrega y comprobaciones S3-20](docs/entrega-final-s3-20-2026-10-29.md).
-- [Publicación vigente en DEV](docs/entrega-dev-2026-10-30.md) y [tres recorridos manuales del equipo](docs/pruebas-manuales-equipo-2026-10-30.md).
+- [Entrega base de octubre](docs/entrega-dev-2026-10-30.md), [actualización vigente en DEV](docs/entrega-dev-2026-11-09.md) y [tres recorridos manuales del equipo](docs/pruebas-manuales-equipo-2026-10-30.md).
 - [Manual de instalación y correo](output/pdf/Manual_Instalacion_y_Correo_Brotar.pdf).
 - [Product Backlog final](output/pdf/Product_Backlog_Final_Brotar.pdf) y [fuente con 64 historias/67 tareas](docs/planificacion-sprints.json).
 - [Documento explicativo final](output/pdf/Documento_Explicativo_Final_Brotar.pdf).
