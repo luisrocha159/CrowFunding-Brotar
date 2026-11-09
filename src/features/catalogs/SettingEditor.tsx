@@ -19,9 +19,9 @@ export function SettingEditor({setting,editable,onSaved}: {setting: AgreedSettin
     finally {if(active.current===controller)active.current=null;if(!controller.signal.aborted)setBusy(false)}
   }
   return <form className={`${styles.confirmation} ${styles.parameter}`} onSubmit={event=>void submit(event)} aria-label={`Parámetro ${setting.key}`}><h3>{first?'Primera respuesta objetivo':'Alerta de escalamiento'}</h3>
-    <p>{setting.key} · Meta operativa DEMO; no SLA legal ni envío de correo.</p>
+    <p>{setting.key} · Meta operativa; no SLA legal ni envío de correo.</p>
     <FormField label="Horas corridas" type="number" required min={min} max={max} step={1} value={value} disabled={!editable || busy || !known} error={error || undefined} help={`Entero de ${min} a ${max}.`} onChange={event=>{setValue(event.target.value);setConfirmed(false);setError('')}} />
     <p>{setting.updatedAt?`Última actualización: ${new Date(setting.updatedAt).toLocaleString('es-BO')}`:'Sin valor persistido; ejecutar migraciones.'}</p>
-    {editable && known && <><label className={styles.acknowledgement}><input type="checkbox" required disabled={busy} checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />Confirmo el cambio de este parámetro de pruebas.</label><Button type="submit" loading={busy} disabled={!confirmed}>Guardar parámetro</Button></>}
+    {editable && known && <><label className={styles.acknowledgement}><input type="checkbox" required disabled={busy} checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />Confirmo el cambio de este parámetro.</label><Button type="submit" loading={busy} disabled={!confirmed}>Guardar parámetro</Button></>}
   </form>
 }

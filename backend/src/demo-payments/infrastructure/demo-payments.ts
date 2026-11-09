@@ -7,7 +7,7 @@ import { recordAudit, setAuditActor } from '../../shared/infrastructure/database
 import { isDemoEnabled, DEMO_LABEL, DEMO_PROVIDER, digest, requestKey } from '../domain/demo'
 
 export function assertDemoEnabled(): void {
-  if (!isDemoEnabled(process.env)) throw new NotFoundException('Simulador DEMO no habilitado.')
+  if (!isDemoEnabled(process.env)) throw new NotFoundException('Simulador de prueba no habilitado.')
 }
 
 export async function lockDemo(manager: EntityManager): Promise<void> {
@@ -17,11 +17,11 @@ export async function lockDemo(manager: EntityManager): Promise<void> {
 export async function demoProvider(manager: EntityManager): Promise<string> {
   assertDemoEnabled()
   const [provider]=await manager.query(`SELECT id FROM public.payment_provider WHERE code=$1 AND is_sandbox AND is_active AND config->>'mode'='DEMO'`,[DEMO_PROVIDER])
-  if (!provider) throw new LedgerConflict('Ejecuta las migraciones: proveedor DEMO no disponible.')
+  if (!provider) throw new LedgerConflict('Ejecuta las migraciones: proveedor de prueba no disponible.')
   return provider.id as string
 }
 
-export interface CheckoutInput { campaignId: string; rewardId?: string|null; amount: string; currencyCode: string; requestKey: string; demoConsent: true }
+export interface CheckoutInput { campaignId: string; rewardId?: string|null; amount: string; currencyCode: string; requestKey: string; demoConsent: true; method?: 'TEST_QR'|'TEST_CARD' }
 @Injectable()
 export class DemoPayments {
   constructor(private readonly database: DatabaseService,private readonly ledger: ContributionLedger) {}
@@ -40,7 +40,8 @@ export class DemoPayments {
     const providerId=await demoProvider(this.database.connection().manager)
     const [row]=await this.database.connection().query(`SELECT p.id AS "paymentId",c.id AS "contributionId",c.reference_code AS reference,
       p.amount::text AS amount,trim(p.currency_code) AS "currencyCode",p.status,p.attempt_number AS attempt,
-      p.expires_at AS "expiresAt",p.expires_at<=now() AS expired FROM public.payment p
+      p.expires_at AS "expiresAt",p.expires_at<=now() AS expired,
+      CASE WHEN p.provider_payload->>'method' IN ('TEST_QR','TEST_CARD') THEN p.provider_payload->>'method' ELSE NULL END AS method FROM public.payment p
       JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[paymentId,userId,providerId])
     if (!row) throw new NotFoundException('Intento no disponible.')
     return {...row,mode:'DEMO',label:DEMO_LABEL,qrPayload:`BROTAR-DEMO:${paymentId}`,payable:false}

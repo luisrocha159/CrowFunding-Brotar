@@ -29,7 +29,7 @@ test('S3-26 transversal: correo propio → decisión real → cola/reinicio/rein
  sender.send=async(to,_subject,text,id)=>{if(fail)throw new Error('QA transport failure');messages.push({to,subject:_subject,text,id})}
  const call=(path:string,cookie='',body?:unknown,method=body===undefined?'GET':'POST')=>fetch(`${base}/api/${path}`,{method,headers:{Cookie:cookie,Origin:'http://127.0.0.1:5173','X-Brotar-Request':'1','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})})
  const data=async<T>(r:Response,status=200):Promise<T>=>{assert.equal(r.status,status,await r.clone().text());return await r.json() as T}
- const account=async(role:string)=>{const email=`s326-${users.length}-${suffix}@example.invalid`,{id}=await data<{id:string}>(await call('auth/register','',{legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'DEMO',lastName:'Correo',email,password,demoConsent:true}),201);users.push(id)
+ const account=async(role:string)=>{const email=`s326-${users.length}-${suffix}@example.invalid`,{id}=await data<{id:string}>(await call('auth/register','',{legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Correo',email,password,demoConsent:true}),201);users.push(id)
   if(role!=='REGISTERED_USER')sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${id}',id FROM public.role WHERE code='${role}';`)
   const r=await call('auth/login','',{email,password});assert.equal(r.status,200);return{id,email,cookie:r.headers.get('set-cookie')!.split(';')[0]!}}
  try{

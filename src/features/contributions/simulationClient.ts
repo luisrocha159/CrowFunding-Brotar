@@ -1,5 +1,6 @@
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
+import {money,decimal as formatAmount,validRewardSelection} from '../../../backend/src/contributions/domain/payment'
 export interface SupportOptions {
   campaignId: string; title: string; campaignType: 'DONATION' | 'REWARD' | 'PRESALE'; currency: string; minimum: string | null
   eligible: boolean; unavailableReason: string | null; rewards: { id: string; title: string; minimum: string; available: number | null }[]
@@ -36,16 +37,29 @@ export async function createSimulation(input: SimulationInput, signal?: AbortSig
 export async function transitionSimulation(id: string, state: SimulationState, expectedVersion: number, signal?: AbortSignal, send?: typeof fetch) { return simulationFrom(await readJson(await requestApi(`/api/me/simulations/${encodeURIComponent(id)}`, { method: 'PUT', body: { state, expectedVersion, mode: 'SIMULATION' }, signal }, send))) }
 
 /** Validación de ayuda; PostgreSQL vuelve a comprobar toda selección al guardarla y confirmarla. */
-export function simulationSelectionError(options: SupportOptions, value: string, rewardId: string | null): string | null {
+export function simulationAmountError(options: Pick<SupportOptions,'minimum'|'currency'>, value: string): string | null {
   if (!/^(0|[1-9]\d{0,11})(\.\d{1,2})?$/.test(value)) return 'Usa un importe positivo con hasta dos decimales separados por punto.'
   const cents = (amount: string) => { const [integer, fraction = ''] = amount.split('.'); return BigInt(integer!) * 100n + BigInt(fraction.padEnd(2, '0')) }
   const amount = cents(value)
   if (amount <= 0n) return 'El importe debe ser mayor que cero.'
-  if (!options.eligible) return options.unavailableReason ?? 'La campaña no está disponible.'
   if (options.minimum && amount < cents(options.minimum)) return `El mínimo registrado es ${options.minimum} ${options.currency}.`
+  return null
+}
+export function simulationSelectionError(options: SupportOptions, value: string, rewardId: string | null): string | null {
+  const invalid=simulationAmountError(options,value)
+  if(invalid)return invalid
+  if (!options.eligible) return options.unavailableReason ?? 'La campaña no está disponible.'
   const reward = options.rewards.find(item => item.id === rewardId)
-  if ((options.campaignType !== 'DONATION' && !reward) || (rewardId && (!reward || options.campaignType === 'DONATION'))) return 'Selecciona una recompensa disponible para esta modalidad.'
-  if (reward && amount < cents(reward.minimum)) return `La recompensa exige al menos ${reward.minimum} ${options.currency}.`
+  if (!validRewardSelection(options.campaignType,rewardId) || rewardId!==null && !reward) return options.campaignType==='PRESALE'?'Selecciona una recompensa o producto disponible para esta preventa.':'Selecciona una recompensa disponible para esta modalidad.'
+  if (reward && money(value) < money(reward.minimum)) return `La recompensa exige al menos ${reward.minimum} ${options.currency}.`
   if (reward?.available === 0) return 'La recompensa no tiene cupo disponible.'
   return null
+}
+
+export function rewardAvailability(options:SupportOptions,value:string,reward:SupportOptions['rewards'][number]):{enabled:boolean;message:string}{
+  if(!options.eligible)return{enabled:false,message:options.unavailableReason??'La campaña no admite aportes ahora.'}
+  if(reward.available===0)return{enabled:false,message:'Agotada · sin cupos disponibles'}
+  if(simulationAmountError(options,value))return{enabled:false,message:'Introduce un importe válido para habilitar esta opción.'}
+  const missing=money(reward.minimum)-money(value)
+  return missing>0n?{enabled:false,message:`Faltan ${formatAmount(missing)} ${options.currency} para elegirla.`}:{enabled:true,message:'Disponible para tu aporte'}
 }

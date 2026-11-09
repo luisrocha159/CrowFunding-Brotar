@@ -41,7 +41,7 @@ export class VerificationController {
       if (error instanceof VerificationUnavailable) throw new NotFoundException('Verificación no disponible.')
       if (error instanceof VerificationConflict) throw new ConflictException('El caso cambió. Recarga su estado antes de corregirlo.')
       if (error instanceof VerificationPolicyUnavailable) throw new ConflictException('Los requisitos y el aviso de tratamiento de datos aún no están aprobados o cambiaron. Recarga el caso.')
-      if (error instanceof InvalidVerification) throw new BadRequestException('Revisa los requisitos, documentos y estado del caso.')
+      if (error instanceof InvalidVerification) throw new BadRequestException(Object.keys(error.fields).length ? Object.entries(error.fields).map(([field,message])=>`${field}: ${message}`) : error.message)
       throw error
     }
   }

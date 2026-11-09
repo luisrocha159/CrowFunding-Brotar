@@ -3,11 +3,11 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { recordAudit, setAuditActor } from '../../shared/infrastructure/database/audit'
-import { decimal, LedgerConflict, LedgerInvalid, money, nextPaymentState, uuid, type IncomingState, type PaymentState } from '../domain/payment'
+import { decimal, LedgerConflict, LedgerInvalid, money, nextPaymentState, uuid, validRewardSelection, type IncomingState, type PaymentState } from '../domain/payment'
 
 export interface PendingContribution {
   campaignId: string; rewardId: string | null; amount: string; currencyCode: string
-  providerId: string; requestKey: string; demoConsent?: true
+  providerId: string; requestKey: string; demoConsent?: true; method?: 'TEST_QR'|'TEST_CARD'
 }
 /** Solo una futura integración de servidor verifica autenticidad. NUNCA es un DTO del navegador. */
 export interface VerifiedPaymentEvent {
@@ -70,7 +70,7 @@ export class ContributionLedger {
        AND NOT EXISTS(SELECT 1 FROM brotar_extension.campaign_cycle x WHERE x.campaign_id=$1 AND x.cancel_requested_by IS NOT NULL) AS open
       FROM public.campaign WHERE id=$1 FOR UPDATE`, [id])
     if (!campaign || campaign.deleted_at || campaign.status !== 'PUBLISHED' || !campaign.open) throw new LedgerConflict('La campaña no admite aportes ahora.')
-    if ((campaign.campaign_type === 'DONATION') !== (rewardId === null)) throw new LedgerInvalid('La recompensa no corresponde a la modalidad.')
+    if (!validRewardSelection(campaign.campaign_type,rewardId)) throw new LedgerInvalid('La elección de recompensa o producto no corresponde a la modalidad.')
     return campaign as { currency_code: string; min_contribution: string | null }
   }
 
@@ -106,10 +106,12 @@ export class ContributionLedger {
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(input.requestKey)) throw new LedgerInvalid('La clave del intento debe ser UUID v4.')
     if (!/^[A-Z]{3}$/.test(input.currencyCode)) throw new LedgerInvalid('Moneda inválida.')
     const amount = decimal(money(input.amount))
+    if(input.method!==undefined&&!['TEST_QR','TEST_CARD'].includes(input.method))throw new LedgerInvalid('Método de aporte inválido.')
     const key = digest(`contribution:${userId}:${input.requestKey.toLowerCase()}`)
     const fields=[input.campaignId,input.rewardId,amount,input.currencyCode,input.providerId]
     // Conservar hashes de intentos internos previos; consentimiento DEMO explícito tiene otra huella.
-    const hash = digest(JSON.stringify(input.demoConsent===true?[...fields,true]:fields))
+    const signature=input.demoConsent===true?[...fields,true]:fields
+    const hash = digest(JSON.stringify(input.method===undefined?signature:[...signature,input.method]))
     const id = await this.database.connection().transaction(async manager => {
       await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [key])
       const [old] = await manager.query(`SELECT contribution_id,provider_payload->>'requestHash' AS hash
@@ -129,8 +131,8 @@ export class ContributionLedger {
       await manager.query(`INSERT INTO public.contribution(id,campaign_id,user_id,reward_id,amount,currency_code,expires_at)
         VALUES($1,$2,$3,$4,$5,$6,LEAST(now()+interval '30 minutes',(SELECT ends_at FROM public.campaign WHERE id=$2)))`, [contributionId,input.campaignId,userId,input.rewardId,amount,input.currencyCode])
       await manager.query(`INSERT INTO public.payment(contribution_id,provider_id,idempotency_key,amount,currency_code,expires_at,provider_payload)
-        SELECT id,$2,$3,amount,currency_code,expires_at,jsonb_build_object('requestHash',$4::text,'mode','DEMO','demoConsent',$5::boolean)
-        FROM public.contribution WHERE id=$1`, [contributionId,input.providerId,key,hash,input.demoConsent ?? false])
+        SELECT id,$2,$3,amount,currency_code,expires_at,jsonb_build_object('requestHash',$4::text,'mode','DEMO','demoConsent',$5::boolean,'method',$6::text)
+        FROM public.contribution WHERE id=$1`, [contributionId,input.providerId,key,hash,input.demoConsent ?? false,input.method??null])
       await recordAudit(manager,userId,'CREATE','contribution',contributionId)
       return contributionId
     })
@@ -160,7 +162,7 @@ export class ContributionLedger {
 
   /** Mantenimiento interno acotado; no hay endpoint público ni temporizador oculto. */
   async expireDue(limit = 100, providerId?: string): Promise<number> {
-    if (process.env.NODE_ENV === 'production') throw new LedgerConflict('Mantenimiento DEMO no disponible en producción.')
+    if (process.env.NODE_ENV === 'production') throw new LedgerConflict('Mantenimiento de prueba no disponible en producción.')
     if (!Number.isInteger(limit) || limit<1 || limit>500) throw new LedgerInvalid('Lote de expiración entre 1 y 500.')
     if (providerId !== undefined) uuid(providerId)
     const source = this.database.connection()
@@ -197,10 +199,10 @@ export class ContributionLedger {
       }
       await this.expireLocked(manager,id)
       const [contribution] = await manager.query('SELECT status,amount::text,trim(currency_code) AS currency FROM public.contribution WHERE id=$1 FOR UPDATE', [id])
-      const [payment] = await manager.query('SELECT provider_id,status,attempt_number FROM public.payment WHERE contribution_id=$1 ORDER BY attempt_number DESC LIMIT 1 FOR UPDATE', [id])
+      const [payment] = await manager.query('SELECT provider_id,status,attempt_number,provider_payload FROM public.payment WHERE contribution_id=$1 ORDER BY attempt_number DESC LIMIT 1 FOR UPDATE', [id])
       if (!payment || !['CANCELLED','EXPIRED'].includes(contribution.status) || !['FAILED','EXPIRED'].includes(payment.status)
         || payment.attempt_number>=32767 || (await manager.query(`SELECT p.id FROM public.payment p JOIN public.payment_provider pp ON pp.id=p.provider_id
-          WHERE p.contribution_id=$1 AND (p.confirmed_at IS NOT NULL OR p.status IN ('INITIATED','PENDING') OR NOT pp.is_sandbox)`, [id])).length) throw new LedgerConflict('Solo un aporte fallido o vencido sin cobro confirmado ni otro intento abierto admite reintento DEMO.')
+          WHERE p.contribution_id=$1 AND (p.confirmed_at IS NOT NULL OR p.status IN ('INITIATED','PENDING') OR NOT pp.is_sandbox)`, [id])).length) throw new LedgerConflict('Solo un aporte fallido o vencido sin cobro confirmado ni otro intento abierto admite reintento de prueba.')
       await this.sandbox(manager,payment.provider_id)
       const campaign = await this.campaign(manager,target.campaign_id,target.reward_id)
       if (campaign.currency_code.trim()!==contribution.currency || (campaign.min_contribution!==null && money(contribution.amount)<money(campaign.min_contribution))) throw new LedgerConflict('El aporte ya no satisface la moneda o mínimo vigente de campaña.')
@@ -209,8 +211,8 @@ export class ContributionLedger {
       await manager.query(`UPDATE public.contribution SET status='PENDING',cancelled_at=NULL,
         expires_at=LEAST(now()+interval '30 minutes',(SELECT ends_at FROM public.campaign WHERE id=$2)) WHERE id=$1`, [id,target.campaign_id])
       await manager.query(`INSERT INTO public.payment(contribution_id,provider_id,idempotency_key,amount,currency_code,expires_at,attempt_number,provider_payload)
-        SELECT id,$2,$3,amount,currency_code,expires_at,$4,jsonb_build_object('mode','DEMO','source','RETRY','demoConsent',$5::boolean)
-        FROM public.contribution WHERE id=$1`, [id,payment.provider_id,key,payment.attempt_number+1,demoConsent ?? false])
+        SELECT id,$2,$3,amount,currency_code,expires_at,$4,jsonb_build_object('mode','DEMO','source','RETRY','demoConsent',$5::boolean,'method',$6::text)
+        FROM public.contribution WHERE id=$1`, [id,payment.provider_id,key,payment.attempt_number+1,demoConsent ?? false,['TEST_QR','TEST_CARD'].includes(payment.provider_payload?.method)?payment.provider_payload.method:null])
       await recordAudit(manager,userId,'STATUS_CHANGE','contribution',id)
     })
     const item = await this.own(userId,id)
@@ -252,7 +254,7 @@ export class ContributionLedger {
         if (money(payment.amount)!==money(amount) || payment.currency !== event.currencyCode) throw new LedgerConflict('El evento no coincide con el importe y moneda originales.')
         const next = nextPaymentState(payment.status,event.state)
         if (next === 'CONFIRMED' && payment.status !== 'CONFIRMED') {
-          if ((await manager.query('SELECT payment_id FROM brotar_extension.demo_compensation WHERE payment_id=$1',[event.paymentId])).length) throw new LedgerConflict('El recibo DEMO ya fue compensado: no se puede confirmar.')
+          if ((await manager.query('SELECT payment_id FROM brotar_extension.demo_compensation WHERE payment_id=$1',[event.paymentId])).length) throw new LedgerConflict('El recibo de prueba ya fue compensado: no se puede confirmar.')
           if (payment.contribution_status !== 'PENDING' || !payment.reserved) throw new LedgerConflict('Reserva vencida o aporte terminal: requiere conciliación, no confirmar silenciosamente.')
           await this.campaign(manager,target.campaign_id,target.reward_id)
           await this.reward(manager,target.campaign_id,target.reward_id,money(amount),target.id)

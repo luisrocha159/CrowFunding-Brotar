@@ -6,11 +6,11 @@ export function disbursementTarget(status:string,action:string){
  const target=next[status]?.[action];if(!target)throw new LedgerConflict('El desembolso no admite esta transición.');return target
 }
 export function syntheticDestination(reference:string,holder:string){
- if(typeof reference!=='string'||!/^DEMO-[A-Z][A-Z_-]{2,39}$/.test(reference) || typeof holder!=='string'||!/^DEMO\s[\p{L}\p{M} -]{3,90}$/u.test(holder))throw new LedgerInvalid('Usa referencia DEMO- con letras (sin números de cuenta) y titular ficticio DEMO de 8–95 caracteres.')
+ if(typeof reference!=='string'||reference.length>45||!/^(PRUEBA|DEMO)-[A-Z][A-Z_-]{2,39}$/.test(reference) || typeof holder!=='string'||holder.length>95||!/^(PRUEBA|DEMO)\s[\p{L}\p{M} -]{3,90}$/u.test(holder))throw new LedgerInvalid('Usa una referencia como PRUEBA-HUERTO, solo con letras, y un titular ficticio como PRUEBA Huerto Ñandú (hasta 95 caracteres).')
  return{reference,holder:holder.trim()}
 }
 export function disbursementAmounts(gross:string,platform='0.00',provider='0.00',other='0.00'){
- const amount=money(gross);if([platform,provider,other].some(v=>money(v,true)!==0n))throw new LedgerInvalid('Las comisiones del MVP DEMO son cero; no se aceptan costos bancarios inventados.')
+ const amount=money(gross);if([platform,provider,other].some(v=>money(v,true)!==0n))throw new LedgerInvalid('Las comisiones del MVP de prueba son cero; no se aceptan costos bancarios inventados.')
  return{gross:decimal(amount),platform:'0.00',provider:'0.00',other:'0.00',net:decimal(amount)}
 }
 export function schedule(value:string|null,today=new Date(Date.now()-4*3600000).toISOString().slice(0,10)){

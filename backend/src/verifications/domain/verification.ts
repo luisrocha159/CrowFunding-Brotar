@@ -1,4 +1,6 @@
-export class InvalidVerification extends Error {}
+export class InvalidVerification extends Error {
+  constructor(message = 'Revisa los requisitos, documentos y estado del caso.', readonly fields: Record<string, string> = {}) { super(message) }
+}
 export class VerificationPolicyUnavailable extends Error {}
 export class VerificationUnavailable extends Error {}
 export class VerificationConflict extends Error {}
@@ -36,16 +38,33 @@ export function approvedPolicy(policy: unknown): policy is VerificationPolicy {
   }
   return policy.fields.length + policy.documents.length > 0
 }
+/** Reglas compartidas por la captura y la API; un borrador puede estar incompleto. */
+export function verificationSubmissionErrors(policy: VerificationPolicy, input: VerificationSubmission, submitting: boolean): Record<string, string> {
+  const errors: Record<string, string> = {}
+  for (const field of policy.fields) {
+    const value = input.fields[field.key] ?? ''
+    if (!jsonText(value)) errors[field.key] = 'Introduce texto válido, sin caracteres de control no admitidos.'
+    else if (value.trim().length > field.maxLength) errors[field.key] = `Usa como máximo ${field.maxLength} caracteres.`
+    else if (submitting && field.required && !value.trim()) errors[field.key] = 'Completa este campo obligatorio.'
+  }
+  if (submitting) {
+    for (const doc of policy.documents) {
+      if (doc.required && !input.documents.some(item => item?.documentTypeId === doc.documentTypeId)) errors[`document:${doc.documentTypeId}`] = 'Adjunta este documento sintético obligatorio antes de enviar.'
+    }
+    if (policy.requiresAcceptance && !input.accepted) errors.accepted = 'Confirma el tratamiento del expediente antes de enviarlo.'
+  }
+  return errors
+}
 /** La política no se deduce de los catálogos ni se activa desde un formulario público. */
 export function validateSubmission(policy: VerificationPolicy | null, input: VerificationSubmission, submitting = true): VerificationSubmission {
   if (!approvedPolicy(policy) || input.policyVersion !== policy.version) throw new VerificationPolicyUnavailable()
   if (!input.fields || typeof input.fields !== 'object' || Array.isArray(input.fields) || !Array.isArray(input.documents) || typeof input.accepted !== 'boolean') throw new InvalidVerification()
   if (Object.keys(input.fields).some(key => !policy.fields.some(field => field.key === key))) throw new InvalidVerification()
+  const errors = verificationSubmissionErrors(policy, input, submitting)
+  if (Object.keys(errors).length) throw new InvalidVerification('Revisa los campos señalados.', errors)
   const fields: Record<string, string> = {}
   for (const field of policy.fields) {
     const value = input.fields[field.key] ?? ''
-    if (!jsonText(value) || value.trim().length > field.maxLength || (submitting && field.required && !value.trim())) throw new InvalidVerification()
-    if(policy.version.startsWith('mvp-demo-') && value.trim() && !/^(DEMO|PRUEBA)\b/i.test(value.trim()))throw new InvalidVerification('Usa datos ficticios que comiencen con DEMO o PRUEBA.')
     fields[field.key] = value.trim()
   }
   const files = new Set<string>(); const types = new Set<string>()
@@ -53,6 +72,5 @@ export function validateSubmission(policy: VerificationPolicy | null, input: Ver
     if (!doc || !policy.documents.some(required => required.documentTypeId === doc.documentTypeId) || !jsonText(doc.fileId) || !uuid.test(doc.fileId) || files.has(doc.fileId) || types.has(doc.documentTypeId)) throw new InvalidVerification()
     files.add(doc.fileId); types.add(doc.documentTypeId)
   }
-  if (submitting && (policy.documents.some(doc => doc.required && !types.has(doc.documentTypeId)) || (policy.requiresAcceptance && !input.accepted))) throw new InvalidVerification()
   return { ...(input.legalVersion===undefined?{}:{legalVersion:input.legalVersion}), policyVersion: policy.version, fields, documents: input.documents.map(doc => ({ documentTypeId: doc.documentTypeId, fileId: doc.fileId })), accepted: input.accepted }
 }

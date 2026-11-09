@@ -21,7 +21,7 @@ export function LoginPage() {
   useEffect(() => { if (status === 'error') document.getElementById('login-response')?.focus() }, [status])
   const busy = status === 'loading'
   return <AccessShell title="Iniciar sesión" subtitle="Accede con el correo y la contraseña de tu cuenta." intro="Sigue haciendo crecer las causas que te importan"
-    notice={<><strong>Acceso conectado.</strong> Puedes entrar con tu cuenta recién registrada para gestionar tu perfil y organizaciones en borrador. Iniciar sesión no verifica tu correo ni tu identidad. Usa únicamente cuentas y contraseñas de prueba.</>}>
+    notice={<><strong>Acceso conectado.</strong> Puedes entrar con tu cuenta recién registrada para gestionar tu perfil y organizaciones en borrador. Iniciar sesión no verifica tu correo ni tu identidad.</>}>
     {status === 'success' ? <AccessSuccess title="Sesión iniciada">
       <p>La sesión fue confirmada por el servidor. Puedes consultar tus datos y cerrar sesión desde Mi cuenta.</p>
       <div className={styles.actions}><ButtonLink to="/mi-cuenta">Ir a mi cuenta</ButtonLink><ButtonLink variant="secondary" to={authenticatedContinuation(params.get('continuar'))}>Continuar recorrido</ButtonLink></div>

@@ -1,14 +1,18 @@
 # Brotar
 
-Entrega del MVP académico de crowdfunding para **DEV**, 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son DEMO**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+Actualización del MVP académico de crowdfunding para **RicardoDev**, 09/11/2026, sobre la entrega DEV del 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
 Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
+Actualización del 09/11/2026 en RicardoDev: presentación sin el rótulo anterior, acceso administrativo desde el perfil y captura de identidad con errores por campo, sin prefijo obligatorio. [Cambios, actualización y condiciones 1.1](docs/ajustes-presentacion-y-verificacion-2026-11-09.md). Integración de este corte con DEV pendiente.
+
+También incluye recompensas mediante tarjetas según el importe, opción de aportar sin recompensa, correo del remitente en la revisión privada y QR escaneable que identifica el aporte simulado. [Uso, dependencias y comprobaciones](docs/aportes-verificacion-qr-2026-11-09.md). El método elegido se conserva en el pago y el comprobante. [Mi cuenta por secciones y desembolsos con resumen e historial](docs/ajustes-mi-cuenta-y-desembolsos-2026-11-09.md). El QR no realiza cobros bancarios; no necesita nuevas variables de configuración.
+
 ## 1. Qué incluye
 
-Descubrimiento público, cuenta y sesiones, recuperación y verificación de correo, perfiles, organizaciones y representación, KYC/KYB sintético, constructor completo, revisión/corrección/publicación, aportes y comprobantes DEMO, favoritos, avances y recompensas, rendición, ciclo/cierre, desembolsos, devoluciones/disputas, soporte, catálogos, parámetros, permisos y auditoría.
+Descubrimiento público, cuenta y sesiones, recuperación y verificación de correo, perfiles, organizaciones y representación, KYC/KYB sintético, constructor completo, revisión/corrección/publicación, aportes y comprobantes de prueba, favoritos, avances y recompensas, rendición, ciclo/cierre, desembolsos, devoluciones/disputas, soporte, catálogos, parámetros, permisos y auditoría.
 
-**40 migraciones, 215 rutas HTTP y 73 patrones de rutas de interfaz.** Fuente del estado: [planificación local](docs/planificacion-sprints.json), con el estado de preparación/publicación separado del histórico de Trello. [Entrega final y límites](docs/entrega-final-s3-20-2026-10-29.md).
+**41 migraciones, 215 rutas HTTP y 73 patrones de rutas de interfaz.** Fuente del estado: [planificación local](docs/planificacion-sprints.json), con el estado de preparación/publicación separado del histórico de Trello. [Entrega final y límites](docs/entrega-final-s3-20-2026-10-29.md).
 
 ## 2. Requisitos
 
@@ -32,10 +36,10 @@ Comprobar en PowerShell: `git --version`, `node --version`, `bun --version`, `do
 
 ## 3. Primera instalación completa
 
-En una carpeta nueva, obtener DEV en PowerShell:
+En una carpeta nueva, obtener este corte de RicardoDev en PowerShell:
 
 ```powershell
-git clone --branch DEV --single-branch `
+git clone --branch RicardoDev --single-branch `
   https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar
 cd Brotar
 ```
@@ -69,7 +73,7 @@ node scripts/verify-provisional-v2.mjs
 node scripts/adopt-provisional-v2.mjs activate
 ```
 
-Esperado: **40 migraciones, ninguna pendiente**, catálogo con cinco categorías provisionales activas e inventario válido. install restaura la línea base oficial únicamente para una base nueva; las migraciones y prepare-sprint2 cargan los catálogos/permisos. No ejecutar SQL adicional para las categorías. El healthcheck espera el servidor TCP definitivo de PostgreSQL.
+Esperado: **41 migraciones, ninguna pendiente**, catálogo con cinco categorías provisionales activas e inventario válido. install restaura la línea base oficial únicamente para una base nueva; las migraciones y prepare-sprint2 cargan los catálogos/permisos. No ejecutar SQL adicional para las categorías. El healthcheck espera el servidor TCP definitivo de PostgreSQL.
 
 install genera infra/postgres-v2/.env (administración) y .env.backend (aplicación limitada); activate genera backend/.env. No convertir backend/.env.example en una conexión operativa. El rol de la API es brotar_app, nunca postgres. Se conserva el SHA-256 del SQL oficial y no se sincroniza el esquema con el ORM.
 
@@ -113,13 +117,13 @@ En otra terminal de la raíz: `bun run dev`. Conservar .env, volumen Docker y ba
 
 ## 5. Actualizar una copia existente
 
-Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar DEV sin forzar:
+Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar RicardoDev sin forzar:
 
 ```powershell
 git status --short
 git fetch origin
-git switch DEV
-git pull --ff-only origin DEV
+git switch RicardoDev
+git pull --ff-only origin RicardoDev
 ```
 
 Si hay trabajo propio o el pull no puede avanzar, conservarlo y revisar CONTRIBUTING; no hacer reset ni forzar. Iniciar Docker Desktop y, desde la raíz, actualizar dependencias y base existente:
@@ -181,13 +185,15 @@ Las migraciones no copian usuarios ni crean un administrador con contraseña pú
 node scripts/grant-local-admin.mjs --email=tu-cuenta@gmail.com --confirm-local-admin
 ```
 
-Reemplazar el correo por el de la cuenta ya registrada. No cambia contraseña, identidad ni verificaciones. ADMIN concede CREATOR provisionalmente y responsabilidades internas desde /administracion/personas. REVIEWER revisa, COMPLIANCE verifica expedientes, FINANCE opera dinero DEMO, SUPPORT atiende y AUDITOR consulta. ADMIN no hereda operación financiera; AUDITOR no muta aunque tenga otros roles.
+Reemplazar el correo por el de la cuenta ya registrada. No cambia contraseña, identidad ni verificaciones. ADMIN concede CREATOR provisionalmente y responsabilidades internas desde /administracion/personas. REVIEWER revisa, COMPLIANCE verifica expedientes, FINANCE opera operaciones simuladas, SUPPORT atiende y AUDITOR consulta. ADMIN no hereda operación financiera; AUDITOR no muta aunque tenga otros roles.
 
 ## 8. Validación y demostración
 
 Checks sin datos: `bun run check` en raíz y `corepack pnpm run check` en backend. Integraciones con escritura: **solo copia QA nueva**, proyecto Compose con qa, puerto/archivos propios y sin SMTP personal. [Procedimiento completo S3-21](docs/validacion-integral-s3-21-2026-10-29.md#repetir-la-validación-automática). No activar ALLOW_DB_TEST_WRITES en la base de uso.
 
-Caso integral aceptado: registro/contacto/KYC DEMO → campaña → corrección/revisión → publicación separada → aporte único → soporte → resultado/desembolso → avance/recompensa/rendición → cierre. **565 pruebas distintas aprobadas en S3-21**, no se suman repeticiones. [Resultados](docs/evidencias/s3-21/resumen.json) y [aceptación](docs/evidencias/s3-21/aceptacion.json).
+Caso integral aceptado: registro/contacto/KYC de prueba → campaña → corrección/revisión → publicación separada → aporte único → soporte → resultado/desembolso → avance/recompensa/rendición → cierre. **565 pruebas distintas aprobadas en S3-21**, no se suman repeticiones. [Resultados](docs/evidencias/s3-21/resumen.json) y [aceptación](docs/evidencias/s3-21/aceptacion.json).
+
+Actualización RicardoDev del 09/11/2026: **273 pruebas frontend, 244 backend y 8 de herramientas locales**, lint, tipos y compilaciones correctos. Se comprobaron en PostgreSQL aislado los escenarios afectados de presentación, consentimiento, revisión, aportes, método de pago, reintentos, ciclo y desembolsos. El alcance de cada ronda y las revisiones visuales de escritorio/móvil se detallan en los documentos de ajustes enlazados al inicio. Estos resultados complementan el corte S3-21; no representan una nueva aceptación manual del equipo.
 
 ## 9. Documentos finales
 

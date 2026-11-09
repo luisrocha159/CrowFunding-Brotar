@@ -14,7 +14,7 @@ import { TypeormContributionRepository } from '../src/contributions/infrastructu
 import type { ContributionDetail, ContributionPage, SponsorSummary } from '../src/contributions/application/contributions'
 import { TypeormSimulationRepository } from '../src/contributions/infrastructure/typeorm-simulation.repository'
 import { SimulationConflict } from '../src/contributions/application/support-simulation'
-import type { SupportSimulation } from '../src/contributions/application/support-simulation'
+import type { SupportSimulation, SupportOptions } from '../src/contributions/application/support-simulation'
 
 test('S3 aportes y simulación: privacidad PostgreSQL, filtros, comprobantes, sandbox y reintentos aislados', { timeout: 90000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -31,7 +31,7 @@ test('S3 aportes y simulación: privacidad PostgreSQL, filtros, comprobantes, sa
   try {
     for (let i = 0; i < 2; i++) {
       const email = `s3-contributions-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
-      const user = await json<{ id: string }>(await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: 'Patrocinador', email, password, demoConsent: true }), 201)
+      const user = await json<{ id: string }>(await call('auth/register', '', { legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName: 'Ensayo', lastName: 'Patrocinador', email, password, demoConsent: true }), 201)
       const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)
       users.push({ id: user.id, email, password, cookie: login.headers.get('set-cookie')!.split(';')[0]! })
     }
@@ -63,6 +63,19 @@ test('S3 aportes y simulación: privacidad PostgreSQL, filtros, comprobantes, sa
     assert.ok(!JSON.stringify(detail).includes('DO_NOT_EXPOSE')); assert.ok(!JSON.stringify(detail).includes('AJENO_NO_DIVULGAR'))
     assert.equal((await json<{ sandbox: boolean }>(await call(`me/contributions/${c3}/receipt`, owner.cookie))).sandbox, true)
     const summary = await json<SponsorSummary>(await call('me/sponsor-summary', owner.cookie)); assert.equal(summary.contributionCount, 3); assert.deepEqual(summary.totals, [{ currency: 'BOB', grossConfirmed: '10.25', refunded: '2.00', disputed: '0.00' }]); assert.equal(summary.sandboxPaymentCount, 1)
+    // Finanzas conserva el acceso básico. Las fechas de financiación son opcionales,
+    // igual que en el constructor y en el checkout integrado.
+    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${owner.id}',id FROM role WHERE code='FINANCE';
+      UPDATE campaign SET starts_at=now()+interval '1 day',ends_at=now()+interval '2 days' WHERE id='${campaign}'`)
+    const future=await json<SupportOptions>(await call(`me/support-options/${campaign}`,owner.cookie))
+    assert.equal(future.eligible,false);assert.match(future.unavailableReason!,/no comenzó/)
+    sql(`UPDATE campaign SET starts_at=now()-interval '2 days',ends_at=now()-interval '1 day' WHERE id='${campaign}'`)
+    const ended=await json<SupportOptions>(await call(`me/support-options/${campaign}`,owner.cookie))
+    assert.equal(ended.eligible,false);assert.match(ended.unavailableReason!,/terminó/)
+    sql(`UPDATE campaign SET starts_at=NULL,ends_at=NULL WHERE id='${campaign}'`)
+    const withoutDates=await json<SupportOptions>(await call(`me/support-options/${campaign}`,owner.cookie))
+    assert.equal(withoutDates.eligible,true,'Una campaña publicada con fechas opcionales vacías permite seleccionar apoyo también con FINANCE.')
+    assert.equal(withoutDates.unavailableReason,null)
     const input = { mode: 'SIMULATION', campaignId: campaign, rewardId: reward, amount: '20.00', method: 'TEST_QR', requestId: randomUUID() }
     const financeBefore = sql(`SELECT (SELECT count(*) FROM contribution)::text||':'||(SELECT count(*) FROM payment)::text`)
     sql(`INSERT INTO user_role(user_id,role_id) SELECT '${owner.id}',id FROM role WHERE code='AUDITOR'`)

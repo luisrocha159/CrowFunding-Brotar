@@ -12,7 +12,7 @@ import {readEnvironment} from '../src/config/environment'
 import {readDatabaseConfig} from '../src/shared/infrastructure/database/database.config'
 import {createDataSource} from '../src/shared/infrastructure/database/data-source'
 import {readTestDatabaseTarget} from './database-target'
-import {LEGAL_VERSION} from '../src/legal/domain/legal-v1-20261028'
+import {LEGAL_VERSION} from '../src/legal/domain/legal-v2-20261109'
 import {LEGAL_HASH} from '../src/legal/legal-record'
 import type {VerificationType,VerificationDetail} from '../src/verifications/application/verifications'
 
@@ -58,6 +58,9 @@ test('condiciones provisionales HTTP/PostgreSQL: textos exactos, aceptación exp
   const withoutSpecificVersion={...submission};delete (withoutSpecificVersion as Partial<typeof submission>).legalVersion
   assert.equal((await call('me/verifications/'+caseId,cookie,'PUT',withoutSpecificVersion)).status,400,'No se infiere consentimiento específico de una versión no declarada.')
   const declared={...submission,legalVersion:LEGAL_VERSION}
+  assert.equal((await call('me/verifications/'+caseId,cookie,'PUT',{...declared,accepted:false})).status,400,'Las condiciones de cuenta no sustituyen la autorización del expediente.')
+  assert.equal((await source.query('SELECT status FROM verification WHERE id=$1',[caseId]))[0].status,'NOT_STARTED')
+  assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.legal_acceptance WHERE user_id=$1 AND purpose='VERIFICATION'",[legacy]))[0].n,0,'Un envío sin autorización no genera un recibo.')
   const sent=await call('me/verifications/'+caseId,cookie,'PUT',declared);assert.equal(sent.status,200);assert.equal(sent.data.status,'PENDING')
   const [receipt]=await source.query("SELECT policy_version,reference_id,document_codes,bundle_hash FROM brotar_extension.legal_acceptance WHERE user_id=$1 AND purpose='VERIFICATION'",[legacy]);assert.equal(receipt.policy_version,type.policy.version);assert.equal(receipt.reference_id,caseId);assert.deepEqual(receipt.document_codes,['IDENTITY']);assert.equal(receipt.bundle_hash,LEGAL_HASH)
   await admin.query("UPDATE verification SET status='REQUIRES_INFO' WHERE id=$1",[caseId])

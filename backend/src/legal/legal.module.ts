@@ -7,7 +7,7 @@ import {RolesModule} from '../roles/roles.module'
 import {RoleGuard,RequireRoles,type AuthenticatedRequest} from '../roles/infrastructure/roles-http'
 import {SessionMutationGuard} from '../auth/infrastructure/http/session-http'
 import {CaseWriteLimitGuard} from '../shared/infrastructure/http/case-write-limit.guard'
-import {LEGAL_VERSION} from './domain/legal-v1-20261028'
+import {LEGAL_VERSION} from './domain/legal-v2-20261109'
 import {assertLegalAcceptance,InvalidLegalAgreement,LegalAgreementRequired} from './domain/legal-agreement'
 import {publishedLegal,recordLegalAcceptance} from './legal-record'
 

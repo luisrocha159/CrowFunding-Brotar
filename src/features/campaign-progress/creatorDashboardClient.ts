@@ -43,7 +43,7 @@ export function creatorActions(item: PendingItem) {
   if (['FUNDING_ENDED', 'IN_EXECUTION', 'CLOSED', 'CANCELLED'].includes(item.status)) {
     result.push({ label: `Rendición${item.reportStatus ? ` · ${reportNames[item.reportStatus] ?? item.reportStatus}` : ' pendiente'}`, href: `${root}/rendicion` })
     result.push({ label: 'Revisar cierre y obligaciones', href: `${root}/cierre` })
-    result.push({ label: 'Desembolsos DEMO', href: `${root}/desembolsos` })
+    result.push({ label: 'Desembolsos', href: `${root}/desembolsos` })
   }
   return result
 }

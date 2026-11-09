@@ -1,10 +1,10 @@
 # Backend Brotar
 
-API NestJS del MVP académico DEMO, corte DEV del 30/10/2026. **40 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz.
+API NestJS del MVP académico de pruebas, corte DEV del 30/10/2026 y actualización RicardoDev del 09/11/2026. **41 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz. Los ajustes de presentación y condiciones 1.1 todavía no están publicados en DEV; [instrucciones de actualización](../docs/ajustes-presentacion-y-verificacion-2026-11-09.md).
 
 ## Instalar y arrancar
 
-Seguir [README raíz](../README.md#3-primera-instalación-completa). Orden: dependencias congeladas → SQL oficial en contenedor nuevo → check/build → migraciones → prepare-sprint2 → verificar → activate una vez → opciones DEMO y correo privado → API/frontend. No copiar .env.example como conexión.
+Seguir [README raíz](../README.md#3-primera-instalación-completa). Orden: dependencias congeladas → SQL oficial en contenedor nuevo → check/build → migraciones → prepare-sprint2 → verificar → activate una vez → opciones de simulación y correo privado → API/frontend. No copiar .env.example como conexión.
 
 Desde esta carpeta: `corepack pnpm run dev`; compilado: `corepack pnpm run build` y `corepack pnpm run start`. API normal http://127.0.0.1:3000/api. Docker aloja PostgreSQL en 15433; la API no usa superusuario. [Actualizar una V2 existente](../README.md#5-actualizar-una-copia-existente).
 
@@ -22,6 +22,6 @@ Módulos: acceso/perfiles/contactos; organizaciones/representación; archivos; b
 
 ## Comprobar
 
-`corepack pnpm run check` ejecuta lint, tipos, 241 pruebas backend, ocho del administrador local y build. Las 55 integraciones con escritura se ejecutan únicamente en copia QA nueva según [S3-21](../docs/validacion-integral-s3-21-2026-10-29.md#repetir-la-validación-automática), sin SMTP de uso. `node scripts/check-http-contracts.mjs` valida contratos sin abrir puerto ni conectar a datos.
+`corepack pnpm run check` ejecuta lint, tipos, 244 pruebas backend, ocho del administrador local y build. Las 55 integraciones con escritura se ejecutan únicamente en copia QA nueva según [S3-21](../docs/validacion-integral-s3-21-2026-10-29.md#repetir-la-validación-automática), sin SMTP de uso. `node scripts/check-http-contracts.mjs` valida contratos sin abrir puerto ni conectar a datos.
 
 /health/live no acredita base; /health/ready debe devolver 200 y comprueba esquema/permisos. Sin .env la API puede responder live con base desactivada: no es una instalación funcional. [Antecedentes](README_HISTORICO.md) conservan sus fechas, roles y conteos históricos.

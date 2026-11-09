@@ -106,7 +106,7 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       await this.lock(manager, id, 'APPROVED', expectedRound, 'APPROVED')
       await this.complete(manager, id, actorId, expectedRound, 'PUBLISH', duplicateReview)
       // Los controles DEMO son adicionales al contrato S2; nunca habilitan publicación real.
-      if(!isDemoEnabled(process.env))throw new ReviewInvalid('Publicación requiere el entorno DEMO explícito. Producción, correo y legal siguen pendientes.')
+      if(!isDemoEnabled(process.env))throw new ReviewInvalid('La publicación requiere el entorno de pruebas habilitado; no está disponible en producción.')
       {
         await transactionAccess(manager,actorId,'campaign.publish')
         const [c]=await manager.query('SELECT id,creator_user_id,organization_id,currency_code,status FROM public.campaign WHERE id=$1',[id])

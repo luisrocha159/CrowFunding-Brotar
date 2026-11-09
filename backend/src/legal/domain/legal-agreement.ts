@@ -1,4 +1,4 @@
-import { LEGAL_VERSION } from './legal-v1-20261028'
+import { LEGAL_VERSION } from './legal-v2-20261109'
 export class InvalidLegalAgreement extends Error {}
 export class LegalAgreementRequired extends Error {}
 export function assertLegalAcceptance(version: unknown, accepted: unknown) {

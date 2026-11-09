@@ -27,8 +27,8 @@ export class TypeormSimulationRepository {
   }
   private async readOptions(manager: EntityManager, campaignId: string, lock = false): Promise<SupportOptions> {
     const rows = await manager.query(`SELECT id AS "campaignId",title,campaign_type AS "campaignType",currency_code AS currency,min_contribution::text AS minimum,
-      (status='PUBLISHED' AND starts_at IS NOT NULL AND ends_at IS NOT NULL AND starts_at<=now() AND ends_at>now()) AS eligible,
-      CASE WHEN status<>'PUBLISHED' THEN 'La campaña no está abierta para apoyo.' WHEN starts_at IS NULL OR ends_at IS NULL THEN 'El período de apoyo no está definido.'
+      (status='PUBLISHED' AND (starts_at IS NULL OR starts_at<=now()) AND (ends_at IS NULL OR ends_at>now())) AS eligible,
+      CASE WHEN status<>'PUBLISHED' THEN 'La campaña no está abierta para apoyo.'
         WHEN starts_at>now() THEN 'El período de apoyo todavía no comenzó.' WHEN ends_at<=now() THEN 'El período de apoyo terminó.' ELSE NULL END AS "unavailableReason"
       FROM public.campaign WHERE id=$1 AND deleted_at IS NULL AND published_at IS NOT NULL AND status IN ('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED') ${lock ? 'FOR SHARE' : ''}`, [campaignId]) as Omit<SupportOptions, 'rewards'>[]
     if (!rows[0]) throw new SimulationUnavailable()

@@ -12,7 +12,7 @@ import {readDatabaseConfig} from '../src/shared/infrastructure/database/database
 import {readTestDatabaseTarget} from './database-target'
 import {configureHttp} from '../src/shared/infrastructure/http/configure-http'
 import {readEnvironment} from '../src/config/environment'
-import {LEGAL_VERSION} from '../src/legal/domain/legal-v1-20261028'
+import {LEGAL_VERSION} from '../src/legal/domain/legal-v2-20261109'
 
 test('consentimiento: bloqueo de cuenta durante espera impide insertar un recibo', {timeout:45000},async()=>{
  const config=readDatabaseConfig(process.env);assert.ok(config.enabled&&process.env.ALLOW_DB_TEST_WRITES==='true');readTestDatabaseTarget(config)

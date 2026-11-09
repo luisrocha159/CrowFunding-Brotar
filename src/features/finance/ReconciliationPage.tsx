@@ -16,7 +16,7 @@ export function PendingResults({items}: {items: PendingPayment[]}) {
   return <div className={styles.records}>{items.map(item=><article className={styles.record} key={item.id}>
     <h3>{item.campaignTitle}</h3><p><strong>{item.needsReview?'Aviso que requiere revisión':item.expired?'Reserva vencida pendiente de mantenimiento':'Intento pendiente'}</strong></p>
     <dl><dt>Referencia del aporte</dt><dd>{item.reference}</dd><dt>ID del pago</dt><dd>{item.id}</dd><dt>Estado interno</dt><dd>{paymentLabels[item.status]}</dd>
-      <dt>Importe de prueba</dt><dd>{financeMoney(item.amount,item.currencyCode)}</dd><dt>Creado (UTC)</dt><dd><Stamp value={item.createdAt} /></dd><dt>Vence (UTC)</dt><dd><Stamp value={item.expiresAt} /></dd></dl>
+      <dt>Importe</dt><dd>{financeMoney(item.amount,item.currencyCode)}</dd><dt>Creado (UTC)</dt><dd><Stamp value={item.createdAt} /></dd><dt>Vence (UTC)</dt><dd><Stamp value={item.expiresAt} /></dd></dl>
     <p>No equivale a un ingreso confirmado. Para avisos tardíos confirmados, crea un lote que incluya el día de la primera observación.</p>
   </article>)}</div>
 }
@@ -24,7 +24,7 @@ export function ReconciliationSummary({batch}: {batch: ReconciliationDetail}) {
   return <section className={styles.record} aria-label="Resumen de conciliación"><h2>Lote {batch.id}</h2>
     <p><strong>{batchLabels[batch.status]}</strong> · {batch.from} a {batch.to}, inclusive UTC · {batch.currencyCode}</p>
     <dl><dt>Confirmaciones internas brutas</dt><dd>{financeMoney(batch.totalInternal,batch.currencyCode)}</dd>
-      <dt>Recibos DEMO brutos</dt><dd>{financeMoney(batch.totalProvider,batch.currencyCode)}</dd><dt>Diferencia del corte (interno − DEMO)</dt><dd>{financeMoney(batch.difference,batch.currencyCode)}</dd>
+      <dt>Recibos brutos</dt><dd>{financeMoney(batch.totalProvider,batch.currencyCode)}</dd><dt>Diferencia del corte (interno −)</dt><dd>{financeMoney(batch.difference,batch.currencyCode)}</dd>
       <dt>Instantánea (UTC)</dt><dd><Stamp value={batch.snapshotAt} /></dd><dt>Creado por (ID)</dt><dd>{batch.createdBy ?? 'Actor histórico no disponible'}</dd>
       <dt>Cerrado por (ID)</dt><dd>{batch.closedBy ?? 'Sin cierre registrado'}</dd><dt>Fecha de cierre (UTC)</dt><dd><Stamp value={batch.closedAt} /></dd></dl>
     <p>Estos totales son el corte original, no un saldo disponible para desembolsar. Una resolución no reescribe importes ni hace desaparecer la diferencia histórica.</p>
@@ -44,23 +44,23 @@ function ResolutionForm({item,busy,onResolve}: {item: ReconciliationItem;busy: b
     <fieldset disabled={busy}><legend>Resolución trazable</legend>
       <FormField as="select" label="Acción" required value={action} onChange={event=>{setAction(event.target.value as ResolutionAction);setConfirmed(false);setError('')}}>
         <option value="RECHECK">Contrastar evidencia actual</option>
-        {item.status==='MISSING_INTERNAL' && item.paymentId && <option value="COMPENSATE_DEMO">Registrar compensación DEMO sin ingreso interno</option>}
+        {item.status==='MISSING_INTERNAL' && item.paymentId && <option value="COMPENSATE_DEMO">Registrar compensación sin ingreso interno</option>}
       </FormField>
       <p>{action==='RECHECK'?'El servidor comprobará la evidencia vigente. Si sigue faltando o difiere, la referencia permanecerá abierta.':'Solo para un recibo simulado inequívoco que nunca ingresó. Otra persona de FINANCE debe resolver el aporte del interesado. No es una devolución bancaria ni de un aporte confirmado.'}</p>
       <FormField as="textarea" label="Motivo" required minLength={20} maxLength={500} value={reason} error={error || undefined} help="20–500 caracteres. Describe la evidencia; no incluyas contraseñas ni datos bancarios." onChange={event=>{setReason(event.target.value);setConfirmed(false);setError('')}} />
-      <label className={styles.confirmation}><input type="checkbox" required checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />Confirmo esta acción DEMO para la referencia indicada. No autoriza dinero real.</label>
+      <label className={styles.confirmation}><input type="checkbox" required checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />Confirmo esta acción para la referencia indicada. No autoriza dinero real.</label>
       <Button type="submit" loading={busy} loadingLabel="Comprobando…" disabled={!confirmed}>Registrar resolución</Button>
     </fieldset>
   </form>
 }
 export function ReconciliationItems({batch,operate=false,busy=false,onResolve=async()=>null}: {batch: ReconciliationDetail;operate?: boolean;busy?: boolean;onResolve?: (itemId: string,action: ResolutionAction,reason: string)=>Promise<unknown>}) {
   return <div className={styles.records}>{batch.items.map(item=><article className={styles.record} key={item.id}>
-    <h3>{reconciliationLabels[item.status]}</h3><dl><dt>Referencia DEMO</dt><dd>{item.reference}</dd><dt>Referencia del aporte</dt><dd>{item.internalReference ?? 'Sin relación inequívoca'}</dd>
+    <h3>{reconciliationLabels[item.status]}</h3><dl><dt>Referencia</dt><dd>{item.reference}</dd><dt>Referencia del aporte</dt><dd>{item.internalReference ?? 'Sin relación inequívoca'}</dd>
       <dt>ID de pago</dt><dd>{item.paymentId ?? 'Referencia ambigua: requiere investigación'}</dd><dt>Estado interno vigente al consultar</dt><dd>{item.internalStatus?paymentLabels[item.internalStatus]:'No disponible'}</dd>
-      <dt>Importe interno del corte</dt><dd>{financeMoney(item.internalAmount,batch.currencyCode)}</dd><dt>Importe DEMO del corte</dt><dd>{financeMoney(item.providerAmount,batch.currencyCode)}</dd>
+      <dt>Importe interno del corte</dt><dd>{financeMoney(item.internalAmount,batch.currencyCode)}</dd><dt>Importe del corte</dt><dd>{financeMoney(item.providerAmount,batch.currencyCode)}</dd>
       <dt>Clasificación original</dt><dd>{reconciliationLabels[item.originalStatus]}</dd></dl>
-    {item.status==='RESOLVED' && <><h4>Resolución registrada</h4><dl><dt>Acción</dt><dd>{item.resolution==='RECHECK'?'Contraste de evidencia':'Compensación DEMO sin ingreso interno'}</dd><dt>Motivo</dt><dd>{item.reason}</dd><dt>Responsable (ID)</dt><dd>{item.resolvedBy ?? 'Actor histórico no disponible'}</dd><dt>Fecha (UTC)</dt><dd><Stamp value={item.resolvedAt} /></dd>
-      <dt>Compensación DEMO</dt><dd>{item.compensationAmount?financeMoney(item.compensationAmount,batch.currencyCode):'No aplica'}</dd></dl></>}
+    {item.status==='RESOLVED' && <><h4>Resolución registrada</h4><dl><dt>Acción</dt><dd>{item.resolution==='RECHECK'?'Contraste de evidencia':'Compensación sin ingreso interno'}</dd><dt>Motivo</dt><dd>{item.reason}</dd><dt>Responsable (ID)</dt><dd>{item.resolvedBy ?? 'Actor histórico no disponible'}</dd><dt>Fecha (UTC)</dt><dd><Stamp value={item.resolvedAt} /></dd>
+      <dt>Compensación</dt><dd>{item.compensationAmount?financeMoney(item.compensationAmount,batch.currencyCode):'No aplica'}</dd></dl></>}
     {operate && batch.status!=='CLOSED' && !['MATCHED','RESOLVED'].includes(item.status) && <ResolutionForm key={item.id+item.status} item={item} busy={busy} onResolve={(action,reason)=>onResolve(item.id,action,reason)} />}
   </article>)}</div>
 }
@@ -69,7 +69,7 @@ function CloseForm({busy,eligible,onClose}: {busy: boolean;eligible: boolean;onC
   return <form className={styles.record} onSubmit={event=>{event.preventDefault();if(confirmed && eligible)void onClose()}} aria-label="Cerrar lote">
     <h2>Cierre del lote</h2><p>Requiere todas las referencias coincidentes o resueltas. El servidor vuelve a comprobar la evidencia. No se puede forzar el cierre ni modificar un lote cerrado.</p>
     {!eligible && <p>Hay diferencias sin resolver. Revisa las referencias antes de cerrar.</p>}
-    <label className={styles.confirmation}><input type="checkbox" required disabled={!eligible || busy} checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />He revisado este lote y confirmo su cierre DEMO.</label>
+    <label className={styles.confirmation}><input type="checkbox" required disabled={!eligible || busy} checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />He revisado este lote y confirmo su cierre.</label>
     <Button type="submit" loading={busy} disabled={!confirmed || !eligible}>Cerrar lote revisado</Button>
   </form>
 }
@@ -84,14 +84,14 @@ function OverviewForm({filters,currencies,busy,operate,onApply,onCreate,onExpire
         <FormField as="select" label="Moneda del catálogo" required value={draft.currencyCode} onChange={event=>setDraft({...draft,currencyCode:event.target.value})}>
           <option value="">Selecciona una moneda</option>{currencies.map(x=><option key={x.code} value={x.code}>{x.code} · {x.name}</option>)}
         </FormField>
-        <p>Máximo 31 días inclusive. Pendientes: fecha de creación del intento. Lotes: fecha de confirmación interna y primera observación DEMO, en UTC. No se mezclan monedas.</p>
+        <p>Máximo 31 días inclusive. Pendientes: fecha de creación del intento. Lotes: fecha de confirmación interna y primera observación, en UTC. No se mezclan monedas.</p>
         {error && <p role="alert">{error}</p>}
         <div className={styles.actions}><Button type="submit">Consultar pendientes</Button>{operate && <Button variant="secondary" onClick={()=>{if(valid())void onCreate(draft)}} loading={busy} loadingLabel="Creando…">Crear lote del período</Button>}</div>
       </fieldset>
     </form>
-    {operate && <section className={styles.record}><h2>Mantenimiento de reservas vencidas</h2><p>Procesa hasta 100 intentos DEMO por operación, en todas las fechas y monedas. Solo persiste expiraciones: no confirma cobros ni compensa recibos.</p>
-      <label className={styles.confirmation}><input type="checkbox" checked={expireConfirmed} disabled={busy} onChange={event=>setExpireConfirmed(event.target.checked)} />Confirmo procesar reservas DEMO vencidas, no solamente las del filtro.</label>
-      <Button variant="secondary" disabled={!expireConfirmed} loading={busy} onClick={()=>{setExpireConfirmed(false);void onExpire()}}>Procesar vencimientos DEMO</Button>
+    {operate && <section className={styles.record}><h2>Mantenimiento de reservas vencidas</h2><p>Procesa hasta 100 intentos por operación, en todas las fechas y monedas. Solo persiste expiraciones: no confirma cobros ni compensa recibos.</p>
+      <label className={styles.confirmation}><input type="checkbox" checked={expireConfirmed} disabled={busy} onChange={event=>setExpireConfirmed(event.target.checked)} />Confirmo procesar reservas vencidas, no solamente las del filtro.</label>
+      <Button variant="secondary" disabled={!expireConfirmed} loading={busy} onClick={()=>{setExpireConfirmed(false);void onExpire()}}>Procesar vencimientos</Button>
     </section>}
   </>
 }
@@ -100,7 +100,7 @@ export function ReconciliationPage() {
   const operate=permissions.can('finance.operate') && data.state==='ready'
   if(data.state==='anonymous')return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent('/administracion/conciliacion'+(id?`/${id}`:''))}`} />
   return <div className={layout.adminLayout}><AdministrativeNavigation /><section className={layout.content}>
-    <header className={layout.heading}><div><h1>Conciliación de prueba</h1><p>SIMULACIÓN · SIN DINERO REAL · NO PAGAR</p></div></header>
+    <header className={layout.heading}><div><h1>Conciliación</h1><p>SIMULACIÓN · SIN DINERO REAL · NO PAGAR</p></div></header>
     <p>Contrasta confirmaciones internas con recibos del simulador. No conecta con bancos, no acredita pagos reales ni autoriza desembolsos o devoluciones.</p>
     <div className={styles.actions}>{id && <ButtonLink to="/administracion/conciliacion" variant="secondary">Volver a los lotes</ButtonLink>}<Button variant="secondary" disabled={data.busy} onClick={data.refresh}>Actualizar estado</Button></div>
     {data.state==='forbidden'?<Message tone="warning" title="Acceso restringido">Necesitas finance.read vigente. Las operaciones requieren FINANCE y no ser Auditor.</Message>:<>

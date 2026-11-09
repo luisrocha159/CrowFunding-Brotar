@@ -14,6 +14,8 @@ test('desembolso: bruto/neto exactos, sin costos inventados ni destinos reales',
  for(const v of ['',' ','0','-1','1e2','NaN','1.001','1000000000000'])assert.throws(()=>disbursementAmounts(v),LedgerInvalid)
  assert.throws(()=>disbursementAmounts('10','0.01'),LedgerInvalid)
  assert.deepEqual(syntheticDestination('DEMO-HUERTO','DEMO Huerto Ñandú'),{reference:'DEMO-HUERTO',holder:'DEMO Huerto Ñandú'})
+ assert.deepEqual(syntheticDestination('PRUEBA-HUERTO','PRUEBA Huerto Ñandú'),{reference:'PRUEBA-HUERTO',holder:'PRUEBA Huerto Ñandú'})
+ assert.throws(()=>syntheticDestination('PRUEBA-'+ 'A'.repeat(39),'PRUEBA Titular'),LedgerInvalid)
  for(const [r,h]of[['123456789','Ricardo'],['DEMO-1234','DEMO Titular'],['DEMO-HUERTO','DEMO <script>'],['DEMO-HUERTO','       ']])assert.throws(()=>syntheticDestination(r!,h!),LedgerInvalid)
 })
 test('desembolso: fecha opcional, calendarios reales y hoy en Bolivia',()=>{

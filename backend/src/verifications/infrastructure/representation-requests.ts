@@ -20,7 +20,7 @@ const iso=(v:Date|string|null)=>v instanceof Date?v.toISOString():v
 @Injectable()
 export class RepresentationRequests {
  constructor(private readonly database:DatabaseService){}
- private enabled(){if(!['test','development'].includes(process.env.NODE_ENV??'development'))throw new ForbiddenException('La representación DEMO no está operativa en producción.')}
+ private enabled(){if(!['test','development'].includes(process.env.NODE_ENV??'development'))throw new ForbiddenException('La representación de prueba no está operativa en producción.')}
  private async accountLocks(m:EntityManager,ids:string[]){
   try{await m.query('SELECT id FROM public.app_user WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE NOWAIT',[[...new Set(ids)].sort()])}
   catch(error){if(error&&typeof error==='object'&&'code'in error&&error.code==='55P03')throw new ConflictException('Una cuenta está ocupada. Recarga y confirma de nuevo.');throw error}

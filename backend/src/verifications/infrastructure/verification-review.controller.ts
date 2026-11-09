@@ -24,7 +24,7 @@ async function run<T>(operation:()=>Promise<T>){try{return await operation()}cat
  if(e instanceof InvalidVerification)throw new BadRequestException('Revisa estado, motivo y evaluación de los documentos actuales.')
  if(e instanceof VerificationForbidden)throw new ForbiddenException('No se permite revisar un expediente propio o vinculado a tu representación.')
  if(e instanceof VerificationUnavailable)throw new NotFoundException('Expediente o documento no disponible.')
- if(e instanceof VerificationConflict || e instanceof VerificationPolicyUnavailable)throw new ConflictException('El caso, versión o política DEMO cambió. Actualiza antes de decidir.')
+ if(e instanceof VerificationConflict || e instanceof VerificationPolicyUnavailable)throw new ConflictException('El caso, versión o política de prueba cambió. Actualiza antes de decidir.')
  throw e
 }}
 @Controller('admin/verifications') @UseGuards(RoleGuard) @RequirePermissions('verification.read')

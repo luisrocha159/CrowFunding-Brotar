@@ -18,7 +18,7 @@ async function financeActor(manager: EntityManager,actor: string) {
     AND EXISTS(SELECT 1 FROM public.role_permission rp JOIN public.permission p ON p.id=rp.permission_id WHERE rp.role_id=r.id AND p.code='finance.operate')
     AND NOT EXISTS(SELECT 1 FROM public.user_role ar JOIN public.role rr ON rr.id=ar.role_id WHERE ar.user_id=u.id AND rr.code='AUDITOR'
       AND ar.revoked_at IS NULL AND ar.granted_at<=now() AND (ar.expires_at IS NULL OR ar.expires_at>now())) FOR SHARE OF ur`,[actor])
-  if (!allowed) throw new ForbiddenException('Esta operación DEMO requiere Finanzas vigente y no ser auditor.')
+  if (!allowed) throw new ForbiddenException('Esta operación de prueba requiere Finanzas vigente y no ser auditor.')
 }
 
 @Injectable()
@@ -118,7 +118,7 @@ export class DemoReconciliation {
       r.total_internal::text AS "totalInternal",r.total_provider::text AS "totalProvider",r.difference::text,d.snapshot_at AS "snapshotAt",
       r.created_by AS "createdBy",r.closed_by AS "closedBy",r.closed_at AS "closedAt"
       FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id WHERE r.id=$1 AND r.provider_id=$2`,[id,providerId])
-    if (!batch) throw new NotFoundException('Conciliación DEMO no disponible.')
+    if (!batch) throw new NotFoundException('Conciliación de prueba no disponible.')
     const items=await manager.query(`SELECT i.id,i.payment_id AS "paymentId",i.external_reference AS reference,i.status,d.original_status AS "originalStatus",
       i.internal_amount::text AS "internalAmount",i.provider_amount::text AS "providerAmount",d.resolution,d.reason,i.resolved_by AS "resolvedBy",i.resolved_at AS "resolvedAt",
       ctb.reference_code AS "internalReference",p.status AS "internalStatus",
@@ -151,7 +151,7 @@ export class DemoReconciliation {
         s.resolution,s.reason FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id
         JOIN public.reconciliation_item i ON i.reconciliation_id=r.id JOIN brotar_extension.demo_reconciliation_item s ON s.item_id=i.id
         WHERE r.id=$1 AND i.id=$2 AND r.provider_id=$3 FOR UPDATE OF r,i`,[batchId,itemId,providerId])
-      if (!row) throw new NotFoundException('Ítem DEMO no disponible.')
+      if (!row) throw new NotFoundException('Ítem de prueba no disponible.')
       if (row.batch_status==='CLOSED') throw new LedgerConflict('El lote cerrado es inmutable; crea otro lote.')
       if (row.status==='RESOLVED') {
         if (row.resolution!==action || row.reason!==note) throw new LedgerConflict('Ya existe otra resolución; no se sobrescribe.')
@@ -159,7 +159,7 @@ export class DemoReconciliation {
       }
       const current=await this.current(manager,providerId,row.currency,row.external_reference)
       if (action==='COMPENSATE_DEMO') {
-        if (!current || current.classification!=='MISSING_INTERNAL' || !current.paymentId) throw new LedgerConflict('Solo se compensa un recibo DEMO inequívoco sin confirmación interna. No se fuerza el cuadre.')
+        if (!current || current.classification!=='MISSING_INTERNAL' || !current.paymentId) throw new LedgerConflict('Solo se compensa un recibo de prueba inequívoco sin confirmación interna. No se fuerza el cuadre.')
         const [target]=await manager.query(`SELECT c.campaign_id,c.user_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1`,[current.paymentId])
         if (!target || target.user_id===actor) throw new ForbiddenException('Otra persona de Finanzas debe resolver su propio aporte.')
         await manager.query('SELECT id FROM public.campaign WHERE id=$1 FOR UPDATE',[target.campaign_id])
@@ -192,7 +192,7 @@ export class DemoReconciliation {
       await lockDemo(manager);await financeActor(manager,actor)
       const [batch]=await manager.query(`SELECT r.status,trim(d.currency_code) AS currency FROM public.reconciliation r
         JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id WHERE r.id=$1 AND r.provider_id=$2 FOR UPDATE OF r`,[id,providerId])
-      if (!batch) throw new NotFoundException('Lote DEMO no disponible.')
+      if (!batch) throw new NotFoundException('Lote de prueba no disponible.')
       if (batch.status==='CLOSED') return
       const items=await manager.query('SELECT status,external_reference FROM public.reconciliation_item WHERE reconciliation_id=$1',[id])
       for (const item of items) {

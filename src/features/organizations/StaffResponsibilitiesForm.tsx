@@ -6,7 +6,7 @@ import styles from '../campaigns/projects.module.css'
 const descriptions: Record<StaffRole, string> = {
   REVIEWER: 'Revisa y decide campañas; no publica ni opera dinero.',
   COMPLIANCE: 'Revisa identidad; no autoriza pagos ni se verifica a sí mismo.',
-  FINANCE: 'Opera las funciones financieras habilitadas, exclusivamente de prueba en este MVP.',
+  FINANCE: 'Opera las funciones financieras habilitadas, exclusivamente en este MVP.',
   SUPPORT: 'Resuelve incidencias; no mueve fondos.',
   AUDITOR: 'Solo consulta. Bloquea toda escritura aunque la cuenta tenga otros roles.'
 }

@@ -1,4 +1,4 @@
-import {LEGAL_VERSION} from '../../../../backend/src/legal/domain/legal-v1-20261028'
+import {LEGAL_VERSION} from '../../../../backend/src/legal/domain/legal-v2-20261109'
 import { normalizeEmail, profileLabels, validateEmail, type AccessProfile } from '../validation'
 import { PERSON_NAME, PERSON_NAME_HELP } from '../../../shared/validation/personName'
 import { phoneErrors } from '../../../../backend/src/shared/domain/phone'

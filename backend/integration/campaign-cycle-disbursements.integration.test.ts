@@ -14,7 +14,7 @@ import {approveDemoIdentity,removeDemoIdentityFixtures} from './demo-identity-fi
 import type {ProgressState} from '../src/campaign-progress/infrastructure/progress.repository'
 interface Cycle{id:string;version:number;status:string;outcome:string;cancelRequested:boolean;cancellationCaseId:string|null;funds:{disbursed:string};closeBlockers:string[]}
 interface Destination{destination:{id:string;version:number;status:string;reference:string};events:unknown[]}
-interface Payout{id:string;version:number;status:string;externalReference:string|null;destinationReference:string;events:unknown[]}
+interface Payout{requestedByContact:{name:string|null;email:string};authorizedByContact:{name:string|null;email:string}|null;executedByContact:{name:string|null;email:string}|null;id:string;version:number;status:string;externalReference:string|null;destinationReference:string;events:unknown[]}
 test('S3-23 → S3-08 PostgreSQL/HTTP: ciclo completo DEMO, destino, desembolsos, cierres y exclusión financiera',{timeout:180000},async()=>{
  const config=readDatabaseConfig(process.env);assert.ok(config.enabled&&process.env.ALLOW_DB_TEST_WRITES==='true');assert.notEqual(process.env.NODE_ENV,'production')
  const{container}=readTestDatabaseTarget(config),sql=(s:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:s,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim()
@@ -23,7 +23,7 @@ test('S3-23 → S3-08 PostgreSQL/HTTP: ciclo completo DEMO, destino, desembolsos
  app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:ip});next()});await app.listen(0,'127.0.0.1');const base=await app.getUrl(),users:string[]=[],campaigns:string[]=[],organizations:string[]=[],password=randomBytes(24).toString('hex')
  const call=(path:string,cookie='',body?:unknown,method=body===undefined?'GET':'POST')=>fetch(`${base}/api/${path}`,{method,headers:{'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173',Cookie:cookie},...(body===undefined?{}:{body:JSON.stringify(body)})})
  const json=async<T>(r:Response,status=201):Promise<T>=>{const body=await r.json();assert.equal(r.status,status,JSON.stringify(body));return body as T}
- const account=async(role:string)=>{const email=`cycle-${users.length}-${suffix}@example.invalid`;const{id}=await json<{id:string}>(await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'DEMO',lastName:'Ensayo',email,password,demoConsent:true}));users.push(id);if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`);const r=await call('auth/login','',{email,password});assert.equal(r.status,200);return{id,cookie:r.headers.get('set-cookie')!.split(';')[0]!}}
+ const account=async(role:string)=>{const email=`cycle-${users.length}-${suffix}@example.invalid`;const{id}=await json<{id:string}>(await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Ensayo',email,password,demoConsent:true}));users.push(id);if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`);const r=await call('auth/login','',{email,password});assert.equal(r.status,200);return{id,email,cookie:r.headers.get('set-cookie')!.split(';')[0]!}}
  const budget=()=>sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash IN(${[...users.map(id=>`account:${id}`),`ip:${ip}`].map(s=>`'${createHash('sha256').update('mvp-case-write:'+s).digest('hex')}'`).join(',')});`)
  let fixtureCurrency:string|null=null
  try{
@@ -62,6 +62,7 @@ test('S3-23 → S3-08 PostgreSQL/HTTP: ciclo completo DEMO, destino, desembolsos
   for(const patch of [{amount:'0'},{amount:'0.001'},{amount:5},{scheduledFor:'2020-01-01'},{scheduledFor:'2027-02-29'},{platformFee:'1.00'},{currencyCode:'USD'}])assert.equal((await call(`me/disbursements/campaigns/${id}`,creator.cookie,{...request,...patch})).status,400)
   assert.equal((await call(`me/disbursements/campaigns/${id}`,creator.cookie,{...request,amount:'10.26',requestKey:randomUUID()})).status,409)
   budget();const payouts=await Promise.all([call(`me/disbursements/campaigns/${id}`,creator.cookie,request),call(`me/disbursements/campaigns/${id}`,creator.cookie,request)]);let payout=await json<Payout>(payouts[0]!);assert.equal((await json<Payout>(payouts[1]!)).id,payout.id)
+  assert.equal(payout.requestedByContact.email,creator.email);assert.equal(payout.authorizedByContact,null);assert.equal(payout.executedByContact,null)
   assert.equal((await call(`me/disbursements/campaigns/${id}`,creator.cookie,{...request,amount:'6.00',requestKey:randomUUID()})).status,409,'Saldo reservado no se compromete dos veces')
   assert.equal((await call(`me/disbursements/${payout.id}`,other.cookie)).status,403)
   assert.equal((await call(`me/disbursements/campaigns/${id}/destination`,creator.cookie,{...destinationInput,expectedVersion:dest.destination.version,requestKey:randomUUID()},'PUT')).status,409)
@@ -69,7 +70,7 @@ test('S3-23 → S3-08 PostgreSQL/HTTP: ciclo completo DEMO, destino, desembolsos
   assert.equal((await act(payout,'AUTHORIZE',admin.cookie)).status,403);assert.equal((await act(payout,'AUTHORIZE',auditor.cookie)).status,403);assert.equal((await act(payout,'COMPLETE_DEMO')).status,409)
   sql(`INSERT INTO user_role(user_id,role_id) SELECT '${creator.id}',id FROM role WHERE code='FINANCE';`)
   assert.equal((await act(payout,'AUTHORIZE',creator.cookie)).status,403)
-  const oldPayout=payout,actionKey=randomUUID();payout=await json<Payout>(await act(payout,'AUTHORIZE',finance.cookie,actionKey));assert.equal(payout.status,'APPROVED');assert.equal((await act(oldPayout,'AUTHORIZE',finance.cookie,actionKey)).status,201);assert.equal((await act(oldPayout,'AUTHORIZE')).status,409)
+  const oldPayout=payout,actionKey=randomUUID();payout=await json<Payout>(await act(payout,'AUTHORIZE',finance.cookie,actionKey));assert.equal(payout.status,'APPROVED');assert.equal(payout.authorizedByContact?.email,finance.email);assert.equal((await act(oldPayout,'AUTHORIZE',finance.cookie,actionKey)).status,201);assert.equal((await act(oldPayout,'AUTHORIZE')).status,409)
   payout=await json<Payout>(await act(payout,'PROCESS_DEMO'));assert.equal(payout.status,'PROCESSING')
   payout=await json<Payout>(await act(payout,'COMPLETE_DEMO'));assert.equal(payout.status,'COMPLETED');assert.equal(payout.externalReference,`DEMO-DISBURSEMENT:${payout.id}`);assert.equal(payout.events.length,4)
   assert.equal(sql(`SELECT amount_raised FROM v_campaign_funding WHERE campaign_id='${id}'`),'10.25','Desembolso no reescribe recaudación histórica')

@@ -8,13 +8,20 @@ import { CampaignSections, SectionInvalid, type SectionsRepository } from '../sr
 import { DraftNotEditable, DraftNotFound, type DraftRepository } from '../src/campaigns/application/drafts'
 import { FundingDto, PlanDto } from '../src/campaigns/infrastructure/sections.controller'
 
+// Las fechas positivas siguen siendo futuras aunque cambie el calendario real.
+const testDay = (offset: number) => {
+  const date = new Date()
+  date.setUTCDate(date.getUTCDate() + offset)
+  return date.toISOString().slice(0, 10)
+}
+
 test('S2-02: actividades e hitos exigen responsables, fechas coherentes y vínculo válido', () => {
   const plan: PlanInput = {
-    activities: [{ name: 'Construcción', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-10' }],
-    milestones: [{ name: 'Entrega', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10', activityIndexes: [0] }]
+    activities: [{ name: 'Construcción', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(39) }],
+    milestones: [{ name: 'Entrega', responsibleName: 'Ana', plannedStartOn: testDay(39), plannedEndOn: testDay(39), activityIndexes: [0] }]
   }
   assert.deepEqual(validatePlan(plan), {})
-  assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, plannedEndOn: '2026-10-01' }] })['activities.0.plannedEndOn'])
+  assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, plannedEndOn: testDay(29) }] })['activities.0.plannedEndOn'])
   assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, plannedStartOn: '2026-02-31' }] })['activities.0.plannedStartOn'])
   assert.ok(validatePlan({ ...plan, milestones: [{ ...plan.milestones[0]!, activityIndexes: [4] }] })['milestones.0.activityIndexes'])
   assert.ok(validatePlan({ ...plan, activities: [{ ...plan.activities[0]!, responsibleName: '' }] })['activities.0.responsibleName'])
@@ -31,16 +38,16 @@ test('S2-03: presupuesto y riesgos validan importes positivos', () => {
 
 test('un hito admite varias actividades, sin referencias repetidas, inexistentes ni cierre anticipado', async () => {
   const activities = [
-    { name: 'Preparar terreno', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-05' },
-    { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: '2026-11-06', plannedEndOn: '2026-11-10' }
+    { name: 'Preparar terreno', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(34) },
+    { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: testDay(35), plannedEndOn: testDay(39) }
   ]
-  const milestone = { name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-11', activityIndexes: [0, 1] }
+  const milestone = { name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: testDay(39), plannedEndOn: testDay(40), activityIndexes: [0, 1] }
   assert.deepEqual(validatePlan({ activities, milestones: [milestone] }), {})
   assert.deepEqual(validatePlan({ activities, milestones: [milestone, { ...milestone, name: 'Instalación terminada' }] }), {}, 'Una actividad puede participar en varios hitos.')
   assert.deepEqual(validatePlan({ activities, milestones: [{ ...milestone, activityIndexes: [] }] }), {}, 'El vínculo sigue siendo opcional.')
   for (const activityIndexes of [[0, 0], [-1], [2], [0.5]]) assert.ok(validatePlan({ activities, milestones: [{ ...milestone, activityIndexes }] })['milestones.0.activityIndexes'])
-  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedEndOn: '2026-11-09' }] })['milestones.0.plannedEndOn'])
-  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedStartOn: '2026-10-31' }] })['milestones.0.plannedStartOn'])
+  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedEndOn: testDay(38) }] })['milestones.0.plannedEndOn'])
+  assert.ok(validatePlan({ activities, milestones: [{ ...milestone, plannedStartOn: testDay(29) }] })['milestones.0.plannedStartOn'])
   for (const activityIndexes of [null, '0', [true], ['0'], [0, 0], [-1], [0.5], Array.from({ length: 51 }, () => 0)]) {
     const dto = plainToInstance(PlanDto, { activities, milestones: [{ ...milestone, activityIndexes }] })
     assert.ok((await validate(dto)).some(error => error.property === 'milestones'))
@@ -48,17 +55,17 @@ test('un hito admite varias actividades, sin referencias repetidas, inexistentes
 })
 
 test('S2-04: meta, moneda, modelo y duración tienen límites reales', () => {
-  const funding = { goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'ALL_OR_NOTHING', startsAt: '2026-11-01T00:00:00.000Z', endsAt: '2026-12-01T00:00:00.000Z' }
+  const funding = { goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'ALL_OR_NOTHING', startsAt: `${testDay(30)}T00:00:00.000Z`, endsAt: `${testDay(60)}T00:00:00.000Z` }
   assert.deepEqual(validateFunding(funding), {})
   assert.ok(validateFunding({ ...funding, goalAmount: 0 }).goalAmount)
   assert.ok(validateFunding({ ...funding, fundingModel: 'INVALID' }).fundingModel)
   assert.ok(validateFunding({ ...funding, endsAt: funding.startsAt }).endsAt)
-  assert.ok(validateFunding({ ...funding, endsAt: '2026-11-20T00:00:00.000Z' }).durationDays, 'La regla del equipo exige coherencia entre duración y fechas.')
+  assert.ok(validateFunding({ ...funding, endsAt: `${testDay(49)}T00:00:00.000Z` }).durationDays, 'La regla del equipo exige coherencia entre duración y fechas.')
   assert.ok(validateFunding({ ...funding, endsAt: null }).endsAt)
 })
 
 test('S2-05: recompensas aplicables requieren importe, disponibilidad y fecha', () => {
-  const rewards: RewardInput[] = [{ title: 'Producto', description: 'Una unidad', rewardKind: 'PRESALE', minAmount: 25, quantityTotal: 10, estimatedDeliveryOn: '2027-01-01' }]
+  const rewards: RewardInput[] = [{ title: 'Producto', description: 'Una unidad', rewardKind: 'PRESALE', minAmount: 25, quantityTotal: 10, estimatedDeliveryOn: testDay(90) }]
   assert.deepEqual(validateRewards('PRESALE', rewards), {})
   assert.ok(validateRewards('PRESALE', [{ ...rewards[0]!, minAmount: 0 }])['rewards.0.minAmount'])
   assert.ok(validateRewards('PRESALE', [{ ...rewards[0]!, quantityTotal: -1 }])['rewards.0.quantityTotal'])
@@ -68,7 +75,7 @@ test('S2-05: recompensas aplicables requieren importe, disponibilidad y fecha', 
 })
 
 test('las secciones se guardan solo para el creador y en estado editable', async () => {
-  const plan: PlanInput = { activities: [{ name: 'Obra comunitaria', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [] }
+  const plan: PlanInput = { activities: [{ name: 'Obra comunitaria', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(31) }], milestones: [] }
   const writes: PlanInput[] = []
   let status = 'DRAFT'
   const drafts = { findOwn: async (user: string) => user === 'creador' ? { id: 'camp', status, campaignType: 'DONATION' } : null } as unknown as DraftRepository
@@ -109,9 +116,9 @@ test('la moneda no cambia mientras hay recompensas guardadas', async () => {
 })
 
 test('la API valida objetos anidados y fechas antes de guardar', async () => {
-  const valid = plainToInstance(PlanDto, { activities: [{ name: 'Obra', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [] })
+  const valid = plainToInstance(PlanDto, { activities: [{ name: 'Obra', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(31) }], milestones: [] })
   assert.equal((await validate(valid)).length, 0)
-  const invalid = plainToInstance(PlanDto, { activities: [{ name: 4, responsibleName: 'Ana', plannedStartOn: 'no', plannedEndOn: '2026-11-02' }], milestones: [] })
+  const invalid = plainToInstance(PlanDto, { activities: [{ name: 4, responsibleName: 'Ana', plannedStartOn: 'no', plannedEndOn: testDay(31) }], milestones: [] })
   assert.ok((await validate(invalid)).some(error => error.property === 'activities'))
   assert.ok((await validate(plainToInstance(FundingDto, { goalAmount: '100', currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE' }))).some(error => error.property === 'goalAmount'))
   const withoutDates = plainToInstance(FundingDto, { goalAmount: 100, currencyCode: 'BOB', durationDays: 30, fundingModel: 'FLEXIBLE' })

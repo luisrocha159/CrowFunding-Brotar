@@ -17,6 +17,7 @@ import type { CampaignSubmission } from '../src/campaigns/application/submission
 import type { AdministrativeDetail } from '../src/campaigns/application/administrative-review'
 import {approveDemoIdentity,removeDemoIdentityFixtures} from './demo-identity-fixture'
 type SubmissionReport = Awaited<ReturnType<CampaignSubmission['review']>>
+const testDay=(offset:number)=>{const date=new Date();date.setUTCDate(date.getUTCDate()+offset);return date.toISOString().slice(0,10)}
 
 test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobación privada, publicación y rechazo', { timeout: 120000 }, async () => {
   const config = readDatabaseConfig(process.env)
@@ -49,7 +50,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
   })
   const register = async (label: string) => {
     const email = `santiago-${label}-${suffix}@example.invalid`
-    const registered = await call('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
+    const registered = await call('auth/register', '', { legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName: 'Ensayo', lastName: label, email, password, demoConsent: true })
     assert.equal(registered.status, 201)
     const { id } = await registered.json() as { id: string }
     assert.match(id, /^[a-f0-9-]{36}$/); users.push(id)
@@ -100,9 +101,9 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.ok(missing.missing.some(item => item.step === 4))
     assert.equal(sql(`SELECT count(*) FROM campaign_review WHERE campaign_id='${id}';`), '0')
     const plan = { activities: [
-      { name: 'Plantación', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-10' },
-      { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: '2026-11-11', plannedEndOn: '2026-11-12' }
-    ], milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-12', plannedEndOn: '2026-11-12', activityIndexes: [0, 1] }] }
+      { name: 'Plantación', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(39) },
+      { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: testDay(40), plannedEndOn: testDay(41) }
+    ], milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: testDay(41), plannedEndOn: testDay(41), activityIndexes: [0, 1] }] }
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     assert.equal((await call(`${path}/plan`, creator.cookie, { activities: [{ ...plan.activities[0], plannedStartOn: '2000-01-01' }], milestones: [] }, 'PUT')).status, 400, 'No se admiten fechas planificadas pasadas.')
     assert.equal((await call(`${path}/plan`, creator.cookie, { activities: [null], milestones: [] }, 'PUT')).status, 400, 'Un elemento nulo no llega al dominio ni provoca un 500.')
@@ -111,13 +112,13 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
       assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, milestones: [{ ...plan.milestones[0], activityIndexes }] }, 'PUT')).status, 400)
       assert.deepEqual(await (await call(`${path}/plan`, creator.cookie)).json(), plan, 'Una lista inválida no destruye los vínculos guardados.')
     }
-    assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, milestones: [{ ...plan.milestones[0], plannedStartOn: '2026-11-10', plannedEndOn: '2026-11-10' }] }, 'PUT')).status, 400, 'El resultado no puede cerrar antes de terminar el riego.')
+    assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, milestones: [{ ...plan.milestones[0], plannedStartOn: testDay(39), plannedEndOn: testDay(39) }] }, 'PUT')).status, 400, 'El resultado no puede cerrar antes de terminar el riego.')
     assert.equal(sql(`SELECT count(*) FROM brotar_extension.milestone_activity link JOIN milestone m ON m.id=link.milestone_id WHERE m.campaign_id='${id}';`), '2')
     const oneActivity = { activities: [plan.activities[1]!], milestones: [{ ...plan.milestones[0]!, activityIndexes: [0] }] }
     assert.equal((await call(`${path}/plan`, creator.cookie, oneActivity, 'PUT')).status, 200)
     assert.deepEqual(await (await call(`${path}/plan`, creator.cookie)).json(), oneActivity, 'Quitar una actividad conserva el otro vínculo y el hito.')
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
-    assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, activities: [{ ...plan.activities[0], plannedEndOn: '2026-10-01' }] }, 'PUT')).status, 400)
+    assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, activities: [{ ...plan.activities[0], plannedEndOn: testDay(-1) }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/plan`, creator.cookie, { ...plan, activities: [{ ...plan.activities[0], name: 42 }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/plan`, creator.cookie, plan, 'PUT')).status, 200)
     assert.equal((await call(`${path}/plan`, other.cookie, plan, 'PUT')).status, 404)
@@ -153,7 +154,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal((await call(`${path}/budget`, creator.cookie, budget, 'PUT')).status, 200)
     assert.equal((await call(`${path}/funding`, creator.cookie, { ...funding, goalAmount: 0 }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/funding`, creator.cookie, { ...funding, fundingModel: 'INVALID' }, 'PUT')).status, 400)
-    const rewards = [{ title: 'Planta', description: 'Una planta de la comunidad', rewardKind: 'REWARD', minAmount: 10, quantityTotal: 20, estimatedDeliveryOn: '2027-01-01' }]
+    const rewards = [{ title: 'Planta', description: 'Una planta de la comunidad', rewardKind: 'REWARD', minAmount: 10, quantityTotal: 20, estimatedDeliveryOn: testDay(90) }]
     assert.equal((await call(`${path}/rewards`, creator.cookie, { rewards }, 'PUT')).status, 200)
     assert.equal((await call(`${path}/rewards`, creator.cookie, { rewards: [{ ...rewards[0], minAmount: 0 }] }, 'PUT')).status, 400)
     assert.equal((await call(`${path}/modality`, creator.cookie, { campaignType: 'DONATION', fundingModel: 'FLEXIBLE' }, 'PUT')).status, 409)

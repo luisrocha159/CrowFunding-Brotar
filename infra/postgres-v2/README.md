@@ -4,7 +4,7 @@ Infraestructura de la entrega DEV, 30/10/2026. Docker ejecuta **PostgreSQL 18.6*
 
 - Esquema oficial: official-schema.sql; SHA-256 5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88. No sustituir por un dump poblado.
 - Proyecto normal brotar-provisional-v2; base brotar_db; puerto 127.0.0.1:15433; rol de aplicación limitado brotar_app.
-- **40 migraciones acumulativas**, después de la línea base. migrate up y prepare-sprint2 preparan categorías y permisos automáticamente; no crean cuentas personales, administradores ni pagos.
+- **41 migraciones acumulativas**, incluida la línea base registrada. migrate up y prepare-sprint2 preparan categorías y permisos automáticamente; la actualización de presentación del 09/11/2026 añade las condiciones 1.1 y conserva los registros anteriores. No crean cuentas personales, administradores ni pagos.
 - El healthcheck espera el servidor TCP final, evitando confundir el servidor Unix temporal de initdb con disponibilidad para el instalador.
 - install solo prepara una base nueva. Para una V2 existente, respaldar y aplicar migrate up/prepare/verificar sin repetir restauración ni activate.
 - .env y .env.backend son credenciales locales ignoradas por Git; nunca compartirlas como configuración del correo. SMTP usa su archivo privado independiente.

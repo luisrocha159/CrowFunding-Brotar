@@ -31,7 +31,7 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
  const users:{id:string;cookie:string}[]=[],cases:string[]=[];let organizationId=''
  const bAccountHeld=gate(),resumeVerification=gate(),aAccountHeld=gate(),restrictionRequestedB=gate(),membershipHasOrganization=gate(),membershipRequestedAccounts=gate()
  try{
-  for(let i=0;i<3;i++){const email=`parties-lock-${i}-${suffix}@example.invalid`,registered=await call('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',email,password,firstName:'DEMO',lastName:'Concurrencia',demoConsent:true});assert.equal(registered.status,201);const{id}=await registered.json() as{id:string};const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);users.push({id,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
+  for(let i=0;i<3;i++){const email=`parties-lock-${i}-${suffix}@example.invalid`,registered=await call('auth/register','','POST',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',email,password,firstName:'DEMO',lastName:'Concurrencia',demoConsent:true});assert.equal(registered.status,201);const{id}=await registered.json() as{id:string};const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);users.push({id,cookie:login.headers.get('set-cookie')!.split(';')[0]!})}
   users.sort((a,b)=>a.id.localeCompare(b.id));const [a,b,c]=users as [typeof users[number],typeof users[number],typeof users[number]]
   sql(`INSERT INTO user_role(user_id,role_id) SELECT '${a.id}',id FROM role WHERE code='ADMIN';`)
   const types=await(await call('organizations/types',a.cookie)).json() as{id:string}[]
@@ -41,7 +41,7 @@ test('S3-14 bloqueos reales: verificación B, restricción A→B y membresía A 
   const inviteC=await organizations.changeMember(a.id,organizationId,{action:'ADD',userId:c.id,role:'MEMBER',expectedVersion:'2',reason,confirmed:true});await new OrganizationInvitations(database).act(c.id,inviteC.invitationId!,{action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})
   const verificationTypes=await(await call('me/verifications/types',b.cookie)).json() as VerificationType[],type=verificationTypes.find(row=>row.code==='KYB_REPRESENTATIVE')!;assert.ok(type.policy)
   const started=await call('me/verifications',b.cookie,'POST',{verificationTypeId:type.id,organizationId});assert.equal(started.status,201);const verification=await started.json() as VerificationDetail;cases.push(verification.id)
-  const submission={ legalVersion:'mvp-demo-legal-1.0-20261028',policyVersion:type.policy!.version,fields:{},documents:[],accepted:false}
+  const submission={ legalVersion:'mvp-pruebas-legal-1.1-20261109',policyVersion:type.policy!.version,fields:{},documents:[],accepted:false}
   type Hook=(manager:EntityManager,text:string,parameters:unknown[]|undefined,execute:()=>Promise<unknown>)=>Promise<unknown>
   const instrument=(hook:Hook)=>({connection:()=>({transaction:<T>(work:(m:EntityManager)=>Promise<T>)=>source.transaction(async m=>{
    await m.query("SET LOCAL statement_timeout='8s'")

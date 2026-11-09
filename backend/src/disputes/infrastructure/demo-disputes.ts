@@ -44,12 +44,12 @@ export class DemoDisputes{
   return this.database.connection().transaction(async m=>{await transactionAccess(m,actor,admin?'support.read':'contribution.read.own');const[row]=await m.query(`SELECT f.uploaded_by FROM public.dispute d JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id JOIN public.support_case s ON s.id=d.support_case_id JOIN brotar_extension.support_case_evidence e ON e.case_id=s.id JOIN public.file_asset f ON f.id=e.file_id WHERE d.id=$1 AND f.id=$2 AND ($3::boolean OR d.raised_by=$4) AND f.uploaded_by=s.user_id AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL`,[id,fileId,admin,actor]);if(!row)throw new NotFoundException('Evidencia no disponible.');return row.uploaded_by as string})
  }
  async request(actor:string,input:DisputeRequest){assertDemoEnabled();uuid(input.paymentId);uuid(input.supportCaseId);requestKey(input.requestKey);const description=caseText(input.description,20,5000)
-  if(input.demoConsent!==true)throw new LedgerInvalid('Confirma el ensayo DEMO.')
+  if(input.demoConsent!==true)throw new LedgerInvalid('Confirma el ensayo de prueba.')
   const key=digest(`dispute-request:${actor}:${input.requestKey.toLowerCase()}`),hash=digest(JSON.stringify([input.paymentId.toLowerCase(),input.supportCaseId.toLowerCase(),description]))
   const id=await this.database.connection().transaction(async m=>{
    await lockDemo(m);await transactionAccess(m,actor,'contribution.write.own')
    const[old]=await m.query('SELECT dispute_id,request_hash FROM brotar_extension.demo_dispute WHERE request_key=$1',[key]);if(old){if(old.request_hash!==hash)throw new LedgerConflict('La clave corresponde a otro contenido.');return old.dispute_id as string}
-   const provider=await demoProvider(m),[target]=await m.query(`SELECT c.campaign_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[input.paymentId,actor,provider]);if(!target)throw new NotFoundException('Pago DEMO propio no disponible.')
+   const provider=await demoProvider(m),[target]=await m.query(`SELECT c.campaign_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[input.paymentId,actor,provider]);if(!target)throw new NotFoundException('Pago de prueba propio no disponible.')
    await m.query('SELECT id FROM public.campaign WHERE id=$1 FOR UPDATE',[target.campaign_id])
    const[p]=await m.query(`SELECT p.status,p.confirmed_at,p.amount::text,trim(p.currency_code) AS currency,p.contribution_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 FOR UPDATE OF p,c`,[input.paymentId])
    const[s]=await m.query(`SELECT s.id,s.category,s.status FROM public.support_case s JOIN brotar_extension.support_case_context x ON x.case_id=s.id WHERE s.id=$1 AND s.user_id=$2 AND s.campaign_id=$3 AND x.contribution_id=$4 FOR UPDATE OF s`,[input.supportCaseId,actor,target.campaign_id,p.contribution_id])
@@ -63,7 +63,7 @@ export class DemoDisputes{
    await m.query(`INSERT INTO public.dispute(id,contribution_id,payment_id,campaign_id,support_case_id,raised_by,reason_code,description) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[disputeId,p.contribution_id,input.paymentId,target.campaign_id,input.supportCaseId,actor,s.category??'OTHER',description])
    await m.query(`INSERT INTO brotar_extension.demo_dispute(dispute_id,support_case_id,payment_id,request_key,request_hash,hold_amount) VALUES($1,$2,$3,$4,$5,$6)`,[disputeId,input.supportCaseId,input.paymentId,key,hash,hold])
    await m.query(`UPDATE public.support_case SET status='OPEN',priority=CASE WHEN category='UNRECOGNIZED_PAYMENT' THEN 1 ELSE priority END,assigned_to=NULL,resolved_at=NULL,closed_at=NULL,updated_at=clock_timestamp() WHERE id=$1`,[input.supportCaseId])
-   await this.event(m,disputeId,actor,'OPEN',null,'OPEN',key,hash,'Apertura de disputa DEMO con reserva del saldo pendiente.')
+   await this.event(m,disputeId,actor,'OPEN',null,'OPEN',key,hash,'Apertura de disputa de prueba con reserva del saldo pendiente.')
    await syncRefundState(m,input.paymentId,actor);await recordAudit(m,actor,'CREATE','dispute',disputeId);return disputeId
   });return this.detail(actor,id)
  }

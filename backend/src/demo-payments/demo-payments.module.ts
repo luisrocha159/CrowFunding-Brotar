@@ -19,6 +19,7 @@ export class ConsentDto {
   @IsBoolean() @Equals(true) demoConsent!: true
 }
 export class CheckoutDto extends ConsentDto {
+  @IsOptional() @IsIn(['TEST_QR','TEST_CARD']) method?: 'TEST_QR'|'TEST_CARD'
   @IsUUID() campaignId!: string
   @IsOptional() @IsUUID() rewardId?: string|null
   @IsString() @Matches(/^(0|[1-9]\d{0,11})(\.\d{1,2})?$/) amount!: string
@@ -57,7 +58,7 @@ export class DemoWriteLimitGuard implements CanActivate {
     const http=context.switchToHttp(),request=http.getRequest<AuthenticatedRequest>()
     if (!await writeBudget(this.database.connection(),'demo-payments:v1',request.brotarUser.id,request.ip ?? 'unknown')) {
       http.getResponse<Response>().setHeader('Retry-After','60')
-      throw new HttpException('Demasiadas operaciones DEMO. Espera un minuto y consulta el estado antes de repetir.',429)
+      throw new HttpException('Demasiadas operaciones de prueba. Espera un minuto y consulta el estado antes de repetir.',429)
     }
     return true
   }
@@ -112,7 +113,7 @@ export class DemoReconciliationController {
   }
   @Post('reconciliations/:id/close') @HttpCode(200) @RequirePermissions('finance.operate') @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)
   close(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: CloseDto) {
-    if (input.confirmed!==true) throw new BadRequestException('Confirma el cierre del lote DEMO.')
+    if (input.confirmed!==true) throw new BadRequestException('Confirma el cierre del lote de prueba.')
     return translate(()=>this.reconciliation.close(request.brotarUser.id,id))
   }
   @Post('expire') @HttpCode(200) @RequirePermissions('finance.operate') @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)

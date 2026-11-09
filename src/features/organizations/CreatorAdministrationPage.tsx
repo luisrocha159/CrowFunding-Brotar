@@ -16,7 +16,7 @@ export function CreatorAdministrationPage() {
   const user = data.user
   return <div className={styles.adminLayout}><AdministrativeNavigation /><section className={styles.content}>
     <header className={styles.heading}><div><h1>Creadores y responsabilidades</h1><p>Gestión manual por un administrador con motivo y confirmación.</p></div></header>
-    <Message tone="warning" title="Permisos no equivalen a verificación">Habilitar CREATOR permite enviar campañas a revisión. No verifica correo, identidad o empresa ni publica campañas. La matriz de responsabilidades es el criterio del equipo para este MVP de pruebas; la integración KYC/KYB sigue pendiente.</Message>
+    <Message tone="warning" title="Permisos no equivalen a verificación">Habilitar CREATOR permite enviar campañas a revisión. No verifica correo, identidad o empresa ni publica campañas. La matriz de responsabilidades es el criterio del equipo para este MVP; la integración KYC/KYB sigue pendiente.</Message>
     {data.access === 'checking' && <p role="status">Comprobando permisos administrativos…</p>}
     {data.access === 'forbidden' && <Message tone="warning" title="Acceso restringido">Solo ADMIN vigente puede gestionar creadores y responsabilidades. Auditor se mantiene en lectura.</Message>}
     {data.access === 'error' && <><Message tone="error" title="No se pudieron comprobar los permisos">Comprueba la API e inténtalo de nuevo.</Message><Button onClick={data.retryAccess}>Reintentar</Button></>}

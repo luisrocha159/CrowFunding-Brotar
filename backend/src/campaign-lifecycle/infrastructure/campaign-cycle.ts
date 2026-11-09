@@ -82,7 +82,7 @@ export class CampaignCycle {
    if(input.action==='END_FUNDING'){
     if(!c.ended)throw new LedgerConflict('Todavía no venció el período; alcanzar la meta no cierra anticipadamente.')
     const due=await m.query(`SELECT c.id FROM public.contribution c WHERE c.campaign_id=$1 AND c.status='PENDING' AND c.expires_at<=clock_timestamp() AND NOT EXISTS(SELECT 1 FROM public.payment p JOIN public.payment_provider pp ON pp.id=p.provider_id WHERE p.contribution_id=c.id AND pp.code<>'BROTAR_INTERNAL_DEMO') ORDER BY c.id LIMIT 501`,[id])
-    if(due.length>500)throw new LedgerConflict('Hay más de 500 reservas; ejecuta primero el mantenimiento DEMO por lotes.')
+    if(due.length>500)throw new LedgerConflict('Hay más de 500 reservas; ejecuta primero el mantenimiento de prueba por lotes.')
     for(const row of due)await this.ledger.expireLocked(m,row.id)
     const open=await unsettled(m,id);if(open.payments||open.events||open.reconciliation)throw new LedgerConflict('Resolver intentos pendientes o conciliaciones antes de fijar el resultado.')
     const funds=await campaignFunds(m,id,c.currency_code);total=totalDecimal(totalMoney(funds.confirmed)-totalMoney(funds.refunded));outcome=fundingOutcome(c.funding_model,total,c.goal_amount)

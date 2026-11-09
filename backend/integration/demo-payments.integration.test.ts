@@ -32,7 +32,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     ...(body===undefined?{}:{body:JSON.stringify(body)})})
   const account=async(role: string)=>{
     const email=`demo-${role.toLowerCase()}-${suffix}@example.invalid`
-    const registered=await call('auth/register','',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Prueba',lastName:'Simulador',email,password,demoConsent:true});assert.equal(registered.status,201)
+    const registered=await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'Prueba',lastName:'Simulador',email,password,demoConsent:true});assert.equal(registered.status,201)
     const {id}=await registered.json() as {id: string};users.push(id)
     if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`)
     const login=await call('auth/login','',{email,password});assert.equal(login.status,200)
@@ -52,7 +52,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
       VALUES('${campaignId}','demo-${suffix}','Campaña sintética de simulación','No es una campaña ni un cobro real','DONATION','${owner.id}','PUBLISHED',100,'BOB',now()+interval '1 day'),
       ('${rewardCampaign}','demo-reward-${suffix}','Cupo sintético de preventa','Una reserva de prueba','PRESALE','${owner.id}','PUBLISHED',100,'BOB',now()+interval '1 day');
       INSERT INTO reward(id,campaign_id,title,description,min_amount,currency_code,quantity_total) VALUES('${rewardId}','${rewardCampaign}','Último cupo','Solo demostración',1,'BOB',1);`)
-    const input={campaignId,amount:'0.30',currencyCode:'BOB',requestKey:randomUUID(),demoConsent:true}
+    const input={campaignId,amount:'0.30',currencyCode:'BOB',requestKey:randomUUID(),demoConsent:true,method:'TEST_QR'}
     assert.equal((await call('demo-payments/checkout','',input)).status,401)
     process.env.DEMO_PAYMENTS_ENABLED='false'
     assert.equal((await call('demo-payments/checkout',owner.cookie,input)).status,404)
@@ -62,7 +62,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal((await call('demo-payments/checkout',auditor.cookie,input)).status,403)
     assert.equal((await call('demo-payments/checkout',owner.cookie,input,{Origin:'https://other.invalid'})).status,403)
     assert.equal((await call('demo-payments/checkout',owner.cookie,input,{'X-Brotar-Request':''})).status,403)
-    for (const extra of [{demoConsent:false},{amount:3},{amount:'0'},{amount:'1.001'},{amount:'9999999999999'},{currencyCode:'USD'},{providerId},{status:'CONFIRMED'}]) {
+    for (const extra of [{demoConsent:false},{amount:3},{amount:'0'},{amount:'1.001'},{amount:'9999999999999'},{currencyCode:'USD'},{providerId},{status:'CONFIRMED'},{method:'BANK_TRANSFER'},{method:null},{method:3}]) {
       assert.equal((await call('demo-payments/checkout',owner.cookie,{...input,...extra})).status,400,JSON.stringify(extra))
     }
     const responses=await Promise.all([call('demo-payments/checkout',owner.cookie,input),call('demo-payments/checkout',owner.cookie,{...input,campaignId:campaignId.toUpperCase()})])
@@ -71,12 +71,15 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal(first.contribution.id,replayed.contribution.id);assert.equal(first.ticket.amount,'0.30');assert.equal(first.ticket.payable,false)
     assert.equal(first.ticket.qrPayload,`BROTAR-DEMO:${first.contribution.paymentId}`);assert.equal(raised(),'0.00')
     assert.equal(sql(`SELECT provider_payload->>'demoConsent' FROM payment WHERE id='${first.contribution.paymentId}'`),'true')
+    assert.equal(sql(`SELECT provider_payload->>'method' FROM payment WHERE id='${first.contribution.paymentId}'`),'TEST_QR')
+    assert.equal((await call('demo-payments/checkout',owner.cookie,{...input,method:'TEST_CARD'})).status,409,'Cambiar método con la misma clave no reutiliza silenciosamente el pago.')
     assert.equal((await call('demo-payments/checkout',owner.cookie,{...input,amount:'0.31'})).status,409)
     const a=first.contribution
     assert.equal((await call(`demo-payments/${a.paymentId}`,other.cookie)).status,404)
     const ticketResponse=await call(`demo-payments/${a.paymentId}`,owner.cookie)
     assert.equal(ticketResponse.headers.get('cache-control'),'no-store')
     const ticket=await ticketResponse.json() as Record<string,unknown>
+    assert.equal(ticket.method,'TEST_QR')
     assert.equal((await (await call(`demo-payments/${a.paymentId.toUpperCase()}`,owner.cookie)).json() as {qrPayload:string}).qrPayload,ticket.qrPayload)
     for (const field of ['provider_payload','providerId','userId','actorId','requestHash']) assert.equal(field in ticket,false)
     assert.equal((await call(`demo-payments/${a.paymentId}/simulate`,other.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})).status,404)
@@ -90,7 +93,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     await call(`demo-payments/${a.paymentId}/simulate`,owner.cookie,{...event,requestKey:randomUUID()})
     assert.equal(raised(),'0.30');assert.equal(sql(`SELECT count(*) FROM payment WHERE contribution_id='${a.id}' AND confirmed_at IS NOT NULL`),'1')
     const historyReceipt=await call(`me/contributions/${a.id}/receipt`,owner.cookie);assert.equal(historyReceipt.status,200)
-    const receipt=await historyReceipt.json() as {paymentId:string;sandbox:boolean;amount:string};assert.equal(receipt.paymentId,a.paymentId);assert.equal(receipt.sandbox,true);assert.equal(receipt.amount,'0.30')
+    const receipt=await historyReceipt.json() as {paymentId:string;sandbox:boolean;amount:string;method:string};assert.equal(receipt.paymentId,a.paymentId);assert.equal(receipt.sandbox,true);assert.equal(receipt.amount,'0.30');assert.equal(receipt.method,'QR')
     assert.equal((await call(`me/contributions/${a.id}/receipt`,other.cookie)).status,404)
     const summaryResponse=await call('me/sponsor-summary',owner.cookie);assert.equal(summaryResponse.status,200)
     const summary=await summaryResponse.json() as {totals:unknown[];demoTotals:{currency:string;grossConfirmed:string}[]}
@@ -116,6 +119,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal((await call(`demo-payments/contributions/${late.id}/retry`,owner.cookie,{requestKey:retryKey,demoConsent:true})).status,201)
     assert.equal(sql(`SELECT count(*) FROM payment WHERE contribution_id='${late.id}'`),'2')
     assert.equal(sql(`SELECT provider_payload->>'demoConsent' FROM payment WHERE id='${second.contribution.paymentId}'`),'true')
+    assert.equal(sql(`SELECT provider_payload->>'method' FROM payment WHERE id='${second.contribution.paymentId}'`),'TEST_QR','El reintento conserva el método elegido.')
     const today=sql("SELECT (now() AT TIME ZONE 'UTC')::date")
     const pendingFrom=sql("SELECT ((now()-interval '3 hours') AT TIME ZONE 'UTC')::date")
     const pendingQuery=`admin/finance/demo/pending?from=${pendingFrom}&to=${today}&currencyCode=BOB`
@@ -182,10 +186,24 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal(raised(),'0.60','El nuevo intento sí puede confirmarse una sola vez; el anterior compensado no suma.')
     // Recompensa/preventa: un solo cupo entre dos cuentas simultáneas y rechazo de moneda/modalidad incorrectas.
     clearBudget()
-    const reward={...input,campaignId:rewardCampaign,rewardId,amount:'1.00'}
+    const reward={...input,method:undefined,campaignId:rewardCampaign,rewardId,amount:'1.00'}
     const attempts=await Promise.all([call('demo-payments/checkout',owner.cookie,{...reward,requestKey:randomUUID()}),call('demo-payments/checkout',other.cookie,{...reward,requestKey:randomUUID()})])
     assert.deepEqual(attempts.map(x=>x.status).sort(),[201,409])
+    assert.equal(((await attempts.find(r=>r.status===201)!.json()) as {ticket:{method:unknown}}).ticket.method,null,'Una petición histórica sin método no se convierte en QR por defecto.')
     assert.equal((await call('demo-payments/checkout',owner.cookie,{...reward,rewardId:null,requestKey:randomUUID()})).status,400)
+    // En recompensa se permite contribuir sin elegir premio, incluso por debajo de su mínimo.
+    // No consume unidades ni concede una recompensa al confirmar el pago.
+    sql(`UPDATE campaign SET campaign_type='REWARD' WHERE id='${rewardCampaign}'`)
+    const beforeRewardless=sql(`SELECT count(*) FROM contribution WHERE reward_id='${rewardId}'`)
+    const rewardlessResponse=await call('demo-payments/checkout',owner.cookie,{...reward,rewardId:null,amount:'0.50',method:'TEST_CARD',requestKey:randomUUID()})
+    assert.equal(rewardlessResponse.status,201)
+    const rewardless=await rewardlessResponse.json() as Checkout
+    assert.equal(sql(`SELECT reward_id IS NULL FROM contribution WHERE id='${rewardless.contribution.id}'`),'t')
+    assert.equal((await call(`demo-payments/${rewardless.contribution.paymentId}/simulate`,owner.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})).status,200)
+    const cardReceipt=await call(`me/contributions/${rewardless.contribution.id}/receipt`,owner.cookie);assert.equal(cardReceipt.status,200);assert.equal((await cardReceipt.json() as {method:string}).method,'Tarjeta')
+    assert.equal(sql(`SELECT count(*) FROM contribution WHERE reward_id='${rewardId}'`),beforeRewardless,'La aportación sin premio no ocupa el último cupo.')
+    assert.equal((await call('demo-payments/checkout',owner.cookie,{...reward,amount:'0.50',requestKey:randomUUID()})).status,409,'Elegir el premio por debajo de su mínimo sigue bloqueado.')
+    sql(`UPDATE campaign SET campaign_type='PRESALE' WHERE id='${rewardCampaign}'`)
     // Defectos sintéticos controlados: no hay ruta pública que permita elegir importe/referencia del proveedor.
     const mismatch=await checkout('0.40')
     await call(`demo-payments/${mismatch.paymentId}/simulate`,owner.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})

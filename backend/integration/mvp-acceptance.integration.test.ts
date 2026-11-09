@@ -42,7 +42,7 @@ test('S3-21 integral: registro → campaña corregida/publicada → aporte/recom
  const phase=(stage:string,result:string)=>{steps.push({stage,result});console.log('S3_21_STAGE '+stage);const keys=[`ip:s321-${suffix}`,...Object.values(users).map(u=>`account:${u.id}`)].map(k=>`'${createHash('sha256').update('mvp-case-write:'+k).digest('hex')}'`)
   // Long human stages run in seconds here: advance only the fixture's rate window.
   sql(`UPDATE brotar_extension.rate_bucket SET expires_at=clock_timestamp()-interval '1 second' WHERE key_hash IN(${keys.join(',')});`)}
- const account=async(name:string)=>{const email=`s321-${name}-${suffix}@example.invalid`,r=await data<{id:string}>(await call('auth/register','',{legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'DEMO',lastName:name,email,password,demoConsent:true}),201)
+ const account=async(name:string)=>{const email=`s321-${name}-${suffix}@example.invalid`,r=await data<{id:string}>(await call('auth/register','',{legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:name,email,password,demoConsent:true}),201)
   const login=await call('auth/login','',{email,password});assert.equal(login.status,200);const u={id:r.id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!};users[name]=u;return u}
  const file=async(u:Account,purpose='CLOSURE_EVIDENCE')=>data<{id:string}>(await call('files',u.cookie,{purpose,visibility:'PRIVATE',originalName:'DEMO-evidencia.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nDEMO evidencia integral').toString('base64')}),201)
  try{

@@ -37,7 +37,25 @@ export async function verificationTypes(signal?: AbortSignal): Promise<Verificat
 export async function myVerifications(signal?: AbortSignal) { return array(await read('/api/me/verifications',signal),summary) }
 export async function verificationDetail(id: string, signal?: AbortSignal) { return detail(await read(`/api/me/verifications/${encodeURIComponent(id)}`,signal)) }
 export async function startVerification(verificationTypeId: string, organizationId: string | null) { return detail(await readJson(await requestApi('/api/me/verifications',{ method:'POST',body:{ verificationTypeId,...(organizationId ? { organizationId } : {}) } }))) }
-export async function saveVerification(id: string, expectedVersion: string, input: VerificationSubmission, submit: boolean) { return detail(await readJson(await requestApi(`/api/me/verifications/${encodeURIComponent(id)}`,{ method:'PUT',body:{ expectedVersion,...input,legalVersion:LEGAL_VERSION,submit } }))) }
+export class VerificationInputError extends SessionError {
+  constructor(readonly fields: Record<string, string>, readonly explanation = 'Revisa los campos señalados.') { super(400) }
+}
+export async function saveVerification(id: string, expectedVersion: string, input: VerificationSubmission, submit: boolean) {
+  return detail(await readJson(await requestApi(`/api/me/verifications/${encodeURIComponent(id)}`, {
+    method: 'PUT', body: { expectedVersion, ...input, legalVersion: LEGAL_VERSION, submit },
+    errorFromResponse: async response => {
+      if (response.status !== 400) return new SessionError(response.status)
+      const body: unknown = await response.json().catch(() => null)
+      const fields: Record<string,string> = {}
+      if(object(body) && Array.isArray(body.message))for(const entry of body.message){
+        if(typeof entry!=='string'||entry.length>650)continue
+        const separator=entry.indexOf(': ')
+        if(separator>0)fields[entry.slice(0,separator)]=entry.slice(separator+2)
+      }
+      return new VerificationInputError(fields, object(body) && typeof body.message === 'string' && body.message.length <= 500 ? body.message : 'Revisa los requisitos y documentos del caso.')
+    }
+  })))
+}
 export async function payoutAccounts(signal?: AbortSignal): Promise<PayoutSummary[]> {
   return array(await read('/api/me/verifications/payout-accounts',signal), value => {
     if (!object(value) || !strings(value,['id','accountHolderName','currency','status']) || !['organizationId','bankName','last4'].every(key => value[key]===null || typeof value[key]==='string')) throw new SessionError(0)
@@ -51,4 +69,7 @@ function organization(value: unknown): ManagedOrganization {
 export async function managedOrganizations(signal?: AbortSignal) { return array(await read('/api/me/organizations',signal),organization) }
 export async function saveOrganization(id: string, expectedVersion: string, input: OrganizationInput) { return organization(await readJson(await requestApi(`/api/me/organizations/${encodeURIComponent(id)}`,{ method:'PUT',body:{ ...input,expectedVersion } }))) }
 export function verificationDocumentUrl(caseId: string, fileId: string) { return `/api/me/verifications/${encodeURIComponent(caseId)}/documents/${encodeURIComponent(fileId)}` }
+export function verificationPolicyVersionLabel(version: string) { return version.replace(/^mvp-demo-/, '') }
+/** Solo rótulos del catálogo: nunca modifica valores, identificadores ni documentos del usuario. */
+export function verificationFieldLabel(label:string){return label.replace(/\s*\((?:DEMO|PRUEBA)[^)]*\)/gi,'').replace(/\s*[·—–]\s*no documento real\b/gi,'').replace(/\s+de pruebas?\b/gi,'').replace(/\b(?:fictici[oa]s?|sintétic[oa]s?)\b/gi,'').replace(/\s+/g,' ').trim()}
 export function verificationStatus(status: string) { return ({NOT_STARTED:'Sin enviar',PENDING:'Enviada',IN_REVIEW:'En revisión',REQUIRES_INFO:'Requiere información',APPROVED:'Aprobada',REJECTED:'Rechazada',EXPIRED:'Vencida'} as Record<string,string>)[status] ?? status }

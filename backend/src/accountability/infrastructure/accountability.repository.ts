@@ -47,7 +47,7 @@ export class AccountabilityRepository {
  }
  async act(actor:string,id:string,input:AccountabilityOperation,admin:boolean){
   assertDemoEnabled();uuid(id);requestKey(input.requestKey);const why=reason(input.reason)
-  if(input.demoConsent!==true||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1)throw new LedgerInvalid('Confirma la acción DEMO y su versión actual.')
+  if(input.demoConsent!==true||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1)throw new LedgerInvalid('Confirma la acción de prueba y su versión actual.')
   await this.database.connection().transaction(async m=>{
    await lockDemo(m);const c=await this.subject(m,id,true),data=accountabilityData(input.action,input.data,c.today);await this.permission(m,actor,c,input.action,admin)
    const key=digest(`accountability:${actor}:${input.requestKey.toLowerCase()}`),hash=digest(JSON.stringify([id,input.action,input.expectedVersion,why,data]))

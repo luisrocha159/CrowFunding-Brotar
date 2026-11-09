@@ -3,6 +3,11 @@ export type IncomingState = 'PENDING' | 'CONFIRMED' | 'FAILED' | 'EXPIRED'
 export class LedgerInvalid extends Error {}
 export class LedgerConflict extends Error {}
 
+/** Recompensa opcional; la preventa sí exige elegir un producto. */
+export function validRewardSelection(campaignType:string,rewardId:string|null):boolean {
+  return campaignType==='DONATION'?rewardId===null:campaignType==='REWARD'?true:campaignType==='PRESALE'?rewardId!==null:false
+}
+
 /** numeric(14,2): céntimos exactos, nunca parseFloat ni redondeo silencioso. */
 export function money(value: unknown, allowZero = false): bigint {
   if (typeof value !== 'string' || !/^(0|[1-9]\d{0,11})(\.\d{1,2})?$/.test(value)) throw new LedgerInvalid('Importe decimal inválido.')

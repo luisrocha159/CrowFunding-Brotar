@@ -2,6 +2,14 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { InvalidSimulation, SimulationConflict, validateSimulationSelection, simulationTransition, type SupportOptions } from '../src/contributions/application/support-simulation'
 const options: SupportOptions = { campaignId: 'campaign', title: 'Campaña', campaignType: 'REWARD', currency: 'BOB', minimum: '20.00', eligible: true, unavailableReason: null, rewards: [{ id: 'reward', title: 'Recompensa', minimum: '50.00', available: 1 }] }
+
+test('recompensa opcional: un aporte menor puede continuar sin premio; preventa sigue requiriendo producto',()=>{
+ assert.equal(validateSimulationSelection(options,{amount:'20',rewardId:null}).amount,'20.00')
+ assert.equal(validateSimulationSelection(options,{amount:'100',rewardId:null}).reward,null)
+ assert.throws(()=>validateSimulationSelection(options,{amount:'49.99',rewardId:'reward'}),InvalidSimulation)
+ assert.throws(()=>validateSimulationSelection({...options,campaignType:'PRESALE'},{amount:'100',rewardId:null}),InvalidSimulation)
+ assert.throws(()=>validateSimulationSelection({...options,campaignType:'DONATION'},{amount:'100',rewardId:'reward'}),InvalidSimulation)
+})
 test('selección simulada usa mínimos oficiales, moneda y disponibilidad sin reservar cupos', () => {
   assert.equal(validateSimulationSelection(options, { amount: '50', rewardId: 'reward' }).amount, '50.00')
   for (const input of [{ amount: '19.99', rewardId: null }, { amount: '49.99', rewardId: 'reward' }, { amount: '50.001', rewardId: 'reward' }, { amount: '1e3', rewardId: 'reward' }, { amount: '0', rewardId: null }, { amount: '10', rewardId: 'foreign' }]) assert.throws(() => validateSimulationSelection(options, input), InvalidSimulation)

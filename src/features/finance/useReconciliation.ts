@@ -45,7 +45,7 @@ export function useReconciliation(id?: string) {
     try {
       const value=await action(controller.signal)
       if(controller.signal.aborted)return null
-      setMessage(typeof value==='number'?`Expiración completada: ${value} intentos DEMO vencidos. No se confirmó ni devolvió dinero.`:'Operación confirmada por el servidor. Se conserva el historial del lote.')
+      setMessage(typeof value==='number'?`Expiración completada: ${value} intentos vencidos. No se confirmó ni devolvió dinero.`:'Operación confirmada por el servidor. Se conserva el historial del lote.')
       setRetry(n=>n+1)
       return value
     } catch(error) {

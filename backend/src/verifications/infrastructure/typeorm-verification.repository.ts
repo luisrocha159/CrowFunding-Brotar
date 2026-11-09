@@ -19,6 +19,8 @@ const subject = `((v.organization_id IS NULL AND v.user_id=$1) OR EXISTS(SELECT 
 const summary = `v.id,t.name AS "typeName",t.code AS "typeCode",v.organization_id AS "organizationId",o.legal_name AS "organizationName",
  v.status,v.updated_at AS "updatedAt"`
 const joined = `FROM public.verification v JOIN public.verification_type t ON t.id=v.verification_type_id LEFT JOIN public.organization o ON o.id=v.organization_id`
+// Exclusivo de la revisión autorizada; no se incorpora a las proyecciones públicas ni personales.
+const reviewSenderEmail = `COALESCE((SELECT sender.email FROM public.app_user sender WHERE sender.id::text=v.submitted_data->>'acceptedBy'),(SELECT owner.email FROM public.app_user owner WHERE owner.id=v.user_id))`
 const iso = (value: Date | string | null): string | null => value instanceof Date ? value.toISOString() : value
 interface CaseRow extends Omit<VerificationDetail, 'history' | 'revisions' | 'documents' | 'policy' | 'fields'> { verificationTypeId: string; submittedData: Partial<VerificationSubmission> & {acceptedBy?: string | null;acceptedAt?: string | null;legalReceiptId?:string;legalHash?:string} }
 @Injectable()
@@ -181,14 +183,14 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await transactionAccess(m,actor,'verification.read')
       const args=[kind,status,[...CAPTURE_TYPES]]
       const [count]=await m.query(`SELECT count(*)::int AS total ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[])`,args)
-      const rows:VerificationSummary[]=await m.query(`SELECT ${summary} ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[]) ORDER BY v.updated_at,v.id LIMIT 20 OFFSET $4`,[...args,(page-1)*20])
+      const rows:(VerificationSummary&{submittedByEmail:string|null})[]=await m.query(`SELECT ${summary},${reviewSenderEmail} AS "submittedByEmail" ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[]) ORDER BY v.updated_at,v.id LIMIT 20 OFFSET $4`,[...args,(page-1)*20])
       return{items:rows.map(r=>({...r,updatedAt:iso(r.updatedAt)!})),total:count.total,page,pageSize:20}
     })
   }
   async reviewDetail(actor:string,id:string){return this.database.connection().transaction(async m=>{
     await transactionAccess(m,actor,'verification.read')
     const detail=await this.detailWith(m,actor,id,true)
-    const [review]=await m.query('SELECT user_id AS "subjectUserId",reviewed_by AS "reviewedBy",reviewed_at AS "reviewedAt" FROM public.verification WHERE id=$1',[id])
+    const [review]=await m.query(`SELECT v.user_id AS "subjectUserId",v.reviewed_by AS "reviewedBy",v.reviewed_at AS "reviewedAt",${reviewSenderEmail} AS "submittedByEmail" FROM public.verification v WHERE v.id=$1`,[id])
     return{...detail,...review,reviewedAt:iso(review.reviewedAt)}
   })}
   async decide(actor:string,id:string,version:string,input:ReviewInput){
@@ -212,9 +214,9 @@ export class TypeormVerificationRepository implements VerificationRepository {
         if(row.organizationId){
           const [representative]=await m.query(`SELECT mem.id FROM public.organization_member mem JOIN public.organization o ON o.id=mem.organization_id
             WHERE mem.organization_id=$1 AND mem.user_id::text=$2 AND (mem.left_at IS NULL OR mem.left_at>clock_timestamp()) AND mem.joined_at<=clock_timestamp() AND mem.organization_role::text=ANY($3::text[]) AND o.deleted_at IS NULL
-            AND EXISTS(SELECT 1 FROM public.verification k JOIN public.verification_type t ON t.id=k.verification_type_id JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND p.is_active AND p.version=k.submitted_data->>'policyVersion'
+            AND EXISTS(SELECT 1 FROM public.verification k JOIN public.verification_type t ON t.id=k.verification_type_id JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND p.is_active AND (p.version=k.submitted_data->>'policyVersion' OR p.definition->'compatibleVersions' ? (k.submitted_data->>'policyVersion'))
               WHERE k.user_id=mem.user_id AND t.code='KYC_IDENTITY' AND k.status='APPROVED' AND (k.expires_at IS NULL OR k.expires_at>clock_timestamp())) FOR SHARE OF o`,[row.organizationId,row.submittedData.acceptedBy,ORGANIZATION_MANAGERS])
-          if(!representative)throw new InvalidVerification('Se requiere un representante vigente con KYC DEMO aprobado.')
+          if(!representative)throw new InvalidVerification('Se requiere un representante vigente con KYC de prueba aprobado.')
         }
       }
       await setAuditActor(m,actor)
@@ -235,14 +237,14 @@ export class TypeormVerificationRepository implements VerificationRepository {
     if(!file?.owner)throw new VerificationUnavailable();return file.owner as string
   })}
   async badges(campaignId:string){
-    if(process.env.NODE_ENV==='production')return{mode:'DEMO',items:[],notice:'Verificaciones DEMO no operativas en producción.'}
+    if(process.env.NODE_ENV==='production')return{mode:'DEMO',items:[],notice:'Verificaciones de prueba no operativas en producción.'}
     const rows:{code:string;reviewedAt:Date}[]=await this.database.connection().query(`SELECT DISTINCT ON (t.code) t.code,v.reviewed_at AS "reviewedAt"
       FROM public.campaign c JOIN public.verification v ON (c.organization_id IS NULL AND v.user_id=c.creator_user_id OR c.organization_id IS NOT NULL AND v.organization_id=c.organization_id)
-      JOIN public.verification_type t ON t.id=v.verification_type_id JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND p.version=v.submitted_data->>'policyVersion' AND p.is_active
+      JOIN public.verification_type t ON t.id=v.verification_type_id JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND (p.version=v.submitted_data->>'policyVersion' OR p.definition->'compatibleVersions' ? (v.submitted_data->>'policyVersion')) AND p.is_active
       WHERE c.id=$1 AND c.deleted_at IS NULL AND c.published_at IS NOT NULL AND c.status IN ('PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CLOSED','CANCELLED')
       AND v.status='APPROVED' AND v.reviewed_at IS NOT NULL AND (v.expires_at IS NULL OR v.expires_at>clock_timestamp()) AND p.version LIKE 'mvp-demo-%'
       AND (t.code<>'KYB_REPRESENTATIVE' OR EXISTS(SELECT 1 FROM public.organization_member mem WHERE mem.organization_id=c.organization_id AND mem.user_id::text=v.submitted_data->>'acceptedBy' AND (mem.left_at IS NULL OR mem.left_at>clock_timestamp()) AND mem.joined_at<=clock_timestamp())) ORDER BY t.code,v.reviewed_at DESC,v.id`,[campaignId])
-    const names:Record<string,string>={KYC_IDENTITY:'Identidad documental DEMO revisada',KYB_LEGAL:'Registro de organización DEMO revisado',KYB_REPRESENTATIVE:'Representación documental DEMO revisada'}
+    const names:Record<string,string>={KYC_IDENTITY:'Identidad documental de prueba revisada',KYB_LEGAL:'Registro de organización de prueba revisado',KYB_REPRESENTATIVE:'Representación documental de prueba revisada'}
     return{mode:'DEMO',items:rows.filter(r=>names[r.code]).map(r=>({code:r.code,label:names[r.code]!,reviewedAt:r.reviewedAt.toISOString()})),notice:'Revisión de documentos sintéticos, no identidad real, solvencia ni garantía del proyecto.'}
   }
 }

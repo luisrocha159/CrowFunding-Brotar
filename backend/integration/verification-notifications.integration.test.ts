@@ -31,7 +31,7 @@ test('S2-09: correo verificado, observaciones, corrección, reenvío y avisos pr
     const accounts: { id: string; cookie: string; email: string }[] = []
     for (let i = 0; i < 2; i++) {
       const email = `s2-09-${randomUUID()}@example.invalid`, password = randomBytes(24).toString('hex')
-      const user = await value<{ id: string }>(await request('auth/register', '', { legalVersion:'mvp-demo-legal-1.0-20261028', firstName: 'DEMO', lastName: 'Corrección', email, password, demoConsent: true }), 201)
+      const user = await value<{ id: string }>(await request('auth/register', '', { legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName: 'DEMO', lastName: 'Corrección', email, password, demoConsent: true }), 201)
       users.push(user.id)
       if (i) sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${user.id}',id FROM public.role WHERE code='COMPLIANCE';`)
       const login = await request('auth/login', '', { email, password }); assert.equal(login.status, 200)
@@ -54,7 +54,7 @@ test('S2-09: correo verificado, observaciones, corrección, reenvío y avisos pr
     }
     const fields = Object.fromEntries(type.policy.fields.map(f => [f.key, 'DEMO Persona de prueba']))
     const submit = async (updatedFields = fields) => {
-      detail = await value<VerificationDetail>(await request(`me/verifications/${detail.id}`, owner.cookie, { legalVersion:'mvp-demo-legal-1.0-20261028', expectedVersion: detail.version, policyVersion: type.policy!.version, fields: updatedFields, documents, accepted: true, submit: true }, 'PUT'))
+      detail = await value<VerificationDetail>(await request(`me/verifications/${detail.id}`, owner.cookie, { legalVersion:'mvp-pruebas-legal-1.1-20261109', expectedVersion: detail.version, policyVersion: type.policy!.version, fields: updatedFields, documents, accepted: true, submit: true }, 'PUT'))
       assert.equal(detail.status, 'PENDING')
     }
     const review = async (decision: string) => {

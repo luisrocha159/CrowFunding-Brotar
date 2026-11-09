@@ -10,7 +10,7 @@ const projection = `c.id,c.reference_code AS reference,c.amount::text,c.currency
     'slug',CASE WHEN ca.deleted_at IS NULL AND ca.status='PUBLISHED' THEN ca.slug ELSE NULL END,
     'status',CASE WHEN ${publicHistory} THEN ca.status::text ELSE 'UNAVAILABLE' END) AS campaign,
   COALESCE((SELECT jsonb_agg(jsonb_build_object('id',p.id,'amount',p.amount::text,'currency',p.currency_code,
-    'status',p.status,'method',pm.name,'sandbox',pp.is_sandbox,'demo',pp.code='BROTAR_INTERNAL_DEMO' AND pp.is_sandbox,'createdAt',p.created_at,'confirmedAt',p.confirmed_at)
+    'status',p.status,'method',COALESCE(pm.name,CASE WHEN pp.code='BROTAR_INTERNAL_DEMO' AND pp.is_sandbox THEN CASE p.provider_payload->>'method' WHEN 'TEST_QR' THEN 'QR' WHEN 'TEST_CARD' THEN 'Tarjeta' END END),'sandbox',pp.is_sandbox,'demo',pp.code='BROTAR_INTERNAL_DEMO' AND pp.is_sandbox,'createdAt',p.created_at,'confirmedAt',p.confirmed_at)
     ORDER BY p.attempt_number,p.id) FROM public.payment p JOIN public.payment_provider pp ON pp.id=p.provider_id
     LEFT JOIN public.payment_method pm ON pm.id=p.payment_method_id WHERE p.contribution_id=c.id),'[]'::jsonb) AS payments`
 type ItemRow = Omit<ContributionItem, 'createdAt' | 'confirmedAt' | 'receiptAvailable'> & { createdAt: Date; confirmedAt: Date | null }

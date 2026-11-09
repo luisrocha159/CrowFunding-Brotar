@@ -1,3 +1,4 @@
+import {validRewardSelection} from '../domain/payment'
 export interface SupportOptions {
   campaignId: string; title: string; campaignType: 'DONATION' | 'REWARD' | 'PRESALE'; currency: string; minimum: string | null
   eligible: boolean; unavailableReason: string | null; rewards: { id: string; title: string; minimum: string; available: number | null }[]
@@ -27,8 +28,7 @@ export function validateSimulationSelection(options: SupportOptions, input: { am
   if (!options.eligible) throw new SimulationConflict()
   if (amount <= 0n || (options.minimum !== null && amount < cents(options.minimum))) throw new InvalidSimulation()
   const reward = input.rewardId === null ? null : options.rewards.find(item => item.id === input.rewardId)
-  if (input.rewardId !== null && (!reward || options.campaignType === 'DONATION')) throw new InvalidSimulation()
-  if (options.campaignType !== 'DONATION' && !reward) throw new InvalidSimulation()
+  if (!validRewardSelection(options.campaignType,input.rewardId) || input.rewardId!==null && !reward) throw new InvalidSimulation()
   if (reward && amount < cents(reward.minimum)) throw new InvalidSimulation()
   if (reward?.available === 0) throw new SimulationConflict()
   return { amount: `${amount / 100n}.${String(amount % 100n).padStart(2, '0')}`, reward: reward ?? null }

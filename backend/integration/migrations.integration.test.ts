@@ -137,15 +137,18 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     assert.deepEqual(await source.query(`SELECT 'REJECTED'::public.campaign_status::text AS status`), [{ status: 'REJECTED' }])
     assert.deepEqual(await source.runMigrations({ transaction: 'each' }), [])
     assert.equal((await source.query('SELECT count(*)::int AS n FROM public.category WHERE is_active=true'))[0].n, 5, 'Instalación desde cero: categorías disponibles sin carga manual.')
-    const demoPolicies=await source.query("SELECT t.code FROM brotar_extension.verification_policy p JOIN public.verification_type t ON t.id=p.verification_type_id WHERE p.is_active AND p.version='mvp-demo-1.0-20261023' ORDER BY t.code")
+    const demoPolicies=await source.query("SELECT t.code FROM brotar_extension.verification_policy p JOIN public.verification_type t ON t.id=p.verification_type_id WHERE p.is_active AND p.version='mvp-demo-1.1-20261109' ORDER BY t.code")
     assert.deepEqual(demoPolicies.map((row:{code:string})=>row.code),['KYB_LEGAL','KYB_REPRESENTATIVE','KYC_IDENTITY'],'Instalación limpia deja los tres acuerdos sintéticos, no requiere insertar políticas a mano.')
+    const compatibility=await source.query("SELECT definition->'compatibleVersions' AS versions FROM brotar_extension.verification_policy WHERE is_active")
+    assert.equal(compatibility.length,3)
+    for(const row of compatibility)assert.deepEqual(row.versions,['mvp-demo-1.0-20261023'],'El cambio de presentación conserva explícitamente las aprobaciones anteriores vigentes.')
     assert.deepEqual(await source.query("SELECT key,value FROM public.system_setting WHERE key LIKE 'support.%' ORDER BY key"),[{key:'support.escalation_hours',value:120},{key:'support.first_response_hours',value:48}])
     await source.query("UPDATE public.system_setting SET value='24'::jsonb WHERE key='support.first_response_hours'")
     const {MvpDemoAgreements1792713600000}=await import('../src/shared/infrastructure/database/migrations/1792713600000-MvpDemoAgreements')
     const agreementRunner=source.createQueryRunner()
     try{await new MvpDemoAgreements1792713600000().up(agreementRunner)}finally{await agreementRunner.release()}
     assert.equal((await source.query("SELECT value FROM public.system_setting WHERE key='support.first_response_hours'"))[0].value,24,'Reaplicar conserva una configuración existente.')
-    assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.verification_policy WHERE version='mvp-demo-1.0-20261023'"))[0].n,3,'Reaplicar no duplica ni sustituye políticas.')
+    assert.equal((await source.query("SELECT count(*)::int AS n FROM brotar_extension.verification_policy WHERE version='mvp-demo-1.1-20261109'"))[0].n,3,'Reaplicar no duplica ni sustituye políticas.')
     assert.deepEqual(await source.query(`SELECT has_table_privilege('brotar_app','public.payment_event','INSERT') AS can_append,
       has_table_privilege('brotar_app','public.payment_event','UPDATE') AS can_edit,
       has_table_privilege('brotar_app','public.payment_event','DELETE') AS can_delete`),

@@ -3,7 +3,7 @@ import {test} from 'node:test'
 import assert from 'node:assert/strict'
 import {renderToStaticMarkup} from 'react-dom/server'
 import {MemoryRouter} from 'react-router-dom'
-import {LEGAL_DOCUMENTS,LEGAL_VERSION,LEGAL_PUBLISHED_AT} from '../backend/src/legal/domain/legal-v1-20261028'
+import {LEGAL_DOCUMENTS,LEGAL_VERSION,LEGAL_PUBLISHED_AT} from '../backend/src/legal/domain/legal-v2-20261109'
 import {legalPublicationFrom,legalStatusFrom,acceptLegal} from '../src/features/legal/legalClient'
 import {LegalAcceptancePanel} from '../src/features/legal/LegalAcceptancePanel'
 const publication={version:LEGAL_VERSION,mode:'DEMO',publishedAt:LEGAL_PUBLISHED_AT,hash:'a'.repeat(64),documents:LEGAL_DOCUMENTS}

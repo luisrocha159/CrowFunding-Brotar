@@ -15,6 +15,8 @@ export interface DestinationInput {reference:string;holder:string;expectedVersio
 export interface DisbursementInput {amount:string;payoutAccountId:string;destinationVersion:number;scheduledFor:string|null;reason:string;requestKey:string;demoConsent:true}
 export interface DisbursementAction {action:string;expectedVersion:number;reason:string;requestKey:string;demoConsent:true}
 const projection=`d.id,d.disbursement_number AS number,d.campaign_id AS "campaignId",ca.title AS "campaignTitle",d.status,d.gross_amount::text AS amount,d.net_amount::text AS "netAmount",d.platform_fee::text AS "platformFee",d.provider_fee::text AS "providerFee",d.other_costs::text AS "otherCosts",trim(d.currency_code) AS "currencyCode",x.version,x.requested_by AS "requestedBy",d.authorized_by AS "authorizedBy",x.executed_by AS "executedBy",d.external_reference AS "externalReference",d.scheduled_for::text AS "scheduledFor",d.created_at AS "createdAt",d.authorized_at AS "authorizedAt",d.processed_at AS "processedAt",d.completed_at AS "completedAt",d.failure_message AS "failureMessage",d.notes AS reason,x.destination_reference AS "destinationReference",x.destination_holder AS "destinationHolder"`
+const privateContact=(actor:string)=>`(SELECT jsonb_build_object('name',NULLIF(trim(concat_ws(' ',p.first_name,p.last_name)),''),'email',u.email) FROM public.app_user u LEFT JOIN public.user_profile p ON p.user_id=u.id WHERE u.id=${actor})`
+const contactProjection=`,${privateContact('x.requested_by')} AS "requestedByContact",${privateContact('d.authorized_by')} AS "authorizedByContact",${privateContact('x.executed_by')} AS "executedByContact"`
 const join=`FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id JOIN public.campaign ca ON ca.id=d.campaign_id`
 @Injectable()
 export class DemoDisbursements {
@@ -92,11 +94,11 @@ export class DemoDisbursements {
    await transactionAccess(m,actor,admin?'finance.read':'campaign.manage.own')
    const where=`WHERE ($1::boolean OR (ca.organization_id IS NULL AND ca.creator_user_id=$2) OR EXISTS(SELECT 1 FROM public.organization_member mem WHERE mem.organization_id=ca.organization_id AND mem.user_id=$2 AND mem.organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN') AND mem.joined_at<=clock_timestamp() AND (mem.left_at IS NULL OR mem.left_at>clock_timestamp()))) AND ($3::text IS NULL OR d.status::text=$3) AND ($4::uuid IS NULL OR d.campaign_id=$4)`,args=[admin,actor,status??null,campaignId??null]
    const [count]=await m.query(`SELECT count(*)::int AS total ${join} ${where}`,args)
-   const items=await m.query(`SELECT ${projection} ${join} ${where} ORDER BY d.created_at DESC,d.id DESC LIMIT 20 OFFSET $5`,[...args,(page-1)*20]);return{mode:'DEMO',items,total:count.total,page,pageSize:20}
+   const items=await m.query(`SELECT ${projection}${contactProjection} ${join} ${where} ORDER BY d.created_at DESC,d.id DESC LIMIT 20 OFFSET $5`,[...args,(page-1)*20]);return{mode:'DEMO',items,total:count.total,page,pageSize:20}
   })
  }
  async detail(actor:string,id:string,admin=false){assertDemoEnabled();uuid(id);return this.database.connection().transaction('REPEATABLE READ',async m=>{
-  const [d]=await m.query(`SELECT ${projection} ${join} WHERE d.id=$1`,[id]);if(!d)throw new NotFoundException('Desembolso no disponible.')
+   const [d]=await m.query(`SELECT ${projection}${contactProjection} ${join} WHERE d.id=$1`,[id]);if(!d)throw new NotFoundException('Desembolso no disponible.')
   if(admin)await transactionAccess(m,actor,'finance.read');else await ownerAccess(m,actor,await this.campaign(m,d.campaignId))
   const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.demo_disbursement_event WHERE disbursement_id=$1 ORDER BY recorded_at,id`,[id]);return{mode:'DEMO',...d,events}
  })}
@@ -108,7 +110,7 @@ export class DemoDisbursements {
    const [target]=await m.query('SELECT campaign_id FROM public.disbursement WHERE id=$1',[id]);if(!target)throw new NotFoundException('Desembolso no disponible.')
    const c=await this.campaign(m,target.campaign_id,true);await transactionAccess(m,actor,'finance.operate');await independentActor(m,actor,c)
    const [old]=await m.query('SELECT request_hash FROM brotar_extension.demo_disbursement_event WHERE request_key=$1',[key]);if(old){if(old.request_hash!==hash)throw new LedgerConflict('Clave utilizada con otros datos.');return}
-   const [d]=await m.query(`SELECT d.*,d.gross_amount::text AS amount,x.version,x.requested_by,x.destination_version FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id WHERE d.id=$1 FOR UPDATE OF d,x`,[id]);if(!d)throw new NotFoundException('Desembolso DEMO no disponible.')
+   const [d]=await m.query(`SELECT d.*,d.gross_amount::text AS amount,x.version,x.requested_by,x.destination_version FROM public.disbursement d JOIN brotar_extension.demo_disbursement x ON x.disbursement_id=d.id WHERE d.id=$1 FOR UPDATE OF d,x`,[id]);if(!d)throw new NotFoundException('Desembolso de prueba no disponible.')
    if(d.requested_by===actor)throw new ForbiddenException('Solicitante y aprobador/ejecutor deben ser distintos.')
    if(d.version!==input.expectedVersion)throw new LedgerConflict('El desembolso cambió; actualiza antes de operar.')
    const next=disbursementTarget(d.status,input.action)

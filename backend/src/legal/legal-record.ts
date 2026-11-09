@@ -1,10 +1,10 @@
 import type {EntityManager} from 'typeorm'
-import {LEGAL_VERSION} from './domain/legal-v1-20261028'
+import {LEGAL_VERSION} from './domain/legal-v2-20261109'
 import {InvalidLegalAgreement,LegalAgreementRequired} from './domain/legal-agreement'
 import {recordAudit,setAuditActor} from '../shared/infrastructure/database/audit'
 
-import {LEGAL_DEFINITION,LEGAL_HASH,legalDigest} from './legal-v1-record'
-export {LEGAL_DEFINITION,LEGAL_HASH,legalDigest} from './legal-v1-record'
+import {LEGAL_DEFINITION,LEGAL_HASH,legalDigest} from './legal-v2-record'
+export {LEGAL_DEFINITION,LEGAL_HASH,legalDigest} from './legal-v2-record'
 export async function publishedLegal(manager:EntityManager,version=LEGAL_VERSION){
  const [row]:{definition:typeof LEGAL_DEFINITION;hash:string}[]=await manager.query(`SELECT definition,sha256 AS hash FROM brotar_extension.legal_bundle WHERE version=$1`,[version])
  if(!row || row.hash!==legalDigest(row.definition) || row.definition.version!==version || version===LEGAL_VERSION && row.hash!==LEGAL_HASH)throw new LegalAgreementRequired('Las condiciones publicadas no están disponibles; revisa la instalación.')

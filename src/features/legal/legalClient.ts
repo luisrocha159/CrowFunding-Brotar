@@ -1,6 +1,6 @@
 import {readJson,requestApi} from '../../shared/api/request'
 import {SessionError} from '../access/session/sessionClient'
-import {LEGAL_VERSION} from '../../../backend/src/legal/domain/legal-v1-20261028'
+import {LEGAL_VERSION} from '../../../backend/src/legal/domain/legal-v2-20261109'
 export {LEGAL_VERSION}
 export interface LegalPublication {version:string;mode:'DEMO';publishedAt:string;hash:string;documents:{code:string;title:string;sections:{title:string;text:string}[]}[]}
 export interface LegalStatus {version:string;accepted:boolean;history:{version:string;acceptedAt:string;hash:string;source:string}[]}

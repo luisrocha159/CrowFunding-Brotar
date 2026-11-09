@@ -2,7 +2,7 @@ import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
 import { paymentLabels, type PaymentStatus } from './financeClient'
 
-export const reconciliationLabels = {MATCHED:'Coincide',MISSING_INTERNAL:'Falta confirmación interna',MISSING_PROVIDER:'Falta recibo DEMO',AMOUNT_MISMATCH:'Importes diferentes',DUPLICATED:'Referencia contradictoria',RESOLVED:'Resuelta'} as const
+export const reconciliationLabels = {MATCHED:'Coincide',MISSING_INTERNAL:'Falta confirmación interna',MISSING_PROVIDER:'Falta recibo',AMOUNT_MISMATCH:'Importes diferentes',DUPLICATED:'Referencia contradictoria',RESOLVED:'Resuelta'} as const
 export const batchLabels = {OPEN:'Abierto',IN_PROGRESS:'En revisión',CLOSED:'Cerrado'} as const
 export type ResolutionAction = 'RECHECK'|'COMPENSATE_DEMO'
 export interface ReconciliationFilters {from: string;to: string;currencyCode: string}
@@ -80,7 +80,7 @@ export function reasonError(value: string): string {
 export function reconciliationError(error: unknown): string {
   const status=error instanceof SessionError?error.status:0
   return ({400:'Revisa las fechas, moneda y motivo. No se guardaron datos inválidos.',401:'Tu sesión terminó. Vuelve a iniciar sesión.',
-    403:'No tienes autorización vigente para esta acción. ADMIN y Auditor solo pueden consultar.',404:'Recurso no disponible o simulador DEMO deshabilitado. Comprueba README §28.',
+    403:'No tienes autorización vigente para esta acción. ADMIN y Auditor solo pueden consultar.',404:'Recurso no disponible o simulador deshabilitado. Comprueba README §28.',
     409:'La evidencia o el estado no permiten esta operación. Actualiza el lote y revisa las diferencias; no se fuerza el cuadre.',
     429:'Demasiadas operaciones. Espera un minuto y consulta el estado antes de repetir.'} as Record<number,string>)[status] ?? 'No se pudo confirmar la operación. Comprueba API y PostgreSQL y consulta el estado antes de reintentar.'
 }

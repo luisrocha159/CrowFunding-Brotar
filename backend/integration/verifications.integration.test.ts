@@ -27,7 +27,7 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
   try{
     const cookies:string[]=[]
     for(let i=0;i<2;i++){
-      const email=`verification-${i}-${suffix}@example.invalid`;const registration=await request('auth/register','','POST',{ legalVersion:'mvp-demo-legal-1.0-20261028',firstName:'Prueba',lastName:'Identidad',email,password,demoConsent:true});assert.equal(registration.status,201);users.push((await registration.json() as {id:string}).id)
+      const email=`verification-${i}-${suffix}@example.invalid`;const registration=await request('auth/register','','POST',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'Prueba',lastName:'Identidad',email,password,demoConsent:true});assert.equal(registration.status,201);users.push((await registration.json() as {id:string}).id)
       const login=await request('auth/login','','POST',{email,password});assert.equal(login.status,200);cookies.push(login.headers.get('set-cookie')!.split(';')[0]!)
     }
     assert.equal((await request('me/verifications')).status,401)
@@ -43,9 +43,9 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[1])).status,404)
     const upload=async(cookie:string)=>{const result=await request('files',cookie,'POST',{purpose:'VERIFICATION_DOCUMENT',visibility:'PRIVATE',originalName:'synthetic.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nsynthetic').toString('base64')});assert.equal(result.status,201);const id=(await result.json() as {id:string}).id;files.push(id);return id}
     const ownFile=await upload(cookies[0]!);const foreignFile=await upload(cookies[1]!)
-    const body=(fileId:string)=>({ legalVersion:'mvp-demo-legal-1.0-20261028',expectedVersion:detail.version,policyVersion:activePolicy.version,fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,'DEMO Prueba'])),documents:[{documentTypeId:activePolicy.documents[0]!.documentTypeId,fileId}],accepted:true,submit:true})
+    const body=(fileId:string)=>({ legalVersion:'mvp-pruebas-legal-1.1-20261109',expectedVersion:detail.version,policyVersion:activePolicy.version,fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,'Persona ficticia'])),documents:[{documentTypeId:activePolicy.documents[0]!.documentTypeId,fileId}],accepted:true,submit:true})
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),policyVersion:'obsolete'})).status,409)
-    if(type.policy)assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,'Dato no sintético']))})).status,400)
+    if(type.policy)assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),fields:Object.fromEntries(activePolicy.fields.map(field=>[field.key,' ']))})).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',body(foreignFile))).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),fields:{name:'Prueba',bankAccount:'not-accepted'}})).status,400)
     assert.equal((await request(`me/verifications/${detail.id}`,cookies[0],'PUT',{...body(ownFile),accepted:false})).status,400)

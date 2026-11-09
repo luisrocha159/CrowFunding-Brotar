@@ -20,11 +20,11 @@ export async function independentActor(m:EntityManager,actor:string,c:CampaignSu
 export async function identityReady(m:EntityManager,c:CampaignSubject){
  const kyc=async(user:string)=>{
   const [person]=await m.query(`SELECT id FROM public.app_user WHERE id=$1 AND deleted_at IS NULL AND status IN ('ACTIVE','PENDING_VERIFICATION') AND (locked_until IS NULL OR locked_until<=clock_timestamp()) FOR SHARE`,[user])
-  if(!person || !(await approved('KYC_IDENTITY',user,null)))throw new LedgerConflict('Falta KYC DEMO aprobado y vigente del titular o representante.')
+  if(!person || !(await approved('KYC_IDENTITY',user,null)))throw new LedgerConflict('Falta KYC de prueba aprobado y vigente del titular o representante.')
  }
  const approved=async(code:string,user:string|null,org:string|null)=>{
   const rows=await m.query(`SELECT v.id,v.submitted_data AS data,p.definition,v.submitted_data->>'acceptedBy' AS representative FROM public.verification v JOIN public.verification_type t ON t.id=v.verification_type_id
-   JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND p.version=v.submitted_data->>'policyVersion' AND p.is_active
+   JOIN brotar_extension.verification_policy p ON p.verification_type_id=t.id AND (p.version=v.submitted_data->>'policyVersion' OR p.definition->'compatibleVersions' ? (v.submitted_data->>'policyVersion')) AND p.is_active
    WHERE t.code=$1 AND t.is_active AND v.user_id IS NOT DISTINCT FROM $2::uuid AND v.organization_id IS NOT DISTINCT FROM $3::uuid AND v.status='APPROVED'
     AND v.reviewed_by IS NOT NULL AND v.reviewed_at IS NOT NULL AND v.submitted_data->>'accepted'='true' AND p.version LIKE 'mvp-demo-%'
     AND NOT EXISTS(SELECT 1 FROM public.verification newer WHERE newer.verification_type_id=v.verification_type_id AND newer.user_id IS NOT DISTINCT FROM v.user_id AND newer.organization_id IS NOT DISTINCT FROM v.organization_id AND (newer.created_at,newer.id)>(v.created_at,v.id))
@@ -44,7 +44,7 @@ export async function identityReady(m:EntityManager,c:CampaignSubject){
  await assertRepresentationSettled(m,c.organization_id)
  const [org]=await m.query(`SELECT id FROM public.organization WHERE id=$1 AND deleted_at IS NULL AND status NOT IN ('SUSPENDED','CLOSED') FOR SHARE`,[c.organization_id])
  const legal=await approved('KYB_LEGAL',null,c.organization_id),rep=await approved('KYB_REPRESENTATIVE',null,c.organization_id)
- if(!org || !legal || !rep || legal.representative!==rep.representative || !(await m.query(`SELECT id FROM public.organization_member WHERE organization_id=$1 AND user_id::text=$2 AND organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN') AND joined_at<=clock_timestamp() AND (left_at IS NULL OR left_at>clock_timestamp())`,[c.organization_id,rep.representative])).length)throw new LedgerConflict('Faltan KYB DEMO y representación aprobados y vigentes.')
+ if(!org || !legal || !rep || legal.representative!==rep.representative || !(await m.query(`SELECT id FROM public.organization_member WHERE organization_id=$1 AND user_id::text=$2 AND organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN') AND joined_at<=clock_timestamp() AND (left_at IS NULL OR left_at>clock_timestamp())`,[c.organization_id,rep.representative])).length)throw new LedgerConflict('Faltan KYB de prueba y representación aprobados y vigentes.')
  await kyc(rep.representative)
 }
 

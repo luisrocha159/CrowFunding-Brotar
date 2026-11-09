@@ -36,7 +36,7 @@ test('editor periódico: campos recuperados, evidencia privada, fechas reales y 
 
  const data=accountabilityFrom(value),html=renderToStaticMarkup(<AccountabilityDraftEditor initial={reportDraft(data.reports[0]!)} data={data as AccountabilityState} save={async()=>{}} documentUrl={f=>`/private/${f}`} cancel={()=>{}}/>)
 
- assert.match(html,/Primer período/);assert.match(html,/80.10/);assert.match(html,new RegExp(`/private/${file}`));assert.match(html,/Desvincular evidencia/);assert.match(html,/type="date"/);assert.match(html,/min="2026-10-01"/);assert.match(html,/type="checkbox"/);assert.match(html,/Confirmo esta acción DEMO/);assert.match(html,/Guardar borrador y conservar versión anterior/)
+ assert.match(html,/Primer período/);assert.match(html,/80.10/);assert.match(html,new RegExp(`/private/${file}`));assert.match(html,/Desvincular evidencia/);assert.match(html,/type="date"/);assert.match(html,/min="2026-10-01"/);assert.match(html,/type="checkbox"/);assert.match(html,/Confirmo esta acción/);assert.match(html,/Guardar borrador y conservar versión anterior/)
 
 })
 

@@ -87,6 +87,7 @@ export function PublicLayout() {
         </details>
       </div>
     </header>
+    <aside className={styles.environmentNotice} aria-label="Información del entorno"><div><span><strong>Entorno académico</strong> · Sin validación de identidad ni movimientos bancarios.</span><Link to="/condiciones">Condiciones y privacidad</Link></div></aside>
     <main id="contenido" className="page-container" tabIndex={-1} ref={main}><Outlet context={session} /></main>
     <footer className={styles.footer}>
       <div className={styles.footerGrid}>

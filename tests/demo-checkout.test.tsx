@@ -1,14 +1,27 @@
 import {strict as assert} from 'node:assert'
 import {test} from 'node:test'
 import {renderToStaticMarkup} from 'react-dom/server'
-import {demoTicketFrom,demoFailure} from '../src/features/contributions/demoClient'
+import {demoTicketFrom,demoFailure,demoCheckout} from '../src/features/contributions/demoClient'
+import {paymentMethodLabel} from '../src/features/contributions/labels'
 import {SettingEditor} from '../src/features/catalogs/SettingEditor'
 import {sponsorSummaryFrom} from '../src/features/contributions/contributionsClient'
 const ticket={paymentId:'8cdca2ce-4764-44a1-8aab-584f70ede7df',contributionId:'7ca21b07-2ad1-478f-9940-08030cb37190',reference:'BRT-TEST',amount:'10.00',currencyCode:'BOB',status:'INITIATED',attempt:1,expiresAt:'2026-10-23T12:00:00Z',expired:false,mode:'DEMO',payable:false,qrPayload:'BROTAR-DEMO:8cdca2ce-4764-44a1-8aab-584f70ede7df'}
 test('checkout DEMO rechaza boletos pagables, respuestas ambiguas y referencias externas',()=>{
  assert.equal(demoTicketFrom(ticket).payable,false)
- for(const patch of [{mode:'LIVE'},{payable:true},{paymentId:'other'},{amount:10},{amount:'1e3'},{currencyCode:'BOB '},{status:'PAID'},{attempt:0},{expiresAt:'bad'},{qrPayload:'https://bank.invalid/pay'}])assert.throws(()=>demoTicketFrom({...ticket,...patch}))
+ for(const patch of [{mode:'LIVE'},{payable:true},{paymentId:'other'},{amount:10},{amount:'1e3'},{currencyCode:'BOB '},{status:'PAID'},{attempt:0},{expiresAt:'bad'},{qrPayload:'https://bank.invalid/pay'},{method:'BANK_TRANSFER'},{method:3}])assert.throws(()=>demoTicketFrom({...ticket,...patch}))
  assert.doesNotMatch(demoFailure(new Error('private secret')),/private secret/)
+})
+
+test('checkout conserva el método elegido; un pago anterior sin método no se presenta como QR',async()=>{
+ const original=globalThis.fetch
+ try{
+  for(const method of ['TEST_QR','TEST_CARD'] as const){
+   globalThis.fetch=async(_url,init)=>{assert.equal(JSON.parse(String(init?.body)).method,method);return Response.json({mode:'DEMO',ticket:{...ticket,method}})}
+   const result=await demoCheckout({campaignId:'8cdca2ce-4764-44a1-8aab-584f70ede7df',rewardId:null,amount:'10.00',currencyCode:'BOB',requestKey:'7ca21b07-2ad1-478f-9940-08030cb37190',demoConsent:true,method})
+   assert.equal(result.method,method);assert.equal(paymentMethodLabel(result.method),method==='TEST_QR'?'QR':'Tarjeta')
+  }
+  assert.equal(paymentMethodLabel(demoTicketFrom({...ticket,method:null}).method),'Método no informado')
+ }finally{globalThis.fetch=original}
 })
 test('parámetros DEMO tienen límites enteros y confirmación; auditor solo consulta',()=>{
  const setting={key:'support.first_response_hours',value:48,updatedBy:null,updatedAt:null}

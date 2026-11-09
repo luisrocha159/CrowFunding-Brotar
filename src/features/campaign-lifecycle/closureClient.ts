@@ -41,7 +41,7 @@ export function finalErrors(f:FinalForm,today:string,received:string):Record<str
  if(f.expenses.length>100)errors.total='Máximo 100 gastos.'
  return errors
 }
-export const closureLabels:Record<string,string>={SUBMIT_FINAL:'Presentar rendición final DEMO',APPROVE_FINAL:'Aprobar rendición final',REQUEST_CHANGES:'Solicitar correcciones',FULFILL_REWARD:'Registrar cumplimiento DEMO',RESOLVE_CLOSURE_CASE:'Resolver incidencia no financiera'}
+export const closureLabels:Record<string,string>={SUBMIT_FINAL:'Presentar rendición final',APPROVE_FINAL:'Aprobar rendición final',REQUEST_CHANGES:'Solicitar correcciones',FULFILL_REWARD:'Registrar cumplimiento',RESOLVE_CLOSURE_CASE:'Resolver incidencia no financiera'}
 
 /** Exact additional amount; approved periodic expenses are included server-side by identity. */
 export function additionalFinalAmount(required:string,approved:string):string|null{

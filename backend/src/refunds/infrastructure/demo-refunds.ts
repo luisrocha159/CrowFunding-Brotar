@@ -59,14 +59,14 @@ export class DemoRefunds {
    if(old){if(old.request_hash!==hash)throw new LedgerConflict('La solicitud ya identifica otra devolución.');return old.refund_id as string}
    const provider=await demoProvider(m)
    const [target]=await m.query(`SELECT c.campaign_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[input.paymentId,actor,provider])
-   if(!target)throw new NotFoundException('Pago no disponible para devolución DEMO.')
+   if(!target)throw new NotFoundException('Pago no disponible para devolución de prueba.')
    await m.query('SELECT id FROM public.campaign WHERE id=$1 FOR UPDATE',[target.campaign_id])
    const [p]=await m.query(`SELECT p.id,p.amount::text,trim(p.currency_code) AS currency,p.status,p.confirmed_at,c.id AS contribution_id,ca.status AS campaign_status,ca.funding_model,f.amount_raised::text,ca.goal_amount::text
       FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id JOIN public.campaign ca ON ca.id=c.campaign_id JOIN public.v_campaign_funding f ON f.campaign_id=ca.id WHERE p.id=$1 FOR UPDATE OF p,c`,[input.paymentId])
    await transactionAccess(m,actor,'contribution.write.own')
    let linked:{id:string;recommended_amount:string}|undefined
    if(input.disputeId){[linked]=await m.query(`SELECT d.id,x.recommended_amount::text FROM public.dispute d JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id WHERE d.id=$1 AND d.payment_id=$2 AND d.raised_by=$3 AND d.status='RESOLVED' AND x.resolution_code='REFUND_RECOMMENDED' AND x.financial_hold AND x.linked_refund_id IS NULL FOR UPDATE OF d,x`,[input.disputeId,input.paymentId,actor]);if(!linked || money(linked.recommended_amount)!==money(amount))throw new LedgerConflict('La devolución debe coincidir con la recomendación vigente de tu disputa.')}
-   if(!p.confirmed_at || p.status!=='CONFIRMED' && !(linked && p.status==='DISPUTED'))throw new LedgerConflict('Solo un pago DEMO confirmado o su resolución autorizable admite esta solicitud.')
+   if(!p.confirmed_at || p.status!=='CONFIRMED' && !(linked && p.status==='DISPUTED'))throw new LedgerConflict('Solo un pago de prueba confirmado o su resolución autorizable admite esta solicitud.')
    if(input.reasonCode==='PROJECT_CANCELLED' && p.campaign_status!=='CANCELLED' || input.reasonCode==='GOAL_NOT_REACHED' && !(p.funding_model==='ALL_OR_NOTHING' && ['FUNDING_ENDED','CANCELLED'].includes(p.campaign_status) && money(p.amount_raised,true)<money(p.goal_amount)))throw new LedgerInvalid('La causa elegida no corresponde al estado de la campaña.')
    const [totals]=await m.query(`SELECT COALESCE(sum(amount) FILTER(WHERE status='REFUNDED'),0)::numeric(14,2)::text AS returned,COALESCE(sum(amount) FILTER(WHERE status IN ('REQUESTED','PROCESSING')),0)::numeric(14,2)::text AS reserved FROM public.refund WHERE payment_id=$1`,[input.paymentId])
    if(money(totals.reserved,true)>0n)throw new LedgerConflict('Ya existe una solicitud activa para este pago. Consulta su estado antes de repetir.')

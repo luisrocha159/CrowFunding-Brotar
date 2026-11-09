@@ -6,8 +6,15 @@ import { SessionError } from '../src/features/access/session/sessionClient'
 import { validatePlan, validateBudget, validateFunding, validateRewards } from '../src/features/campaigns/sectionValidation'
 import * as server from '../backend/src/campaigns/domain/sections'
 
+// Las fechas positivas siguen siendo futuras aunque cambie el calendario real.
+const testDay = (offset: number) => {
+  const date = new Date()
+  date.setUTCDate(date.getUTCDate() + offset)
+  return date.toISOString().slice(0, 10)
+}
+
 test('el plan se lee y guarda mediante la API del borrador propio', async () => {
-  const plan: PlanInput = { activities: [{ name: 'Obra comunitaria', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-02' }], milestones: [] }
+  const plan: PlanInput = { activities: [{ name: 'Obra comunitaria', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(31) }], milestones: [] }
   const calls: string[] = []
   const fetcher = (async (url: string, init?: RequestInit) => {
     calls.push(`${init?.method ?? 'GET'} ${url}`)
@@ -26,13 +33,13 @@ test('el total de presupuesto usa únicamente partidas guardadas', () => {
 test('hitos múltiples: contrato, guardado y eliminación de una actividad conservan los otros vínculos', async () => {
   const plan: PlanInput = {
     activities: [
-      { name: 'Preparar terreno', responsibleName: 'Ana', plannedStartOn: '2026-11-01', plannedEndOn: '2026-11-05' },
-      { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: '2026-11-06', plannedEndOn: '2026-11-10' },
-      { name: 'Sembrar plantas', responsibleName: 'Ana', plannedStartOn: '2026-11-11', plannedEndOn: '2026-11-12' }
-    ], milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-12', plannedEndOn: '2026-11-12', activityIndexes: [0, 1, 2] }]
+      { name: 'Preparar terreno', responsibleName: 'Ana', plannedStartOn: testDay(30), plannedEndOn: testDay(34) },
+      { name: 'Instalar riego', responsibleName: 'Ana', plannedStartOn: testDay(35), plannedEndOn: testDay(39) },
+      { name: 'Sembrar plantas', responsibleName: 'Ana', plannedStartOn: testDay(40), plannedEndOn: testDay(41) }
+    ], milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: testDay(41), plannedEndOn: testDay(41), activityIndexes: [0, 1, 2] }]
   }
   assert.deepEqual(planFrom(plan), plan)
-  const legacy = { ...plan, milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: '2026-11-12', plannedEndOn: '2026-11-12', activityIndex: 1 }] }
+  const legacy = { ...plan, milestones: [{ name: 'Huerto listo', responsibleName: 'Ana', plannedStartOn: testDay(41), plannedEndOn: testDay(41), activityIndex: 1 }] }
   assert.deepEqual(planFrom(legacy).milestones[0]!.activityIndexes, [1], 'Una pantalla con formato anterior conserva el vínculo al actualizarse.')
   assert.deepEqual(planFrom({ ...legacy, milestones: [{ ...legacy.milestones[0], activityIndex: null }] }).milestones[0]!.activityIndexes, [])
   assert.throws(() => planFrom({ ...legacy, milestones: [{ ...legacy.milestones[0], activityIndex: '1' }] }), SessionError)
@@ -67,7 +74,7 @@ test('formularios inválidos muestran errores por campo antes de enviar una soli
 test('validaciones inmediatas y del servidor coinciden sin imponer presupuesto igual a meta', () => {
   const plan = { activities: [{ name: 'Obra', responsibleName: '', plannedStartOn: '2026-02-31', plannedEndOn: '2026-01-01' }], milestones: [] }
   const budget = { items: [{ categoryId: 'c', description: 'Material', quantity: 1, unitPrice: 0.29, plannedAmount: 0.29, notes: '' }], risks: [] }
-  const funding = { goalAmount: 100, currencyCode: 'BOB', durationDays: 19, fundingModel: 'FLEXIBLE', startsAt: '2026-11-01T00:00:00.000Z', endsAt: '2026-11-20T00:00:00.000Z' }
+  const funding = { goalAmount: 100, currencyCode: 'BOB', durationDays: 19, fundingModel: 'FLEXIBLE', startsAt: `${testDay(30)}T00:00:00.000Z`, endsAt: `${testDay(49)}T00:00:00.000Z` }
   const rewards = [{ title: 'Producto', description: 'Una unidad', rewardKind: 'REWARD', minAmount: -1, quantityTotal: -1, estimatedDeliveryOn: '2026-02-31' }]
   assert.deepEqual(validatePlan(plan), server.validatePlan(plan))
   assert.deepEqual(validateBudget(budget), server.validateBudget(budget))

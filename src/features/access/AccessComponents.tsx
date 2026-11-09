@@ -8,7 +8,7 @@ export function AccessShell({ title, subtitle, intro, children, centered = false
   const Heading = `h${headingLevel}` as 'h1' | 'h2' | 'h3'
   return <div className={centered ? styles.centered : styles.shell}>
     {!centered && <aside className={styles.intro}><div><span className={styles.introTag}>Una comunidad, muchas formas de contribuir</span><p className={styles.introTitle}>{intro}</p><p>Un mismo acceso para quienes descubren iniciativas, crean proyectos o representan a una organización.</p></div><div className={styles.introNote}><strong>Ideas que nos unen</strong>Descubre proyectos y conoce las comunidades que buscan transformar su entorno.</div></aside>}
-    <div className={styles.body}><Heading>{title}</Heading><p className={styles.subtitle}>{subtitle}</p><p className={styles.notice}>{notice ?? <><strong>Entorno de pruebas.</strong> La cuenta y los permisos se comprueban con el servidor. Espera la confirmación de cada operación antes de continuar.</>}</p>{children}</div>
+    <div className={styles.body}><Heading>{title}</Heading><p className={styles.subtitle}>{subtitle}</p><p className={styles.notice}>{notice ?? <><strong>Información.</strong> La cuenta y los permisos se comprueban con el servidor. Espera la confirmación de cada operación antes de continuar.</>}</p>{children}</div>
   </div>
 }
 
@@ -36,5 +36,5 @@ export function AccessSuccess({ title, children }: { title: string; children: Re
 
 export function AccessDemoControls({ options, value, onChange, onFill, disabled }: { options: readonly { value: AccessOutcome; label: string }[]; value: AccessOutcome; onChange: (value: AccessOutcome) => void; onFill: () => void; disabled: boolean }) {
   const id = useId()
-  return <details className={styles.controls}><summary>Probar esta pantalla</summary><p>El resultado se elige aquí y aparece al enviar un formulario válido. No se comprueba ninguna cuenta real.</p><FormField as="select" id={id} label="Respuesta simulada" value={value} disabled={disabled} onChange={event => onChange(event.target.value as AccessOutcome)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</FormField><Button variant="secondary" onClick={onFill} disabled={disabled}>Usar datos de prueba</Button></details>
+  return <details className={styles.controls}><summary>Probar esta pantalla</summary><p>El resultado se elige aquí y aparece al enviar un formulario válido. No se comprueba ninguna cuenta real.</p><FormField as="select" id={id} label="Respuesta simulada" value={value} disabled={disabled} onChange={event => onChange(event.target.value as AccessOutcome)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</FormField><Button variant="secondary" onClick={onFill} disabled={disabled}>Usar datos</Button></details>
 }

@@ -40,10 +40,10 @@ function RequestRecovery({ params }: { params: URLSearchParams }) {
     if (status !== 'idle' && status !== 'loading' && status !== 'success') document.getElementById('recover-response')?.focus()
   }, [status])
   if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, revisa el canal de recuperación configurado."
-    notice={<><strong>Solicitud procesada.</strong> Consulta el canal configurado por el equipo: correo autorizado o buzón privado de pruebas locales. Un buzón local no envía correos externos.</>}>
+    notice={<><strong>Solicitud procesada.</strong> Consulta el canal configurado por el equipo: correo autorizado o buzón privado local. Un buzón local no envía correos externos.</>}>
     <AccessSuccess title="Revisa el canal autorizado">
       <p>Por seguridad, esta pantalla no revela si la cuenta existe ni confirma la llegada del mensaje. Revisa la bandeja de entrada y spam. El enlace vence en una hora y se usa una sola vez.</p>
-      {import.meta.env.DEV && <details className={styles.recoveryHelp}><summary>¿Dónde está el enlace en la prueba local?</summary><p>Si el equipo activó <code>PASSWORD_RESET_LOCAL_FILE=true</code> en <code>backend/.env</code> y reinició la API, abre <code>%LOCALAPPDATA%\Brotar\recovery-mail</code> en Windows. Usa el archivo más reciente de tu cuenta ficticia. Si el correo no existe, no se genera archivo. No compartas el enlace: da acceso temporal a la cuenta.</p></details>}
+      {import.meta.env.DEV && <details className={styles.recoveryHelp}><summary>¿Dónde está el enlace en la prueba local?</summary><p>Si el equipo activó <code>PASSWORD_RESET_LOCAL_FILE=true</code> en <code>backend/.env</code> y reinició la API, abre <code>%LOCALAPPDATA%\Brotar\recovery-mail</code> en Windows. Usa el archivo más reciente de tu cuenta. Si el correo no existe, no se genera archivo. No compartas el enlace: da acceso temporal a la cuenta.</p></details>}
       {resetPath && <p>Entorno local: usa el enlace de recuperación generado para completar la prueba de caducidad y uso único.</p>}
       <div className={styles.actions}>{resetPath && <ButtonLink to={resetPath}>Abrir enlace local</ButtonLink>}<ButtonLink variant="secondary" to={accessHref('/iniciar-sesion', params)}>Volver a iniciar sesión</ButtonLink><Button variant="secondary" onClick={() => { setEmail(''); setErrors({}); setResetPath(undefined); setStatus('idle') }}>Solicitar otro enlace</Button></div>
     </AccessSuccess>

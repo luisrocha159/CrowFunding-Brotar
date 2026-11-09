@@ -11,7 +11,7 @@ import { RegistrationLimitGuard } from '../src/users/infrastructure/http/registr
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
 import { readEnvironment } from '../src/config/environment'
 
-const valid = { firstName: ' María ', lastName: " D'Ávila ", email: ' TEST@example.invalid ', password: 'frase de prueba de registro', demoConsent: true, legalVersion: 'mvp-demo-legal-1.0-20261028' }
+const valid = { firstName: ' María ', lastName: " D'Ávila ", email: ' TEST@example.invalid ', password: 'frase de prueba de registro', demoConsent: true, legalVersion: 'mvp-pruebas-legal-1.1-20261109' }
 let received: NewUser | undefined
 let duplicate = false
 const useCase = new RegisterUser({ emailExists: async () => duplicate, create: async input => {

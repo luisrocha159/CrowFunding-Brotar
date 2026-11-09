@@ -17,13 +17,13 @@ export function useDemoCheckout(selectionId:string|null,paymentId:string|null) {
   const key=keys.current.get(action) ?? crypto.randomUUID();keys.current.set(action,key)
   try{const result=await run(key,c.signal);if(c.signal.aborted)return null
    const value='ticket' in result?result.ticket:result;setTicket(value)
-   setNotice('ticket' in result && result.processing==='NEEDS_REVIEW'?'Aviso recibido para revisión por Finanzas. No suma recaudación ni reactiva el intento.':'Estado consultado y confirmado por el servidor DEMO; no hay dinero real.')
+   setNotice('ticket' in result && result.processing==='NEEDS_REVIEW'?'Aviso recibido para revisión por Finanzas. No suma recaudación ni reactiva el intento.':'Estado consultado y confirmado por el servidor; no hay dinero real.')
    keys.current.delete(action);return value
   }catch(e){if(!c.signal.aborted){if(e instanceof SessionError && e.status===401)setAnonymous(true);if(e instanceof SessionError && e.status===403){setTicket(null);setSelection(null)}setError(demoFailure(e))}return null}
   finally{if(active.current===c)active.current=null;if(!c.signal.aborted)setBusy(false)}
  }
  return {selection,ticket,error,loading,busy,anonymous,notice,reload:()=>{if(!busy){setLoading(true);setRefresh(x=>x+1)}},
-  create:()=>selection?perform('checkout:'+selection.id,(requestKey,signal)=>demoCheckout({campaignId:selection.campaignId,rewardId:selection.rewardId,amount:selection.amount,currencyCode:selection.currency,requestKey,demoConsent:true},signal)):Promise.resolve(null),
+  create:()=>selection?perform('checkout:'+selection.id,(requestKey,signal)=>demoCheckout({campaignId:selection.campaignId,rewardId:selection.rewardId,amount:selection.amount,currencyCode:selection.currency,requestKey,demoConsent:true,method:selection.method},signal)):Promise.resolve(null),
   simulate:(outcome:string)=>ticket?perform(ticket.paymentId+':'+outcome,(key,signal)=>demoResult(ticket.paymentId,outcome,key,signal)):Promise.resolve(null),
   retry:()=>ticket?perform('retry:'+ticket.paymentId,(key,signal)=>demoRetry(ticket.contributionId,key,signal)):Promise.resolve(null)}
 }

@@ -19,8 +19,10 @@ test('PostgreSQL nuevo: healthy espera TCP final aunque el servidor temporal ace
  const bind=join(root,'slow-init.sql').replaceAll('\\','/')+':/docker-entrypoint-initdb.d/slow-init.sql:ro'
  await writeFile(join(root,'override.yaml'),`services:\n  postgres:\n    volumes:\n      - ${JSON.stringify(bind)}\n`)
  const compose=['compose','--env-file',join(root,'.env'),'-f',join(root,'compose.yaml'),'-f',join(root,'override.yaml')]
+ // Las variables del ensayo principal no deben sustituir el proyecto y puerto de esta prueba.
+ const composeEnv={...process.env,BROTAR_COMPOSE_PROJECT:project,POSTGRES_PORT:String(port)}
  try{
-  execFileSync('docker',[...compose,'up','-d','--wait','--wait-timeout','100'],{timeout:125000,stdio:'pipe'})
+  execFileSync('docker',[...compose,'up','-d','--wait','--wait-timeout','100'],{env:composeEnv,timeout:125000,stdio:'pipe'})
   assert.equal(execFileSync('docker',['inspect','--format','{{index .Config.Labels "com.docker.compose.project"}}',container],{encoding:'utf8'}).trim(),project)
   // pg_isready without -h can succeed against the Unix-only initialization server.
   const ready=execFileSync('docker',['exec',container,'pg_isready','-h','127.0.0.1','-U','postgres','-d','brotar_db'],{encoding:'utf8',stdio:['ignore','pipe','pipe']})
@@ -29,6 +31,6 @@ test('PostgreSQL nuevo: healthy espera TCP final aunque el servidor temporal ace
   // Keep its disposable volume/config; release this test's container/network, never another project.
   let actual=''
   try{actual=execFileSync('docker',['inspect','--format','{{index .Config.Labels "com.docker.compose.project"}}',container],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim()}catch{/* Creation may have failed before a container existed. */}
-  if(actual){assert.equal(actual,project);execFileSync('docker',[...compose,'down'],{timeout:30000,stdio:'pipe'})}
+  if(actual){assert.equal(actual,project);execFileSync('docker',[...compose,'down'],{env:composeEnv,timeout:30000,stdio:'pipe'})}
  }
 })

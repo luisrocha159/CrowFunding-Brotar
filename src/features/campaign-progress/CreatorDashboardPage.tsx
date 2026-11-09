@@ -40,12 +40,12 @@ function CreatorResults({ scope, page, onPage }: { scope: CreatorScope; page: nu
     {data && <>
       <section aria-label="Indicadores de todas las campañas del ámbito"><h2>Resumen de {data.total} {data.total === 1 ? 'campaña' : 'campañas'}</h2>
         <dl className={styles.summary}>{data.states.map(s => <div key={s.status}><dt>{projectStatusNames[s.status] ?? s.status}</dt><dd>{s.count}</dd></div>)}</dl>
-        <div className={styles.grid}>{data.funding.map(f => <div className={styles.card} key={f.currencyCode}><h3>{f.currencyCode}</h3><p>Recaudación real: {f.amountRaised}</p><p>DEMO · sin dinero real: {f.demoAmountRaised}</p></div>)}</div>
+        <div className={styles.grid}>{data.funding.map(f => <div className={styles.card} key={f.currencyCode}><h3>{f.currencyCode}</h3><p>Recaudación real: {f.amountRaised}</p><p>de prueba · sin dinero real: {f.demoAmountRaised}</p></div>)}</div>
       </section>
       {!data.items.length && <p>{data.total ? 'No hay campañas en esta página.' : 'Todavía no tienes campañas disponibles en este ámbito.'}</p>}
       <div className={styles.grid}>{data.items.map(item => <article className={styles.card} key={item.id}>
         <h2>{item.title}</h2><p>{item.organizationName ?? 'Iniciativa personal'} · {projectStatusNames[item.status] ?? item.status}</p>
-        {item.currencyCode ? <><p>{item.currencyCode} {item.amountRaised} reales · {item.fundingPercent}% de la meta</p><p>DEMO: {item.currencyCode} {item.demoAmountRaised} · {item.demoFundingPercent}% de la meta</p><p>Meta: {item.goalAmount ?? 'sin definir'}</p></> : <p>Moneda y meta aún por definir.</p>}
+        {item.currencyCode ? <><p>{item.currencyCode} {item.amountRaised} reales · {item.fundingPercent}% de la meta</p><p>de prueba: {item.currencyCode} {item.demoAmountRaised} · {item.demoFundingPercent}% de la meta</p><p>Meta: {item.goalAmount ?? 'sin definir'}</p></> : <p>Moneda y meta aún por definir.</p>}
         <p>Actividades: {item.activityProgress === null ? 'sin planificación' : `${item.activityProgress}% promedio`} · {item.updateCount} novedades publicadas</p>
         <p>{item.pendingActivities} {item.pendingActivities === 1 ? 'actividad o hito pendiente' : 'actividades o hitos pendientes'} · {item.pendingRewards} {item.pendingRewards === 1 ? 'recompensa pendiente' : 'recompensas pendientes'} · {item.pendingCases} {item.pendingCases === 1 ? 'incidencia abierta' : 'incidencias abiertas'}</p>
         <nav className={styles.actions} aria-label={`Acciones de ${item.title}`}>{creatorActions(item).map(a => <Link key={a.href} to={a.href}>{a.label}</Link>)}</nav>
