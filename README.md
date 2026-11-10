@@ -1,18 +1,50 @@
 # Brotar
 
-Actualización del MVP académico de crowdfunding para **RicardoDev**, 09/11/2026, sobre la entrega DEV del 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+Actualización del MVP académico de crowdfunding para **DEV**, 09/11/2026, sobre la entrega DEV del 30/10/2026. Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
 Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
-Actualización del 09/11/2026 en RicardoDev: presentación sin el rótulo anterior, acceso administrativo desde el perfil y captura de identidad con errores por campo, sin prefijo obligatorio. [Cambios, actualización y condiciones 1.1](docs/ajustes-presentacion-y-verificacion-2026-11-09.md). Integración de este corte con DEV pendiente.
+Actualización del 09/11/2026 en RicardoDev: presentación sin el rótulo anterior, acceso administrativo desde el perfil y captura de identidad con errores por campo, sin prefijo obligatorio. [Cambios, actualización y condiciones 1.1](docs/ajustes-presentacion-y-verificacion-2026-11-09.md). Ese corte se publicó en DEV antes de los nuevos ajustes locales de devoluciones.
 
 También incluye recompensas mediante tarjetas según el importe, opción de aportar sin recompensa, correo del remitente en la revisión privada y QR escaneable que identifica el aporte simulado. [Uso, dependencias y comprobaciones](docs/aportes-verificacion-qr-2026-11-09.md). El método elegido se conserva en el pago y el comprobante. [Mi cuenta por secciones y desembolsos con resumen e historial](docs/ajustes-mi-cuenta-y-desembolsos-2026-11-09.md). El QR no realiza cobros bancarios; no necesita nuevas variables de configuración.
+
+Devoluciones incluidas en esta entrega: cancelación confirmada y meta fallida en todo o nada devuelven el saldo restante del simulador, con historial y sin duplicar importes. Adjuntos privados opcionales, resumen de saldo y acceso a Finanzas separado del personal. [Reglas, instalación y recorrido de prueba](docs/devoluciones-automaticas-y-evidencias-2026-11-09.md). Este ajuste forma parte del paquete de revisión de DEV.
+
+Los paneles administrativos identifican las cuentas vinculadas por nombre y correo, diferenciando solicitante y responsables de decisiones. [Alcance, privacidad y recorrido de disputa](docs/identificacion-cuentas-paneles-2026-11-09.md). Esta ampliación está incluida en la entrega de revisión.
+
+## Revisión de líderes con todos los datos preparados
+
+En una **carpeta nueva**, después de clonar DEV, ejecute desde la raíz:
+
+```powershell
+node scripts/setup-review.mjs
+```
+
+Instala dependencias congeladas, PostgreSQL dedicado en Docker (puerto **15460**), línea base, **43 migraciones**, categorías, permisos, **18 cuentas de los nueve roles y 20 campañas independientes** con aportes, verificación, adjuntos privados, soporte, devolución, disputa, desembolsos y rendiciones listas. No importa la base personal del equipo ni modifica una instalación ordinaria existente.
+
+Después abra dos terminales en la raíz:
+
+```powershell
+node scripts/start-review.mjs backend
+```
+
+```powershell
+node scripts/start-review.mjs frontend
+```
+
+Interfaz: http://127.0.0.1:5173. API: http://127.0.0.1:3000/api/health/ready. Si ya hay otra copia en esos puertos, consulte los argumentos alternativos del manual **antes de preparar la base**.
+
+**[Manual completo PDF](docs/revision-lideres/Manual_Revision_Brotar.pdf)** · [Word editable](docs/revision-lideres/Manual_Revision_Brotar.docx) · [Markdown con credenciales y recorridos](docs/revision-lideres/Manual_Revision_Brotar.md) · [Comprobaciones](docs/revision-lideres/Comprobaciones.md).
+
+El correo de esta instalación usa un **buzón local privado**, sin necesidad de Gmail real: `node scripts/review-mailbox.mjs correopendiente@brotar.test`. Los enlaces de verificación y recuperación mantienen tokens del sistema. SMTP personal queda fuera de Git. Esta opción es una preparación académica local con credenciales sintéticas públicas; no se habilita en producción. **Repetir el preparador conserva los avances**, no reinicia las campañas.
+
+Las instrucciones numeradas siguientes siguen siendo la instalación ordinaria sin datos de revisión. Elija un flujo completo; no mezcle sus pasos ni sobrescriba los .env generados.
 
 ## 1. Qué incluye
 
 Descubrimiento público, cuenta y sesiones, recuperación y verificación de correo, perfiles, organizaciones y representación, KYC/KYB sintético, constructor completo, revisión/corrección/publicación, aportes y comprobantes de prueba, favoritos, avances y recompensas, rendición, ciclo/cierre, desembolsos, devoluciones/disputas, soporte, catálogos, parámetros, permisos y auditoría.
 
-**41 migraciones, 215 rutas HTTP y 73 patrones de rutas de interfaz.** Fuente del estado: [planificación local](docs/planificacion-sprints.json), con el estado de preparación/publicación separado del histórico de Trello. [Entrega final y límites](docs/entrega-final-s3-20-2026-10-29.md).
+**43 migraciones, 219 rutas HTTP y 73 patrones de rutas de interfaz.** Fuente del estado: [planificación local](docs/planificacion-sprints.json), con el estado de preparación/publicación separado del histórico de Trello. [Entrega final y límites](docs/entrega-final-s3-20-2026-10-29.md).
 
 ## 2. Requisitos
 
@@ -73,7 +105,7 @@ node scripts/verify-provisional-v2.mjs
 node scripts/adopt-provisional-v2.mjs activate
 ```
 
-Esperado: **41 migraciones, ninguna pendiente**, catálogo con cinco categorías provisionales activas e inventario válido. install restaura la línea base oficial únicamente para una base nueva; las migraciones y prepare-sprint2 cargan los catálogos/permisos. No ejecutar SQL adicional para las categorías. El healthcheck espera el servidor TCP definitivo de PostgreSQL.
+Esperado: **43 migraciones, ninguna pendiente**, catálogo con cinco categorías provisionales activas e inventario válido. install restaura la línea base oficial únicamente para una base nueva; las migraciones y prepare-sprint2 cargan los catálogos/permisos. No ejecutar SQL adicional para las categorías. El healthcheck espera el servidor TCP definitivo de PostgreSQL.
 
 install genera infra/postgres-v2/.env (administración) y .env.backend (aplicación limitada); activate genera backend/.env. No convertir backend/.env.example en una conexión operativa. El rol de la API es brotar_app, nunca postgres. Se conserva el SHA-256 del SQL oficial y no se sincroniza el esquema con el ORM.
 

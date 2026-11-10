@@ -8,8 +8,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const status = exception instanceof HttpException ? exception.getStatus() : 500
     let message: string | string[] = 'No se pudo completar la solicitud.'
     let missing: { field: string; label: string; step: number }[] | undefined
+    let code: 'PUBLICATION_REQUIREMENTS' | undefined
     if (exception instanceof HttpException && status < 500) {
       const body = exception.getResponse()
+      if (status === 409 && typeof body === 'object' && body !== null && 'code' in body && body.code === 'PUBLICATION_REQUIREMENTS') code = body.code
       if (typeof body === 'string') message = body
       else if ('message' in body &&
         (typeof body.message === 'string' ||
@@ -26,6 +28,6 @@ export class ApiExceptionFilter implements ExceptionFilter {
       }
     }
     // No devolver errores del driver, stack, SQL, payloads o credenciales.
-    response.status(status).json({ statusCode: status, message, ...(missing ? { missing } : {}) })
+    response.status(status).json({ statusCode: status, message, ...(code ? { code } : {}), ...(missing ? { missing } : {}) })
   }
 }

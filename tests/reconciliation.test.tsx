@@ -35,7 +35,7 @@ test('S3-07: fechas, motivos y errores orientan al usuario sin inventar éxito',
 })
 test('S3-07: lectura, resoluciones y pendientes accesibles, escapados y separados del dinero real',()=>{
   const summary=renderToStaticMarkup(<ReconciliationSummary batch={batch} />)
-  for(const label of ['-0,30 BOB','no un saldo disponible','Creado por','Sin cierre registrado'])assert.ok(summary.includes(label),label)
+  for(const label of ['-0,30 BOB','no un saldo disponible','Preparó el lote','Sin cierre registrado'])assert.ok(summary.includes(label),label)
   const readOnly=renderToStaticMarkup(<ReconciliationItems batch={batch} />)
   assert.ok(readOnly.includes('Falta confirmación interna'));assert.ok(readOnly.includes('Referencia del aporte'))
   assert.equal(readOnly.includes('Registrar resolución'),false)
@@ -46,7 +46,7 @@ test('S3-07: lectura, resoluciones y pendientes accesibles, escapados y separado
   const resolved={...batch,items:[{...batch.items[0]!,status:'RESOLVED' as const,resolution:'COMPENSATE_DEMO' as const,reason:'<script>Motivo Ñ & evidencia</script>',resolvedBy:id,resolvedAt:'2026-10-22T12:05:00.000Z',compensationAmount:'0.30'}]}
   assert.ok(reconciliationDetailFrom({...demo,...resolved}))
   const html=renderToStaticMarkup(<ReconciliationItems batch={resolved} />)
-  assert.ok(html.includes('&lt;script&gt;'));assert.equal(html.includes('<script>'),false);assert.ok(html.includes('Responsable'))
+  assert.ok(html.includes('&lt;script&gt;'));assert.equal(html.includes('<script>'),false);assert.ok(html.includes('Resolvió la diferencia'))
   const pending={id,contributionId:id,campaignId:id,campaignTitle:'Prueba <script>Ñ</script>',reference:'BRT-C-00000001',amount:'0.30',currencyCode:'BOB',status:'EXPIRED',createdAt:'2026-10-22T12:00:00.000Z',expiresAt:null,expired:true,needsReview:true}
   const parsed=pendingFrom({...demo,items:[pending],nextCursor:null})
   assert.throws(()=>pendingFrom({...demo,items:[{...pending,amount:0.3}],nextCursor:null}))

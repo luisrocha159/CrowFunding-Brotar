@@ -14,7 +14,7 @@ test('resumen del expediente: etiquetas destacadas, datos separados y condicione
  assert.match(html,/<dt><strong>Nombre<\/strong><\/dt>/);assert.match(html,/<dt><strong>Identificador<\/strong><\/dt>/)
  assert.match(html,/Persona &lt;script&gt;/);assert.match(html,/<details/);assert.match(html,/Aviso original de privacidad/)
  assert.doesNotMatch(html,/Nombre ficticio|Identificador ficticio/)
- assert.match(html,/<dt><strong>Correo del remitente<\/strong><\/dt>/);assert.match(html,/titular@example.invalid/)
+ assert.match(html,/<dt><strong>Cuenta remitente<\/strong><\/dt>/);assert.match(html,/titular@example.invalid/)
 })
 test('revisión KYC frontend conserva contrato, fechas y propiedad sin interpretar fallos como listas vacías',()=>{
  assert.equal(reviewDetailFrom(detail).id,id)

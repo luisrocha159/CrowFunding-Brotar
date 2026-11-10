@@ -3,7 +3,7 @@ import type {EntityManager} from 'typeorm'
 import {recordAudit} from '../../shared/infrastructure/database/audit'
 import {LedgerConflict,obligationState} from '../domain/payment'
 /** Llamador: campaña y pago bloqueados, decisión y cambio financiero en la misma transacción. */
-export async function syncObligationState(m:EntityManager,paymentId:string,actor:string){
+export async function syncObligationState(m:EntityManager,paymentId:string,actor:string|null){
  const[p]=await m.query(`SELECT p.status,p.confirmed_at,p.amount::text,p.contribution_id,
   COALESCE((SELECT sum(r.amount) FROM public.refund r WHERE r.payment_id=p.id AND r.status='REFUNDED'),0)::numeric(14,2)::text AS refunded,
   EXISTS(SELECT 1 FROM public.dispute d LEFT JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id LEFT JOIN public.refund r ON r.id=x.linked_refund_id WHERE d.payment_id=p.id AND (d.status NOT IN ('RESOLVED','CLOSED') OR x.financial_hold OR r.status IN ('REQUESTED','PROCESSING'))) AS disputed FROM public.payment p WHERE p.id=$1`,[paymentId])

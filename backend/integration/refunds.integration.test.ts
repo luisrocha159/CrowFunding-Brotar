@@ -2,6 +2,8 @@ import 'reflect-metadata'
 import {strict as assert} from 'node:assert'
 import {test} from 'node:test'
 import {createHash,randomUUID,randomBytes} from 'node:crypto'
+import {rm} from 'node:fs/promises'
+import {join} from 'node:path'
 import {execFileSync} from 'node:child_process'
 import {NestFactory} from '@nestjs/core'
 import {AppModule} from '../src/app.module'
@@ -16,7 +18,7 @@ test('S3-09 PostgreSQL/HTTP: devolución parcial/total DEMO, autorizaciones, ref
  const config=readDatabaseConfig(process.env);assert.ok(config.enabled && process.env.ALLOW_DB_TEST_WRITES==='true');assert.notEqual(process.env.NODE_ENV,'production')
  const{container}=readTestDatabaseTarget(config),sql=(s:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:s,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim()
  const old=process.env.DEMO_PAYMENTS_ENABLED;process.env.DEMO_PAYMENTS_ENABLED='true'
- const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl(),users:string[]=[],campaignId=randomUUID(),suffix=randomUUID(),password=randomBytes(24).toString('hex')
+ const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl(),users:string[]=[],campaignId=randomUUID(),suffix=randomUUID(),password=randomBytes(24).toString('hex'),files:string[]=[]
  const call=(path:string,cookie='',body?:unknown,method=body===undefined?'GET':'POST')=>fetch(`${base}/api/${path}`,{method,headers:{'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173',Cookie:cookie},...(body===undefined?{}:{body:JSON.stringify(body)})})
  const account=async(role:string)=>{const email=`refund-${users.length}-${suffix}@example.invalid`;const r=await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Ensayo',email,password,demoConsent:true});assert.equal(r.status,201);const{id}=await r.json() as{id:string};users.push(id);if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`);const login=await call('auth/login','',{email,password});assert.equal(login.status,200);return{id,cookie:login.headers.get('set-cookie')!.split(';')[0]!}}
  const budget=()=>{const keys=[...users.map(id=>`account:${id}`),'ip:127.0.0.1'].map(s=>`'${createHash('sha256').update('mvp-case-write:'+s).digest('hex')}'`);sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash IN(${keys.join(',')});`)}
@@ -26,16 +28,42 @@ test('S3-09 PostgreSQL/HTTP: devolución parcial/total DEMO, autorizaciones, ref
   sql(`INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='AUDITOR';INSERT INTO campaign(id,slug,title,campaign_type,creator_user_id,status,published_at,goal_amount,currency_code,starts_at,ends_at) VALUES('${campaignId}','refund-${suffix}','DEMO Devoluciones','DONATION','${creator.id}','PUBLISHED',now(),100,'BOB',now()-interval '1 day',now()+interval '1 day');`)
   const checkout=async(amount:string)=>{const r=await call('demo-payments/checkout',owner.cookie,{campaignId,amount,currencyCode:'BOB',requestKey:randomUUID(),demoConsent:true});assert.equal(r.status,201);const value=await r.json() as{contribution:{id:string;paymentId:string}};assert.equal((await call(`demo-payments/${value.contribution.paymentId}/simulate`,owner.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})).status,200);return value.contribution}
   const paid=await checkout('10.25'),paymentId=paid.paymentId
-  const input={paymentId,amount:'3.10',reasonCode:'SPONSOR_REQUEST',reason:'Solicitud de devolución parcial de prueba, sin dinero real.',requestKey:randomUUID(),demoConsent:true}
+  const readEligibility=async()=>{const r=await call(`me/refunds/payments/${paymentId}/eligibility`,owner.cookie);assert.equal(r.status,200);return r.json() as Promise<{original:string;returned:string;reserved:string;remaining:string;canRequest:boolean;openRefundId:string|null;allowedReasons:string[];blocks:string[]}>}
+  assert.equal((await call(`me/refunds/payments/${paymentId}/eligibility`,other.cookie)).status,404)
+  assert.equal((await call(`me/refunds/payments/${paymentId}/eligibility`)).status,401)
+  assert.deepEqual(await readEligibility().then(v=>[v.original,v.returned,v.reserved,v.remaining,v.canRequest,v.allowedReasons.includes('REWARD_ISSUE')]),['10.25','0.00','0.00','10.25',true,false])
+  const content=Buffer.from('%PDF-1.4\nEvidencia privada sintética\n%%EOF'),uploadInput={visibility:'PRIVATE',purpose:'SUPPORT_EVIDENCE',originalName:'respaldo.pdf',mimeType:'application/pdf',contentBase64:content.toString('base64')}
+  const upload=async(cookie:string,patch={})=>{const r=await call('files',cookie,{...uploadInput,...patch});assert.equal(r.status,201);const f=await r.json() as{id:string};files.push(f.id);return f.id}
+  const evidence=await upload(owner.cookie),foreign=await upload(other.cookie),wrongPurpose=await upload(owner.cookie,{purpose:'ORGANIZATION_DOCUMENT'}),deleted=await upload(owner.cookie)
+  assert.equal((await call(`files/${deleted}`,owner.cookie,undefined,'DELETE')).status,204)
+  assert.equal((await call('files',owner.cookie,{...uploadInput,mimeType:'image/png'})).status,400,'No acepta PDF disfrazado de PNG')
+  assert.equal((await call('files',owner.cookie,{...uploadInput,mimeType:'application/x-msdownload'})).status,400)
+  assert.equal((await call('files',owner.cookie,{...uploadInput,contentBase64:Buffer.concat([Buffer.from('%PDF-'),Buffer.alloc(5*1024*1024)]).toString('base64')})).status,400,'No admite archivos de más de 5 MB')
+  budget()
+  const input={paymentId,amount:'3.10',reasonCode:'SPONSOR_REQUEST',reason:'Solicitud de devolución parcial de prueba, sin dinero real.',requestKey:randomUUID(),demoConsent:true,evidenceFileIds:[evidence]}
   assert.equal((await call('me/refunds','',input)).status,401)
   for(const patch of [{amount:'0'},{amount:3},{amount:'0.001'},{demoConsent:false},{approvedBy:finance.id},{reason:'corto'}])assert.equal((await call('me/refunds',owner.cookie,{...input,...patch})).status,400)
   assert.equal((await call('me/refunds',other.cookie,input)).status,404)
+  for(const evidenceFileIds of [[foreign],[wrongPurpose],[deleted],[randomUUID()],[evidence,evidence],Array.from({length:11},()=>randomUUID())])assert.equal((await call('me/refunds',owner.cookie,{...input,evidenceFileIds,requestKey:randomUUID()})).status,400,'Evidencia privada válida, propia, única y hasta 10 archivos')
+  assert.equal((await call('me/refunds',owner.cookie,{...input,reasonCode:'REWARD_ISSUE',requestKey:randomUUID()})).status,400,'No inventar recompensa en aporte sin recompensa')
+  budget()
   const twins=await Promise.all([call('me/refunds',owner.cookie,input),call('me/refunds',owner.cookie,input)]);assert.deepEqual(twins.map(r=>r.status),[201,201]);let first=await twins[0]!.json() as Refund;assert.equal((await twins[1]!.json() as Refund).id,first.id)
   assert.equal(sql(`SELECT count(*) FROM refund WHERE payment_id='${paymentId}'`),'1')
+  const firstDetail=await(await call(`me/refunds/${first.id}`,owner.cookie)).json() as{evidence:{fileId:string;name:string}[]};assert.deepEqual(firstDetail.evidence,[{fileId:evidence,name:'respaldo.pdf'}])
+  assert.deepEqual(await readEligibility().then(v=>[v.reserved,v.remaining,v.canRequest,v.openRefundId]),['3.10','7.15',false,first.id])
+  for(const [path,cookie,status]of [[`me/refunds/${first.id}/evidence/${evidence}`,owner.cookie,200],[`admin/finance/refunds/${first.id}/evidence/${evidence}`,finance.cookie,200],[`me/refunds/${first.id}/evidence/${evidence}`,other.cookie,404],[`admin/finance/refunds/${first.id}/evidence/${evidence}`,other.cookie,403],[`me/refunds/${first.id}/evidence/${foreign}`,owner.cookie,404],[`files/public/${evidence}`,'',404]] as const){const response=await call(path,cookie);assert.equal(response.status,status,path);if(status===200){assert.equal(response.headers.get('cache-control'),'private, no-store');assert.deepEqual(Buffer.from(await response.arrayBuffer()),content)}}
+  assert.equal((await call(`files/${evidence}`,owner.cookie,undefined,'DELETE')).status,409,'No borrar evidencia vinculada a una solicitud')
+  assert.equal((await call('me/refunds',owner.cookie,{...input,evidenceFileIds:[]})).status,409,'Reintento no cambia las evidencias de una solicitud')
+  assert.equal(sql(`SELECT has_table_privilege('brotar_app','brotar_extension.refund_evidence','UPDATE') OR has_table_privilege('brotar_app','brotar_extension.refund_evidence','DELETE')`),'f')
+
   assert.equal((await call('me/refunds',owner.cookie,{...input,requestKey:randomUUID()})).status,409,'No segunda solicitud activa para el mismo pago')
   assert.equal((await call('me/refunds',owner.cookie,{...input,amount:'4.00'})).status,409,'Misma clave no cambia importe')
   assert.equal((await call(`me/refunds/${first.id}`,other.cookie)).status,404)
   assert.equal((await call(`admin/finance/refunds/${first.id}`,admin.cookie)).status,200)
+  const identified=await(await call(`admin/finance/refunds/${first.id}`,finance.cookie)).json() as{contributorContact:{name:string;email:string};requestedByContact:{email:string};events:{actorContact:{email:string}|null}[]}
+  assert.equal(identified.contributorContact.email,`refund-0-${suffix}@example.invalid`);assert.equal(identified.requestedByContact.email,identified.contributorContact.email);assert.equal(identified.events[0]!.actorContact!.email,identified.contributorContact.email)
+  assert.equal('contributorContact' in firstDetail,false,'La lectura personal no recibe un directorio de contactos internos')
+
   budget()
   const act=(r:Refund,action:string,cookie=finance.cookie,requestKey=randomUUID(),patch={})=>call(`admin/finance/refunds/${r.id}/actions`,cookie,{expectedVersion:r.version,action,reason:'Operación financiera DEMO comprobada con evidencia sintética.',requestKey,demoConsent:true,...patch})
   assert.equal((await act(first,'AUTHORIZE',admin.cookie)).status,403)
@@ -56,10 +84,12 @@ test('S3-09 PostgreSQL/HTTP: devolución parcial/total DEMO, autorizaciones, ref
   assert.equal(sql(`SELECT amount_raised FROM v_campaign_funding WHERE campaign_id='${campaignId}'`),'7.15')
   assert.equal(sql(`SELECT status FROM payment WHERE id='${paymentId}'`),'CONFIRMED')
   assert.equal((await act(first,'COMPLETE_DEMO')).status,409)
+  assert.deepEqual(await readEligibility().then(v=>[v.returned,v.reserved,v.remaining,v.canRequest]),['3.10','0.00','7.15',true])
   budget()
   const remaining=await call('me/refunds',owner.cookie,{...input,amount:'7.15',requestKey:randomUUID()});assert.equal(remaining.status,201);const second=await remaining.json() as Refund
   const p2=await act(second,'AUTHORIZE');assert.equal(p2.status,201);const done2=await act(await p2.json() as Refund,'COMPLETE_DEMO');assert.equal(done2.status,201)
   assert.equal(sql(`SELECT status FROM payment WHERE id='${paymentId}'`),'REFUNDED');assert.equal(sql(`SELECT status FROM contribution WHERE id='${paid.id}'`),'REFUNDED');assert.equal(sql(`SELECT amount_raised FROM v_campaign_funding WHERE campaign_id='${campaignId}'`),'0.00')
+  const emptyBalance=await readEligibility();assert.equal(emptyBalance.remaining,'0.00');assert.equal(emptyBalance.canRequest,false);assert.ok(emptyBalance.blocks.some(v=>v.includes('No queda saldo')));assert.ok(!emptyBalance.blocks.some(v=>v.includes('Solo puedes solicitar')))
   assert.equal((await call(`me/contributions/${paid.id}/receipt`,owner.cookie)).status,409)
   assert.equal((await call(`demo-payments/${paymentId}/simulate`,owner.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})).status,200);assert.equal(sql(`SELECT status FROM payment WHERE id='${paymentId}'`),'REFUNDED','Evento antiguo no reabre pago devuelto')
   await assert.rejects(app.get(ContributionLedger).applyVerifiedEvent({providerId:sql(`SELECT provider_id FROM payment WHERE id='${paymentId}'`),paymentId,eventId:randomUUID(),state:'CONFIRMED',amount:'10.25',currencyCode:'BOB',externalReference:'wrong-after-refund'}),LedgerConflict,'Referencia incompatible sigue rechazada tras devolución total')
@@ -85,7 +115,8 @@ test('S3-09 PostgreSQL/HTTP: devolución parcial/total DEMO, autorizaciones, ref
  }finally{
   await app.close();if(old===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=old
   const fixtureAccounts=sql(`SELECT string_agg(quote_literal(payout_account_id::text),',') FROM disbursement WHERE campaign_id='${campaignId}'`)
-  sql(`DELETE FROM disbursement WHERE campaign_id='${campaignId}';${fixtureAccounts?`DELETE FROM payout_account WHERE id IN(${fixtureAccounts});`:''}DELETE FROM brotar_extension.demo_refund_event WHERE refund_id IN(SELECT r.id FROM refund r JOIN contribution c ON c.id=r.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM brotar_extension.demo_refund WHERE refund_id IN(SELECT r.id FROM refund r JOIN contribution c ON c.id=r.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM refund WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${campaignId}');DELETE FROM brotar_extension.demo_event WHERE payment_id IN(SELECT p.id FROM payment p JOIN contribution c ON c.id=p.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM payment_event WHERE payment_id IN(SELECT p.id FROM payment p JOIN contribution c ON c.id=p.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM payment WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${campaignId}');DELETE FROM contribution WHERE campaign_id='${campaignId}';DELETE FROM campaign WHERE id='${campaignId}';`)
+  sql(`DELETE FROM disbursement WHERE campaign_id='${campaignId}';${fixtureAccounts?`DELETE FROM payout_account WHERE id IN(${fixtureAccounts});`:''}DELETE FROM brotar_extension.demo_refund_event WHERE refund_id IN(SELECT r.id FROM refund r JOIN contribution c ON c.id=r.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM brotar_extension.refund_evidence WHERE refund_id IN(SELECT r.id FROM refund r JOIN contribution c ON c.id=r.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM brotar_extension.demo_refund WHERE refund_id IN(SELECT r.id FROM refund r JOIN contribution c ON c.id=r.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM refund WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${campaignId}');DELETE FROM brotar_extension.demo_event WHERE payment_id IN(SELECT p.id FROM payment p JOIN contribution c ON c.id=p.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM payment_event WHERE payment_id IN(SELECT p.id FROM payment p JOIN contribution c ON c.id=p.contribution_id WHERE c.campaign_id='${campaignId}');DELETE FROM payment WHERE contribution_id IN(SELECT id FROM contribution WHERE campaign_id='${campaignId}');DELETE FROM contribution WHERE campaign_id='${campaignId}';DELETE FROM campaign WHERE id='${campaignId}';`)
+  for(const id of files){sql(`DELETE FROM file_asset WHERE id='${id}';`);for(const purpose of ['SUPPORT_EVIDENCE','ORGANIZATION_DOCUMENT'])await rm(join(process.env.FILE_STORAGE_DIR??join(process.cwd(),'private','files'),purpose,`${id}.bin`),{force:true})}
   for(const id of users)sql(`DELETE FROM audit_log WHERE actor_user_id='${id}';DELETE FROM app_user WHERE id='${id}';`)
  }
 })

@@ -1,14 +1,15 @@
-import { normalizeSupportInput, normalizeSupportReply, supportId, supportPage, SupportInvalid, type SupportInput, type SupportReply, type SupportStatus } from '../domain/support-case'
+import { normalizeReplyEvidence, normalizeSupportInput, normalizeSupportReply, supportId, supportPage, SupportInvalid, type SupportInput, type SupportReply, type SupportStatus } from '../domain/support-case'
 import {textError} from '../../campaigns/domain/input-policy'
 export class SupportMissing extends Error {}
 export class SupportForbidden extends Error {}
 export class SupportCampaignClosed extends Error {}
 export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null; publicReport: boolean }
 export interface SupportSummary { id: string; reference: string; category: string | null; subject: string; status: SupportStatus; createdAt: string; updatedAt: string; campaignId: string | null; contributionId: string | null }
-export interface SupportDetail extends SupportSummary { replyAllowed: boolean; description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }
+export interface SupportEvidence { fileId: string; name: string; mimeType: string }
+export interface SupportDetail extends SupportSummary { replyAllowed: boolean; description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support'; evidence: SupportEvidence[] }[] }
 export interface SupportPage { items: SupportSummary[]; total: number; page: number; pageSize: 20 }
 export interface SupportAdminPage { items: (SupportSummary & { assignedTo: string | null })[]; total: number; page: number; pageSize: 20; assignees: { id: string; label: string }[] }
-export interface SupportAdminDetail extends SupportSummary { description: string; messages: { id: string; body: string; createdAt: string; from: 'reporter' | 'support' }[]; events: { previousStatus: SupportStatus; status: SupportStatus; reason: string; recordedAt: string }[]; evidence: { fileId: string; name: string; mimeType: string }[] }
+export interface SupportAdminDetail extends SupportSummary { description: string; messages: { id: string; body: string; createdAt: string; from: 'reporter' | 'support'; evidence: SupportEvidence[] }[]; events: { previousStatus: SupportStatus; status: SupportStatus; reason: string; recordedAt: string }[]; evidence: { fileId: string; name: string; mimeType: string }[] }
 export interface SupportReceipt { id: string; reference: string; status: SupportStatus; createdAt: string }
 export interface SupportRepository {
   list(userId: string, page: number): Promise<SupportPage>
@@ -18,9 +19,10 @@ export interface SupportRepository {
   reply(userId: string, id: string, input: SupportReply): Promise<void>
   adminList(page: number): Promise<SupportAdminPage>
   adminDetail(id: string): Promise<SupportAdminDetail | null>
-  adminMessage(actor: string, id: string, body: string, requestId: string): Promise<void>
+  adminMessage(actor: string, id: string, body: string, requestId: string, evidenceFileIds?: string[]): Promise<void>
   adminTransition(actor: string, id: string, status: SupportStatus, reason: string): Promise<void>
   adminAssign(actor: string, id: string, assignee: string | null): Promise<void>
+  evidenceOwner(userId: string, id: string, fileId: string): Promise<string>
   adminEvidenceOwner(actor: string, id: string, fileId: string): Promise<string>
 }
 export class SupportCases {
@@ -46,9 +48,9 @@ export class SupportCases {
   }
   adminList(page: unknown) { return this.repository.adminList(supportPage(page)) }
   adminDetail(id: string) { return this.repository.adminDetail(id) }
-  adminMessage(actor: string, id: string, body: unknown, requestId: unknown) {
+  adminMessage(actor: string, id: string, body: unknown, requestId: unknown, evidenceFileIds?: unknown) {
     if (!supportId(requestId) || typeof body !== 'string' || textError(body,1,5000)) throw new SupportInvalid()
-    return this.repository.adminMessage(actor, id, body.trim(),requestId.toLowerCase())
+    return this.repository.adminMessage(actor, id, body.trim(),requestId.toLowerCase(),normalizeReplyEvidence(evidenceFileIds))
   }
   adminTransition(actor: string, id: string, status: unknown, reason: unknown) {
     if (!['IN_PROGRESS','AWAITING_RESPONSE','RESOLVED','CLOSED'].includes(status as string) || typeof reason !== 'string' || textError(reason,10,500)) throw new SupportInvalid()
@@ -58,5 +60,6 @@ export class SupportCases {
     if (assignee !== null && (typeof assignee !== 'string' || !supportId(assignee))) throw new SupportInvalid()
     return this.repository.adminAssign(actor, id, assignee)
   }
+  evidenceOwner(userId: string, id: string, fileId: string) { return this.repository.evidenceOwner(userId, id, fileId) }
   adminEvidenceOwner(actor: string, id: string, fileId: string) { return this.repository.adminEvidenceOwner(actor, id, fileId) }
 }

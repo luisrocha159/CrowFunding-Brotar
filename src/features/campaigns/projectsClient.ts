@@ -1,7 +1,8 @@
+import {accountContactsValid,type AccountFields} from '../../shared/api/accountContact'
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../access/session/sessionClient'
 
-export interface ProjectSummary {
+export interface ProjectSummary extends AccountFields {
   id: string; title: string; summary: string | null; status: string; categoryName: string | null
   goalAmount: string | null; currencyCode: string | null; updatedAt: string; submittedAt: string | null; creatorName: string
 }
@@ -20,7 +21,7 @@ const nullableString = (value: unknown) => value === null || typeof value === 's
 const date = (value: unknown) => typeof value === 'string' && Number.isFinite(Date.parse(value))
 const nullableFields = (value: unknown, keys: string[]) => object(value) && keys.every(key => nullableString(value[key]))
 function summary(value: unknown): ProjectSummary {
-  if (!object(value) || !['id', 'title', 'status', 'creatorName'].every(key => typeof value[key] === 'string')
+  if (!object(value) || !accountContactsValid(value) || !['id', 'title', 'status', 'creatorName'].every(key => typeof value[key] === 'string')
     || !['summary', 'categoryName', 'goalAmount', 'currencyCode'].every(key => nullableString(value[key]))
     || !date(value.updatedAt) || !(value.submittedAt === null || date(value.submittedAt))
     || !Object.hasOwn(projectStatusNames, value.status as string)

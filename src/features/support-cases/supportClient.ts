@@ -11,7 +11,8 @@ const CONTRIBUTION_CATEGORIES = new Set(['UNRECOGNIZED_PAYMENT', 'REFUND_REQUEST
 export const SUPPORT_STATES = { OPEN: 'Abierta', IN_PROGRESS: 'En atención', AWAITING_RESPONSE: 'Esperando respuesta', RESOLVED: 'Resuelta', CLOSED: 'Cerrada' } as const
 export interface SupportContext { campaignId: string; campaignTitle: string; contributionId: string | null; contributionReference: string | null; publicReport: boolean }
 export interface SupportSummary { id: string; reference: string; category: string | null; subject: string; status: keyof typeof SUPPORT_STATES; createdAt: string; updatedAt: string; campaignId: string | null; contributionId: string | null }
-export interface SupportDetail extends SupportSummary { replyAllowed: boolean; description: string; evidence: { fileId: string; name: string; mimeType: string }[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support' }[] }
+export interface SupportEvidence { fileId: string; name: string; mimeType: string }
+export interface SupportDetail extends SupportSummary { replyAllowed: boolean; description: string; evidence: SupportEvidence[]; messages: { id: string; body: string; createdAt: string; from: 'you' | 'support'; evidence?: SupportEvidence[] }[] }
 export interface SupportReceipt { id: string; reference: string; status: keyof typeof SUPPORT_STATES; createdAt: string }
 export interface SupportPage { items: SupportSummary[]; total: number; page: number; pageSize: 20 }
 export interface SupportDraft { category: string; subject: string; description: string; confirmed: boolean }
@@ -19,6 +20,16 @@ export interface SupportInput extends SupportDraft { requestId: string; campaign
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object'
 const uuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 const date = (value: unknown): value is string => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value))
+export function supportEvidenceFrom(value: unknown): SupportEvidence[] {
+  if (!Array.isArray(value) || value.length > 10) throw new SessionError(0)
+  const files = value.map(file => {
+    if (!object(file) || !uuid(file.fileId) || typeof file.name !== 'string' || typeof file.mimeType !== 'string'
+      || !['application/pdf','image/png','image/jpeg','image/webp'].includes(file.mimeType)) throw new SessionError(0)
+    return {fileId:file.fileId,name:file.name,mimeType:file.mimeType}
+  })
+  if (new Set(files.map(file=>file.fileId.toLowerCase())).size !== files.length) throw new SessionError(0)
+  return files
+}
 function receipt(value: unknown): SupportReceipt {
   if (!object(value) || !uuid(value.id) || typeof value.reference !== 'string' || !value.reference || !date(value.createdAt) || typeof value.status !== 'string' || !Object.hasOwn(SUPPORT_STATES, value.status)) throw new SessionError(0)
   return { id: value.id, reference: value.reference, status: value.status as keyof typeof SUPPORT_STATES, createdAt: value.createdAt }
@@ -38,7 +49,7 @@ export function supportDetailFrom(value: unknown): SupportDetail {
   })
   const messages = value.messages.map((message: unknown) => {
     if (!object(message) || !uuid(message.id) || typeof message.body !== 'string' || !date(message.createdAt) || (message.from !== 'you' && message.from !== 'support')) throw new SessionError(0)
-    return { id: message.id, body: message.body, createdAt: message.createdAt, from: message.from as 'you' | 'support' }
+    return { id: message.id, body: message.body, createdAt: message.createdAt, from: message.from as 'you' | 'support', ...(message.evidence === undefined ? {} : {evidence:supportEvidenceFrom(message.evidence)}) }
   })
   return { ...base, replyAllowed:value.replyAllowed, description: value.description, evidence, messages }
 }
@@ -73,13 +84,20 @@ export async function createSupportCase(input: SupportInput, signal?: AbortSigna
   return receipt(await readJson(await requestApi('/api/me/support-cases', { method: 'POST', body: input, signal }, send)))
 }
 export const supportReplyError=(body:string)=>textError(body,20,5000)
-export async function replySupportCase(id:string,requestId:string,body:string,signal?:AbortSignal,send:typeof fetch=fetch):Promise<void>{
-  if(!uuid(id)||!uuid(requestId)||supportReplyError(body))throw new SessionError(400)
-  const data=await readJson(await requestApi(`/api/me/support-cases/${encodeURIComponent(id)}/messages`,{method:'POST',body:{requestId,body:body.trim()},signal},send))
+async function sendReply(staff:boolean,id:string,requestId:string,body:string,evidenceFileIds:string[],signal?:AbortSignal,send:typeof fetch=fetch):Promise<void>{
+  if(!uuid(id)||!uuid(requestId)||textError(body,staff?1:20,5000)||!Array.isArray(evidenceFileIds)||evidenceFileIds.length>10||!evidenceFileIds.every(uuid)||new Set(evidenceFileIds.map(id=>id.toLowerCase())).size!==evidenceFileIds.length)throw new SessionError(400)
+  const data=await readJson(await requestApi(`/api/${staff?'admin':'me'}/support-cases/${encodeURIComponent(id)}/messages`,{method:'POST',body:{requestId,body:body.trim(),...(evidenceFileIds.length?{evidenceFileIds}:{})},signal},send))
   if(!object(data)||data.ok!==true)throw new SessionError(0)
 }
+export function replySupportCase(id:string,requestId:string,body:string,signal?:AbortSignal,send:typeof fetch=fetch,evidenceFileIds:string[]=[]){return sendReply(false,id,requestId,body,evidenceFileIds,signal,send)}
+export function replySupportAsStaff(id:string,requestId:string,body:string,signal?:AbortSignal,send:typeof fetch=fetch,evidenceFileIds:string[]=[]){return sendReply(true,id,requestId,body,evidenceFileIds,signal,send)}
+export function supportFileError(file:File):string|undefined{
+  if(!file.size)return 'El archivo está vacío.'
+  if(file.size>FILE_LIMITS.privateDocumentBytes)return 'Cada archivo puede pesar hasta 5 MB.'
+  if(!['application/pdf','image/png','image/jpeg','image/webp'].includes(file.type))return 'Selecciona archivos PDF, PNG, JPG o WebP.'
+}
 export async function uploadSupportEvidence(file: File, signal?: AbortSignal, send: typeof fetch = fetch) {
-  if (!file.size || file.size > FILE_LIMITS.privateDocumentBytes || !['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new SessionError(400)
+  if (supportFileError(file)) throw new SessionError(400)
   const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ''
   for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192))
   return uploadFile({ visibility: 'PRIVATE', purpose: 'SUPPORT_EVIDENCE', originalName: file.name, mimeType: file.type, contentBase64: btoa(binary) }, signal, send)

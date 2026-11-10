@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../shared/infrastructure/database/account-contacts'
 import { BadRequestException, Controller, Get, Header, Injectable, Module, Query, UseGuards } from '@nestjs/common'
 import { IsIn, IsOptional, IsUUID, Matches } from 'class-validator'
 import { RolesModule } from '../roles/roles.module'
@@ -45,7 +46,7 @@ export class AuditReader {
       AND ($6::date IS NULL OR "occurredAt"<(($6::date+1)::timestamp AT TIME ZONE 'UTC'))
       AND ($7::bigint IS NULL OR id<$7) ORDER BY entries.id DESC LIMIT $8`,
     [query.actorId ?? null,query.entityId ?? null,query.entity ?? null,query.action ?? null,query.from ?? null,query.to ?? null,query.cursor ?? null,Number(query.limit)+1])
-    const items=rows.slice(0,Number(query.limit)).map(row=>({...row,occurredAt:row.occurredAt.toISOString()}))
+    const items=await attachAccountContacts(this.database.connection(),rows.slice(0,Number(query.limit)).map(row=>({...row,occurredAt:row.occurredAt.toISOString()})),{actorContact:'actorId'})
     return {source:query.source,items,nextCursor:rows.length>Number(query.limit)?items.at(-1)!.id:null}
   }
 }

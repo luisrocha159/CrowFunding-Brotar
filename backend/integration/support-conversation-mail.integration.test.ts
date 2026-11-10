@@ -19,7 +19,7 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
  const {container}=readTestDatabaseTarget(cfg),sql=(query:string)=>execFileSync('docker',['exec','-i',container,'psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','brotar_db'],{input:query,encoding:'utf8',stdio:['pipe','pipe','pipe'],timeout:15000}).trim()
  const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}))
  const ip=`support-mail-${randomUUID()}`;app.use((r:object,_s:unknown,next:()=>void)=>{Object.defineProperty(r,'ip',{value:ip});next()});await app.listen(0,'127.0.0.1')
- const base=await app.getUrl(),campaign=randomUUID(),users:{id:string;email:string;cookie:string}[]=[],suffix=randomUUID(),password=randomBytes(24).toString('hex'),mail=app.get(ContactMail),sender=app.get(ContactMailSender)
+ const base=await app.getUrl(),campaign=randomUUID(),users:{id:string;email:string;cookie:string}[]=[],uploadedFiles:string[]=[],suffix=randomUUID(),password=randomBytes(24).toString('hex'),mail=app.get(ContactMail),sender=app.get(ContactMailSender)
  let fail=false,caseId='',raceCase='';const raceContribution=randomUUID(),raceDispute=randomUUID(),delivered:{to:string;subject:string;text:string}[]=[]
  sender.available=()=>true;sender.origin=()=>'http://127.0.0.1:5173';sender.send=async(to,subject,text)=>{if(fail)throw new Error('SMTP test');delivered.push({to,subject,text})}
  const call=(path:string,cookie='',body?:unknown,csrf=true)=>fetch(base+'/api/'+path,{method:body===undefined?'GET':'POST',headers:{Cookie:cookie,Origin:'http://127.0.0.1:5173','Content-Type':'application/json',...(csrf?{'X-Brotar-Request':'1'}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})})
@@ -34,17 +34,29 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
    UPDATE public.app_user SET email_verified_at=clock_timestamp() WHERE id='${owner.id}';
    INSERT INTO brotar_extension.mail_preference(user_id,verified_email,enabled) SELECT id,email,true FROM public.app_user WHERE id='${owner.id}';`)
   const created=await call('me/support-cases',owner.cookie,{requestId:randomUUID(),campaignId:campaign,contributionId:null,category:'INCORRECT_INFORMATION',subject:'DEMO Solicitud de revisión',description:'PRIVADO_NO_ENVIAR: información particular del niño y su campaña.',evidenceFileIds:[],confirmed:true});assert.equal(created.status,201);caseId=(await created.json() as{id:string}).id
+  const upload=async(cookie:string,label:string,purpose='SUPPORT_EVIDENCE')=>{
+   const file=await call('files',cookie,{purpose,visibility:'PRIVATE',originalName:label+'.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nInformación privada '+label).toString('base64')})
+   assert.equal(file.status,201);const{id}=await file.json() as{id:string};uploadedFiles.push(id);return id
+  }
+  const ownerFile=await upload(owner.cookie,'evidencia-titular'),staffFile=await upload(staff.cookie,'respuesta-soporte'),otherFile=await upload(other.cookie,'archivo-ajeno'),wrongPurpose=await upload(owner.cookie,'otro-proposito','VERIFICATION_DOCUMENT')
   const ownPath=`me/support-cases/${caseId}/messages`,staffPath=`admin/support-cases/${caseId}/messages`,statusPath=`admin/support-cases/${caseId}/actions`
-  const body='Confirmo la información solicitada del niño y su campaña; pueden continuar la revisión.',key=randomUUID(),reply={requestId:key,body}
+  const body='Confirmo la información solicitada del niño y su campaña; pueden continuar la revisión.',key=randomUUID(),reply={requestId:key,body,evidenceFileIds:[ownerFile]}
   assert.equal((await call(ownPath,'',reply)).status,401);assert.equal((await call(ownPath,other.cookie,reply)).status,404);assert.equal((await call(ownPath,owner.cookie,reply,false)).status,403)
   for(const patch of [{requestId:null},{body:' '},{body:'x'.repeat(19)},{body:'x'.repeat(5001)},{body:'Respuesta inválida con control \0'},{body:'Respuesta inválida con sustituto \uD800'},{body:'<script>Contenido inválido</script>'},{is_internal:true},{userId:other.id}])assert.equal((await call(ownPath,owner.cookie,{...reply,...patch})).status,400)
+  reset()
+  for(const ids of [[ownerFile,ownerFile],Array(11).fill(ownerFile),['invalid']])assert.equal((await call(ownPath,owner.cookie,{...reply,evidenceFileIds:ids})).status,400)
+  reset()
+  for(const fileId of [otherFile,wrongPurpose,randomUUID()])assert.equal((await call(ownPath,owner.cookie,{...reply,evidenceFileIds:[fileId]})).status,404)
+  assert.equal((await call(staffPath,other.cookie,{requestId:randomUUID(),body:'Respuesta no autorizada',evidenceFileIds:[otherFile]})).status,403)
+  assert.equal((await call(staffPath,staff.cookie,{requestId:randomUUID(),body:'Archivo de otro usuario',evidenceFileIds:[ownerFile]})).status,404)
   reset()
   // La caída de la inserción del aviso revierte también mensaje, estado y clave.
   sql(`CREATE FUNCTION brotar_extension.${trigger}() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN IF NEW.case_id='${caseId}'::uuid THEN RAISE EXCEPTION 'fallo inducido QA'; END IF; RETURN NEW; END$$;
    CREATE TRIGGER ${trigger} BEFORE INSERT ON brotar_extension.support_mail_event FOR EACH ROW EXECUTE FUNCTION brotar_extension.${trigger}();`)
-  const staffKey=randomUUID(),staffReply={requestId:staffKey,body:'PRIVADO_MENSAJE: necesitamos confirmar los datos para continuar la atención.'}
+  const staffKey=randomUUID(),staffReply={requestId:staffKey,body:'PRIVADO_MENSAJE: necesitamos confirmar los datos para continuar la atención.',evidenceFileIds:[staffFile]}
   assert.equal((await call(staffPath,staff.cookie,staffReply)).status,500)
   assert.equal(sql(`SELECT status FROM public.support_case WHERE id='${caseId}'`),'OPEN');assert.equal(sql(`SELECT count(*) FROM public.support_case_message WHERE support_case_id='${caseId}'`),'0');assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_reply_request WHERE case_id='${caseId}'`),'0')
+  assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_reply_evidence WHERE file_id='${staffFile}'`),'0','El fallo revierte también el vínculo del adjunto.')
   sql(`DROP TRIGGER ${trigger} ON brotar_extension.support_mail_event; DROP FUNCTION brotar_extension.${trigger}();`)
   for(const r of await Promise.all([call(staffPath,staff.cookie,staffReply),call(staffPath,staff.cookie,staffReply)]))assert.equal(r.status,200)
   assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_mail_event WHERE case_id='${caseId}'`),'1','Un reintento no crea dos avisos.')
@@ -54,9 +66,31 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
   const detail=await (await call(`me/support-cases/${caseId}`,owner.cookie)).json() as SupportDetail
   assert.equal(detail.status,'IN_PROGRESS');assert.equal(detail.replyAllowed,true);assert.equal(detail.messages.length,2);assert.equal(detail.messages[1]!.from,'you');assert.equal(detail.messages[1]!.body,body)
   assert.equal((await call(ownPath,owner.cookie,{...reply,body:body+' Otro texto.'})).status,409)
+  assert.deepEqual(detail.messages.map(m=>m.evidence.map(f=>f.fileId)),[[staffFile],[ownerFile]])
+  assert.equal((await call(ownPath,owner.cookie,{...reply,evidenceFileIds:[]})).status,409,'La misma clave con otros archivos no es el mismo mensaje.')
+  for(const fileId of [staffFile,ownerFile]){
+   const download=await call(`me/support-cases/${caseId}/evidence/${fileId}`,owner.cookie)
+   assert.equal(download.status,200);assert.equal(download.headers.get('cache-control'),'private, no-store');assert.match(await download.text(),/^%PDF-/)
+   assert.equal((await call(`admin/support-cases/${caseId}/evidence/${fileId}`,staff.cookie)).status,200)
+   assert.equal((await call(`me/support-cases/${caseId}/evidence/${fileId}`,other.cookie)).status,404)
+   assert.equal((await call(`me/support-cases/${randomUUID()}/evidence/${fileId}`,owner.cookie)).status,404)
+  }
+  assert.equal((await call(`me/support-cases/${caseId}/evidence/${staffFile}`)).status,401)
+  assert.equal((await call(`admin/support-cases/${caseId}/evidence/${staffFile}`,other.cookie)).status,403)
+  assert.equal((await call(`me/support-cases/${caseId}/evidence/${otherFile}`,owner.cookie)).status,404)
+  const deletion=await fetch(base+`/api/files/${ownerFile}`,{method:'DELETE',headers:{Cookie:owner.cookie,Origin:'http://127.0.0.1:5173','X-Brotar-Request':'1'}})
+  assert.equal(deletion.status,409,'Una evidencia ya compartida no se puede borrar desde archivos.')
+  assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_reply_evidence WHERE file_id IN ('${ownerFile}','${staffFile}')`),'2','Reintentar no duplica adjuntos.')
+
+  const sponsor=await call('me/sponsor-summary',owner.cookie)
+  assert.equal(sponsor.status,200);const sponsorSummary=await sponsor.json() as {openSupportCases:number};assert.ok(sponsorSummary.openSupportCases>=1)
   const admin=await (await call(`admin/support-cases/${caseId}`,staff.cookie)).json() as SupportAdminDetail
   assert.deepEqual(admin.messages.map(m=>m.from),['support','reporter']);assert.equal(admin.events.at(-1)!.status,'IN_PROGRESS')
-  sql(`INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES('${caseId}','${staff.id}','NOTA_INTERNA_NO_ENVIAR',true);`)
+  const internalFile=await upload(staff.cookie,'documento-interno')
+  const internalMessage=sql(`INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES('${caseId}','${staff.id}','NOTA_INTERNA_NO_ENVIAR',true) RETURNING id;`).split('\n')[0]!
+  sql(`INSERT INTO brotar_extension.support_reply_evidence(message_id,file_id,display_order) VALUES('${internalMessage}','${internalFile}',0);`)
+  assert.equal((await call(`me/support-cases/${caseId}/evidence/${internalFile}`,owner.cookie)).status,404,'Los adjuntos internos no se comparten con el titular.')
+  assert.equal((await call(`admin/support-cases/${caseId}/evidence/${internalFile}`,staff.cookie)).status,404,'La descarga compartida tampoco expone notas internas.')
   assert.ok(!JSON.stringify(await (await call(`me/support-cases/${caseId}`,owner.cookie)).json()).includes('NOTA_INTERNA_NO_ENVIAR'))
   assert.equal(sql(`SELECT count(*) FROM brotar_extension.support_mail_event WHERE case_id='${caseId}'`),'2','El titular no se envía un correo a sí mismo.')
   await Promise.all([mail.collect(),mail.collect()]);const notices=()=>mail.notices(owner.id)
@@ -66,7 +100,7 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
   fail=true;await mail.tick();assert.equal(sql(`SELECT count(*) FROM brotar_extension.mail_delivery d JOIN public.notification n ON n.id=d.notification_id WHERE n.entity_id='${caseId}' AND d.result='RETRY' AND d.attempts=1`),'2')
   sql(`UPDATE brotar_extension.mail_delivery SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE notification_id IN(SELECT id FROM public.notification WHERE entity_id='${caseId}');`)
   fail=false;await mail.tick();const sent=delivered.filter(m=>m.to===owner.email);assert.equal(sent.length,2);await mail.tick();assert.equal(delivered.filter(m=>m.to===owner.email).length,2)
-  for(const m of sent){assert.ok(m.text.includes(`/mis-incidencias/${caseId}`));assert.doesNotMatch(m.text,/PRIVADO_NO_ENVIAR|PRIVADO_MENSAJE|NOTA_INTERNA_NO_ENVIAR/)}
+  for(const m of sent){assert.ok(m.text.includes(`/mis-incidencias/${caseId}`));assert.doesNotMatch(m.text,/PRIVADO_NO_ENVIAR|PRIVADO_MENSAJE|NOTA_INTERNA_NO_ENVIAR|respuesta-soporte\.pdf|evidencia-titular\.pdf|documento-interno/)}
   reset()
   assert.equal((await call(statusPath,staff.cookie,{status:'RESOLVED',reason:'La información fue revisada y el caso quedó resuelto.'})).status,200);await mail.collect();await mail.preference(owner.id,false);await mail.tick()
   assert.equal((await notices()).find(n=>n.entityName==='SUPPORT_CASE')!.delivery,'CANCELLED','Cancelar el aviso si se retira la preferencia antes de enviar.')
@@ -100,6 +134,7 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
   sql(`DELETE FROM public.status_history WHERE entity_type='DISPUTE' AND entity_id='${raceDispute}';DELETE FROM public.dispute WHERE id='${raceDispute}';DELETE FROM public.contribution WHERE id='${raceContribution}';`)
   for(const c of [caseId,raceCase].filter(Boolean))sql(`DELETE FROM brotar_extension.support_case_event WHERE case_id='${c}';DELETE FROM brotar_extension.support_case_context WHERE case_id='${c}';DELETE FROM public.support_case WHERE id='${c}';`)
   sql(`DELETE FROM public.status_history WHERE entity_type='CAMPAIGN' AND entity_id='${campaign}';DELETE FROM public.campaign WHERE id='${campaign}';`)
+  if(uploadedFiles.length)sql(`DELETE FROM public.file_asset WHERE id=ANY(ARRAY[${uploadedFiles.map(id=>"'"+id+"'").join(',')}]::uuid[]);`)
   for(const u of users)sql(`DELETE FROM public.audit_log WHERE actor_user_id='${u.id}';DELETE FROM public.app_user WHERE id='${u.id}';`)
   if(users.length)reset()
  }

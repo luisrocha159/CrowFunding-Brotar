@@ -1,10 +1,11 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import { Injectable } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { ProjectConflict, ProjectMissing, type ProjectDetail, type ProjectRepository, type ProjectSummary } from '../application/projects'
 import { recordAudit } from '../../shared/infrastructure/database/audit'
 
-const SUMMARY = `SELECT c.id, c.title, c.summary, c.status, cat.name AS "categoryName",
+const SUMMARY = `SELECT c.id,c.creator_user_id AS "ownerId", c.title, c.summary, c.status, cat.name AS "categoryName",
   c.goal_amount::text AS "goalAmount", c.currency_code AS "currencyCode",
   c.updated_at AS "updatedAt", c.submitted_at AS "submittedAt",
   concat_ws(' ', p.first_name, p.last_name) AS "creatorName"
@@ -19,10 +20,11 @@ export class TypeormProjectRepository implements ProjectRepository {
     return this.database.connection().query(`${SUMMARY}
       WHERE c.creator_user_id=$1 AND c.deleted_at IS NULL ORDER BY c.updated_at DESC, c.id`, [userId])
   }
-  reviewQueue(): Promise<ProjectSummary[]> {
+  async reviewQueue(): Promise<ProjectSummary[]> {
     // PENDING_VERIFICATION no se equipara a revisión: KYC queda fuera de esta cola.
-    return this.database.connection().query(`${SUMMARY}
+    const rows=await this.database.connection().query(`${SUMMARY}
       WHERE c.status IN ('IN_REVIEW','APPROVED') AND c.deleted_at IS NULL ORDER BY c.submitted_at ASC NULLS LAST, c.id`)
+    return attachAccountContacts(this.database.connection(),rows,{ownerContact:'ownerId'})
   }
   findOwn(userId: string, id: string) {
     return this.detail(`${SUMMARY} WHERE c.id=$1 AND c.creator_user_id=$2 AND c.deleted_at IS NULL`, [id, userId])

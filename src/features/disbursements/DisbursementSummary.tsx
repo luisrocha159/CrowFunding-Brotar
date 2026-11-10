@@ -1,3 +1,4 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import {Link} from 'react-router-dom'
 import {totalMoney,totalDecimal} from '../../../backend/src/contributions/domain/payment'
 import type {DisbursementContact,DisbursementDetail} from './disbursementClient'
@@ -38,7 +39,7 @@ export function DisbursementSummary({detail:d,administrative}:{detail:Disburseme
 export function DisbursementHistory({detail:d}:{detail:DisbursementDetail}){
  const actions:Record<string,string>={REQUEST:'Solicitud registrada',AUTHORIZE:'Desembolso autorizado',REJECT:'Solicitud rechazada',PROCESS_DEMO:'Procesamiento iniciado',COMPLETE_DEMO:'Desembolso completado',FAIL_DEMO:'Fallo registrado'}
  return <section className={styles.summary} aria-labelledby="disbursement-history"><header className={styles.historyHeader}><h2 id="disbursement-history">Historial del desembolso</h2><p>Las decisiones y los cambios de estado de esta solicitud.</p></header>{d.events.length?<ol className={styles.timeline}>{d.events.map(e=>{
-  const contact=e.actorId===d.requestedBy?d.requestedByContact:e.actorId===d.authorizedBy?d.authorizedByContact:e.actorId===d.executedBy?d.executedByContact:null
-  return <li key={e.id}><h3>{actions[e.action]??'Cambio de estado'}</h3><time dateTime={e.at}>{dateLabel(e.at)}</time><p>{e.reason}</p>{e.actorId&&<><Person contact={contact} id={e.actorId} empty="Sin responsable"/><details><summary>Identificador del responsable</summary><code>{e.actorId}</code></details></>}</li>
+  const contact=e.actorContact??(e.actorId===d.requestedBy?d.requestedByContact:e.actorId===d.authorizedBy?d.authorizedByContact:e.actorId===d.executedBy?d.executedByContact:null)
+  return <li key={e.id}><h3>{actions[e.action]??'Cambio de estado'}</h3><time dateTime={e.at}>{dateLabel(e.at)}</time><p>{e.reason}</p>{e.actorId&&<><AccountIdentity contact={contact} empty="Cuenta no disponible"/><details><summary>Identificador del responsable</summary><code>{e.actorId}</code></details></>}</li>
  })}</ol>:<p className={styles.help}>No hay eventos registrados en esta consulta.</p>}</section>
 }

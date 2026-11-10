@@ -626,6 +626,19 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/finance/refunds/:id/evidence/:fileId",
+      "controller": "RefundAdministrationController",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.read"
+      ]
+    },
+    {
+      "method": "GET",
       "path": "/api/admin/support-cases",
       "controller": "SupportAdministrationController",
       "handler": "list",
@@ -2520,6 +2533,32 @@
     },
     {
       "method": "GET",
+      "path": "/api/me/refunds/:id/evidence/:fileId",
+      "controller": "OwnRefundController",
+      "handler": "evidence",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/refunds/payments/:id/eligibility",
+      "controller": "OwnRefundController",
+      "handler": "eligibility",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.read.own"
+      ]
+    },
+    {
+      "method": "GET",
       "path": "/api/me/representation-requests",
       "controller": "RepresentationController",
       "handler": "list",
@@ -2659,6 +2698,19 @@
       "path": "/api/me/support-cases/:id",
       "controller": "SupportCaseController",
       "handler": "detail",
+      "guards": [
+        "RoleGuard"
+      ],
+      "roles": [
+        "REGISTERED_USER"
+      ],
+      "permissions": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/support-cases/:id/evidence/:fileId",
+      "controller": "SupportCaseController",
+      "handler": "evidence",
       "guards": [
         "RoleGuard"
       ],

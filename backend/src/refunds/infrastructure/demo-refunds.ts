@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {Injectable,ForbiddenException,NotFoundException} from '@nestjs/common'
 import type {EntityManager} from 'typeorm'
 import {randomUUID} from 'node:crypto'
@@ -7,13 +8,14 @@ import {recordAudit,setAuditActor} from '../../shared/infrastructure/database/au
 import {decimal,LedgerConflict,LedgerInvalid,money,uuid} from '../../contributions/domain/payment'
 import {assertDemoEnabled,demoProvider,lockDemo} from '../../demo-payments/infrastructure/demo-payments'
 import {digest,reason,requestKey} from '../../demo-payments/domain/demo'
-import {availableRefund,refundReasons,refundTransition} from '../domain/refund'
+import {availableRefund,automaticRefundReason,refundReasons,refundTransition} from '../domain/refund'
 import {syncObligationState} from '../../contributions/infrastructure/payment-obligations'
-export interface RefundRequest {paymentId:string;amount:string;reasonCode:string;reason:string;requestKey:string;demoConsent:true;disputeId?:string}
+import {refundEligibility} from './refund-eligibility'
+export interface RefundRequest {paymentId:string;amount:string;reasonCode:string;reason:string;requestKey:string;demoConsent:true;disputeId?:string;evidenceFileIds?:string[]}
 export interface RefundAction {action:string;reason:string;requestKey:string;expectedVersion:number;demoConsent:true}
-const refundProjection=`r.id,r.payment_id AS "paymentId",r.contribution_id AS "contributionId",c.campaign_id AS "campaignId",ca.title AS "campaignTitle",c.reference_code AS "contributionReference",
+const refundProjection=`r.id,r.payment_id AS "paymentId",r.contribution_id AS "contributionId",c.campaign_id AS "campaignId",ca.title AS "campaignTitle",c.reference_code AS "contributionReference",c.user_id AS "contributorId",
  r.amount::text,trim(r.currency_code) AS "currencyCode",r.status,r.reason_code AS "reasonCode",r.reason_detail AS reason,r.requested_by AS "requestedBy",r.approved_by AS "approvedBy",r.external_reference AS "externalReference",
- r.requested_at AS "createdAt",r.processed_at AS "processedAt",r.completed_at AS "completedAt",r.failure_message AS "failureMessage",x.version,x.dispute_id AS "disputeId"`
+ r.requested_at AS "createdAt",r.processed_at AS "processedAt",r.completed_at AS "completedAt",r.failure_message AS "failureMessage",x.version,x.dispute_id AS "disputeId",CASE WHEN r.provider_payload->>'automaticSource' IN ('PROJECT_CANCELLED','GOAL_NOT_REACHED') THEN r.provider_payload->>'automaticSource' ELSE NULL END AS "automaticSource"`
 const refundJoin=`FROM public.refund r JOIN brotar_extension.demo_refund x ON x.refund_id=r.id JOIN public.contribution c ON c.id=r.contribution_id JOIN public.campaign ca ON ca.id=c.campaign_id`
 
 /** Se bloquea primero la campaña en todas las operaciones financieras de este flujo. */
@@ -37,7 +39,7 @@ export class DemoRefunds {
    const where=`WHERE ($1::boolean OR c.user_id=$2) AND ($3::text IS NULL OR r.status::text=$3)`,args=[administrative,actor,status??null]
    const [count]=await m.query(`SELECT count(*)::int AS total ${refundJoin} ${where}`,args)
    const items=await m.query(`SELECT ${refundProjection} ${refundJoin} ${where} ORDER BY r.requested_at DESC,r.id DESC LIMIT 20 OFFSET $4`,[...args,(page-1)*20])
-   return{mode:'DEMO',items,total:count.total,page,pageSize:20}
+   return{mode:'DEMO',items:administrative?await attachAccountContacts(m,items,{contributorContact:'contributorId',requestedByContact:'requestedBy',approvedByContact:'approvedBy'}):items,total:count.total,page,pageSize:20}
   })
  }
  async detail(actor:string,id:string,administrative=false){assertDemoEnabled();uuid(id)
@@ -46,13 +48,21 @@ export class DemoRefunds {
    const [row]=await m.query(`SELECT ${refundProjection} ${refundJoin} WHERE r.id=$1 AND ($2::boolean OR c.user_id=$3)`,[id,administrative,actor])
    if(!row)throw new NotFoundException('Devolución no disponible.')
    const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.demo_refund_event WHERE refund_id=$1 ORDER BY recorded_at,id`,[id])
-   return{mode:'DEMO',...row,events}
+   const evidence=await m.query(`SELECT f.id AS "fileId",f.file_name AS name FROM brotar_extension.refund_evidence e JOIN public.file_asset f ON f.id=e.file_id JOIN public.contribution c ON c.id=$2 WHERE e.refund_id=$1 AND f.uploaded_by=c.user_id AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL ORDER BY e.display_order`,[id,row.contributionId])
+   const[identified]=administrative?await attachAccountContacts(m,[row],{contributorContact:'contributorId',requestedByContact:'requestedBy',approvedByContact:'approvedBy'}):[row]
+   return{mode:'DEMO',...identified,events:administrative?await attachAccountContacts(m,events,{actorContact:'actorId'}):events,evidence}
   })
  }
+ async eligibility(actor:string,paymentId:string){assertDemoEnabled();uuid(paymentId);return this.database.connection().transaction('REPEATABLE READ',async m=>{await transactionAccess(m,actor,'contribution.read.own');return refundEligibility(m,actor,paymentId)})}
+ async evidenceOwner(actor:string,id:string,fileId:string,admin:boolean){assertDemoEnabled();uuid(id);uuid(fileId);return this.database.connection().transaction(async m=>{await transactionAccess(m,actor,admin?'finance.read':'contribution.read.own');const[row]=await m.query(`SELECT f.uploaded_by FROM brotar_extension.refund_evidence e JOIN public.refund r ON r.id=e.refund_id JOIN public.contribution c ON c.id=r.contribution_id JOIN public.file_asset f ON f.id=e.file_id WHERE r.id=$1 AND f.id=$2 AND ($3::boolean OR c.user_id=$4) AND f.uploaded_by=c.user_id AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL`,[id,fileId,admin,actor]);if(!row)throw new NotFoundException('Evidencia no disponible.');return row.uploaded_by as string})}
  async request(actor:string,input:RefundRequest){assertDemoEnabled();uuid(input.paymentId);if(input.disputeId)uuid(input.disputeId);requestKey(input.requestKey);const amount=decimal(money(input.amount)),why=reason(input.reason)
   if(input.demoConsent!==true || !refundReasons.includes(input.reasonCode as typeof refundReasons[number]))throw new LedgerInvalid('Confirma el ensayo e indica un motivo admitido.')
   if(Boolean(input.disputeId)!==(input.reasonCode==='DISPUTE_RESOLUTION'))throw new LedgerInvalid('Una resolución requiere la referencia de su disputa.')
-  const key=digest(`refund-request:${actor}:${input.requestKey.toLowerCase()}`),hash=digest(JSON.stringify([input.paymentId.toLowerCase(),amount,input.reasonCode,why,input.disputeId??null]))
+  const rawEvidence=input.evidenceFileIds??[]
+  if(!Array.isArray(rawEvidence)||rawEvidence.some(f=>typeof f!=='string'))throw new LedgerInvalid('Archivos inválidos.')
+  const evidence=rawEvidence.map(f=>f.toLowerCase())
+  if(!Array.isArray(evidence)||evidence.length>10||new Set(evidence).size!==evidence.length)throw new LedgerInvalid('Adjunta hasta 10 archivos distintos.');for(const file of evidence)uuid(file)
+  const key=digest(`refund-request:${actor}:${input.requestKey.toLowerCase()}`),hash=digest(JSON.stringify([input.paymentId.toLowerCase(),amount,input.reasonCode,why,input.disputeId??null,...(evidence.length?[evidence]:[])]))
   const id=await this.database.connection().transaction(async m=>{
    await lockDemo(m);await transactionAccess(m,actor,'contribution.write.own')
    const [old]=await m.query('SELECT refund_id,request_hash FROM brotar_extension.demo_refund WHERE request_key=$1',[key])
@@ -61,9 +71,12 @@ export class DemoRefunds {
    const [target]=await m.query(`SELECT c.campaign_id FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[input.paymentId,actor,provider])
    if(!target)throw new NotFoundException('Pago no disponible para devolución de prueba.')
    await m.query('SELECT id FROM public.campaign WHERE id=$1 FOR UPDATE',[target.campaign_id])
-   const [p]=await m.query(`SELECT p.id,p.amount::text,trim(p.currency_code) AS currency,p.status,p.confirmed_at,c.id AS contribution_id,ca.status AS campaign_status,ca.funding_model,f.amount_raised::text,ca.goal_amount::text
+   const [p]=await m.query(`SELECT p.id,p.amount::text,trim(p.currency_code) AS currency,p.status,p.confirmed_at,c.id AS contribution_id,ca.status AS campaign_status,ca.funding_model,f.amount_raised::text,ca.goal_amount::text,c.reward_id,(SELECT outcome FROM brotar_extension.campaign_cycle WHERE campaign_id=ca.id) AS outcome
       FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id JOIN public.campaign ca ON ca.id=c.campaign_id JOIN public.v_campaign_funding f ON f.campaign_id=ca.id WHERE p.id=$1 FOR UPDATE OF p,c`,[input.paymentId])
    await transactionAccess(m,actor,'contribution.write.own')
+   if(automaticRefundReason(p.campaign_status,p.funding_model,p.outcome))throw new LedgerConflict('Esta campaña devuelve automáticamente el saldo restante; consulta tus devoluciones.')
+   if(input.reasonCode==='REWARD_ISSUE'&&!p.reward_id)throw new LedgerInvalid('Este aporte no tiene una recompensa asociada.')
+   for(const file of evidence){const[f]=await m.query(`SELECT id FROM public.file_asset WHERE id=$1 AND uploaded_by=$2 AND scope='PRIVATE' AND storage_key LIKE 'SUPPORT_EVIDENCE/%' AND deleted_at IS NULL FOR SHARE`,[file,actor]);if(!f)throw new LedgerInvalid('Una evidencia no pertenece a tu cuenta o no es un archivo privado disponible.')}
    let linked:{id:string;recommended_amount:string}|undefined
    if(input.disputeId){[linked]=await m.query(`SELECT d.id,x.recommended_amount::text FROM public.dispute d JOIN brotar_extension.demo_dispute x ON x.dispute_id=d.id WHERE d.id=$1 AND d.payment_id=$2 AND d.raised_by=$3 AND d.status='RESOLVED' AND x.resolution_code='REFUND_RECOMMENDED' AND x.financial_hold AND x.linked_refund_id IS NULL FOR UPDATE OF d,x`,[input.disputeId,input.paymentId,actor]);if(!linked || money(linked.recommended_amount)!==money(amount))throw new LedgerConflict('La devolución debe coincidir con la recomendación vigente de tu disputa.')}
    if(!p.confirmed_at || p.status!=='CONFIRMED' && !(linked && p.status==='DISPUTED'))throw new LedgerConflict('Solo un pago de prueba confirmado o su resolución autorizable admite esta solicitud.')
@@ -75,6 +88,7 @@ export class DemoRefunds {
    const refundId=randomUUID();await setAuditActor(m,actor)
    await m.query(`INSERT INTO public.refund(id,payment_id,contribution_id,amount,currency_code,reason_code,reason_detail,requested_by,provider_payload) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'{"mode":"DEMO"}')`,[refundId,input.paymentId,p.contribution_id,amount,p.currency,input.reasonCode,why,actor])
    await m.query('INSERT INTO brotar_extension.demo_refund(refund_id,request_key,request_hash,dispute_id) VALUES($1,$2,$3,$4)',[refundId,key,hash,linked?.id??null])
+   for(const[index,file]of evidence.entries())await m.query('INSERT INTO brotar_extension.refund_evidence(refund_id,file_id,display_order) VALUES($1,$2,$3)',[refundId,file,index])
    if(linked)await m.query('UPDATE brotar_extension.demo_dispute SET financial_hold=false,linked_refund_id=$2,version=version+1 WHERE dispute_id=$1',[linked.id,refundId])
    await this.event(m,refundId,actor,'REQUEST',null,'REQUESTED',key,hash,why);await recordAudit(m,actor,'CREATE','refund',refundId);return refundId
   })

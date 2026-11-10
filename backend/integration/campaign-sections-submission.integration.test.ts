@@ -259,6 +259,16 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     for (const body of [{ confirmed: false, expectedRound: 3 }, { confirmed: 'true', expectedRound: 3 }, { confirmed: true, expectedRound: 3, role: 'ADMIN' }]) assert.equal((await call(`${adminPath}/publish`, admin.cookie, body)).status, 400)
     assert.equal((await call(`${adminPath}/publish`, creator.cookie, { confirmed: true, expectedRound: 3 })).status, 403)
     assert.equal((await call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 2 })).status, 409)
+    // La aprobación editorial no sustituye la vigencia de la identidad al publicar.
+    sql(`UPDATE verification SET expires_at=now()-interval '1 day' WHERE user_id='${creator.id}' AND status='APPROVED';`)
+    const blockedPublication = await call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 3 })
+    assert.equal(blockedPublication.status, 409)
+    const prerequisite = await blockedPublication.json() as { code: string; message: string }
+    assert.equal(prerequisite.code, 'PUBLICATION_REQUIREMENTS')
+    assert.match(prerequisite.message, /verificación de identidad aprobada y vigente de la cuenta creadora/)
+    assert.equal(sql(`SELECT status || ':' || (published_at IS NULL)::text FROM campaign WHERE id='${id}';`), 'APPROVED:true')
+    assert.equal(sql(`SELECT count(*) FROM status_history WHERE entity_id='${id}' AND to_status='PUBLISHED';`), '0')
+    sql(`UPDATE verification SET expires_at=NULL WHERE user_id='${creator.id}' AND status='APPROVED';`)
     const publication = await Promise.all([call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 3 }), call(`${adminPath}/publish`, admin.cookie, { confirmed: true, expectedRound: 3 })])
     assert.deepEqual(publication.map(response => response.status).sort(), [200, 409])
     assert.equal(sql(`SELECT count(*) FROM status_history WHERE entity_id='${id}' AND to_status='PUBLISHED' AND changed_by='${admin.id}';`), '1')

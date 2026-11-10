@@ -1,0 +1,19 @@
+﻿correo,contrasena,nombre,roles,funcion
+administrador@brotar.test,administrador1234567890,Ana Administración,"REGISTERED_USER,ADMIN","Publicación, permisos, catálogos y cierre del ciclo"
+revisor@brotar.test,revisor1234567890,Renato Revisión,"REGISTERED_USER,REVIEWER",Revisar campañas e informes sin operar finanzas
+cumplimiento@brotar.test,cumplimiento1234567890,Carla Cumplimiento,"REGISTERED_USER,COMPLIANCE",Revisar identidad y organización
+finanzas@brotar.test,finanzas1234567890,Fabiola Finanzas,"REGISTERED_USER,FINANCE","Conciliación, devoluciones y desembolsos"
+soporte@brotar.test,soporte1234567890,Sofía Soporte,"REGISTERED_USER,SUPPORT","Incidencias, adjuntos y disputas"
+auditor@brotar.test,auditor1234567890,Andrés Auditoría,"REGISTERED_USER,AUDITOR",Consulta autorizada sin escritura
+creador@brotar.test,creador1234567890,Camila Creadora,"REGISTERED_USER,CREATOR","Campañas, ejecución y rendición; identidad aprobada"
+patrocinador@brotar.test,patrocinador1234567890,Pablo Patrocinador,"REGISTERED_USER,SPONSOR",Aportes y casos precargados del patrocinador
+usuario@brotar.test,usuario1234567890,Úrsula Usuario,REGISTERED_USER,Usuario normal sin privilegios internos ni de creador
+organizacion@brotar.test,organizacion1234567890,Olivia Organización,"REGISTERED_USER,CREATOR",Titular de la organización de prueba y su campaña
+miembro@brotar.test,miembro1234567890,Marcos Miembro,REGISTERED_USER,Miembro institucional sin permisos de plataforma
+invitacion@brotar.test,invitacion1234567890,Inés Invitada,REGISTERED_USER,Tiene una invitación institucional por aceptar
+identidadpendiente@brotar.test,identidadpendiente1234567890,Iván Identidad,"REGISTERED_USER,CREATOR",Expediente de identidad enviado pendiente de revisión
+observaciones@brotar.test,observaciones1234567890,Óscar Observaciones,"REGISTERED_USER,CREATOR",Identidad con cambios solicitados para corregir y reenviar
+correopendiente@brotar.test,correopendiente1234567890,Cora Correo,REGISTERED_USER,Correo sin verificar; probar enlace en el buzón privado local
+restringido@brotar.test,restringido1234567890,Rita Restringida,REGISTERED_USER,Cuenta restringida para probar denegación y rehabilitación
+creadorajeno@brotar.test,creadorajeno1234567890,Cristian Creador,"REGISTERED_USER,CREATOR",Creador diferente para probar propiedad y acceso ajeno
+auditorcombinado@brotar.test,auditorcombinado1234567890,Alicia Auditoría,"REGISTERED_USER,ADMIN,AUDITOR",Comprueba que AUDITOR conserva solo lectura incluso con ADMIN

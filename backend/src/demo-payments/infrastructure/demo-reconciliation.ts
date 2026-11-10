@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { LedgerConflict, LedgerInvalid, money, uuid } from '../../contributions/domain/payment'
@@ -39,7 +40,7 @@ export class DemoReconciliation {
     if (!(await manager.query('SELECT code FROM public.currency WHERE code=$1',[input.currencyCode])).length) throw new LedgerInvalid('Moneda inexistente en el catálogo.')
     // El marcador puede haber dejado de estar pendiente entre páginas; conserva su posición.
     if (input.cursor && !(await manager.query('SELECT id FROM public.payment WHERE id=$1 AND provider_id=$2 AND currency_code=$3',[input.cursor,providerId,input.currencyCode])).length) throw new LedgerConflict('Marcador de pendientes no disponible.')
-    const rows=await manager.query(`SELECT p.id,p.contribution_id AS "contributionId",c.reference_code AS reference,
+    const rows=await manager.query(`SELECT p.id,c.user_id AS "sponsorId",p.contribution_id AS "contributionId",c.reference_code AS reference,
       c.campaign_id AS "campaignId",camp.title AS "campaignTitle",p.amount::text,trim(p.currency_code) AS "currencyCode",
       p.status,p.created_at AS "createdAt",p.expires_at AS "expiresAt",COALESCE(p.expires_at<=now(),false) AS expired,
       EXISTS(SELECT 1 FROM brotar_extension.demo_event e WHERE e.payment_id=p.id AND e.processing IN ('NEEDS_REVIEW','RECEIVED')) AS "needsReview"
@@ -49,7 +50,7 @@ export class DemoReconciliation {
       AND (p.status IN ('INITIATED','PENDING') OR EXISTS(SELECT 1 FROM brotar_extension.demo_event e WHERE e.payment_id=p.id AND e.processing IN ('NEEDS_REVIEW','RECEIVED')))
       AND ($5::uuid IS NULL OR (p.created_at,p.id)<(SELECT created_at,id FROM public.payment WHERE id=$5))
       ORDER BY p.created_at DESC,p.id DESC LIMIT $6`,[providerId,input.currencyCode,input.from,input.to,input.cursor ?? null,input.limit+1])
-    return {mode:'DEMO',label:DEMO_LABEL,items:rows.slice(0,input.limit),nextCursor:rows.length>input.limit?rows[input.limit-1].id:null}
+    return {mode:'DEMO',label:DEMO_LABEL,items:await attachAccountContacts(manager,rows.slice(0,input.limit),{sponsorContact:'sponsorId'}),nextCursor:rows.length>input.limit?rows[input.limit-1].id:null}
   }
 
   private async records(manager: EntityManager,providerId: string,currency: string,period?: {from: string;to: string},reference?: string) {
@@ -103,18 +104,18 @@ export class DemoReconciliation {
     if (cursor) uuid(cursor)
     const manager=this.database.connection().manager,providerId=await demoProvider(manager)
     if (cursor && !(await manager.query(`SELECT r.id FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id WHERE r.id=$1 AND r.provider_id=$2`,[cursor,providerId])).length) throw new LedgerConflict('Marcador de conciliación no disponible.')
-    const rows=await manager.query(`SELECT r.id,r.period_start::text AS "from",r.period_end::text AS "to",r.status,trim(d.currency_code) AS "currencyCode",
+    const rows=await manager.query(`SELECT r.id,r.created_by AS "createdBy",r.period_start::text AS "from",r.period_end::text AS "to",r.status,trim(d.currency_code) AS "currencyCode",
       r.total_internal::text AS "totalInternal",r.total_provider::text AS "totalProvider",r.difference::text,r.created_at AS "createdAt"
       FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id WHERE r.provider_id=$1
       AND ($2::uuid IS NULL OR (r.created_at,r.id)<(SELECT created_at,id FROM public.reconciliation WHERE id=$2))
       ORDER BY r.created_at DESC,r.id DESC LIMIT $3`,[providerId,cursor ?? null,limit+1])
-    return {mode:'DEMO',label:DEMO_LABEL,items:rows.slice(0,limit),nextCursor:rows.length>limit?rows[limit-1].id:null}
+    return {mode:'DEMO',label:DEMO_LABEL,items:await attachAccountContacts(manager,rows.slice(0,limit),{createdByContact:'createdBy'}),nextCursor:rows.length>limit?rows[limit-1].id:null}
   }
 
   async detail(id: string) {
     assertDemoEnabled();uuid(id)
     const manager=this.database.connection().manager,providerId=await demoProvider(manager)
-    const [batch]=await manager.query(`SELECT r.id,r.period_start::text AS "from",r.period_end::text AS "to",r.status,trim(d.currency_code) AS "currencyCode",
+    const [batch]=await manager.query(`SELECT r.id,r.created_by AS "createdBy",r.period_start::text AS "from",r.period_end::text AS "to",r.status,trim(d.currency_code) AS "currencyCode",
       r.total_internal::text AS "totalInternal",r.total_provider::text AS "totalProvider",r.difference::text,d.snapshot_at AS "snapshotAt",
       r.created_by AS "createdBy",r.closed_by AS "closedBy",r.closed_at AS "closedAt"
       FROM public.reconciliation r JOIN brotar_extension.demo_reconciliation d ON d.reconciliation_id=r.id WHERE r.id=$1 AND r.provider_id=$2`,[id,providerId])
@@ -122,11 +123,12 @@ export class DemoReconciliation {
     const items=await manager.query(`SELECT i.id,i.payment_id AS "paymentId",i.external_reference AS reference,i.status,d.original_status AS "originalStatus",
       i.internal_amount::text AS "internalAmount",i.provider_amount::text AS "providerAmount",d.resolution,d.reason,i.resolved_by AS "resolvedBy",i.resolved_at AS "resolvedAt",
       ctb.reference_code AS "internalReference",p.status AS "internalStatus",
-      c.amount::text AS "compensationAmount" FROM public.reconciliation_item i JOIN brotar_extension.demo_reconciliation_item d ON d.item_id=i.id
+      ctb.user_id AS "sponsorId",c.amount::text AS "compensationAmount" FROM public.reconciliation_item i JOIN brotar_extension.demo_reconciliation_item d ON d.item_id=i.id
       LEFT JOIN brotar_extension.demo_compensation c ON c.payment_id=i.payment_id AND c.external_reference=i.external_reference
       LEFT JOIN public.payment p ON p.id=i.payment_id LEFT JOIN public.contribution ctb ON ctb.id=p.contribution_id
       WHERE i.reconciliation_id=$1 ORDER BY i.id`,[id])
-    return {mode:'DEMO',label:DEMO_LABEL,...batch,items}
+    const[identified]=await attachAccountContacts(manager,[batch],{createdByContact:'createdBy',closedByContact:'closedBy'})
+    return {mode:'DEMO',label:DEMO_LABEL,...identified,items:await attachAccountContacts(manager,items,{sponsorContact:'sponsorId',resolvedByContact:'resolvedBy'})}
   }
 
   private async current(manager: EntityManager,providerId: string,currency: string,reference: string) {

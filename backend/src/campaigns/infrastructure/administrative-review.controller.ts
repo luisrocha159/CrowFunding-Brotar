@@ -5,7 +5,7 @@ import { SessionMutationGuard } from '../../auth/infrastructure/http/session-htt
 import { RequirePermissions, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { AdministrativeReview } from '../application/administrative-review'
 import { SubmissionIncomplete } from '../application/submission'
-import { PublicationDisabled, REVIEW_SECTIONS, ReviewConflict, ReviewInvalid, ReviewMissing } from '../domain/administrative-review'
+import { PublicationDisabled, PublicationRequirementsMissing, REVIEW_SECTIONS, ReviewConflict, ReviewInvalid, ReviewMissing } from '../domain/administrative-review'
 import type { ReviewDecision } from '../domain/lifecycle'
 
 export class ObservationDto {
@@ -30,6 +30,7 @@ export class PublishDto {
   @IsOptional() @IsObject() @ValidateNested() @Type(() => DuplicateReviewDto) duplicateReview?: DuplicateReviewDto
 }
 function translate(error: unknown): never {
+  if (error instanceof PublicationRequirementsMissing) throw new ConflictException({ code: 'PUBLICATION_REQUIREMENTS', message: error.message })
   if (error instanceof ReviewMissing) throw new NotFoundException('Campaña no disponible para administración.')
   if (error instanceof ReviewConflict) throw new ConflictException('La campaña o la ronda cambió. Actualiza antes de decidir.')
   if (error instanceof ReviewInvalid) throw new BadRequestException(error.message)

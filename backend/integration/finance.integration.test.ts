@@ -93,7 +93,7 @@ test('S3-06 PostgreSQL/HTTP: consulta, filtros UTC, totales exactos, páginas, C
     assert.ok(csv.includes('"\'=HYPERLINK(""no-ejecutar"")"'));assert.ok(csv.includes('"0.10"'));assert.ok(csv.includes('patrocinador_id'))
     for (const secret of ['never-export-me','private-reference','password','@example.invalid','provider_payload']) assert.equal(csv.includes(secret),false,secret)
     assert.equal(csv.split('\r\n').filter(Boolean).length,9,'Exporta todo el filtro, no solo dos filas de la página.')
-    assert.deepEqual(Object.keys(report.items[0]!).sort(),['kind','id','contributionId','reference','campaignId','campaignTitle','sponsorId','createdAt','status','contributionStatus','currencyCode','amount','feeAmount','netAmount','refundedAmount','sandbox'].sort())
+    assert.deepEqual(Object.keys(report.items[0]!).sort(),['kind','id','contributionId','reference','campaignId','campaignTitle','sponsorId','sponsorContact','createdAt','status','contributionStatus','currencyCode','amount','feeAmount','netAmount','refundedAmount','sandbox'].sort())
     sql(`WITH inserted AS (INSERT INTO contribution(campaign_id,user_id,amount,currency_code)
       SELECT '${bulkCampaign}','${owner.id}',0.01,'BOB' FROM generate_series(1,5001) RETURNING id)
       INSERT INTO payment(contribution_id,provider_id,idempotency_key,amount,currency_code)

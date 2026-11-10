@@ -1,3 +1,4 @@
+import {accountContactsValid,type AccountFields} from '../../shared/api/accountContact'
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
 
@@ -5,7 +6,7 @@ export const paymentLabels = { INITIATED:'Iniciado',PENDING:'Pendiente',CONFIRME
 export type PaymentStatus = keyof typeof paymentLabels
 export interface FinanceFilters { campaignId: string; status: string; from: string; to: string }
 export const emptyFinanceFilters: FinanceFilters = {campaignId:'',status:'',from:'',to:''}
-export interface PaymentOperation {
+export interface PaymentOperation extends AccountFields {
   kind: 'PAYMENT'; id: string; contributionId: string; reference: string; campaignId: string; campaignTitle: string
   sponsorId: string; createdAt: string; status: PaymentStatus; contributionStatus: string; currencyCode: string
   amount: string; feeAmount: string; netAmount: string; refundedAmount: string; sandbox: boolean
@@ -22,7 +23,7 @@ function isTotal(value: unknown): value is OperationTotal {
     moneyFields.every(key=>typeof value[key]==='string' && amount.test(value[key]))
 }
 function isPayment(value: unknown): value is PaymentOperation {
-  return record(value) && value.kind==='PAYMENT' && ['id','contributionId','campaignId','sponsorId'].every(key=>typeof value[key]==='string' && uuid.test(value[key])) &&
+  return record(value) && accountContactsValid(value) && value.kind==='PAYMENT' && ['id','contributionId','campaignId','sponsorId'].every(key=>typeof value[key]==='string' && uuid.test(value[key])) &&
     typeof value.reference==='string' && value.reference.length<=24 && typeof value.campaignTitle==='string' && value.campaignTitle.length<=200 &&
     typeof value.createdAt==='string' && /^\d{4}-\d{2}-\d{2}T/.test(value.createdAt) && Number.isFinite(Date.parse(value.createdAt)) &&
     typeof value.status==='string' && Object.hasOwn(paymentLabels,value.status) && typeof value.contributionStatus==='string' &&

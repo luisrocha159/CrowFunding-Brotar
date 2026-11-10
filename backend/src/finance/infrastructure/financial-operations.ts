@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import { Injectable, PayloadTooLargeException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
@@ -45,7 +46,7 @@ export class FinancialOperations {
         count(*)::text AS count,sum(p.amount)::text AS amount,sum(p.fee_amount)::text AS "feeAmount",
         sum(p.net_amount)::text AS "netAmount",sum(refunded.amount)::numeric(24,2)::text AS "refundedAmount"
         ${relation} ${where} GROUP BY p.currency_code,p.status ORDER BY p.currency_code,p.status`,parameters(filters))
-      const items=rows.slice(0,limit).map(item)
+      const items=await attachAccountContacts(manager,rows.slice(0,limit).map(item),{sponsorContact:'sponsorId'})
       return {items,totals,nextCursor:rows.length>limit ? items.at(-1)!.id : null}
     })
   }

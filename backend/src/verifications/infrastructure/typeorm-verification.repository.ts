@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {LEGAL_HASH,recordLegalAcceptance} from '../../legal/legal-record'
 import {assertLegalAcceptance} from '../../legal/domain/legal-agreement'
 import {assertRepresentationSettled} from './representation-settlement'
@@ -183,15 +184,15 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await transactionAccess(m,actor,'verification.read')
       const args=[kind,status,[...CAPTURE_TYPES]]
       const [count]=await m.query(`SELECT count(*)::int AS total ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[])`,args)
-      const rows:(VerificationSummary&{submittedByEmail:string|null})[]=await m.query(`SELECT ${summary},${reviewSenderEmail} AS "submittedByEmail" ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[]) ORDER BY v.updated_at,v.id LIMIT 20 OFFSET $4`,[...args,(page-1)*20])
-      return{items:rows.map(r=>({...r,updatedAt:iso(r.updatedAt)!})),total:count.total,page,pageSize:20}
+      const rows:(VerificationSummary&{submittedByEmail:string|null})[]=await m.query(`SELECT ${summary},CASE WHEN v.submitted_data->>'acceptedBy' ~ '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' THEN (v.submitted_data->>'acceptedBy')::uuid ELSE v.user_id END AS "submittedBy",${reviewSenderEmail} AS "submittedByEmail" ${joined} WHERE t.applies_to::text=$1 AND v.status::text=$2 AND t.code=ANY($3::text[]) ORDER BY v.updated_at,v.id LIMIT 20 OFFSET $4`,[...args,(page-1)*20])
+      return{items:await attachAccountContacts(m,rows.map(r=>({...r,updatedAt:iso(r.updatedAt)!})),{submittedByContact:'submittedBy'}),total:count.total,page,pageSize:20}
     })
   }
   async reviewDetail(actor:string,id:string){return this.database.connection().transaction(async m=>{
     await transactionAccess(m,actor,'verification.read')
     const detail=await this.detailWith(m,actor,id,true)
-    const [review]=await m.query(`SELECT v.user_id AS "subjectUserId",v.reviewed_by AS "reviewedBy",v.reviewed_at AS "reviewedAt",${reviewSenderEmail} AS "submittedByEmail" FROM public.verification v WHERE v.id=$1`,[id])
-    return{...detail,...review,reviewedAt:iso(review.reviewedAt)}
+    const [review]=await m.query(`SELECT CASE WHEN v.submitted_data->>'acceptedBy' ~ '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' THEN (v.submitted_data->>'acceptedBy')::uuid ELSE v.user_id END AS "submittedBy",v.user_id AS "subjectUserId",v.reviewed_by AS "reviewedBy",v.reviewed_at AS "reviewedAt",${reviewSenderEmail} AS "submittedByEmail" FROM public.verification v WHERE v.id=$1`,[id])
+    const[identified]=await attachAccountContacts(m,[review],{submittedByContact:'submittedBy',reviewedByContact:'reviewedBy'});return{...detail,...identified,reviewedAt:iso(review.reviewedAt)}
   })}
   async decide(actor:string,id:string,version:string,input:ReviewInput){
     if(!['test','development'].includes(process.env.NODE_ENV??'development'))throw new VerificationForbidden()

@@ -1,9 +1,10 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { Button } from '../../shared/components/Button'
 import { Message } from '../../shared/components/Feedback'
 import { SessionError } from '../access/session/sessionClient'
-import { administrativeDetailFrom, decideCampaign, decisionErrors, publishCampaign, readAdministrativeDetail, reviewSections, type AdministrativeDetail, type Decision, type DecisionInput, type Observation } from './administrativeClient'
+import { administrativeDetailFrom, administrativeFailure, decideCampaign, decisionErrors, publishCampaign, readAdministrativeDetail, reviewSections, type AdministrativeDetail, type Decision, type DecisionInput, type Observation } from './administrativeClient'
 import { budgetTotal } from './sectionsClient'
 import { projectStatusNames } from './projectsClient'
 import styles from './projects.module.css'
@@ -24,7 +25,7 @@ export function AdministrativeInformation({ detail }: { detail: AdministrativeDe
       </li>)}</ul>
     </section>}
     <section className={styles.panel}><h2>{detail.project.title}</h2><p className={styles.badge}>{projectStatusNames[detail.project.status]}</p><p className={styles.prose}>{general.summary}</p>
-      <dl><dt>Identificador</dt><dd>{detail.project.id}</dd><dt>Slug</dt><dd>{detail.slug}</dd><dt>Creador</dt><dd>{detail.project.creatorName}</dd><dt>Organización</dt><dd>{detail.organizationName ?? 'Campaña personal'}</dd><dt>Modalidad</dt><dd>{{ DONATION: 'Donación', REWARD: 'Recompensas', PRESALE: 'Preventa' }[detail.campaignType] ?? detail.campaignType}</dd><dt>Categoría</dt><dd>{detail.project.categoryName ?? 'No disponible'}</dd><dt>Ubicación</dt><dd>{[general.location.locality, general.location.countryCode, general.location.addressLine, general.location.reference].filter(Boolean).join(' · ')}</dd></dl>
+      <dl><dt>Identificador</dt><dd>{detail.project.id}</dd><dt>Slug</dt><dd>{detail.slug}</dd><dt>Creador</dt><dd><AccountIdentity contact={detail.ownerContact} empty={detail.project.creatorName||'Cuenta no disponible'}/></dd><dt>Organización</dt><dd>{detail.organizationName ?? 'Campaña personal'}</dd><dt>Modalidad</dt><dd>{{ DONATION: 'Donación', REWARD: 'Recompensas', PRESALE: 'Preventa' }[detail.campaignType] ?? detail.campaignType}</dd><dt>Categoría</dt><dd>{detail.project.categoryName ?? 'No disponible'}</dd><dt>Ubicación</dt><dd>{[general.location.locality, general.location.countryCode, general.location.addressLine, general.location.reference].filter(Boolean).join(' · ')}</dd></dl>
       {detail.cover && <img className={styles.cover} src={`/api/files/public/${encodeURIComponent(detail.cover.fileId)}`} alt={detail.cover.altText} />}
     </section>
     {detail.initiative && <section className={styles.panel} aria-label="Declaración histórica de la iniciativa"><h2>Iniciativa y etapa · declaración anterior</h2>
@@ -45,7 +46,7 @@ export function AdministrativeInformation({ detail }: { detail: AdministrativeDe
       {detail.campaignType !== 'DONATION' && <><h3>Recompensas y preventas</h3><ul>{rewards.map((item, index) => <li key={index}>{item.title} · {item.rewardKind}<p className={styles.prose}>{item.description}</p><p>Mínimo: {item.minAmount} {funding.currencyCode} · disponibilidad: {item.quantityTotal ?? 'sin límite'} · entrega: {item.estimatedDeliveryOn ?? 'no fijada'}</p></li>)}</ul></>}
       {detail.missing.length > 0 && <Message tone="warning" title="Información faltante"><ul>{detail.missing.map(item => <li key={item.field}>{item.label}</li>)}</ul><p>No se puede aprobar ni publicar hasta corregirla.</p></Message>}
     </section>
-    <section className={styles.panel}><h2>Rondas de revisión</h2>{detail.rounds.map(round => <article key={round.id}><h3>Ronda {round.round} · {reviewDecisionNames[round.decision]}</h3><p>{round.reviewerName ?? 'Sin revisor asignado'} · {round.decidedAt ? new Date(round.decidedAt).toLocaleString('es-BO') : 'Sin decisión'}</p>{round.summary && <p className={styles.prose}>{round.summary}</p>}<ul>{round.observations.map((item, index) => <li key={index}>{reviewSections[item.section as keyof typeof reviewSections] ?? item.section}{item.fieldPath && ` · ${item.fieldPath}`}<p className={styles.prose}>{item.message}</p></li>)}</ul></article>)}</section>
+    <section className={styles.panel}><h2>Rondas de revisión</h2>{detail.rounds.map(round => <article key={round.id}><h3>Ronda {round.round} · {reviewDecisionNames[round.decision]}</h3><p><AccountIdentity contact={round.reviewedByContact} empty={round.reviewerName??'Sin revisor asignado'}/> · {round.decidedAt ? new Date(round.decidedAt).toLocaleString('es-BO') : 'Sin decisión'}</p>{round.summary && <p className={styles.prose}>{round.summary}</p>}<ul>{round.observations.map((item, index) => <li key={index}>{reviewSections[item.section as keyof typeof reviewSections] ?? item.section}{item.fieldPath && ` · ${item.fieldPath}`}<p className={styles.prose}>{item.message}</p></li>)}</ul></article>)}</section>
     <section className={styles.panel}><h2>Historial de estados</h2><ol>{detail.project.history.map((event, index) => <li key={index}>{new Date(event.changedAt).toLocaleString('es-BO')} · {projectStatusNames[event.toStatus] ?? event.toStatus}{event.reason && <p>{event.reason}</p>}</li>)}</ol></section>
   </>
 }
@@ -77,6 +78,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
   const refresh = () => { if (active.current) return; setDetail(null); setAccess(0); setConfirmation(null); setMessage(''); setRetry(value => value + 1) }
   async function act() {
     if (!detail || !confirmation || active.current) return
+    const operation = confirmation
     if (!permissions.can(confirmation === 'publish' ? 'campaign.publish' : 'campaign.review.decide')) { setConfirmation(null); return }
     if (confirmation === 'decision') {
       const fields = decisionErrors(input); setErrors(fields)
@@ -97,11 +99,7 @@ export function AdministrativeCampaignPanel({ id }: { id: string }) {
       const status = error instanceof SessionError ? error.status : 0
       if (status === 401) setAccess(401)
       setConfirmation(null)
-      setMessage(status === 409 ? 'El estado o la ronda cambió. Actualiza la campaña antes de decidir.'
-        : status === 422 ? 'No se realizó la operación: hay datos obligatorios incompletos o inválidos. Actualiza para verlos.'
-        : status === 403 ? 'No tienes permiso vigente para esta acción o la publicación está deshabilitada.'
-        : status === 400 ? 'Revisa el motivo y las observaciones. No se guardó la decisión.'
-        : 'No pudimos confirmar la operación. Actualiza antes de reintentar para comprobar el estado.')
+      setMessage(administrativeFailure(error, operation))
       // Ante un resultado incierto se exige una nueva lectura; nunca un segundo POST a ciegas.
       setAccess(status === 400 ? 0 : status || -1)
     } finally { if (active.current === controller) active.current = null; if (loaded.current && !controller.signal.aborted) setBusy(false) }

@@ -16,7 +16,7 @@ test('formal representation requires explicit confirmation, UUID target and opti
 })
 
 test('publication preserves representation conflict as HTTP409 instead of translating to invalid input',async()=>{
- const {ConflictException}=await import('@nestjs/common')
+ const {PublicationRequirementsMissing}=await import('../src/campaigns/domain/administrative-review')
  const {TypeormAdministrativeRepository}=await import('../src/campaigns/infrastructure/typeorm-administrative.repository')
  const old=process.env.DEMO_PAYMENTS_ENABLED;process.env.DEMO_PAYMENTS_ENABLED='true'
  const m={query:async(sql:string)=>{
@@ -31,5 +31,9 @@ test('publication preserves representation conflict as HTTP409 instead of transl
  const database={connection:()=>({transaction:async(fn:(manager:typeof m)=>unknown)=>fn(m)})} as unknown as import('../src/shared/infrastructure/database/database.service').DatabaseService
  const submission={snapshot:async()=>({campaignType:'DONATION',title:'demo',summary:'demo',categoryId:'category',coverFileId:'cover',countryCode:'BO',locality:'La Paz',problem:'problem',solution:'solution',beneficiaries:'people',expectedResults:'result',indicatorCount:1,activityCount:1,budgetCount:1,goalAmount:10,currencyCode:'BOB',durationDays:10,fundingModel:'ALL_OR_NOTHING',rewardCount:0})} as unknown as import('../src/campaigns/infrastructure/typeorm-submission.repository').TypeormSubmissionRepository
  const repo=new TypeormAdministrativeRepository(database,{} as never,{} as never,{} as never,submission)
- try{await assert.rejects(repo.publish('reviewer','campaign',1),ConflictException)}finally{if(old===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=old}
+ try{await assert.rejects(repo.publish('reviewer','campaign',1),error=>{
+  assert.ok(error instanceof PublicationRequirementsMissing)
+  assert.match(error.message,/representación pendiente/)
+  return true
+ })}finally{if(old===undefined)delete process.env.DEMO_PAYMENTS_ENABLED;else process.env.DEMO_PAYMENTS_ENABLED=old}
 })

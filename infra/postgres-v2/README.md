@@ -4,7 +4,7 @@ Infraestructura de la entrega DEV, 30/10/2026. Docker ejecuta **PostgreSQL 18.6*
 
 - Esquema oficial: official-schema.sql; SHA-256 5b02741f228469b06e3758708d341e63c31fa3039ac664032602fbdb0b72fc88. No sustituir por un dump poblado.
 - Proyecto normal brotar-provisional-v2; base brotar_db; puerto 127.0.0.1:15433; rol de aplicación limitado brotar_app.
-- **41 migraciones acumulativas**, incluida la línea base registrada. migrate up y prepare-sprint2 preparan categorías y permisos automáticamente; la actualización de presentación del 09/11/2026 añade las condiciones 1.1 y conserva los registros anteriores. No crean cuentas personales, administradores ni pagos.
+- **43 migraciones acumulativas**, incluida la línea base registrada. migrate up y prepare-sprint2 preparan categorías y permisos automáticamente; la actualización de presentación del 09/11/2026 añade las condiciones 1.1 y conserva los registros anteriores. No crean cuentas personales, administradores ni pagos.
 - El healthcheck espera el servidor TCP final, evitando confundir el servidor Unix temporal de initdb con disponibilidad para el instalador.
 - install solo prepara una base nueva. Para una V2 existente, respaldar y aplicar migrate up/prepare/verificar sin repetir restauración ni activate.
 - .env y .env.backend son credenciales locales ignoradas por Git; nunca compartirlas como configuración del correo. SMTP usa su archivo privado independiente.
@@ -12,3 +12,5 @@ Infraestructura de la entrega DEV, 30/10/2026. Docker ejecuta **PostgreSQL 18.6*
 - No borrar volúmenes ni usar down -v para corregir errores. [Migraciones y recuperación](MIGRACIONES.md).
 
 [Evidencia integral](../../docs/validacion-integral-s3-21-2026-10-29.md) · [Entrega final](../../docs/entrega-final-s3-20-2026-10-29.md) · [Cortes históricos](README_HISTORICO.md). infra/postgres es legado; no arrancar su contenedor.
+
+La migración 42 añade brotar_extension.refund_evidence para evidencias privadas de devolución. No reembolsa registros históricos al instalar; para recuperarlos se utiliza la acción administrativa del ciclo descrita en [el recorrido de devoluciones](../../docs/devoluciones-automaticas-y-evidencias-2026-11-09.md).

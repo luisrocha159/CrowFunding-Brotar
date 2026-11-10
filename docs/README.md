@@ -2,6 +2,10 @@
 
 Entrega DEV del MVP académico DEMO, 30/10/2026. Este índice identifica los documentos finales; los informes fechados conservan el estado de su propio corte y no sustituyen esta entrega.
 
+## Paquete de revisión de líderes del 09 de noviembre
+
+[Manual PDF](revision-lideres/Manual_Revision_Brotar.pdf), [Word](revision-lideres/Manual_Revision_Brotar.docx), [fuente y credenciales](revision-lideres/Manual_Revision_Brotar.md) y [comprobaciones](revision-lideres/Comprobaciones.md). Preparación automatizada en copia nueva, sin datos personales ni SMTP privado.
+
 ## Instalar y presentar
 
 - [Corte vigente DEV](entrega-dev-2026-10-30.md) y [tres recorridos manuales del equipo](pruebas-manuales-equipo-2026-10-30.md).

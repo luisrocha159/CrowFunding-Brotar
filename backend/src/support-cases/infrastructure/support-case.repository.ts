@@ -1,5 +1,5 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import { Injectable } from '@nestjs/common'
-import { createHash } from 'node:crypto'
 import {recordSupportNotice} from './support-mail'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
@@ -8,7 +8,7 @@ import { SupportCampaignClosed, SupportForbidden, SupportMissing, type SupportAd
 import { transactionAccess } from '../../roles/infrastructure/transaction-access'
 import { recordAudit, setAuditActor } from '../../shared/infrastructure/database/audit'
 import type { SupportStatus } from '../domain/support-case'
-import { SupportConflict, supportFingerprint, type SupportInput, type SupportReply } from '../domain/support-case'
+import { SupportConflict, replyFingerprint, supportFingerprint, type SupportInput, type SupportReply } from '../domain/support-case'
 
 type SummaryRow = Omit<SupportSummary, 'createdAt' | 'updatedAt'> & { createdAt: Date; updatedAt: Date }
 const projection = `s.id,s.case_number AS reference,s.category,s.subject,s.status,s.created_at AS "createdAt",s.updated_at AS "updatedAt",s.campaign_id AS "campaignId",x.contribution_id AS "contributionId"`
@@ -48,7 +48,7 @@ export class SupportCaseRepository implements SupportRepository {
       const messages: (Omit<SupportDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT m.id,m.body,m.created_at AS "createdAt",
         CASE WHEN m.author_user_id=$1 THEN 'you' ELSE 'support' END AS "from" FROM public.support_case_message m
         JOIN public.support_case s ON s.id=m.support_case_id WHERE s.user_id=$1 AND s.id=$2 AND m.is_internal=false ORDER BY m.created_at,m.id`, [userId, id])
-      return { ...summary(row), replyAllowed: row.replyAllowed, description: row.description, evidence, messages: messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() })) }
+      return { ...summary(row), replyAllowed: row.replyAllowed, description: row.description, evidence, messages: await this.messageEvidence(manager, messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() }))) }
     })
   }
   context(userId: string, campaignId: string | null, contributionId: string | null): Promise<SupportContext | null> {
@@ -118,36 +118,37 @@ export class SupportCaseRepository implements SupportRepository {
   async adminList(page: number): Promise<SupportAdminPage> {
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
       const where = `NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`
-      const rows: (SummaryRow & { assignedTo: string | null })[] = await manager.query(`SELECT ${projection},s.assigned_to AS "assignedTo" FROM public.support_case s
+      const rows: (SummaryRow & { assignedTo: string | null })[] = await manager.query(`SELECT ${projection},s.user_id AS "userId",s.assigned_to AS "assignedTo" FROM public.support_case s
         LEFT JOIN brotar_extension.support_case_context x ON x.case_id=s.id WHERE ${where} AND s.user_id IS NOT NULL
         ORDER BY CASE WHEN s.status NOT IN ('RESOLVED','CLOSED') THEN 0 ELSE 1 END,s.created_at,s.id LIMIT 20 OFFSET $1`, [(page - 1) * 20])
       const total: { total: number }[] = await manager.query(`SELECT count(*)::int AS total FROM public.support_case s WHERE ${where} AND s.user_id IS NOT NULL`)
       const assignees = await manager.query(`SELECT u.id,COALESCE(NULLIF(trim(concat_ws(' ',p.first_name,p.last_name)),''),'Agente de soporte') AS label
         FROM public.app_user u LEFT JOIN public.user_profile p ON p.user_id=u.id WHERE ${availableSupport} ORDER BY label,u.id`)
-      return { items: rows.map(row => ({ ...summary(row), assignedTo: row.assignedTo })), total: total[0]!.total, page, pageSize: 20, assignees }
+      return { items: await attachAccountContacts(manager,rows.map(row => ({ ...summary(row), assignedTo: row.assignedTo })),{userContact:'userId',assignedToContact:'assignedTo'}), total: total[0]!.total, page, pageSize: 20, assignees }
     })
   }
   async adminDetail(id: string): Promise<SupportAdminDetail | null> {
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
-      const rows: (SummaryRow & { description: string })[] = await manager.query(`SELECT ${projection},s.description FROM public.support_case s
+      const rows: (SummaryRow & { description: string })[] = await manager.query(`SELECT ${projection},s.user_id AS "userId",s.assigned_to AS "assignedTo",s.description FROM public.support_case s
         LEFT JOIN brotar_extension.support_case_context x ON x.case_id=s.id WHERE s.id=$1
         AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`, [id])
       const row = rows[0]
       if (!row) return null
-      const messages: (Omit<SupportAdminDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT msg.id,msg.body,msg.created_at AS "createdAt",
+      const messages: (Omit<SupportAdminDetail['messages'][number], 'createdAt'> & { createdAt: Date })[] = await manager.query(`SELECT msg.id,msg.author_user_id AS "authorId",msg.body,msg.created_at AS "createdAt",
         CASE WHEN msg.author_user_id=s.user_id THEN 'reporter' ELSE 'support' END AS "from"
         FROM public.support_case_message msg JOIN public.support_case s ON s.id=msg.support_case_id WHERE s.id=$1 AND NOT msg.is_internal ORDER BY msg.created_at,msg.id`, [id])
-      const events: (Omit<SupportAdminDetail['events'][number], 'recordedAt'> & { recordedAt: Date })[] = await manager.query(`SELECT previous_status AS "previousStatus",status,reason,recorded_at AS "recordedAt"
+      const events: (Omit<SupportAdminDetail['events'][number], 'recordedAt'> & { recordedAt: Date })[] = await manager.query(`SELECT actor_user_id AS "actorId",previous_status AS "previousStatus",status,reason,recorded_at AS "recordedAt"
         FROM brotar_extension.support_case_event WHERE case_id=$1 ORDER BY recorded_at,id`, [id])
       const evidence = await manager.query(`SELECT f.id AS "fileId",f.file_name AS name,f.mime_type AS "mimeType"
         FROM brotar_extension.support_case_evidence e JOIN public.file_asset f ON f.id=e.file_id
         WHERE e.case_id=$1 AND f.uploaded_by=(SELECT user_id FROM public.support_case WHERE id=$1)
           AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL ORDER BY e.display_order,e.file_id`, [id]) as SupportAdminDetail['evidence']
-      return { ...summary(row), description: row.description, messages: messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() })), events: events.map(event => ({ ...event, recordedAt: event.recordedAt.toISOString() })), evidence }
+      const[identified]=await attachAccountContacts(manager,[summary(row)],{userContact:'userId',assignedToContact:'assignedTo'})
+      return { ...identified!, description: row.description, messages: await attachAccountContacts(manager,await this.messageEvidence(manager,messages.map(message => ({ ...message, createdAt: message.createdAt.toISOString() }))),{authorContact:'authorId'}), events: await attachAccountContacts(manager,events.map(event => ({ ...event, recordedAt: event.recordedAt.toISOString() })),{actorContact:'actorId'}), evidence }
     })
   }
-  async adminMessage(actor: string, id: string, body: string, requestId: string): Promise<void> {
-    const hash=createHash('sha256').update(JSON.stringify([id.toLowerCase(),body,'staff'])).digest('hex')
+  async adminMessage(actor: string, id: string, body: string, requestId: string, evidenceFileIds: string[] = []): Promise<void> {
+    const hash=replyFingerprint(id,body,'staff',evidenceFileIds)
     await this.database.connection().transaction(async manager => {
       await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`support-reply:${actor}:${requestId}`])
       await transactionAccess(manager, actor, 'support.resolve')
@@ -160,11 +161,13 @@ export class SupportCaseRepository implements SupportRepository {
       const [previous]=await manager.query('SELECT case_id,request_hash FROM brotar_extension.support_reply_request WHERE user_id=$1 AND request_id=$2',[actor,requestId])
       if(previous){if(previous.case_id!==id.toLowerCase()||previous.request_hash!==hash)throw new SupportConflict();return}
       if(['RESOLVED','CLOSED'].includes(row.status))throw new SupportMissing()
+      await this.lockEvidence(manager,actor,evidenceFileIds)
       await setAuditActor(manager,actor)
       const [message]=await manager.query('INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false) RETURNING id', [id, actor, body])
+      await this.linkEvidence(manager,message.id,evidenceFileIds)
       await manager.query('INSERT INTO brotar_extension.support_reply_request(user_id,request_id,request_hash,case_id,message_id) VALUES($1,$2,$3,$4,$5)',[actor,requestId,hash,id,message.id])
+      await manager.query(`UPDATE public.support_case SET status=CASE WHEN status IN ('OPEN','AWAITING_RESPONSE') THEN 'IN_PROGRESS'::support_case_status ELSE status END,updated_at=clock_timestamp() WHERE id=$1`, [id])
       if (row.status === 'OPEN' || row.status === 'AWAITING_RESPONSE') {
-        await manager.query(`UPDATE public.support_case SET status='IN_PROGRESS',updated_at=clock_timestamp() WHERE id=$1`, [id])
         await manager.query(`INSERT INTO brotar_extension.support_case_event(case_id,actor_user_id,previous_status,status,reason)
           VALUES($1,$2,$3::support_case_status,'IN_PROGRESS','Se envió una respuesta compartida al titular.')`, [id,actor,row.status])
       }
@@ -211,19 +214,52 @@ export class SupportCaseRepository implements SupportRepository {
       await transactionAccess(manager, actor, 'support.resolve')
     })
   }
-  async adminEvidenceOwner(actor: string, id: string, fileId: string): Promise<string> {
-    return this.database.connection().transaction(async manager => {
-      await transactionAccess(manager, actor, 'support.read')
-      const rows: { uploadedBy: string }[] = await manager.query(`SELECT f.uploaded_by AS "uploadedBy" FROM public.support_case s
-        JOIN brotar_extension.support_case_evidence e ON e.case_id=s.id JOIN public.file_asset f ON f.id=e.file_id
-        WHERE s.id=$1 AND f.id=$2 AND f.uploaded_by=s.user_id AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL
-          AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`, [id,fileId])
-      if (!rows[0]) throw new SupportMissing()
-      return rows[0].uploadedBy
+  private async linkedEvidenceOwner(manager: EntityManager, id: string, fileId: string): Promise<string> {
+    const [row]: { uploadedBy: string }[] = await manager.query(`SELECT f.uploaded_by AS "uploadedBy" FROM public.file_asset f
+      WHERE f.id=$2 AND f.scope='PRIVATE' AND f.deleted_at IS NULL AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%'
+      AND (EXISTS(SELECT 1 FROM brotar_extension.support_case_evidence e JOIN public.support_case s ON s.id=e.case_id
+        WHERE e.file_id=f.id AND s.id=$1 AND f.uploaded_by=s.user_id)
+      OR EXISTS(SELECT 1 FROM brotar_extension.support_reply_evidence e JOIN public.support_case_message m ON m.id=e.message_id
+        WHERE e.file_id=f.id AND m.support_case_id=$1 AND NOT m.is_internal AND f.uploaded_by=m.author_user_id))`, [id,fileId])
+    if (!row) throw new SupportMissing()
+    return row.uploadedBy
+  }
+  async evidenceOwner(userId: string, id: string, fileId: string): Promise<string> {
+    return this.database.connection().transaction('REPEATABLE READ', async manager => {
+      if (!(await manager.query('SELECT id FROM public.support_case WHERE id=$1 AND user_id=$2', [id,userId])).length) throw new SupportMissing()
+      return this.linkedEvidenceOwner(manager,id,fileId)
     })
   }
+  async adminEvidenceOwner(actor: string, id: string, fileId: string): Promise<string> {
+    return this.database.connection().transaction(async manager => {
+      await transactionAccess(manager,actor,'support.read')
+      if (!(await manager.query(`SELECT s.id FROM public.support_case s WHERE s.id=$1
+        AND NOT EXISTS(SELECT 1 FROM public.dispute d WHERE d.support_case_id=s.id)`, [id])).length) throw new SupportMissing()
+      return this.linkedEvidenceOwner(manager,id,fileId)
+    })
+  }
+  private async lockEvidence(manager: EntityManager, actor: string, ids: string[]) {
+    if (!ids.length) return
+    const files: { id: string }[] = await manager.query(`SELECT id FROM public.file_asset WHERE id=ANY($1::uuid[]) AND uploaded_by=$2
+      AND scope='PRIVATE' AND storage_key LIKE 'SUPPORT_EVIDENCE/%' AND deleted_at IS NULL
+      AND mime_type IN ('application/pdf','image/png','image/jpeg','image/webp') AND size_bytes BETWEEN 1 AND 5242880
+      ORDER BY id FOR UPDATE`, [ids,actor])
+    if (files.length !== ids.length) throw new SupportMissing()
+  }
+  private async linkEvidence(manager: EntityManager, messageId: string, ids: string[]) {
+    for (const [index,fileId] of ids.entries()) await manager.query(`INSERT INTO brotar_extension.support_reply_evidence(message_id,file_id,display_order)
+      VALUES($1,$2,$3)`, [messageId,fileId,index])
+  }
+  private async messageEvidence<T extends {id: string}>(manager: EntityManager, messages: T[]) {
+    if (!messages.length) return []
+    const files: {messageId: string;fileId: string;name: string;mimeType: string}[] = await manager.query(`SELECT e.message_id AS "messageId",f.id AS "fileId",f.file_name AS name,f.mime_type AS "mimeType"
+      FROM brotar_extension.support_reply_evidence e JOIN public.support_case_message m ON m.id=e.message_id JOIN public.file_asset f ON f.id=e.file_id
+      WHERE m.id=ANY($1::uuid[]) AND NOT m.is_internal AND f.uploaded_by=m.author_user_id AND f.scope='PRIVATE'
+      AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL ORDER BY e.display_order,e.file_id`, [messages.map(m=>m.id)])
+    return messages.map(message=>({...message,evidence:files.filter(f=>f.messageId===message.id).map(({messageId,...file})=>{void messageId;return file})}))
+  }
   async reply(userId: string, id: string, input: SupportReply): Promise<void> {
-    const fingerprint=createHash('sha256').update(JSON.stringify([id.toLowerCase(),input.body,'owner'])).digest('hex')
+    const fingerprint=replyFingerprint(id,input.body,'owner',input.evidenceFileIds)
     await this.database.connection().transaction(async manager => {
       await manager.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`support-reply:${userId}:${input.requestId}`])
       await this.assertWriter(manager,userId)
@@ -235,8 +271,10 @@ export class SupportCaseRepository implements SupportRepository {
       const [previous]: {case_id: string; request_hash: string}[] = await manager.query('SELECT case_id,request_hash FROM brotar_extension.support_reply_request WHERE user_id=$1 AND request_id=$2',[userId,input.requestId])
       if(previous){if(previous.case_id!==id.toLowerCase()||previous.request_hash!==fingerprint)throw new SupportConflict();return}
       if(row.status==='CLOSED'||row.status==='RESOLVED')throw new SupportConflict()
+      await this.lockEvidence(manager,userId,input.evidenceFileIds)
       await setAuditActor(manager,userId)
       const [message]: {id: string}[] = await manager.query('INSERT INTO public.support_case_message(support_case_id,author_user_id,body,is_internal) VALUES($1,$2,$3,false) RETURNING id',[id,userId,input.body])
+      await this.linkEvidence(manager,message!.id,input.evidenceFileIds)
       await manager.query(`INSERT INTO brotar_extension.support_reply_request(user_id,request_id,request_hash,case_id,message_id) VALUES($1,$2,$3,$4,$5)`,[userId,input.requestId,fingerprint,id,message!.id])
       await manager.query(`UPDATE public.support_case SET status=CASE WHEN status='AWAITING_RESPONSE' THEN 'IN_PROGRESS'::support_case_status ELSE status END,updated_at=clock_timestamp() WHERE id=$1`,[id])
       if(row.status==='AWAITING_RESPONSE')await manager.query(`INSERT INTO brotar_extension.support_case_event(case_id,actor_user_id,previous_status,status,reason)

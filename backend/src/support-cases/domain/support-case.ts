@@ -9,12 +9,23 @@ export type SupportStatus = 'OPEN' | 'IN_PROGRESS' | 'AWAITING_RESPONSE' | 'RESO
 export class SupportInvalid extends Error {}
 export class SupportConflict extends Error {}
 export interface SupportInput { requestId: string; campaignId: string | null; contributionId: string | null; category: SupportCategory; subject: string; description: string; evidenceFileIds: string[]; confirmed: true }
-export interface SupportReply { requestId: string; body: string }
+export interface SupportReply { requestId: string; body: string; evidenceFileIds: string[] }
+export function normalizeReplyEvidence(value: unknown): string[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value) || value.length > 10 || !value.every(supportId)) throw new SupportInvalid()
+  const ids = value.map(id => id.toLowerCase())
+  if (new Set(ids).size !== ids.length) throw new SupportInvalid()
+  return ids
+}
+export function replyFingerprint(id: string, body: string, party: 'staff' | 'owner', evidence: string[]): string {
+  // Conservar las claves de las respuestas anteriores sin adjuntos.
+  return createHash('sha256').update(JSON.stringify([id.toLowerCase(), body, party, ...(evidence.length ? [evidence] : [])])).digest('hex')
+}
 export function normalizeSupportReply(value: unknown): SupportReply {
   if (!value || typeof value !== 'object') throw new SupportInvalid()
   const input = value as Record<string, unknown>
   if (!supportId(input.requestId) || typeof input.body !== 'string' || textError(input.body,20,5000)) throw new SupportInvalid()
-  return { requestId: input.requestId.toLowerCase(), body: input.body.trim() }
+  return { requestId: input.requestId.toLowerCase(), body: input.body.trim(), evidenceFileIds: normalizeReplyEvidence(input.evidenceFileIds) }
 }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export function supportId(value: unknown): value is string { return typeof value === 'string' && uuid.test(value) }

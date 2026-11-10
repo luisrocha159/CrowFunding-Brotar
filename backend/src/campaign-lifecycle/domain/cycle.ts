@@ -1,6 +1,6 @@
 import {LedgerConflict,LedgerInvalid,money,totalMoney} from '../../contributions/domain/payment'
 
-export const cycleActions=['END_FUNDING','START_EXECUTION','REQUEST_CANCEL','REJECT_CANCEL','APPROVE_CANCEL','CLOSE'] as const
+export const cycleActions=['END_FUNDING','START_EXECUTION','REQUEST_CANCEL','REJECT_CANCEL','APPROVE_CANCEL','PROCESS_REFUNDS','CLOSE'] as const
 export type FundingOutcome='PENDING'|'EXECUTION_ELIGIBLE'|'REFUND_REQUIRED'|'NO_FUNDS'
 export function fundingOutcome(model:string,raised:string,goal:string):FundingOutcome {
  if(!['FLEXIBLE','ALL_OR_NOTHING'].includes(model))throw new LedgerConflict('La campaña necesita un modelo de financiación definido.')
@@ -12,6 +12,7 @@ export function cycleTarget(status:string,action:string,cancelRequested:boolean,
  if(action==='REQUEST_CANCEL' && ['APPROVED','PUBLISHED','FUNDING_ENDED','IN_EXECUTION'].includes(status) && !cancelRequested)return status
  if(action==='REJECT_CANCEL' && cancelRequested)return status
  if(action==='APPROVE_CANCEL' && cancelRequested && ['APPROVED','PUBLISHED','FUNDING_ENDED','IN_EXECUTION'].includes(status))return 'CANCELLED'
+ if(action==='PROCESS_REFUNDS' && !cancelRequested && (status==='CANCELLED'||status==='FUNDING_ENDED'&&outcome==='REFUND_REQUIRED'))return status
  if(action==='END_FUNDING' && status==='PUBLISHED')return 'FUNDING_ENDED'
  if(action==='START_EXECUTION' && status==='FUNDING_ENDED' && outcome==='EXECUTION_ELIGIBLE' && !cancelRequested)return 'IN_EXECUTION'
  if(action==='CLOSE' && ['IN_EXECUTION','FUNDING_ENDED','CANCELLED'].includes(status) && !cancelRequested)return 'CLOSED'
