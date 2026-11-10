@@ -1,3 +1,4 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -13,7 +14,7 @@ export function AuditResults({page}:{page:Page}) {
   return <section aria-label={page.source==='AUDIT'?'Registros de auditoría':'Cambios de estado'} className={styles.records}>{page.items.map(item=><article className={styles.record} key={item.id}>
     <header><h2>{auditActions[item.action]}</h2><span>Registro {item.id}</span></header>
     <dl><dt>Origen</dt><dd>{page.source==='AUDIT'?'audit_log · Auditoría':'status_history · Estados'}</dd><dt>Fecha UTC</dt><dd><time dateTime={item.occurredAt}>{item.occurredAt.replace('T',' ').replace('Z',' UTC')}</time></dd>
-      <dt>Actor (UUID)</dt><dd>{item.actorId ?? 'No registrado; no se atribuye a una persona'}</dd><dt>Rol registrado</dt><dd>{item.actorRole ?? 'No registrado en este origen'}</dd>
+      <dt>Cuenta responsable</dt><dd><AccountIdentity contact={item.actorContact} empty={item.actorId?'Cuenta no disponible':'No registrado; no se atribuye a una persona'}/></dd><dt>Referencia técnica de cuenta</dt><dd>{item.actorId??'Sin identificador'}</dd><dt>Rol registrado</dt><dd>{item.actorRole ?? 'No registrado en este origen'}</dd>
       <dt>Entidad</dt><dd>{item.entity}</dd><dt>Objeto (UUID)</dt><dd>{item.entityId ?? 'No registrado'}</dd>
       <dt>Resultado registrado</dt><dd>{item.result==='APPLIED'?'Acción aplicada':item.result==='RECORDED'?'Cambio registrado':'No especificado en el registro original'}</dd>
       {page.source==='STATUS' && <><dt>Estado anterior</dt><dd>{item.fromStatus ?? 'Sin estado anterior registrado'}</dd><dt>Estado siguiente</dt><dd>{item.toStatus ?? 'No disponible'}</dd></>}

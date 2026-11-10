@@ -9,6 +9,15 @@ export class ReviewInvalid extends Error {}
 export class ReviewConflict extends Error {}
 export class ReviewMissing extends Error {}
 export class PublicationDisabled extends Error {}
+export class PublicationRequirementsMissing extends Error {
+  constructor(subject: 'PERSON' | 'ORGANIZATION' | 'REPRESENTATION') {
+    super(subject === 'PERSON'
+      ? 'No se puede publicar: falta una verificación de identidad aprobada y vigente de la cuenta creadora. La cuenta titular debe enviarla y el equipo de verificación debe aprobarla antes de publicar.'
+      : subject === 'ORGANIZATION'
+        ? 'No se puede publicar: revisa que la organización y su representante tengan verificaciones aprobadas y vigentes y una representación activa.'
+        : 'No se puede publicar: la organización tiene una solicitud de representación pendiente. Resuélvela antes de continuar.')
+  }
+}
 
 export function validateDuplicateReview(input?: DuplicateReviewInput) {
   if (input && (typeof input.token !== 'string' || !/^[a-f0-9]{64}$/.test(input.token)

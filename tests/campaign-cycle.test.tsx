@@ -6,6 +6,8 @@ import {OperationForm} from '../src/features/campaign-lifecycle/OperationForm'
 import {cycleFrom,cycleOptions,cyclePageFrom,operationReasonError,operationalRequest,operationFailure} from '../src/features/campaign-lifecycle/cycleClient'
 import {mapPublicCampaign} from '../src/features/public/campaignsApi'
 import {SessionError} from '../src/shared/api/sessionError'
+import {MemoryRouter} from 'react-router-dom'
+import {CampaignCycleSummary} from '../src/features/campaign-lifecycle/CampaignCycleSummary'
 const id='11111111-1111-4111-8111-111111111111'
 const value={mode:'DEMO',id,title:'DEMO Huerto',status:'FUNDING_ENDED',endsAt:'2026-10-23T00:00:00Z',outcome:'EXECUTION_ELIGIBLE',version:2,currencyCode:'BOB',goalAmount:'100.00',fundingTotal:'100.00',cancelRequested:false,cancelReason:null,cancellationCaseId:null,executionStartedAt:null,funds:{confirmed:'100.00',refunded:'0.00',refunds_reserved:'0.00',committed:'0.00',disbursed:'0.00',disputed:'0.00'},obligations:{payments:0,disputes:0,cases:0,reconciliation:0,events:0},closeBlockers:['Falta rendición final'],events:[],eventTotal:0,page:1,pageSize:20}
 test('ciclo cliente: contrato comprobado, error no equivale a estado vacío',()=>{
@@ -36,4 +38,23 @@ test('operación HTTP: muestra conflicto comprobado, no éxito ficticio ni error
 test('campaña pública conserva historia después de finalizar y no la presenta activa',()=>{
  const c={id,slug:'demo',name:'DEMO',summary:'Ejemplo',category:'Ambiente',location:'La Paz',creator:'DEMO',campaignType:'DONATION',status:'CLOSED',goal:'100.00',raised:'0.00',currencyCode:'BOB',publishedAt:'2026-10-01T00:00:00Z',endsAt:'2026-10-23T00:00:00Z',imageId:id,imageAlt:'Ejemplo',description:'',problem:'',solution:'',beneficiaries:'',expectedResults:'',creatorDescription:'',impact:[],rewards:[]}
  assert.equal(mapPublicCampaign(c).status,'finished');assert.equal(mapPublicCampaign({...c,status:'CANCELLED'}).status,'cancelled');assert.throws(()=>mapPublicCampaign({...c,status:'DRAFT'}),SessionError)
+})
+
+test('resumen de ciclo: distingue compromisos de importes entregados y conserva moneda, contactos y referencias',()=>{
+ const detail=cycleFrom({...value,title:'Huerto comunitario',status:'IN_EXECUTION',fundingTotal:'600.00',goalAmount:'600.00',ownerContact:{name:'Cuenta creadora',email:'creador@example.invalid'},funds:{...value.funds,confirmed:'600.00',committed:'600.00',disbursed:'100.00'}})
+ const html=renderToStaticMarkup(createElement(MemoryRouter,{children:createElement(CampaignCycleSummary,{detail,administrative:true})}))
+ assert.match(html,/Desembolsado<\/dt><dd>100,00 BOB<\/dd>/)
+ assert.match(html,/Pendiente de desembolso<\/dt><dd>500,00 BOB<\/dd>/)
+ assert.match(html,/creador@example.invalid/);assert.match(html,/aria-current="step"/);assert.match(html,/<details[^>]*><summary>Referencias y datos del corte/)
+ assert.match(html,/administracion\/desembolsos\?campana=/);assert.match(html,/administracion\/cierre-campanas\//)
+})
+
+test('resumen de ciclo: una devolución o cancelación no se presenta como ejecución completada; datos ausentes no se inventan',()=>{
+ const render=(patch:Record<string,unknown>)=>renderToStaticMarkup(createElement(MemoryRouter,{children:createElement(CampaignCycleSummary,{detail:cycleFrom({...value,...patch}),administrative:false})}))
+ for(const patch of [{status:'CANCELLED',outcome:'REFUND_REQUIRED'},{status:'CLOSED',outcome:'REFUND_REQUIRED'},{status:'CLOSED',outcome:'NO_FUNDS'}]){
+  const html=render(patch),stages=html.match(/<ol[^>]*aria-label="Etapas del ciclo de campaña"[^>]*>[\s\S]*?<\/ol>/)?.[0]
+  assert.ok(stages);assert.doesNotMatch(stages,/Ejecución/)
+ }
+ const absent=render({status:'APPROVED',fundingTotal:null,goalAmount:null,currencyCode:null,funds:null});assert.match(absent,/Sin resultado fijado/);assert.match(absent,/no hay un resumen financiero disponible/);assert.doesNotMatch(absent,/0,00 BOB/)
+ const inconsistent=render({funds:{...value.funds,committed:'10.00',disbursed:'11.00'}});assert.match(inconsistent,/Pendiente de desembolso<\/dt><dd>Requiere revisión<\/dd>/)
 })

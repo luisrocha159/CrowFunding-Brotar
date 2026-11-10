@@ -3,13 +3,32 @@ import { test } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
-import { administrativeDetailFrom, decisionErrors, decideCampaign, publishCampaign, readAdministrativeDetail, type AdministrativeDetail, type DecisionInput } from '../src/features/campaigns/administrativeClient'
+import { administrativeDetailFrom, administrativeFailure, decisionErrors, decideCampaign, publishCampaign, readAdministrativeDetail, type AdministrativeDetail, type DecisionInput } from '../src/features/campaigns/administrativeClient'
 import { AdministrativeInformation } from '../src/features/campaigns/AdministrativeCampaignPanel'
 import { SessionError } from '../src/features/access/session/sessionClient'
 import { validateDecision, type DecisionInput as ServerDecision } from '../backend/src/campaigns/domain/administrative-review'
 
 const id = '11111111-1111-4111-8111-111111111111'
 const input: DecisionInput = { decision: 'APPROVED', comment: '', expectedRound: 1, observations: [] }
+
+test('publicación: muestra el requisito de identidad sin confundirlo con observaciones ni filtrar errores internos', async () => {
+  const message = 'No se puede publicar: falta una verificación de identidad aprobada y vigente de la cuenta creadora.'
+  const send = (async () => Response.json({ code: 'PUBLICATION_REQUIREMENTS', message }, { status: 409 })) as typeof fetch
+  await assert.rejects(() => publishCampaign(id, 1, undefined, send), error => {
+    assert.ok(error instanceof SessionError)
+    assert.equal(administrativeFailure(error, 'publish'), message)
+    return true
+  })
+  assert.doesNotMatch(administrativeFailure(new SessionError(400), 'publish'), /motivo|observaciones|decisión/)
+  assert.match(administrativeFailure(new SessionError(400), 'decision'), /observaciones/)
+  assert.match(administrativeFailure(new SessionError(409), 'publish'), /ronda cambió/)
+  const internal = (async () => Response.json({ code: 'PUBLICATION_REQUIREMENTS', message: 'SELECT secret FROM credentials' }, { status: 500 })) as typeof fetch
+  await assert.rejects(() => publishCampaign(id, 1, undefined, internal), error => {
+    assert.doesNotMatch(administrativeFailure(error, 'publish'), /SELECT|credentials/)
+    assert.match(administrativeFailure(error, 'publish'), /Actualiza/)
+    return true
+  })
+})
 const fixture: AdministrativeDetail = {
   project: { id, title: 'Campaña de ensayo', summary: 'Resumen', status: 'IN_REVIEW', categoryName: 'Ambiente', goalAmount: '1000.00', currencyCode: 'BOB', creatorName: 'Ana', updatedAt: '2026-10-05T12:00:00Z', submittedAt: '2026-10-05T11:00:00Z', location: null, story: null, history: [] },
   campaignType: 'REWARD', organizationName: 'Organización de ensayo', slug: 'campana-ensayo', publicationEnabled: true,

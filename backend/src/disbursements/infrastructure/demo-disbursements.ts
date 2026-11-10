@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {Injectable,NotFoundException,ForbiddenException} from '@nestjs/common'
 import type {EntityManager} from 'typeorm'
 import {randomUUID} from 'node:crypto'
@@ -29,7 +30,8 @@ export class DemoDisbursements {
   const c=await this.campaign(m,id);if(admin)await transactionAccess(m,actor,'finance.read');else await ownerAccess(m,actor,c)
   const d=await this.destination(m,id)
   const events=d?await m.query(`SELECT action,actor_id AS "actorId",reason,version,reference,holder,recorded_at AS at FROM brotar_extension.demo_destination_event WHERE payout_account_id=$1 ORDER BY recorded_at DESC,id DESC LIMIT 20`,[d.id]):[]
-  return{mode:'DEMO',campaignId:id,campaignTitle:c.title,currencyCode:c.currency_code,destination:d?{id:d.id,status:d.status,holder:d.holder,reference:d.reference,version:d.version,reviewedBy:d.verified_by,reviewedAt:d.verified_at}:null,events}
+  const[identified]=d&&admin?await attachAccountContacts(m,[{reviewedBy:d.verified_by}],{reviewedByContact:'reviewedBy'}):[{}]
+  return{mode:'DEMO',campaignId:id,campaignTitle:c.title,currencyCode:c.currency_code,destination:d?{id:d.id,status:d.status,holder:d.holder,reference:d.reference,version:d.version,reviewedBy:d.verified_by,reviewedAt:d.verified_at,...identified}:null,events:admin?await attachAccountContacts(m,events,{actorContact:'actorId'}):events}
  })}
  async saveDestination(actor:string,id:string,input:DestinationInput){assertDemoEnabled();uuid(id);requestKey(input.requestKey);const {reference,holder}=syntheticDestination(input.reference,input.holder),why=reason(input.reason)
   if(input.demoConsent!==true||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<0)throw new LedgerInvalid('Confirma el destino ficticio y su versión.')
@@ -100,7 +102,7 @@ export class DemoDisbursements {
  async detail(actor:string,id:string,admin=false){assertDemoEnabled();uuid(id);return this.database.connection().transaction('REPEATABLE READ',async m=>{
    const [d]=await m.query(`SELECT ${projection}${contactProjection} ${join} WHERE d.id=$1`,[id]);if(!d)throw new NotFoundException('Desembolso no disponible.')
   if(admin)await transactionAccess(m,actor,'finance.read');else await ownerAccess(m,actor,await this.campaign(m,d.campaignId))
-  const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.demo_disbursement_event WHERE disbursement_id=$1 ORDER BY recorded_at,id`,[id]);return{mode:'DEMO',...d,events}
+  const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.demo_disbursement_event WHERE disbursement_id=$1 ORDER BY recorded_at,id`,[id]);return{mode:'DEMO',...d,events:admin?await attachAccountContacts(m,events,{actorContact:'actorId'}):events}
  })}
  async act(actor:string,id:string,input:DisbursementAction){assertDemoEnabled();uuid(id);requestKey(input.requestKey);const why=reason(input.reason)
   if(input.demoConsent!==true||!Number.isSafeInteger(input.expectedVersion)||input.expectedVersion<1)throw new LedgerInvalid('Confirma operación y versión.')

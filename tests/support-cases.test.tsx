@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { supportInput, supportError, supportDetailFrom, readSupportCases, createSupportCase, supportContext, uploadSupportEvidence, replySupportCase, supportReplyError } from '../src/features/support-cases/supportClient'
+import { supportInput, supportError, supportDetailFrom, readSupportCases, createSupportCase, supportContext, uploadSupportEvidence, replySupportCase, replySupportAsStaff, supportReplyError, supportEvidenceFrom, supportFileError } from '../src/features/support-cases/supportClient'
+import {SupportAttachments} from '../src/features/support-cases/SupportAttachments'
 import {SupportReplyForm} from '../src/features/support-cases/SupportReplyForm'
 import { SupportCaseForm } from '../src/features/support-cases/SupportCaseForm'
 import { SessionError } from '../src/shared/api/sessionError'
@@ -64,4 +65,30 @@ test('soporte: formulario requiere confirmación y no promete resolución o devo
   const publicHtml = renderToStaticMarkup(<SupportCaseForm context={publicContext} onCreated={() => {}} onUnauthorized={() => {}} />)
   assert.match(publicHtml, /INCORRECT_INFORMATION/); assert.match(publicHtml, /PROJECT_NOT_EXECUTED/)
   assert.doesNotMatch(publicHtml, /UNRECOGNIZED_PAYMENT|REFUND_REQUEST|REWARD_NOT_RECEIVED|OTHER/)
+})
+
+test('respuestas con adjuntos: contrato privado, límites, enlaces del expediente y misma clave de reintento', async () => {
+  const fileId='1e36e42f-f958-4978-bd28-58dab81b6160',files=[{fileId,name:'Respuesta del equipo.pdf',mimeType:'application/pdf'}]
+  const detail={...row,replyAllowed:true,description:'Reporte',evidence:[],messages:[{id,body:'Información compartida',createdAt:row.createdAt,from:'support',evidence:files}]}
+  assert.deepEqual(supportDetailFrom(detail),detail)
+  for(const malformed of [null,[{...files[0],fileId:'https://otro.invalid'}],[{...files[0],mimeType:'text/html'}],[...files,...files],Array(11).fill(files[0])])assert.throws(()=>supportEvidenceFrom(malformed),SessionError)
+  let calls=0
+  const send=(async(url,init)=>{
+    calls++;assert.equal(url,`/api/admin/support-cases/${id}/messages`)
+    assert.deepEqual(JSON.parse(String(init?.body)),{requestId:id,body:'Adjuntamos la información de la atención.',evidenceFileIds:[fileId]})
+    return Response.json({ok:true})
+  }) as typeof fetch
+  await replySupportAsStaff(id,id,'Adjuntamos la información de la atención.',undefined,send,[fileId])
+  await replySupportAsStaff(id,id,'Adjuntamos la información de la atención.',undefined,send,[fileId])
+  for(const ids of [[fileId,fileId],['invalido'],Array(11).fill(fileId)])await assert.rejects(()=>replySupportAsStaff(id,id,'Respuesta',undefined,send,ids),SessionError)
+  assert.equal(calls,2)
+  const markup=renderToStaticMarkup(<SupportAttachments caseId={id} files={files}/>)
+  assert.match(markup,new RegExp(`/api/me/support-cases/${id}/evidence/${fileId}`))
+  assert.match(markup,/Descargar Respuesta del equipo.pdf/)
+  const staff=renderToStaticMarkup(<SupportReplyForm id={id} staff onSent={()=>{}} onUnauthorized={()=>{}}/>)
+  assert.match(staff,/Responder al titular/);assert.match(staff,/type="file"/);assert.match(staff,/Hasta 10 archivos/);assert.match(staff,/Mis incidencias/)
+  assert.equal(supportFileError(new File(['%PDF-1.4'],'archivo.pdf',{type:'application/pdf'})),undefined)
+  assert.match(supportFileError(new File([],'vacio.pdf',{type:'application/pdf'}))??'',/vacío/)
+  assert.match(supportFileError(new File(['x'],'archivo.html',{type:'text/html'}))??'',/PDF/)
+  assert.match(supportFileError(new File([new Uint8Array(5*1024*1024+1)],'grande.pdf',{type:'application/pdf'}))??'',/5 MB/)
 })

@@ -1,3 +1,4 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -15,7 +16,7 @@ function Stamp({value}: {value: string|null}) {return <>{value?<time dateTime={v
 export function PendingResults({items}: {items: PendingPayment[]}) {
   return <div className={styles.records}>{items.map(item=><article className={styles.record} key={item.id}>
     <h3>{item.campaignTitle}</h3><p><strong>{item.needsReview?'Aviso que requiere revisión':item.expired?'Reserva vencida pendiente de mantenimiento':'Intento pendiente'}</strong></p>
-    <dl><dt>Referencia del aporte</dt><dd>{item.reference}</dd><dt>ID del pago</dt><dd>{item.id}</dd><dt>Estado interno</dt><dd>{paymentLabels[item.status]}</dd>
+    <dl><dt>Referencia del aporte</dt><dd>{item.reference}</dd><dt>ID del pago</dt><dd>{item.id}</dd><dt>Cuenta aportante</dt><dd><AccountIdentity contact={item.sponsorContact}/></dd><dt>Estado interno</dt><dd>{paymentLabels[item.status]}</dd>
       <dt>Importe</dt><dd>{financeMoney(item.amount,item.currencyCode)}</dd><dt>Creado (UTC)</dt><dd><Stamp value={item.createdAt} /></dd><dt>Vence (UTC)</dt><dd><Stamp value={item.expiresAt} /></dd></dl>
     <p>No equivale a un ingreso confirmado. Para avisos tardíos confirmados, crea un lote que incluya el día de la primera observación.</p>
   </article>)}</div>
@@ -25,8 +26,8 @@ export function ReconciliationSummary({batch}: {batch: ReconciliationDetail}) {
     <p><strong>{batchLabels[batch.status]}</strong> · {batch.from} a {batch.to}, inclusive UTC · {batch.currencyCode}</p>
     <dl><dt>Confirmaciones internas brutas</dt><dd>{financeMoney(batch.totalInternal,batch.currencyCode)}</dd>
       <dt>Recibos brutos</dt><dd>{financeMoney(batch.totalProvider,batch.currencyCode)}</dd><dt>Diferencia del corte (interno −)</dt><dd>{financeMoney(batch.difference,batch.currencyCode)}</dd>
-      <dt>Instantánea (UTC)</dt><dd><Stamp value={batch.snapshotAt} /></dd><dt>Creado por (ID)</dt><dd>{batch.createdBy ?? 'Actor histórico no disponible'}</dd>
-      <dt>Cerrado por (ID)</dt><dd>{batch.closedBy ?? 'Sin cierre registrado'}</dd><dt>Fecha de cierre (UTC)</dt><dd><Stamp value={batch.closedAt} /></dd></dl>
+      <dt>Instantánea (UTC)</dt><dd><Stamp value={batch.snapshotAt} /></dd><dt>Preparó el lote</dt><dd><AccountIdentity contact={batch.createdByContact}/></dd>
+      <dt>Cerró el lote</dt><dd><AccountIdentity contact={batch.closedByContact} empty="Sin cierre registrado"/></dd><dt>Fecha de cierre (UTC)</dt><dd><Stamp value={batch.closedAt} /></dd></dl>
     <p>Estos totales son el corte original, no un saldo disponible para desembolsar. Una resolución no reescribe importes ni hace desaparecer la diferencia histórica.</p>
   </section>
 }
@@ -55,11 +56,11 @@ function ResolutionForm({item,busy,onResolve}: {item: ReconciliationItem;busy: b
 }
 export function ReconciliationItems({batch,operate=false,busy=false,onResolve=async()=>null}: {batch: ReconciliationDetail;operate?: boolean;busy?: boolean;onResolve?: (itemId: string,action: ResolutionAction,reason: string)=>Promise<unknown>}) {
   return <div className={styles.records}>{batch.items.map(item=><article className={styles.record} key={item.id}>
-    <h3>{reconciliationLabels[item.status]}</h3><dl><dt>Referencia</dt><dd>{item.reference}</dd><dt>Referencia del aporte</dt><dd>{item.internalReference ?? 'Sin relación inequívoca'}</dd>
+    <h3>{reconciliationLabels[item.status]}</h3><dl><dt>Referencia</dt><dd>{item.reference}</dd><dt>Cuenta aportante</dt><dd><AccountIdentity contact={item.sponsorContact} empty="Sin cuenta interna vinculada"/></dd><dt>Referencia del aporte</dt><dd>{item.internalReference ?? 'Sin relación inequívoca'}</dd>
       <dt>ID de pago</dt><dd>{item.paymentId ?? 'Referencia ambigua: requiere investigación'}</dd><dt>Estado interno vigente al consultar</dt><dd>{item.internalStatus?paymentLabels[item.internalStatus]:'No disponible'}</dd>
       <dt>Importe interno del corte</dt><dd>{financeMoney(item.internalAmount,batch.currencyCode)}</dd><dt>Importe del corte</dt><dd>{financeMoney(item.providerAmount,batch.currencyCode)}</dd>
       <dt>Clasificación original</dt><dd>{reconciliationLabels[item.originalStatus]}</dd></dl>
-    {item.status==='RESOLVED' && <><h4>Resolución registrada</h4><dl><dt>Acción</dt><dd>{item.resolution==='RECHECK'?'Contraste de evidencia':'Compensación sin ingreso interno'}</dd><dt>Motivo</dt><dd>{item.reason}</dd><dt>Responsable (ID)</dt><dd>{item.resolvedBy ?? 'Actor histórico no disponible'}</dd><dt>Fecha (UTC)</dt><dd><Stamp value={item.resolvedAt} /></dd>
+    {item.status==='RESOLVED' && <><h4>Resolución registrada</h4><dl><dt>Acción</dt><dd>{item.resolution==='RECHECK'?'Contraste de evidencia':'Compensación sin ingreso interno'}</dd><dt>Motivo</dt><dd>{item.reason}</dd><dt>Resolvió la diferencia</dt><dd><AccountIdentity contact={item.resolvedByContact}/></dd><dt>Fecha (UTC)</dt><dd><Stamp value={item.resolvedAt} /></dd>
       <dt>Compensación</dt><dd>{item.compensationAmount?financeMoney(item.compensationAmount,batch.currencyCode):'No aplica'}</dd></dl></>}
     {operate && batch.status!=='CLOSED' && !['MATCHED','RESOLVED'].includes(item.status) && <ResolutionForm key={item.id+item.status} item={item} busy={busy} onResolve={(action,reason)=>onResolve(item.id,action,reason)} />}
   </article>)}</div>
@@ -117,7 +118,7 @@ export function ReconciliationPage() {
           {data.overview.pending.items.length?<PendingResults items={data.overview.pending.items} />:<EmptyState title="Sin pendientes en esta página" description="No hay intentos ni avisos por revisar para el período, moneda y posición consultados." />}
           <nav className={styles.actions} aria-label="Páginas de pendientes"><Button variant="secondary" disabled={data.busy || !data.pendingPrevious} onClick={data.pendingBack}>Pendientes anteriores</Button><Button variant="secondary" disabled={data.busy || !data.overview.pending.nextCursor} onClick={data.pendingNext}>Pendientes siguientes</Button></nav>
           <h2>Lotes registrados</h2><p>Historial de todas las fechas y monedas; el filtro superior define pendientes y nuevos lotes, no oculta lotes históricos.</p>
-          {data.overview.batches.items.length?<div className={styles.records}>{data.overview.batches.items.map(batch=><article className={styles.record} key={batch.id}><h3>{batch.from} a {batch.to} · {batch.currencyCode}</h3><p>{batchLabels[batch.status]}</p><p>ID: {batch.id}</p><p>Diferencia bruta del corte: {financeMoney(batch.difference,batch.currencyCode)}</p><ButtonLink variant="secondary" to={`/administracion/conciliacion/${batch.id}`}>Revisar lote</ButtonLink></article>)}</div>:<EmptyState title="Sin lotes en esta página" description="Finanzas puede crear un lote para contrastar el período y moneda seleccionados." />}
+          {data.overview.batches.items.length?<div className={styles.records}>{data.overview.batches.items.map(batch=><article className={styles.record} key={batch.id}><h3>{batch.from} a {batch.to} · {batch.currencyCode}</h3><p>{batchLabels[batch.status]}</p><p><strong>Preparó el lote:</strong> <AccountIdentity contact={batch.createdByContact}/></p><p>ID: {batch.id}</p><p>Diferencia bruta del corte: {financeMoney(batch.difference,batch.currencyCode)}</p><ButtonLink variant="secondary" to={`/administracion/conciliacion/${batch.id}`}>Revisar lote</ButtonLink></article>)}</div>:<EmptyState title="Sin lotes en esta página" description="Finanzas puede crear un lote para contrastar el período y moneda seleccionados." />}
           <nav className={styles.actions} aria-label="Páginas de lotes"><Button variant="secondary" disabled={data.busy || !data.batchPrevious} onClick={data.batchBack}>Lotes anteriores</Button><Button variant="secondary" disabled={data.busy || !data.overview.batches.nextCursor} onClick={data.batchNext}>Lotes siguientes</Button></nav>
         </>}
         {data.detail && <><ReconciliationSummary batch={data.detail} /><h2>Referencias del lote</h2>

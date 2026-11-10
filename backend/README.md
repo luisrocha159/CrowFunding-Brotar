@@ -1,6 +1,10 @@
 # Backend Brotar
 
-API NestJS del MVP académico de pruebas, corte DEV del 30/10/2026 y actualización DEV del 09/11/2026, integrada desde RicardoDev. **41 migraciones y 215 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz. Los ajustes de presentación, condiciones 1.1, métodos de pago y paneles están integrados en DEV; [instrucciones de actualización](../docs/ajustes-presentacion-y-verificacion-2026-11-09.md).
+API NestJS del MVP académico de pruebas, corte DEV del 30/10/2026 y actualización DEV del 09/11/2026 integrada desde RicardoDev. **43 migraciones y 219 rutas HTTP**. Código integrado del equipo y aceptación S3-21; entrega S3-20 autorizada para DEV. Ver registro de publicación en README raíz. Incluye devoluciones automáticas, evidencias y respuestas con adjuntos; [instrucciones de actualización](../docs/ajustes-presentacion-y-verificacion-2026-11-09.md) y [adjuntos de soporte](../docs/soporte-adjuntos-respuestas-2026-11-09.md).
+
+## Revisión con datos preparados
+
+Desde la raíz de una copia nueva de DEV, ejecute `node scripts/setup-review.mjs`. Instala base dedicada, migraciones, categorías, 18 cuentas, 20 escenarios y buzón privado. [Manual de instalación y recorridos con credenciales](../docs/revision-lideres/Manual_Revision_Brotar.md). No ejecute este preparador sobre su base personal.
 
 ## Instalar y arrancar
 
@@ -25,3 +29,5 @@ Módulos: acceso/perfiles/contactos; organizaciones/representación; archivos; b
 `corepack pnpm run check` ejecuta lint, tipos, 244 pruebas backend, ocho del administrador local y build. Las 55 integraciones con escritura se ejecutan únicamente en copia QA nueva según [S3-21](../docs/validacion-integral-s3-21-2026-10-29.md#repetir-la-validación-automática), sin SMTP de uso. `node scripts/check-http-contracts.mjs` valida contratos sin abrir puerto ni conectar a datos.
 
 /health/live no acredita base; /health/ready debe devolver 200 y comprueba esquema/permisos. Sin .env la API puede responder live con base desactivada: no es una instalación funcional. [Antecedentes](README_HISTORICO.md) conservan sus fechas, roles y conteos históricos.
+
+Devoluciones: [reglas, actualización y pruebas](../docs/devoluciones-automaticas-y-evidencias-2026-11-09.md). La migración 42 agrega el vínculo privado de evidencias, sin ejecutar devoluciones históricas.

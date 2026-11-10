@@ -1,3 +1,4 @@
+import {accountContactsValid,type AccountFields} from '../../shared/api/accountContact'
 import { textError } from '../../../backend/src/campaigns/domain/input-policy'
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../access/session/sessionClient'
@@ -13,8 +14,8 @@ export const reviewSections = { general: 'Información general', modality: 'Moda
 export type Decision = 'APPROVED' | 'CHANGES_REQUESTED' | 'REJECTED'
 export interface Observation { section: string; fieldPath: string | null; message: string }
 export interface DecisionInput { decision: Decision; comment: string; expectedRound: number; observations: Observation[]; duplicateReview?: DuplicateReviewInput }
-export interface ReviewRound { id: string; round: number; decision: string; reviewerName: string | null; summary: string | null; decidedAt: string | null; observations: Observation[] }
-export interface AdministrativeDetail {
+export interface ReviewRound extends AccountFields { id: string; round: number; decision: string; reviewerName: string | null; summary: string | null; decidedAt: string | null; observations: Observation[] }
+export interface AdministrativeDetail extends AccountFields {
   project: ProjectDetail; campaignType: string; organizationName: string | null; slug: string
   general: GeneralInput; story: { story: StoryInput; indicators: IndicatorInput[] }; cover: { fileId: string; altText: string } | null
   plan: PlanInput; budget: BudgetInput; funding: FundingInput; rewards: RewardInput[]; rounds: ReviewRound[]; missing: MissingField[]; publicationEnabled: boolean
@@ -22,6 +23,32 @@ export interface AdministrativeDetail {
   initiative?: InitiativeStage | null
 }
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
+class PublicationRequirementError extends SessionError {
+  constructor(readonly detail: string) { super(409) }
+}
+async function publicationError(response: Response): Promise<SessionError> {
+  // Únicamente este conflicto de negocio tiene un mensaje público específico.
+  // Los fallos internos y las respuestas desconocidas nunca se muestran literalmente.
+  if (response.status === 409) {
+    try {
+      const value: unknown = await response.json()
+      if (object(value) && value.code === 'PUBLICATION_REQUIREMENTS' && typeof value.message === 'string'
+        && value.message.trim().length > 0 && value.message.length <= 1000) return new PublicationRequirementError(value.message)
+    } catch { /* Conservar el estado HTTP si el cuerpo no es JSON válido. */ }
+  }
+  return new SessionError(response.status)
+}
+export function administrativeFailure(error: unknown, operation: 'decision' | 'publish'): string {
+  if (error instanceof PublicationRequirementError && operation === 'publish') return error.detail
+  const status = error instanceof SessionError ? error.status : 0
+  return status === 409 ? 'El estado o la ronda cambió. Actualiza la campaña antes de continuar.'
+    : status === 422 ? 'No se realizó la operación: hay datos obligatorios incompletos o inválidos. Actualiza para verlos.'
+    : status === 403 ? 'No tienes permiso vigente para esta acción o la publicación está deshabilitada.'
+    : status === 400 ? operation === 'publish'
+      ? 'No se pudo publicar. Actualiza la revisión y comprueba los requisitos de publicación.'
+      : 'Revisa el motivo y las observaciones. No se guardó la decisión.'
+    : 'No pudimos confirmar la operación. Actualiza antes de reintentar para comprobar el estado.'
+}
 const texts = (value: unknown, keys: string[]) => object(value) && keys.every(key => typeof value[key] === 'string')
 const optionalText = (value: unknown) => value === null || typeof value === 'string'
 const optionalNumber = (value: unknown) => value === null || (typeof value === 'number' && Number.isFinite(value))
@@ -29,7 +56,7 @@ const date = (value: unknown) => typeof value === 'string' && Number.isFinite(Da
 function observation(value: unknown) { return texts(value, ['section', 'message']) && object(value) && optionalText(value.fieldPath) && (value.section as string).length > 0 && (value.section as string).length <= 80 }
 
 export function administrativeDetailFrom(value: unknown): AdministrativeDetail {
-  if (!object(value) || !['DONATION', 'REWARD', 'PRESALE'].includes(value.campaignType as string)
+  if (!object(value) || !accountContactsValid(value) || !['DONATION', 'REWARD', 'PRESALE'].includes(value.campaignType as string)
     || (value.initiative !== undefined && value.initiative !== null && !texts(value.initiative, ['id','initiativeId','initiativeName','purpose','siteReference','countryCode','locality','stageName','objective','startsOn','endsOn']))
     || (value.duplication !== undefined && !validDuplicateReport(value.duplication))
     || !optionalText(value.organizationName) || typeof value.slug !== 'string' || !/^[a-z0-9-]+$/.test(value.slug)
@@ -39,7 +66,7 @@ export function administrativeDetailFrom(value: unknown): AdministrativeDetail {
     || !texts(value.general.location, ['locality', 'addressLine', 'reference']) || !object(value.general.location) || !optionalText(value.general.location.countryCode)
     || !object(value.story) || !texts(value.story.story, ['problem', 'solution', 'beneficiaries', 'expectedResults'])
     || !Array.isArray(value.story.indicators) || !value.story.indicators.every(item => texts(item, ['name', 'description', 'unit']) && object(item) && optionalNumber(item.baselineValue) && optionalNumber(item.targetValue))
-    || !Array.isArray(value.rounds) || !value.rounds.every(row => object(row) && typeof row.id === 'string' && Number.isInteger(row.round) && Number(row.round) > 0
+    || !Array.isArray(value.rounds) || !value.rounds.every(row => object(row) && accountContactsValid(row) && typeof row.id === 'string' && Number.isInteger(row.round) && Number(row.round) > 0
       && ['PENDING', 'APPROVED', 'CHANGES_REQUESTED', 'REJECTED'].includes(row.decision as string) && optionalText(row.reviewerName) && optionalText(row.summary)
       && (row.decidedAt === null || date(row.decidedAt)) && Array.isArray(row.observations) && row.observations.every(observation))
     || !Array.isArray(value.missing) || !value.missing.every(item => texts(item, ['field', 'label']) && object(item) && Number.isInteger(item.step) && Number(item.step) >= 0 && Number(item.step) <= 7)) throw new SessionError(0)
@@ -71,7 +98,7 @@ export async function readAdministrativeDetail(id: string, signal?: AbortSignal,
   return administrativeDetailFrom(await readJson(await requestApi(`/api/admin/campaigns/${encodeURIComponent(id)}/detail`, { signal }, send)))
 }
 function transitionFrom(value: unknown, id: string, status: string, round: number) {
-  if (!object(value) || value.id !== id || value.status !== status || value.round !== round) throw new SessionError(0)
+  if (!object(value) || !accountContactsValid(value) || value.id !== id || value.status !== status || value.round !== round) throw new SessionError(0)
   return value as { id: string; status: string; round: number }
 }
 export async function decideCampaign(id: string, input: DecisionInput, signal?: AbortSignal, send?: typeof fetch) {
@@ -81,5 +108,5 @@ export async function decideCampaign(id: string, input: DecisionInput, signal?: 
 export async function publishCampaign(id: string, expectedRound: number, signal?: AbortSignal, send?: typeof fetch, duplicateReview?: DuplicateReviewInput) {
   if (!Number.isInteger(expectedRound) || expectedRound < 1 || expectedRound > 32767) throw new SessionError(400)
   if (duplicateReview && duplicateReviewError(duplicateReview)) throw new SessionError(400)
-  return transitionFrom(await readJson(await requestApi(`/api/admin/campaigns/${encodeURIComponent(id)}/publish`, { method: 'POST', body: { confirmed: true, expectedRound, ...(duplicateReview ? { duplicateReview } : {}) }, signal }, send)), id, 'PUBLISHED', expectedRound)
+  return transitionFrom(await readJson(await requestApi(`/api/admin/campaigns/${encodeURIComponent(id)}/publish`, { method: 'POST', body: { confirmed: true, expectedRound, ...(duplicateReview ? { duplicateReview } : {}) }, signal, errorFromResponse: publicationError }, send)), id, 'PUBLISHED', expectedRound)
 }

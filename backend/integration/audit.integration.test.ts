@@ -64,7 +64,7 @@ test('S3-15/16/18 PostgreSQL/HTTP: auditoría mínima, actor local, permisos, le
     const page=await current.json() as Page
     assert.equal(page.items.length,3);assert.deepEqual(page.items.map(row=>row.action),['DELETE','UPDATE','CREATE'])
     assert.ok(page.items.every(row=>row.actorId===owner.id && row.result==='APPLIED' && row.entity==='campaign' && row.fromStatus===null && row.toStatus===null))
-    assert.deepEqual(Object.keys(page.items[0]!).sort(),['id','actorId','actorRole','action','entity','entityId','occurredAt','result','fromStatus','toStatus'].sort())
+    assert.deepEqual(Object.keys(page.items[0]!).sort(),['id','actorId','actorContact','actorRole','action','entity','entityId','occurredAt','result','fromStatus','toStatus'].sort())
     assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND new_values='{"result":"APPLIED","source":"APPLICATION"}'::jsonb AND old_values IS NULL`),'3')
     const status=await (await call(`${path}?source=STATUS&entityId=${id}`,auditor.cookie)).json() as Page
     assert.equal(status.items.length,2,'Alta y descarte lógico, no un historial reconstruido a partir de audit_log.')

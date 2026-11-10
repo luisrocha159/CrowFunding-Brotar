@@ -5,6 +5,7 @@ import {recordAudit,setAuditActor} from '../shared/infrastructure/database/audit
 import {transactionRegisteredAccess} from '../roles/infrastructure/transaction-access'
 import type {EntityManager} from 'typeorm'
 import {smtpRecoveryConfig,smtpRecoveryTransport} from '../auth/infrastructure/smtp-recovery-delivery'
+import {reviewMailboxConfig,writeReviewMessage} from '../shared/infrastructure/http/review-mailbox'
 
 const hash=(token:string)=>createHash('sha256').update(token).digest('hex')
 export interface ContactNotice {id:string;title:string;body:string;entityName:string;createdAt:Date;readAt:Date|null;delivery:string;attempts:number}
@@ -21,15 +22,16 @@ export function supportNotice(kind:'MESSAGE'|'STATUS',status:string){
 /** Único punto SMTP; los tests lo sustituyen sin enviar a cuentas ajenas. */
 @Injectable()
 export class ContactMailSender {
- available(){return smtpRecoveryConfig(process.env)!==null && process.env.PASSWORD_RESET_LOCAL_FILE!=='true'}
+ available(){return process.env.BROTAR_REVIEW_MAILBOX==='true'?reviewMailboxConfig(process.env)!==null:smtpRecoveryConfig(process.env)!==null && process.env.PASSWORD_RESET_LOCAL_FILE!=='true'}
  async send(to:string,subject:string,text:string,id?:string){
+  if(process.env.BROTAR_REVIEW_MAILBOX==='true'){await writeReviewMessage(process.env,to,subject,text);return}
   const config=smtpRecoveryConfig(process.env)
   if(!config||!this.available())throw new ServiceUnavailableException('Correo real no configurado.')
   const transport=smtpRecoveryTransport(config)
   try{const result=await transport.sendMail({from:config.from,to,subject,text,...(id?{messageId:`<${id}@brotar.local>`}:{})});if(!result.accepted.length)throw new Error('SMTP no aceptó el mensaje.')}
   finally{transport.close()}
  }
- origin(){return smtpRecoveryConfig(process.env)?.origin??''}
+ origin(){return process.env.BROTAR_REVIEW_MAILBOX==='true'?reviewMailboxConfig(process.env)?.origin??'':smtpRecoveryConfig(process.env)?.origin??''}
 }
 
 @Injectable()

@@ -1,3 +1,4 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -56,7 +57,7 @@ export function ProjectsPage({ admin = false }: { admin?: boolean }) {
         : admin ? <><label className={styles.search}>Buscar campaña o creador<input type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
           <p id="campaign-queue-help">En pantallas estrechas, desplaza la tabla horizontalmente para consultar todas las columnas. Con teclado, enfoca la tabla y usa las flechas.</p>
           <div className={styles.tableScroll} role="region" aria-label="Tabla desplazable de campañas pendientes" aria-describedby="campaign-queue-help" tabIndex={0}><table><caption>Campañas pendientes de revisión</caption><thead><tr><th scope="col">Campaña</th><th scope="col">Creador</th><th scope="col">Fecha de envío</th><th scope="col">Meta</th><th scope="col">Estado</th><th scope="col">Acción</th></tr></thead>
-            <tbody>{visible.map(project => <tr key={project.id}><td>{project.title}</td><td>{project.creatorName || 'Nombre no disponible'}</td><td>{project.submittedAt ? new Date(project.submittedAt).toLocaleDateString('es-BO') : 'Sin fecha de envío'}</td><td>{projectGoal(project)}</td><td><span className={styles.badge}>{projectStatusNames[project.status]}</span></td><td><Link to={`${back}/${encodeURIComponent(project.id)}`}>Revisar campaña</Link></td></tr>)}</tbody></table></div>
+            <tbody>{visible.map(project => <tr key={project.id}><td>{project.title}</td><td><AccountIdentity contact={project.ownerContact} empty={project.creatorName||'Cuenta no disponible'}/></td><td>{project.submittedAt ? new Date(project.submittedAt).toLocaleDateString('es-BO') : 'Sin fecha de envío'}</td><td>{projectGoal(project)}</td><td><span className={styles.badge}>{projectStatusNames[project.status]}</span></td><td><Link to={`${back}/${encodeURIComponent(project.id)}`}>Revisar campaña</Link></td></tr>)}</tbody></table></div>
           {visible.length === 0 && <p role="status">No hay coincidencias con esa búsqueda.</p>}</>
           : <ProjectsList projects={data.projects} onDiscard={setConfirmation} />)}
       {data.state === 'ready' && id && admin && <AdministrativeCampaignPanel key={id} id={id} />}

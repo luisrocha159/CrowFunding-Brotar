@@ -1,3 +1,4 @@
+import {AccountIdentity} from '../../shared/components/AccountIdentity'
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
@@ -19,7 +20,7 @@ export function FinanceResults({report}: {report: FinanceReport}) {
           <dt>Neto de intentos</dt><dd>{financeMoney(total.netAmount,total.currencyCode)}</dd><dt>Devoluciones completadas</dt><dd>{financeMoney(total.refundedAmount,total.currencyCode)}</dd></dl>
       </article>)}</div>
     </section>
-    <h2>Pagos registrados</h2><p>Cada registro es un intento de pago, no un aporte nuevo. El identificador del patrocinador permite seguimiento sin exponer su correo o documentos. Fechas y filtros en UTC.</p>
+    <h2>Pagos registrados</h2><p>Cada registro es un intento de pago, no un aporte nuevo. La cuenta aportante se identifica por nombre y correo dentro de este panel autorizado. Fechas y filtros en UTC.</p>
     <div className={styles.records}>{report.items.map(item=><article className={styles.record} key={item.id}>
       <header><h3>{item.campaignTitle}</h3><strong>{paymentLabels[item.status]}</strong></header>
       <p>Tipo: Pago · {item.sandbox?'Proveedor sandbox (prueba)':'Proveedor no sandbox (no acredita un cobro por sí solo)'}</p>
@@ -28,7 +29,7 @@ export function FinanceResults({report}: {report: FinanceReport}) {
         <dt>Neto del intento</dt><dd>{financeMoney(item.netAmount,item.currencyCode)}</dd><dt>Devoluciones completadas</dt><dd>{financeMoney(item.refundedAmount,item.currencyCode)}</dd>
         <dt>Estado del aporte</dt><dd>{({PENDING:'Pendiente',CONFIRMED:'Confirmado',CANCELLED:'Cancelado',EXPIRED:'Expirado',REFUNDED:'Reembolsado'} as Record<string,string>)[item.contributionStatus]}</dd>
         <dt>Referencia del aporte</dt><dd>{item.reference}</dd><dt>ID del pago</dt><dd>{item.id}</dd><dt>ID del aporte</dt><dd>{item.contributionId}</dd>
-        <dt>ID de campaña</dt><dd>{item.campaignId}</dd><dt>ID de patrocinador</dt><dd>{item.sponsorId}</dd></dl>
+        <dt>ID de campaña</dt><dd>{item.campaignId}</dd><dt>Cuenta aportante</dt><dd><AccountIdentity contact={item.sponsorContact}/></dd><dt>Referencia técnica de cuenta</dt><dd>{item.sponsorId}</dd></dl>
     </article>)}</div>
   </>
 }

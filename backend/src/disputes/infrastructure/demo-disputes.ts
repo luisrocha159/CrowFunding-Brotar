@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {Injectable,ForbiddenException,NotFoundException} from '@nestjs/common'
 import type {EntityManager} from 'typeorm'
 import {randomUUID} from 'node:crypto'
@@ -25,7 +26,7 @@ export class DemoDisputes{
    const where=`WHERE ($1::boolean OR d.raised_by=$2) AND ($3::text IS NULL OR d.status::text=$3) AND ($4::integer IS NULL OR s.priority=$4)`,args=[admin,actor,status??null,priority??null]
    const[count]=await m.query(`SELECT count(*)::int AS total ${joins} ${where}`,args)
    const items=await m.query(`SELECT ${projection} ${joins} ${where} ORDER BY s.priority,d.opened_at,d.id LIMIT 20 OFFSET $5`,[...args,(page-1)*20])
-   return{mode:'DEMO',items,total:count.total,page,pageSize:20}
+   return{mode:'DEMO',items:admin?await attachAccountContacts(m,items,{raisedByContact:'raisedBy',assignedToContact:'assignedTo'}):items,total:count.total,page,pageSize:20}
   })
  }
  async detail(actor:string,id:string,admin=false,page=1){assertDemoEnabled();uuid(id);pageCheck(page)
@@ -37,7 +38,8 @@ export class DemoDisputes{
    const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.demo_dispute_event WHERE dispute_id=$1 ORDER BY recorded_at,id LIMIT 20 OFFSET $2`,[id,(page-1)*20])
    const[ec]=await m.query('SELECT count(*)::int AS total FROM brotar_extension.demo_dispute_event WHERE dispute_id=$1',[id])
    const evidence=await m.query(`SELECT f.id AS "fileId",f.file_name AS name FROM brotar_extension.support_case_evidence e JOIN public.file_asset f ON f.id=e.file_id JOIN public.support_case s ON s.id=e.case_id WHERE e.case_id=$1 AND f.uploaded_by=s.user_id AND f.scope='PRIVATE' AND f.storage_key LIKE 'SUPPORT_EVIDENCE/%' AND f.deleted_at IS NULL ORDER BY e.display_order`,[row.supportCaseId])
-   return{mode:'DEMO',...row,messages,events,evidence,historyPage:page,messageTotal:mc.total,eventTotal:ec.total,pageSize:20}
+   const[identified]=admin?await attachAccountContacts(m,[row],{raisedByContact:'raisedBy',assignedToContact:'assignedTo'}):[row]
+   return{mode:'DEMO',...identified,messages:admin?await attachAccountContacts(m,messages,{authorContact:'authorId'}):messages,events:admin?await attachAccountContacts(m,events,{actorContact:'actorId'}):events,evidence,historyPage:page,messageTotal:mc.total,eventTotal:ec.total,pageSize:20}
   })
  }
  async evidenceOwner(actor:string,id:string,fileId:string,admin:boolean){assertDemoEnabled();uuid(id);uuid(fileId)

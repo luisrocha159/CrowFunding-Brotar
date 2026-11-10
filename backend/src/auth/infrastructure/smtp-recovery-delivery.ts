@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import nodemailer from 'nodemailer'
 import type { RecoveryDelivery } from '../application/password-recovery'
+import {reviewMailboxConfig,writeReviewMessage} from '../../shared/infrastructure/http/review-mailbox'
 
 export function smtpRecoveryConfig(env: NodeJS.ProcessEnv) {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD || !env.SMTP_FROM || !env.PUBLIC_WEB_ORIGIN) return null
@@ -31,9 +32,15 @@ export function smtpRecoveryTransport(config:NonNullable<ReturnType<typeof smtpR
 
 @Injectable()
 export class SmtpRecoveryDelivery implements RecoveryDelivery {
-  available(): boolean { return smtpRecoveryConfig(process.env) !== null }
+  available(): boolean { return process.env.BROTAR_REVIEW_MAILBOX==='true'?reviewMailboxConfig(process.env)!==null:smtpRecoveryConfig(process.env) !== null }
 
   async send(email: string, token: string): Promise<void> {
+    if(process.env.BROTAR_REVIEW_MAILBOX==='true'){
+      const review=reviewMailboxConfig(process.env)
+      if(!review)throw new Error('Buzón de revisión no configurado.')
+      await writeReviewMessage(process.env,email,'Brotar: restablecer tu contraseña',`Enlace temporal de un uso:\n${review.origin}/recuperar-contrasena?token=${encodeURIComponent(token)}\nEl enlace vence en una hora. No compartir ni subir este mensaje.`)
+      return
+    }
     const config = smtpRecoveryConfig(process.env)
     if (!config) throw new Error('Correo no configurado.')
     const transport = smtpRecoveryTransport(config)

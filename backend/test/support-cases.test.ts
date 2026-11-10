@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
-import { normalizeSupportInput, normalizeSupportReply, supportPage, SupportInvalid, supportFingerprint } from '../src/support-cases/domain/support-case'
+import { normalizeReplyEvidence, normalizeSupportInput, normalizeSupportReply, replyFingerprint, supportPage, SupportInvalid, supportFingerprint } from '../src/support-cases/domain/support-case'
+import {createHash} from 'node:crypto'
 import { SupportCases, SupportMissing, type SupportRepository } from '../src/support-cases/application/support-cases'
 const campaignId = '1e36e42f-f958-4978-bd28-58dab81b6160'
 const requestId = '9743cad9-e8e8-4c28-a6ed-8e421548d759'
@@ -26,7 +27,7 @@ test('incidencias: detalle ajeno y contexto no autorizado son indisponibles', as
     list: async (user, page) => { calls.push(`${user}:${page}`); return { items: [], page, pageSize: 20, total: 0 } },
     detail: async () => null, context: async () => null, create: async () => { throw new Error('No debería escribir datos inválidos') }, reply:async()=>{},
     adminList: async page => ({ items: [], assignees: [], page, pageSize: 20, total: 0 }), adminDetail: async () => null,
-    adminMessage: async () => {}, adminTransition: async (_actor, _id, _status, reason) => { transitionReasons.push(reason) }, adminAssign: async () => {}, adminEvidenceOwner: async () => 'owner'
+    adminMessage: async () => {}, adminTransition: async (_actor, _id, _status, reason) => { transitionReasons.push(reason) }, adminAssign: async () => {}, evidenceOwner: async () => 'owner', adminEvidenceOwner: async () => 'owner'
   }
   const cases = new SupportCases(repository)
   assert.deepEqual(await cases.list('actor', '2'), { items: [], page: 2, pageSize: 20, total: 0 })
@@ -42,6 +43,16 @@ test('incidencias: detalle ajeno y contexto no autorizado son indisponibles', as
 
 test('respuesta de soporte: clave UUID y texto Unicode significativo, sin permitir controles ni HTML',()=>{
   const body='  Envié la información del niño y la campaña; pueden continuar la revisión.  '
-  assert.deepEqual(normalizeSupportReply({requestId,body}),{requestId,body:body.trim()})
+  assert.deepEqual(normalizeSupportReply({requestId,body}),{requestId,body:body.trim(),evidenceFileIds:[]})
   for(const value of [{requestId:'x',body},{requestId,body:' '.repeat(30)},{requestId,body:'x'.repeat(19)},{requestId,body:'x'.repeat(5001)},{requestId,body:'Mensaje largo con control \0 oculto'},{requestId,body:'Texto inválido con sustituto \uD800'},{requestId,body:'<script>dato privado</script>'}])assert.throws(()=>normalizeSupportReply(value),SupportInvalid)
+})
+
+test('respuestas: hasta diez archivos únicos y huella compatible con mensajes históricos sin adjuntos',()=>{
+  assert.deepEqual(normalizeReplyEvidence(undefined),[])
+  assert.deepEqual(normalizeReplyEvidence([campaignId.toUpperCase()]),[campaignId])
+  for(const value of [null,'archivo',Array(11).fill(campaignId),[campaignId,campaignId.toUpperCase()],['https://archivo.invalid']])assert.throws(()=>normalizeReplyEvidence(value),SupportInvalid)
+  const body='Respuesta con información suficiente.'
+  const historical=createHash('sha256').update(JSON.stringify([campaignId,body,'staff'])).digest('hex')
+  assert.equal(replyFingerprint(campaignId,body,'staff',[]),historical)
+  assert.notEqual(replyFingerprint(campaignId,body,'staff',[requestId]),historical)
 })

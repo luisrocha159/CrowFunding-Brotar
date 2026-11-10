@@ -1,3 +1,4 @@
+import {accountContactsValid,type AccountFields} from '../../shared/api/accountContact'
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
 import { paymentLabels, type PaymentStatus } from './financeClient'
@@ -6,19 +7,19 @@ export const reconciliationLabels = {MATCHED:'Coincide',MISSING_INTERNAL:'Falta 
 export const batchLabels = {OPEN:'Abierto',IN_PROGRESS:'En revisión',CLOSED:'Cerrado'} as const
 export type ResolutionAction = 'RECHECK'|'COMPENSATE_DEMO'
 export interface ReconciliationFilters {from: string;to: string;currencyCode: string}
-export interface ReconciliationBatch extends ReconciliationFilters {
+export interface ReconciliationBatch extends ReconciliationFilters,AccountFields {
   id: string;status: keyof typeof batchLabels;totalInternal: string;totalProvider: string;difference: string
 }
-export interface ReconciliationItem {
+export interface ReconciliationItem extends AccountFields {
   id: string;paymentId: string|null;reference: string;status: keyof typeof reconciliationLabels
   originalStatus: Exclude<keyof typeof reconciliationLabels,'RESOLVED'>;internalAmount: string;providerAmount: string
   internalReference: string|null;internalStatus: PaymentStatus|null;resolution: ResolutionAction|null
   reason: string|null;resolvedBy: string|null;resolvedAt: string|null;compensationAmount: string|null
 }
-export interface ReconciliationDetail extends ReconciliationBatch {
+export interface ReconciliationDetail extends ReconciliationBatch,AccountFields {
   snapshotAt: string;createdBy: string|null;closedBy: string|null;closedAt: string|null;items: ReconciliationItem[]
 }
-export interface PendingPayment {
+export interface PendingPayment extends AccountFields {
   id: string;contributionId: string;campaignId: string;campaignTitle: string;reference: string;amount: string
   currencyCode: string;status: PaymentStatus;createdAt: string;expiresAt: string|null;expired: boolean;needsReview: boolean
 }
@@ -36,12 +37,12 @@ const day=(v: unknown): v is string=>typeof v==='string' && /^\d{4}-\d{2}-\d{2}$
 const cents=(v: string)=>BigInt(v.replace('.',''))
 const demo=(v: unknown): v is Record<string,unknown>=>record(v) && v.mode==='DEMO' && text(v.label,200)
 function isBatch(v: unknown): v is ReconciliationBatch {
-  return record(v) && uuid(v.id) && day(v.from) && day(v.to) && v.from<=v.to && currency(v.currencyCode) &&
+  return record(v) && accountContactsValid(v) && uuid(v.id) && day(v.from) && day(v.to) && v.from<=v.to && currency(v.currencyCode) &&
     typeof v.status==='string' && Object.hasOwn(batchLabels,v.status) && amount(v.totalInternal) && amount(v.totalProvider) && signed(v.difference) &&
     cents(v.totalInternal)-cents(v.totalProvider)===cents(v.difference)
 }
 function isItem(v: unknown): v is ReconciliationItem {
-  return record(v) && uuid(v.id) && nullableId(v.paymentId) && text(v.reference,200) && typeof v.status==='string' && Object.hasOwn(reconciliationLabels,v.status) &&
+  return record(v) && accountContactsValid(v) && uuid(v.id) && nullableId(v.paymentId) && text(v.reference,200) && typeof v.status==='string' && Object.hasOwn(reconciliationLabels,v.status) &&
     typeof v.originalStatus==='string' && v.originalStatus!=='RESOLVED' && Object.hasOwn(reconciliationLabels,v.originalStatus) &&
     amount(v.internalAmount) && amount(v.providerAmount) && (v.internalReference===null || text(v.internalReference,24)) &&
     (v.internalStatus===null || typeof v.internalStatus==='string' && Object.hasOwn(paymentLabels,v.internalStatus)) &&

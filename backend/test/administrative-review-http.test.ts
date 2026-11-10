@@ -1,18 +1,19 @@
 import 'reflect-metadata'
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
-import { Module, type INestApplication } from '@nestjs/common'
+import { ConflictException, InternalServerErrorException, Module, type ArgumentsHost, type INestApplication } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { Sessions, SessionMissing } from '../src/auth/application/sessions'
 import { SessionMutationGuard } from '../src/auth/infrastructure/http/session-http'
 import { RoleAccess } from '../src/roles/application/roles'
 import { PermissionAccess } from '../src/roles/application/permissions'
-import { RoleGuard } from '../src/roles/infrastructure/roles-http'
+import { RoleGuard, type AuthenticatedRequest } from '../src/roles/infrastructure/roles-http'
 import { AdministrativeReview, type AdministrativeRepository } from '../src/campaigns/application/administrative-review'
-import { ReviewConflict } from '../src/campaigns/domain/administrative-review'
+import { PublicationRequirementsMissing, ReviewConflict } from '../src/campaigns/domain/administrative-review'
 import { AdministrativeReviewController } from '../src/campaigns/infrastructure/administrative-review.controller'
 import { readEnvironment } from '../src/config/environment'
 import { configureHttp } from '../src/shared/infrastructure/http/configure-http'
+import { ApiExceptionFilter } from '../src/shared/infrastructure/http/api-exception.filter'
 
 const id = '11111111-1111-4111-8111-111111111111'
 let writes = 0
@@ -35,6 +36,32 @@ const call = (path: string, user = '', body?: unknown, headers: Record<string, s
   method: body === undefined ? 'GET' : 'POST', headers: { Cookie: user ? `brotar_session=${user.repeat(64)}` : '', 'Content-Type': 'application/json', 'X-Brotar-Request': '1', ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) })
 })
 const decision = { decision: 'APPROVED', comment: '', expectedRound: 1, observations: [] }
+
+test('publicación: requisito incumplido conserva código y motivo público como conflicto 409', async () => {
+  for (const subject of ['PERSON', 'ORGANIZATION', 'REPRESENTATION'] as const) {
+    const requirement = new PublicationRequirementsMissing(subject)
+    const controller = new AdministrativeReviewController(new AdministrativeReview({ ...repository, publish: async () => { throw requirement } }, true))
+    await assert.rejects(controller.publish({ brotarUser: { id: 'admin' } } as AuthenticatedRequest, id, { confirmed: true, expectedRound: 1 }), error => {
+      assert.ok(error instanceof ConflictException)
+      assert.equal(error.getStatus(), 409)
+      assert.deepEqual(error.getResponse(), { code: 'PUBLICATION_REQUIREMENTS', message: requirement.message })
+      return true
+    })
+  }
+})
+
+test('publicación: el filtro HTTP conserva solo el código permitido y oculta errores internos', () => {
+  let body: unknown
+  const response = { status: () => response, json: (value: unknown) => { body = value } }
+  const host = { switchToHttp: () => ({ getResponse: () => response }) } as unknown as ArgumentsHost
+  const filter = new ApiExceptionFilter()
+  filter.catch(new ConflictException({ code: 'PUBLICATION_REQUIREMENTS', message: 'Falta identidad aprobada.', sql: 'secret' }), host)
+  assert.deepEqual(body, { statusCode: 409, code: 'PUBLICATION_REQUIREMENTS', message: 'Falta identidad aprobada.' })
+  filter.catch(new ConflictException({ code: 'UNKNOWN_INTERNAL_CODE', message: 'Actualiza la ronda.' }), host)
+  assert.deepEqual(body, { statusCode: 409, message: 'Actualiza la ronda.' })
+  filter.catch(new InternalServerErrorException({ code: 'PUBLICATION_REQUIREMENTS', message: 'SELECT secret' }), host)
+  assert.deepEqual(body, { statusCode: 500, message: 'No se pudo completar la solicitud.' })
+})
 test('revisión HTTP: exige administrador en lectura y escritura, UUID válido y no-store', async () => {
   assert.equal((await call(`${id}/detail`)).status, 401)
   assert.equal((await call(`${id}/detail`, 'b')).status, 403)

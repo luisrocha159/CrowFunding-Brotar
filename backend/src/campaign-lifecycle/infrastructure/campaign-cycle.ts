@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {Injectable,NotFoundException} from '@nestjs/common'
 import type {EntityManager} from 'typeorm'
 import {randomUUID} from 'node:crypto'
@@ -12,6 +13,7 @@ import {cycleTarget,fundingOutcome} from '../domain/cycle'
 import {campaignFunds,identityReady,independentActor,ownerAccess,unsettled,type CampaignSubject} from './eligibility'
 import {closureRequiredSpend} from '../../accountability/infrastructure/accountability-integrity'
 import {closureSnapshot,executionPending} from './closure-integrity'
+import {automaticCampaignRefunds} from '../../refunds/infrastructure/automatic-campaign-refunds'
 
 interface Campaign extends CampaignSubject {title:string;goal_amount:string;funding_model:string;ends_at:Date|null;ended:boolean}
 export interface CycleAction {action:string;expectedVersion:number;requestKey:string;reason:string;demoConsent:true}
@@ -27,8 +29,8 @@ export class CampaignCycle {
    await transactionAccess(m,actor,admin?'campaign.lifecycle.read':'campaign.manage.own')
    const where=`c.deleted_at IS NULL AND c.status IN ('APPROVED','PUBLISHED','FUNDING_ENDED','IN_EXECUTION','CANCELLED','CLOSED') AND ($1::boolean OR (c.organization_id IS NULL AND c.creator_user_id=$2) OR EXISTS(SELECT 1 FROM public.organization_member mem WHERE mem.organization_id=c.organization_id AND mem.user_id=$2 AND mem.organization_role IN ('OWNER','LEGAL_REPRESENTATIVE','ADMIN') AND mem.joined_at<=clock_timestamp() AND (mem.left_at IS NULL OR mem.left_at>clock_timestamp())))`
    const [count]=await m.query(`SELECT count(*)::int AS total FROM public.campaign c WHERE ${where}`,[admin,actor])
-   const items=await m.query(`SELECT c.id,c.title,c.status,c.ends_at AS "endsAt",COALESCE(x.outcome,'PENDING') AS outcome,x.cancel_requested_by IS NOT NULL AS "cancelRequested" FROM public.campaign c LEFT JOIN brotar_extension.campaign_cycle x ON x.campaign_id=c.id WHERE ${where} ORDER BY c.updated_at DESC,c.id LIMIT 20 OFFSET $3`,[admin,actor,(page-1)*20])
-   return{mode:'DEMO',items,total:count.total,page,pageSize:20}
+   const items=await m.query(`SELECT c.id,c.title,c.creator_user_id AS "ownerId",c.status,c.ends_at AS "endsAt",COALESCE(x.outcome,'PENDING') AS outcome,x.cancel_requested_by IS NOT NULL AS "cancelRequested" FROM public.campaign c LEFT JOIN brotar_extension.campaign_cycle x ON x.campaign_id=c.id WHERE ${where} ORDER BY c.updated_at DESC,c.id LIMIT 20 OFFSET $3`,[admin,actor,(page-1)*20])
+   return{mode:'DEMO',items:admin?await attachAccountContacts(m,items,{ownerContact:'ownerId'}):items,total:count.total,page,pageSize:20}
   })
  }
  async detail(actor:string,id:string,admin=false,page=1){assertDemoEnabled();uuid(id);if(!Number.isSafeInteger(page)||page<1||page>10000)throw new LedgerInvalid('Página inválida.')
@@ -39,7 +41,8 @@ export class CampaignCycle {
    const [count]=await m.query('SELECT count(*)::int AS total FROM brotar_extension.campaign_cycle_event WHERE campaign_id=$1',[id])
    const events=await m.query(`SELECT id,actor_id AS "actorId",action,previous_status AS "previousStatus",status,reason,recorded_at AS at FROM brotar_extension.campaign_cycle_event WHERE campaign_id=$1 ORDER BY recorded_at DESC,id DESC LIMIT 20 OFFSET $2`,[id,(page-1)*20])
    const blockers=await this.closeBlockers(m,c,x?.outcome??'PENDING',funds,obligations)
-   return{mode:'DEMO',id,title:c.title,status:c.status,currencyCode:c.currency_code,goalAmount:c.goal_amount,endsAt:c.ends_at,version:x?.version??1,outcome:x?.outcome??'PENDING',fundingTotal:x?.funding_total??null,cancelRequested:Boolean(x?.cancel_requested_by),cancelReason:x?.cancel_reason??null,cancellationCaseId:x?.cancellation_case_id??null,executionStartedAt:x?.execution_started_at??null,funds,obligations,closeBlockers:blockers,events,eventTotal:count.total,page,pageSize:20}
+   const[contacts]=admin?await attachAccountContacts(m,[{ownerId:c.creator_user_id,cancelRequestedBy:x?.cancel_requested_by??null}],{ownerContact:'ownerId',cancelRequestedByContact:'cancelRequestedBy'}):[{}]
+   return{mode:'DEMO',...contacts,id,title:c.title,status:c.status,currencyCode:c.currency_code,goalAmount:c.goal_amount,endsAt:c.ends_at,version:x?.version??1,outcome:x?.outcome??'PENDING',fundingTotal:x?.funding_total??null,cancelRequested:Boolean(x?.cancel_requested_by),cancelReason:x?.cancel_reason??null,cancellationCaseId:x?.cancellation_case_id??null,executionStartedAt:x?.execution_started_at??null,funds,obligations,closeBlockers:blockers,events:admin?await attachAccountContacts(m,events,{actorContact:'actorId'}):events,eventTotal:count.total,page,pageSize:20}
   })
  }
  private async closeBlockers(m:EntityManager,c:Campaign,outcome:string,funds:Awaited<ReturnType<typeof campaignFunds>>|null,open:Awaited<ReturnType<typeof unsettled>>){
@@ -109,6 +112,9 @@ export class CampaignCycle {
    await setAuditActor(m,actor)
    await m.query(`UPDATE public.campaign SET status=$2::campaign_status,funding_ended_at=CASE WHEN $3='END_FUNDING' THEN clock_timestamp() ELSE funding_ended_at END,closed_at=CASE WHEN $2='CLOSED' THEN clock_timestamp() ELSE closed_at END,cancelled_at=CASE WHEN $2='CANCELLED' THEN clock_timestamp() ELSE cancelled_at END,cancellation_reason=CASE WHEN $2='CANCELLED' THEN $4 ELSE cancellation_reason END,updated_at=clock_timestamp() WHERE id=$1`,[id,next,input.action,why])
    await m.query(`UPDATE brotar_extension.campaign_cycle SET version=version+1,outcome=$2,funding_total=$3,cancel_requested_by=CASE WHEN $4='REQUEST_CANCEL' THEN $5::uuid WHEN $4 IN ('REJECT_CANCEL','APPROVE_CANCEL') AND $6<>'ESCALATE_CANCEL' THEN NULL ELSE cancel_requested_by END,cancel_reason=CASE WHEN $4='REQUEST_CANCEL' THEN $7 WHEN $4 IN ('REJECT_CANCEL','APPROVE_CANCEL') AND $6<>'ESCALATE_CANCEL' THEN NULL ELSE cancel_reason END,execution_started_at=CASE WHEN $4='START_EXECUTION' THEN clock_timestamp() ELSE execution_started_at END WHERE campaign_id=$1`,[id,outcome,total,input.action,actor,eventAction,why])
+   if(input.action==='PROCESS_REFUNDS'||eventAction==='APPROVE_CANCEL'&&next==='CANCELLED'||input.action==='END_FUNDING'&&outcome==='REFUND_REQUIRED')await automaticCampaignRefunds(m,id)
+   if(admin)await transactionAccess(m,actor,'campaign.lifecycle.manage');else await ownerAccess(m,actor,c)
+   await setAuditActor(m,actor)
    await m.query(`INSERT INTO brotar_extension.campaign_cycle_event(campaign_id,actor_id,action,previous_status,status,request_key,request_hash,reason) VALUES($1,$2,$3,$4::campaign_status,$5::campaign_status,$6,$7,$8)`,[id,actor,eventAction,c.status,next,key,hash,why])
    await recordAudit(m,actor,'STATUS_CHANGE','campaign',id)
   })

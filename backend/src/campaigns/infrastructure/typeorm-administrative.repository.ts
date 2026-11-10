@@ -1,3 +1,4 @@
+import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import { Injectable, ConflictException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
@@ -15,7 +16,8 @@ import { recordAudit } from '../../shared/infrastructure/database/audit'
 import {identityReady,independentActor} from '../../campaign-lifecycle/infrastructure/eligibility'
 import {transactionAccess} from '../../roles/infrastructure/transaction-access'
 import {isDemoEnabled} from '../../demo-payments/domain/demo'
-import {ReviewInvalid} from '../domain/administrative-review'
+import {PublicationRequirementsMissing,ReviewInvalid} from '../domain/administrative-review'
+import {LedgerConflict} from '../../contributions/domain/payment'
 
 @Injectable()
 export class TypeormAdministrativeRepository implements AdministrativeRepository {
@@ -27,13 +29,13 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
     return this.database.connection().transaction('REPEATABLE READ', async manager => {
       const project = await this.projects.findAdministrative(id, manager)
       if (!project) return null
-      const [metadata] = await manager.query(`SELECT c.campaign_type AS "campaignType",c.slug,o.legal_name AS "organizationName",
+      const [metadata] = await manager.query(`SELECT c.creator_user_id AS "ownerId",c.campaign_type AS "campaignType",c.slug,o.legal_name AS "organizationName",
         f.id AS "fileId",COALESCE(a.caption,'') AS "altText" FROM public.campaign c
         LEFT JOIN public.organization o ON o.id=c.organization_id
         LEFT JOIN public.file_asset f ON f.id=c.cover_file_id AND f.scope='PUBLIC' AND f.deleted_at IS NULL
           AND f.storage_key LIKE 'CAMPAIGN_PUBLIC_IMAGE/%'
         LEFT JOIN public.file_attachment a ON a.campaign_id=c.id AND a.file_id=f.id AND a.attachment_role='COVER'
-        WHERE c.id=$1`, [id]) as { campaignType: string; slug: string; organizationName: string | null; fileId: string | null; altText: string }[]
+        WHERE c.id=$1`, [id]) as { ownerId:string;campaignType: string; slug: string; organizationName: string | null; fileId: string | null; altText: string }[]
       // Un único cliente transaccional: consultas secuenciales, sin superponer query() de pg.
       const general = await this.general.readGeneral(id, manager)
       const story = await this.general.readStory(id, manager)
@@ -42,16 +44,17 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       const funding = await this.sections.readFunding(id, manager)
       const rewards = await this.sections.readRewards(id, manager)
       const snapshot = await this.submission.snapshot(id, manager)
-      const rounds: ReviewRound[] = await manager.query(`SELECT r.id,r.round,r.decision,r.summary,r.decided_at AS "decidedAt",
+      const rounds: ReviewRound[] = await manager.query(`SELECT r.reviewer_user_id AS "reviewerId",r.id,r.round,r.decision,r.summary,r.decided_at AS "decidedAt",
         nullif(concat_ws(' ',p.first_name,p.last_name),'') AS "reviewerName"
         FROM public.campaign_review r LEFT JOIN public.user_profile p ON p.user_id=r.reviewer_user_id
         WHERE r.campaign_id=$1 ORDER BY r.round`, [id])
       for (const round of rounds) round.observations = await manager.query(`SELECT section,field_path AS "fieldPath",message
         FROM public.campaign_review_observation WHERE review_id=$1 ORDER BY created_at,id`, [round.id]) as ObservationInput[]
-      return { project, campaignType: metadata!.campaignType, slug: metadata!.slug, organizationName: metadata!.organizationName,
+      const[contacts]=await attachAccountContacts(manager,[{ownerId:metadata!.ownerId}],{ownerContact:'ownerId'})
+      return { ...contacts,project, campaignType: metadata!.campaignType, slug: metadata!.slug, organizationName: metadata!.organizationName,
         cover: metadata!.fileId ? { fileId: metadata!.fileId, altText: metadata!.altText } : null,
         general, story, plan, budget, funding, rewards: metadata!.campaignType === 'DONATION' ? [] : rewards,
-        rounds, missing: missingForSubmission(snapshot), publicationEnabled: false, duplication: snapshot.duplication, initiative: await identityForCampaign(manager, id) }
+        rounds:await attachAccountContacts(manager,rounds,{reviewedByContact:'reviewerId'}), missing: missingForSubmission(snapshot), publicationEnabled: false, duplication: snapshot.duplication, initiative: await identityForCampaign(manager, id) }
     })
   }
 
@@ -111,7 +114,12 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
         await transactionAccess(manager,actorId,'campaign.publish')
         const [c]=await manager.query('SELECT id,creator_user_id,organization_id,currency_code,status FROM public.campaign WHERE id=$1',[id])
         await independentActor(manager,actorId,c)
-        try{await identityReady(manager,c)}catch(error){if(error instanceof ConflictException)throw error;if(error instanceof Error)throw new ReviewInvalid(error.message);throw error}
+        try { await identityReady(manager,c) } catch (error) {
+          if (error instanceof LedgerConflict) throw new PublicationRequirementsMissing(c.organization_id ? 'ORGANIZATION' : 'PERSON')
+          if (error instanceof ConflictException) throw new PublicationRequirementsMissing('REPRESENTATION')
+          // Los errores inesperados conservan la respuesta interna genérica; no exponer SQL ni credenciales.
+          throw error
+        }
         await transactionAccess(manager,actorId,'campaign.publish')
       }
       await this.actor(manager, actorId)

@@ -1,0 +1,20 @@
+[
+  {"user":"administrador","name":"Ana Administración","roles":["ADMIN"],"purpose":"Publicación, permisos, catálogos y cierre del ciclo"},
+  {"user":"revisor","name":"Renato Revisión","roles":["REVIEWER"],"purpose":"Revisar campañas e informes sin operar finanzas"},
+  {"user":"cumplimiento","name":"Carla Cumplimiento","roles":["COMPLIANCE"],"purpose":"Revisar identidad y organización"},
+  {"user":"finanzas","name":"Fabiola Finanzas","roles":["FINANCE"],"purpose":"Conciliación, devoluciones y desembolsos"},
+  {"user":"soporte","name":"Sofía Soporte","roles":["SUPPORT"],"purpose":"Incidencias, adjuntos y disputas"},
+  {"user":"auditor","name":"Andrés Auditoría","roles":["AUDITOR"],"purpose":"Consulta autorizada sin escritura"},
+  {"user":"creador","name":"Camila Creadora","roles":["CREATOR"],"purpose":"Campañas, ejecución y rendición; identidad aprobada"},
+  {"user":"patrocinador","name":"Pablo Patrocinador","roles":["SPONSOR"],"purpose":"Aportes y casos precargados del patrocinador"},
+  {"user":"usuario","name":"Úrsula Usuario","roles":[],"purpose":"Usuario normal sin privilegios internos ni de creador"},
+  {"user":"organizacion","name":"Olivia Organización","roles":["CREATOR"],"purpose":"Titular de la organización de prueba y su campaña"},
+  {"user":"miembro","name":"Marcos Miembro","roles":[],"purpose":"Miembro institucional sin permisos de plataforma"},
+  {"user":"invitacion","name":"Inés Invitada","roles":[],"purpose":"Tiene una invitación institucional por aceptar"},
+  {"user":"identidadpendiente","name":"Iván Identidad","roles":["CREATOR"],"purpose":"Expediente de identidad enviado pendiente de revisión"},
+  {"user":"observaciones","name":"Óscar Observaciones","roles":["CREATOR"],"purpose":"Identidad con cambios solicitados para corregir y reenviar"},
+  {"user":"correopendiente","name":"Cora Correo","roles":[],"purpose":"Correo sin verificar; probar enlace en el buzón privado local"},
+  {"user":"restringido","name":"Rita Restringida","roles":[],"purpose":"Cuenta restringida para probar denegación y rehabilitación"},
+  {"user":"creadorajeno","name":"Cristian Creador","roles":["CREATOR"],"purpose":"Creador diferente para probar propiedad y acceso ajeno"},
+  {"user":"auditorcombinado","name":"Alicia Auditoría","roles":["ADMIN","AUDITOR"],"purpose":"Comprueba que AUDITOR conserva solo lectura incluso con ADMIN"}
+]

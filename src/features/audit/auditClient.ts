@@ -1,3 +1,4 @@
+import {accountContactsValid,type AccountFields} from '../../shared/api/accountContact'
 import { readJson, requestApi } from '../../shared/api/request'
 import { SessionError } from '../../shared/api/sessionError'
 
@@ -5,7 +6,7 @@ export const auditActions={CREATE:'Creación',UPDATE:'Actualización',DELETE:'Ba
 export type AuditSource='AUDIT' | 'STATUS'
 export interface AuditFilters {source:AuditSource;actorId:string;entityId:string;entity:string;action:string;from:string;to:string}
 export const emptyAuditFilters:AuditFilters={source:'AUDIT',actorId:'',entityId:'',entity:'',action:'',from:'',to:''}
-export interface AuditEntry {id:string;actorId:string | null;actorRole:string | null;action:keyof typeof auditActions;entity:string;entityId:string | null;occurredAt:string;result:'APPLIED'|'UNSPECIFIED'|'RECORDED';fromStatus:string | null;toStatus:string | null}
+export interface AuditEntry extends AccountFields {id:string;actorId:string | null;actorRole:string | null;action:keyof typeof auditActions;entity:string;entityId:string | null;occurredAt:string;result:'APPLIED'|'UNSPECIFIED'|'RECORDED';fromStatus:string | null;toStatus:string | null}
 export interface AuditPage {source:AuditSource;items:AuditEntry[];nextCursor:string | null}
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i
 const nullable=(value:unknown,pattern:RegExp)=>value===null || (typeof value==='string' && pattern.test(value))
@@ -13,7 +14,7 @@ const identifier=(value:unknown):value is string=>typeof value==='string' && /^[
 export function auditPageFrom(value:unknown,source:AuditSource):AuditPage {
   if (!value || typeof value!=='object' || !('source' in value) || value.source!==source || !('items' in value) || !Array.isArray(value.items) || value.items.length>50 || !('nextCursor' in value)) throw new SessionError(0)
   for (const item of value.items as unknown[]) {
-    if (!item || typeof item!=='object' || !('id' in item) || !identifier(item.id) || !('actorId' in item) || !nullable(item.actorId,uuid) || !('entityId' in item) || !nullable(item.entityId,uuid) ||
+    if (!item || typeof item!=='object' || !accountContactsValid(item as Record<string,unknown>) || !('id' in item) || !identifier(item.id) || !('actorId' in item) || !nullable(item.actorId,uuid) || !('entityId' in item) || !nullable(item.entityId,uuid) ||
       !('actorRole' in item) || !nullable(item.actorRole,/^[A-Z][A-Z_]{0,59}$/) || !('action' in item) || typeof item.action!=='string' || !Object.hasOwn(auditActions,item.action) ||
       !('entity' in item) || typeof item.entity!=='string' || !/^[a-z][a-z_]{0,79}$/.test(item.entity) || !('occurredAt' in item) || typeof item.occurredAt!=='string' || !/^\d{4}-\d{2}-\d{2}T/.test(item.occurredAt) || !Number.isFinite(Date.parse(item.occurredAt)) ||
       !('result' in item) || typeof item.result!=='string' || !['APPLIED','UNSPECIFIED','RECORDED'].includes(item.result) || !('fromStatus' in item) || !nullable(item.fromStatus,/^[A-Z][A-Z_]{0,39}$/) || !('toStatus' in item) || !nullable(item.toStatus,/^[A-Z][A-Z_]{0,39}$/)) throw new SessionError(0)

@@ -19,6 +19,6 @@ test('S3-06 frontend: contrato estricto, IDs, estados, precisión, fechas y dupl
 })
 test('S3-06 frontend: resultados separan estados, moneda, entorno y datos escapados, sin tratar neto como saldo',()=>{
   const html=renderToStaticMarkup(<FinanceResults report={report} />)
-  for (const text of ['En disputa','Confirmado','Proveedor sandbox','0,30 BOB','0,10 BOB','Neto del intento','no es saldo disponible','ID de patrocinador']) assert.ok(html.includes(text),text)
+  for (const text of ['En disputa','Confirmado','Proveedor sandbox','0,30 BOB','0,10 BOB','Neto del intento','no es saldo disponible','Cuenta aportante']) assert.ok(html.includes(text),text)
   assert.ok(html.includes('&lt;script&gt;Ñ&lt;/script&gt;'));assert.equal(html.includes('<script>'),false)
 })

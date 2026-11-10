@@ -1,4 +1,8 @@
-import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, Res, StreamableFile, UseGuards } from '@nestjs/common'
+import type { Response } from 'express'
+import { Files } from '../../files/application/files'
+import { DatabaseService } from '../../shared/infrastructure/database/database.service'
+import { auditFileRead } from '../../shared/infrastructure/database/file-read-audit'
 import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import {CaseWriteLimitGuard} from '../../shared/infrastructure/http/case-write-limit.guard'
@@ -18,6 +22,7 @@ class SupportCreateDto {
 class SupportReplyDto {
   @IsUUID() requestId!: string
   @IsString() @MaxLength(5000) body!: string
+  @IsOptional() @IsArray() @ArrayMaxSize(10) @ArrayUnique() @IsUUID('all', { each: true }) evidenceFileIds?: string[]
 }
 function translate(error: unknown): never {
   if(error instanceof SupportCampaignClosed)throw new ConflictException('La campaña ya está cerrada. El MVP no admite añadir nuevas obligaciones a un cierre terminal; las incidencias históricas siguen consultables.')
@@ -29,7 +34,7 @@ function translate(error: unknown): never {
 }
 @Controller('me/support-cases') @UseGuards(RoleGuard) @RequireRoles('REGISTERED_USER')
 export class SupportCaseController {
-  constructor(private readonly cases: SupportCases) {}
+  constructor(private readonly cases: SupportCases, private readonly files: Files, private readonly database: DatabaseService) {}
   @Get() @Header('Cache-Control', 'private, no-store')
   async list(@Req() request: AuthenticatedRequest, @Query('page') page?: string) {
     try { return await this.cases.list(request.brotarUser.id, page) } catch (error) { translate(error) }
@@ -49,5 +54,18 @@ export class SupportCaseController {
   @Post(':id/messages') @HttpCode(200) @Header('Cache-Control', 'private, no-store') @UseGuards(SessionMutationGuard,CaseWriteLimitGuard)
   async reply(@Req() request: AuthenticatedRequest, @Param('id',new ParseUUIDPipe()) id: string, @Body() input: SupportReplyDto) {
     try { return await this.cases.reply(request.brotarUser.id,id,input) } catch (error) { translate(error) }
+  }
+  @Get(':id/evidence/:fileId') @Header('Cache-Control', 'private, no-store')
+  async evidence(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Param('fileId', new ParseUUIDPipe()) fileId: string, @Res({ passthrough: true }) response: Response) {
+    try {
+      const owner = await this.cases.evidenceOwner(request.brotarUser.id,id,fileId)
+      const file = await this.files.privateDownload(fileId,owner)
+      await auditFileRead(this.database,request.brotarUser.id,fileId)
+      response.setHeader('Content-Type',file.file.mimeType)
+      response.setHeader('Content-Length',String(file.file.sizeBytes))
+      response.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(file.file.originalName)}`)
+      response.setHeader('X-Content-Type-Options','nosniff')
+      return new StreamableFile(file.content)
+    } catch (error) { translate(error) }
   }
 }
