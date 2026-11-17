@@ -1,0 +1,102 @@
+COMMAND: bun test ./tests/funding-gap.test.ts
+EXIT: 1
+bun test v1.4.2 (744846f84)
+
+tests\funding-gap.test.ts:
+(pass) Importe restante para la meta de una campaña, en centavos > resta un aporte parcial: 1000.00 - 250.50 = 749.50 [0.81ms]
+(pass) Importe restante para la meta de una campaña, en centavos > conserva toda la meta si no se ha recaudado [0.02ms]
+(pass) Importe restante para la meta de una campaña, en centavos > devuelve cero cuando se alcanza exactamente la meta [0.02ms]
+11 |   })
+12 |   it('devuelve cero cuando se alcanza exactamente la meta', () => {
+13 |     assert.equal(getFundingGapCents(100000n, 100000n), 0n)
+14 |   })
+15 |   it('devuelve cero en una campaña sobrefinanciada', () => {
+16 |     assert.equal(getFundingGapCents(100000n, 125000n), 0n)
+                ^
+AssertionError: Expected values to be strictly equal:
+
+-25000n !== 0n
+
+ generatedMessage: true,
+     actual: -25000n,
+   expected: 0n,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <proyecto>\tests\funding-gap.test.ts:16:12
+      at run (node:async_hooks:144:29)
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:45)
+      at node:test:1591:20
+(fail) Importe restante para la meta de una campaña, en centavos > devuelve cero en una campaña sobrefinanciada [1.23ms]
+(pass) Importe restante para la meta de una campaña, en centavos > conserva la precisión de un centavo pendiente [0.04ms]
+(pass) Importe restante para la meta de una campaña, en centavos > admite una meta mínima de un centavo [0.02ms]
+20 |   })
+21 |   it('admite una meta mínima de un centavo', () => {
+22 |     assert.equal(getFundingGapCents(1n, 0n), 1n)
+23 |   })
+24 |   it('rechaza una meta cero', () => {
+25 |     assert.throws(() => getFundingGapCents(0n, 0n), RangeError)
+                ^
+AssertionError: Missing expected exception (RangeError).
+ generatedMessage: false,
+     actual: undefined,
+   expected: [class RangeError extends Error],
+   operator: "throws",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <proyecto>\tests\funding-gap.test.ts:25:12
+      at run (node:async_hooks:144:29)
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:45)
+      at node:test:1591:20
+(fail) Importe restante para la meta de una campaña, en centavos > rechaza una meta cero [0.31ms]
+23 |   })
+24 |   it('rechaza una meta cero', () => {
+25 |     assert.throws(() => getFundingGapCents(0n, 0n), RangeError)
+26 |   })
+27 |   it('rechaza una meta negativa', () => {
+28 |     assert.throws(() => getFundingGapCents(-100n, 0n), RangeError)
+                ^
+AssertionError: Missing expected exception (RangeError).
+ generatedMessage: false,
+     actual: undefined,
+   expected: [class RangeError extends Error],
+   operator: "throws",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <proyecto>\tests\funding-gap.test.ts:28:12
+      at run (node:async_hooks:144:29)
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:45)
+      at node:test:1591:20
+(fail) Importe restante para la meta de una campaña, en centavos > rechaza una meta negativa [0.15ms]
+26 |   })
+27 |   it('rechaza una meta negativa', () => {
+28 |     assert.throws(() => getFundingGapCents(-100n, 0n), RangeError)
+29 |   })
+30 |   it('rechaza una recaudación negativa', () => {
+31 |     assert.throws(() => getFundingGapCents(100000n, -1n), RangeError)
+                ^
+AssertionError: Missing expected exception (RangeError).
+ generatedMessage: false,
+     actual: undefined,
+   expected: [class RangeError extends Error],
+   operator: "throws",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <proyecto>\tests\funding-gap.test.ts:31:12
+      at run (node:async_hooks:144:29)
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:45)
+      at node:test:1591:20
+(fail) Importe restante para la meta de una campaña, en centavos > rechaza una recaudación negativa [0.13ms]
+(pass) Importe restante para la meta de una campaña, en centavos > mantiene exactitud por encima del entero seguro de Number [0.04ms]
+
+ 6 pass
+ 4 fail
+Ran 10 tests across 1 file. [32.00ms]

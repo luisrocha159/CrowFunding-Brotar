@@ -1,0 +1,338 @@
+{
+  "checked_at": "2026-11-17T05:02:57.026689+00:00",
+  "base": "8c8223eb993b15c3a55d7e586efc099304a11542",
+  "github": {
+    "account": {
+      "status": 200,
+      "data": {
+        "login": "ricardoNP0",
+        "html_url": "https://github.com/ricardoNP0"
+      }
+    },
+    "course": {
+      "status": 200,
+      "data": {
+        "full_name": "BenjaminBuitragoC/PROYECTO-DE-SISTEMAS-II-A",
+        "html_url": "https://github.com/BenjaminBuitragoC/PROYECTO-DE-SISTEMAS-II-A",
+        "private": false,
+        "visibility": "public",
+        "permissions": {
+          "admin": false,
+          "maintain": false,
+          "push": false,
+          "triage": false,
+          "pull": true
+        },
+        "default_branch": "main"
+      }
+    },
+    "brotar": {
+      "status": 200,
+      "data": {
+        "full_name": "luisrocha159/CrowFunding-Brotar",
+        "html_url": "https://github.com/luisrocha159/CrowFunding-Brotar",
+        "private": false,
+        "visibility": "public",
+        "permissions": {
+          "admin": false,
+          "maintain": false,
+          "push": true,
+          "triage": true,
+          "pull": true
+        },
+        "default_branch": "main"
+      }
+    },
+    "collaborators": {
+      "status": 200,
+      "data": [
+        {
+          "login": "heriiiiiii",
+          "role_name": "write",
+          "permissions": {
+            "admin": false,
+            "maintain": false,
+            "push": true,
+            "triage": true,
+            "pull": true
+          }
+        },
+        {
+          "login": "JayLoKing",
+          "role_name": "write",
+          "permissions": {
+            "admin": false,
+            "maintain": false,
+            "push": true,
+            "triage": true,
+            "pull": true
+          }
+        },
+        {
+          "login": "luisrocha159",
+          "role_name": "admin",
+          "permissions": {
+            "admin": true,
+            "maintain": true,
+            "push": true,
+            "triage": true,
+            "pull": true
+          }
+        },
+        {
+          "login": "AlisonPizarro1",
+          "role_name": "write",
+          "permissions": {
+            "admin": false,
+            "maintain": false,
+            "push": true,
+            "triage": true,
+            "pull": true
+          }
+        },
+        {
+          "login": "ricardoNP0",
+          "role_name": "write",
+          "permissions": {
+            "admin": false,
+            "maintain": false,
+            "push": true,
+            "triage": true,
+            "pull": true
+          }
+        }
+      ]
+    },
+    "main": {
+      "status": 200,
+      "data": {
+        "name": "main",
+        "protected": false,
+        "sha": "3d2b7a7cddf890c731b0d287baccc904275be81c"
+      }
+    },
+    "DEV": {
+      "status": 200,
+      "data": {
+        "name": "DEV",
+        "protected": false,
+        "sha": "8c8223eb993b15c3a55d7e586efc099304a11542"
+      }
+    },
+    "rules_main": {
+      "status": 200,
+      "data": []
+    },
+    "rules_DEV": {
+      "status": 200,
+      "data": []
+    },
+    "dependabot": {
+      "status": 404,
+      "error": "Not Found"
+    },
+    "pull_requests": {
+      "status": 200,
+      "data": []
+    }
+  },
+  "tests": {
+    "new_function": {
+      "pass": 10,
+      "fail": 0
+    },
+    "frontend": {
+      "pass": 291,
+      "fail": 0,
+      "check_exit": 0
+    },
+    "backend": {
+      "unit_pass": 251,
+      "admin_pass": 8,
+      "review_setup_pass": 4,
+      "fail": 0,
+      "check_exit": 0
+    }
+  },
+  "secret_scan": {
+    "checked_at": "2026-11-17T05:00:02.049369+00:00",
+    "scope": "tracked UTF-8 working tree files; no history, private untracked files, provider verification or binary contents",
+    "checked_text_files": 904,
+    "binary_or_non_utf8_files_excluded": 78,
+    "tracked_non_example_env_files": [],
+    "matches_without_values": [],
+    "limitations": "Pattern review only. Absence of matches does not prove absence of secrets; review synthetic examples and enable server-side scanning as appropriate."
+  },
+  "audit_summary": {
+    "12-auditoria-frontend": {
+      "severity_counts": {
+        "critical": 0,
+        "high": 5,
+        "moderate": 6,
+        "low": 1
+      },
+      "package_groups": 5,
+      "advisories": [
+        {
+          "package": "brace-expansion",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+          "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion"
+        },
+        {
+          "package": "brace-expansion",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+          "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion"
+        },
+        {
+          "package": "brace-expansion",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+          "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service"
+        },
+        {
+          "package": "minimatch",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "title": "minimatch has potential denial of service via globparts amplification"
+        },
+        {
+          "package": "source-map-js",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets"
+        },
+        {
+          "package": "vite",
+          "severity": "low",
+          "url": "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+          "title": "Vite: Cross origin script execution through Vite custom middleware"
+        },
+        {
+          "package": "vite",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-rq7h-c2jc-7f22",
+          "title": "Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine"
+        },
+        {
+          "package": "vite",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+          "title": "launch-editor: escapeCmdArgs() omits % escaping on Windows"
+        },
+        {
+          "package": "vite",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+          "title": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors"
+        },
+        {
+          "package": "vite",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+          "title": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows"
+        },
+        {
+          "package": "vite",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-vfpm-58rq-9qcg",
+          "title": "Vite: First 4 bytes of files outside of `server.fs` setting is exposed by `?vite-wasm-instance`"
+        },
+        {
+          "package": "zod",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+          "title": "Zod can exhaust memory while validating oversized constrained collections"
+        }
+      ]
+    },
+    "13-auditoria-backend": {
+      "severity_counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 8,
+        "high": 2,
+        "critical": 0
+      },
+      "advisories": [
+        {
+          "package": "body-parser",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828",
+          "id": "GHSA-27r3-jxmh-p828",
+          "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body"
+        },
+        {
+          "package": "multer",
+          "severity": "high",
+          "url": "https://github.com/advisories/GHSA-q7qp-rjg7-q26m",
+          "id": "GHSA-q7qp-rjg7-q26m",
+          "title": "multer vulnerable to Denial of Service via a pending asynchronous fileFilter after request teardown"
+        },
+        {
+          "package": "nodemailer",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-8c8m-p3m8-cjg8",
+          "id": "GHSA-8c8m-p3m8-cjg8",
+          "title": "Nodemailer: A nested comment ends early in addressparser, releasing the rest of the comment as a recipient"
+        },
+        {
+          "package": "nodemailer",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-m943-m63m-w62w",
+          "id": "GHSA-m943-m63m-w62w",
+          "title": "Nodemailer: A \";\" inside a quoted string or comment ends an address group early in addressparser, turning display text into a recipient"
+        },
+        {
+          "package": "nodemailer",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-85x2-q946-cp5h",
+          "id": "GHSA-85x2-q946-cp5h",
+          "title": "Nodemailer: A \">\" inside a quoted local part ends an angle-addr early in addressparser, delivering to a domain the header does not name"
+        },
+        {
+          "package": "nodemailer",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-4ffr-jq9g-5ffx",
+          "id": "GHSA-4ffr-jq9g-5ffx",
+          "title": "Nodemailer: Quadratic backtracking in SMTP AUTH mechanism detection regexes allows pre-auth remote denial of service"
+        },
+        {
+          "package": "nodemailer",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-g73g-hqqh-jr95",
+          "id": "GHSA-g73g-hqqh-jr95",
+          "title": "Nodemailer: RFC 5322 comment inside an angle-bracket address is never stripped"
+        },
+        {
+          "package": "qs",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-6pq8-jhm2-2vcw",
+          "id": "GHSA-6pq8-jhm2-2vcw",
+          "title": "qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS)"
+        },
+        {
+          "package": "glob",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-3g3m-2fjr-6pw4",
+          "id": "GHSA-3g3m-2fjr-6pw4",
+          "title": "Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal"
+        },
+        {
+          "package": "minimatch",
+          "severity": "moderate",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "id": "GHSA-g3hv-75wg-m249",
+          "title": "minimatch has potential denial of service via globparts amplification"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Revisión humana independiente pendiente",
+    "MFA individual no verificado",
+    "Sin prueba de restauración de base ni escaneo del historial completo",
+    "Sin pruebas de integración HTTP/base ni visuales en esta actividad"
+  ]
+}
