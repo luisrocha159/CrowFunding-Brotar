@@ -28,6 +28,12 @@ Entrega DEV del MVP académico DEMO, 30/10/2026. Este índice identifica los doc
 - [S3-21 recorrido y aceptación](validacion-integral-s3-21-2026-10-29.md), [resumen de pruebas](evidencias/s3-21/resumen.json) y [aceptación de Ricardo](evidencias/s3-21/aceptacion.json).
 - [S3-19 revisión de interfaz](cierre-s3-19-qa-global-2026-10-29.md), [S3-26 contactos](cierre-s3-26-contactos-2026-10-29.md) y [correo real previo](correo-operativo-2026-10-24.md).
 
+## Colaboración y autoaprendizaje de GitHub
+
+- [Guía de reutilización](guia-reutilizacion.md) y [plantilla genérica de revisión](plantillas/revision-cambio.md).
+- [Seguridad observada y recomendaciones](autoaprendizaje/seguridad.md) y [permisos del equipo](autoaprendizaje/permisos.md).
+- [Trazabilidad de cambios](autoaprendizaje/trazabilidad.md), [función y pruebas con IA](autoaprendizaje/asistencia-ia.md) e [integración de las prácticas](autoaprendizaje/integracion.md).
+
 ## Antecedentes
 
 [Índice histórico](README_HISTORICO.md), [README histórico raíz](../README_HISTORICO.md) y entregables anteriores en entregables/general, entregables/sprint-1 y entregables/sprint-2. El PDF nuevo de pantallas describe interfaz implementada; el prototipo y los informes originales permanecen separados y no se presentan como capturas nuevas.

@@ -1,0 +1,4 @@
+/** Remaining funding in integer cents. Initial AI proposal, pending review. */
+export function getFundingGapCents(goalCents: bigint, raisedCents: bigint): bigint {
+  return goalCents - raisedCents
+}

@@ -1,0 +1,19 @@
+COMMAND: bun test ./tests/funding-gap.test.ts
+EXIT: 0
+bun test v1.4.2 (744846f84)
+
+tests\funding-gap.test.ts:
+(pass) Importe restante para la meta de una campaña, en centavos > resta un aporte parcial: 1000.00 - 250.50 = 749.50 [0.81ms]
+(pass) Importe restante para la meta de una campaña, en centavos > conserva toda la meta si no se ha recaudado [0.03ms]
+(pass) Importe restante para la meta de una campaña, en centavos > devuelve cero cuando se alcanza exactamente la meta [0.02ms]
+(pass) Importe restante para la meta de una campaña, en centavos > devuelve cero en una campaña sobrefinanciada [0.01ms]
+(pass) Importe restante para la meta de una campaña, en centavos > conserva la precisión de un centavo pendiente [0.01ms]
+(pass) Importe restante para la meta de una campaña, en centavos > admite una meta mínima de un centavo [0.02ms]
+(pass) Importe restante para la meta de una campaña, en centavos > rechaza una meta cero [0.32ms]
+(pass) Importe restante para la meta de una campaña, en centavos > rechaza una meta negativa [0.03ms]
+(pass) Importe restante para la meta de una campaña, en centavos > rechaza una recaudación negativa [0.02ms]
+(pass) Importe restante para la meta de una campaña, en centavos > mantiene exactitud por encima del entero seguro de Number [0.02ms]
+
+ 10 pass
+ 0 fail
+Ran 10 tests across 1 file. [34.00ms]

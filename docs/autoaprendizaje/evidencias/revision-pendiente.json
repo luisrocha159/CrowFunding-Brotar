@@ -1,0 +1,27 @@
+{
+  "number": 1,
+  "title": "Mejorar contribucion, seguridad y pruebas de Brotar",
+  "html_url": "https://github.com/luisrocha159/CrowFunding-Brotar/pull/1",
+  "state": "open",
+  "merged": false,
+  "merged_at": null,
+  "created_at": "2026-11-17T05:03:39Z",
+  "updated_at": "2026-11-17T05:03:40Z",
+  "mergeable": true,
+  "mergeable_state": "clean",
+  "commits": 1,
+  "changed_files": 15,
+  "additions": 786,
+  "deletions": 2,
+  "base": "DEV",
+  "head": "docs-mejora-proyecto",
+  "head_sha": "0284f2104ce0f7831334f1c2948553f1f1cb774c",
+  "author": "ricardoNP0",
+  "requested_reviewers": [
+    "AlisonPizarro1"
+  ],
+  "reviews": [],
+  "comments": [],
+  "review_comments": [],
+  "checked_at": "2026-11-17T05:04:59.294864+00:00"
+}

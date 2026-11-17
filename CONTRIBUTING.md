@@ -1,4 +1,4 @@
-> Corte DEV 30/10/2026: 40 migraciones y 215 rutas HTTP; S3-21 aceptada y publicación de S3-20 autorizada por Ricardo. Seguir README raíz y la guía de tres recorridos manuales. Conservar trabajo propio y usar pull --ff-only; no forzar ni borrar datos para actualizar. El correo se importa desde el paquete privado independiente, nunca desde Git. Los repartos y entregas anteriores citados abajo son antecedentes.
+> Referencia vigente: entrega DEV del 09/11/2026 y paquete de revisión de líderes, documentados en el README raíz. Los informes fechados y repartos anteriores conservan el estado de su propio corte. Conservar trabajo propio y usar pull --ff-only; no forzar ni borrar datos para actualizar. La configuración privada de correo se comparte por separado, nunca mediante Git.
 
 # Contribuir a Brotar
 
@@ -10,6 +10,21 @@
 - Flujo: rama personal → Pull Request a `DEV` → revisión y pruebas → Pull Request de `DEV` a `main`.
 
 La base integrada de los Sprints 1 y 2 se publica en `DEV`. `main` y las ramas personales no se actualizan automáticamente: cada integrante debe incorporar `origin/DEV` en su propia rama, con su trabajo guardado, usando el procedimiento siguiente. No se fuerza ni sobreescribe el trabajo remoto de nadie. Esta convención no configura protecciones de GitHub; el propietario deberá establecerlas si corresponde.
+
+## Mejoras pequeñas de documentación y pruebas
+
+Para un cambio acotado puede utilizarse una rama temporal desde la integración vigente. La actividad de autoaprendizaje usa `docs-mejora-proyecto`; esto no renombra ni reemplaza las ramas personales existentes.
+
+Con el trabajo propio guardado y el árbol limpio:
+
+```powershell
+git fetch origin
+git switch -c docs-mejora-proyecto origin/DEV
+```
+
+Si la rama ya existe, revisar primero su contenido y usar `git switch docs-mejora-proyecto`; no recrearla ni forzar su historial. Registrar los archivos concretos del cambio en un commit descriptivo y publicar solo la rama de trabajo. Crear el Pull Request con **base `DEV`**, explicar el problema y la mejora, adjuntar las verificaciones y solicitar la revisión de otro integrante. Atender las observaciones antes de integrar; la solicitud de revisión por sí sola no constituye aprobación.
+
+La [plantilla reutilizable de revisión](docs/plantillas/revision-cambio.md) ayuda a registrar el cambio y sus pruebas. La [guía de reutilización](docs/guia-reutilizacion.md) explica cómo adaptarla y mantenerla. El [informe de seguridad](docs/autoaprendizaje/seguridad.md) distingue configuración observada y recomendaciones; el [análisis de permisos](docs/autoaprendizaje/permisos.md) documenta los accesos consultados.
 
 ## Primera vez: cada persona elige SOLO su rama
 
@@ -140,7 +155,7 @@ No editar simultáneamente routers, contratos compartidos o configuración sin a
 
 Usar la base local oficial V2 de cada persona. Nunca compartir `.env`, contraseñas, tokens, dumps ni datos personales en Git/Trello. El SQL oficial revisado de estructura y catálogos se distribuye como `infra/postgres-v2/official-schema.sql`; no sustituirlo por un backup de una base poblada.
 
-No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. El corte publicado en DEV del 16/10 conserva siete migraciones; RicardoDev local requiere 40 migraciones acumulativas. Seguir `infra/postgres-v2/MIGRACIONES.md` y la sección 5 del README vigente. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos de S3 están en `docs/contratos-sprint-3.md`. Auditar en la misma transacción con contexto local de actor; no registrar cuerpos, contraseñas, tokens, documentos ni payloads del proveedor. No conceder UPDATE/DELETE de `audit_log` a la aplicación ni retroatribuir actores a registros heredados.
+No activar sincronización automática del ORM, DDL destructivo ni reinstalar el SQL para actualizar. Consultar el corte y el número de migraciones en el README vigente y comprobar el estado con el migrador; los informes anteriores describen su propio corte. Seguir `infra/postgres-v2/MIGRACIONES.md` y la sección 5 del README vigente. Una propuesta nueva debe explicar compatibilidad y recuperación sobre copia aislada; no modificar las migraciones ya desplegadas. Los contratos de S3 están en `docs/contratos-sprint-3.md`. Auditar en la misma transacción con contexto local de actor; no registrar cuerpos, contraseñas, tokens, documentos ni payloads del proveedor. No conceder UPDATE/DELETE de `audit_log` a la aplicación ni retroatribuir actores a registros heredados.
 
 No versionar `node_modules`, `dist`, `dist-test`, cobertura o temporales. Conservar los dos lockfiles y usar el gestor correspondiente. No actualizar dependencias sin necesidad y sin pruebas.
 
