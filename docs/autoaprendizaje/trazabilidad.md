@@ -18,7 +18,7 @@ La rama actual añade un procedimiento de contribuciones pequeñas y vincula la 
 
 ## Relación con un Pull Request
 
-La consulta inicial a los PR abiertos y cerrados no encontró resultados. No se inventa una incidencia histórica asociada a los tres commits. El Pull Request de `docs-mejora-proyecto` hacia `DEV`, enlazado en el informe de entrega, relaciona ahora los cambios de documentación y la función de cálculo con sus pruebas y la solicitud de revisión.
+La consulta inicial a los PR abiertos y cerrados no encontró resultados. No se inventa una incidencia histórica asociada a los tres commits. El [Pull Request #1](https://github.com/luisrocha159/CrowFunding-Brotar/pull/1), de `docs-mejora-proyecto` hacia `DEV`, relaciona ahora los cambios de documentación y la función de cálculo con sus pruebas y la solicitud de revisión. El [commit 0284f21](https://github.com/luisrocha159/CrowFunding-Brotar/commit/0284f21) contiene la mejora y las pruebas; el PR permite continuar la trazabilidad con la revisión del equipo.
 
 ## ¿Cómo ayuda a investigar un defecto?
 

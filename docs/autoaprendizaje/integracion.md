@@ -15,7 +15,7 @@ La rama `docs-mejora-proyecto` nace del corte `8c8223e` de `DEV`. Actualiza la g
 | Trazabilidad | Tres commits, historial y blame de CONTRIBUTING.md en `trazabilidad.md`; el PR vincula la mejora actual. |
 | Pruebas con IA | Propuesta inicial revisada, diez casos y versión final de la utilidad; registros y resultados disponibles. |
 
-Se integran al menos cinco prácticas con resultados locales verificables. La solicitud de revisión no se presenta como una revisión humana ya terminada.
+Se integran al menos cinco prácticas con resultados locales verificables. El [PR #1](https://github.com/luisrocha159/CrowFunding-Brotar/pull/1) está abierto hacia DEV y solicita revisión a `AlisonPizarro1`. La solicitud de revisión no se presenta como una revisión humana ya terminada; no se fusionó el cambio.
 
 ## Validación ejecutada
 
