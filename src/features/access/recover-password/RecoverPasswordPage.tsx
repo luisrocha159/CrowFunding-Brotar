@@ -12,11 +12,12 @@ const requestMessages: Record<RecoveryFailure, string> = {
   invalid: 'Revisa el correo ingresado.',
   busy: 'Se alcanzó el límite de solicitudes. Espera un minuto antes de volver a intentar.',
   expired: 'El enlace de recuperación no está disponible o ya venció.',
-  unavailable: 'La recuperación no está disponible. Comprueba la API, PostgreSQL y el canal de correo autorizado. Después de configurar SMTP, reinicia el backend. El buzón local es solo una alternativa de desarrollo.',
+  unavailable: 'En este momento no podemos enviar el enlace. Vuelve a intentarlo en unos minutos. Si el problema continúa, contacta con Soporte.',
   unknown: 'No pudimos confirmar la solicitud. Intenta nuevamente sin asumir que se envió un correo.'
 }
 const resetMessages: Record<RecoveryFailure, string> = {
   ...requestMessages,
+  unavailable: 'En este momento no podemos guardar la contraseña. Vuelve a intentarlo en unos minutos.',
   invalid: 'Revisa la nueva contraseña.',
   unknown: 'No pudimos cambiar la contraseña. Solicita un enlace nuevo si el problema continúa.'
 }
@@ -41,15 +42,15 @@ function RequestRecovery({ params }: { params: URLSearchParams }) {
   }, [status])
   if (status === 'success') return <AccessShell centered title="Solicitud recibida" subtitle="Si el correo corresponde a una cuenta habilitada, revisa el canal de recuperación configurado."
     notice={<><strong>Solicitud procesada.</strong> Consulta el canal configurado por el equipo: correo autorizado o buzón privado local. Un buzón local no envía correos externos.</>}>
-    <AccessSuccess title="Revisa el canal autorizado">
-      <p>Por seguridad, esta pantalla no revela si la cuenta existe ni confirma la llegada del mensaje. Revisa la bandeja de entrada y spam. El enlace vence en una hora y se usa una sola vez.</p>
-      {import.meta.env.DEV && <details className={styles.recoveryHelp}><summary>¿Dónde está el enlace en la prueba local?</summary><p>Si el equipo activó <code>PASSWORD_RESET_LOCAL_FILE=true</code> en <code>backend/.env</code> y reinició la API, abre <code>%LOCALAPPDATA%\Brotar\recovery-mail</code> en Windows. Usa el archivo más reciente de tu cuenta. Si el correo no existe, no se genera archivo. No compartas el enlace: da acceso temporal a la cuenta.</p></details>}
-      {resetPath && <p>Entorno local: usa el enlace de recuperación generado para completar la prueba de caducidad y uso único.</p>}
+    <AccessSuccess title="Busca el enlace de recuperación">
+      <p>Revisa tu bandeja de entrada y la carpeta de correo no deseado. El enlace vence en una hora y se usa una sola vez.</p>
+      {import.meta.env.DEV && <details className={styles.recoveryHelp}><summary>¿Tu equipo usa el buzón local?</summary><p>Si tu equipo configuró el buzón local en Windows, busca el enlace en <code>%LOCALAPPDATA%\Brotar\recovery-mail</code> en Windows. Usa el archivo más reciente de tu cuenta. No compartas el enlace: da acceso temporal a la cuenta.</p></details>}
+      {resetPath && <p>Puedes continuar con el enlace de recuperación de esta instalación.</p>}
       <div className={styles.actions}>{resetPath && <ButtonLink to={resetPath}>Abrir enlace local</ButtonLink>}<ButtonLink variant="secondary" to={accessHref('/iniciar-sesion', params)}>Volver a iniciar sesión</ButtonLink><Button variant="secondary" onClick={() => { setEmail(''); setErrors({}); setResetPath(undefined); setStatus('idle') }}>Solicitar otro enlace</Button></div>
     </AccessSuccess>
   </AccessShell>
   return <AccessShell centered title="Recuperar contraseña" subtitle="Solicita un enlace de recuperación con caducidad y uso único."
-    notice={<><strong>Recuperación segura.</strong> Recibirás un enlace temporal mediante el correo autorizado de Brotar. Si tu instalación usa el buzón privado de desarrollo, consulta ese buzón según el README; ese modo no envía correo externo. La respuesta no revela si una cuenta existe.</>}>
+    notice={<><strong>Recuperación segura.</strong> Si el correo corresponde a una cuenta habilitada, podrás usar el enlace una sola vez. Tu equipo puede recibirlo por correo o en el buzón local configurado.</>}>
     {status !== 'idle' && status !== 'loading' && <div id="recover-response" tabIndex={-1} className={styles.response}><Message tone="error" title="No pudimos procesar la solicitud">{requestMessages[status]}</Message></div>}
     <form className={styles.form} noValidate aria-label="Formulario de recuperación" onSubmit={async event => {
       event.preventDefault()
@@ -92,14 +93,14 @@ function ResetPassword({ token, params }: { token: string; params: URLSearchPara
     setErrors(current => ({ ...current, [key]: undefined }))
     setStatus('idle')
   }
-  if (status === 'success') return <AccessShell centered title="Contraseña actualizada" subtitle="El enlace de recuperación quedó consumido.">
+  if (status === 'success') return <AccessShell centered title="Contraseña actualizada" subtitle="El enlace de recuperación ya se utilizó.">
     <AccessSuccess title="Ya puedes iniciar sesión">
       <p>La contraseña se cambió correctamente. El enlace utilizado no puede volver a usarse.</p>
       <div className={styles.actions}><ButtonLink to={accessHref('/iniciar-sesion', params)}>Iniciar sesión</ButtonLink></div>
     </AccessSuccess>
   </AccessShell>
   return <AccessShell centered title="Crear nueva contraseña" subtitle="El enlace debe estar vigente y solo puede usarse una vez."
-    notice={<><strong>Restablecimiento conectado.</strong> La nueva contraseña se guarda protegida; el token se consume y las sesiones abiertas se revocan.</>}>
+    notice={<><strong>Seguridad de tu cuenta.</strong> Cuando guardes la nueva contraseña, se cerrarán las sesiones abiertas.</>}>
     {status !== 'idle' && status !== 'loading' && <div id="reset-response" tabIndex={-1} className={styles.response}><Message tone="error" title="No pudimos cambiar la contraseña">{resetMessages[status]}</Message></div>}
     <form className={styles.form} noValidate aria-label="Restablecer contraseña" onSubmit={async event => {
       event.preventDefault()

@@ -24,7 +24,8 @@ test('responsabilidades HTTP/PostgreSQL: conceder, revocar, idempotencia, revoca
     const email = `staff-${role.toLowerCase()}-${suffix}@example.invalid`
     const registered = await call('auth/register', '', { legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName: 'Ensayo', lastName: 'Roles', email, password, demoConsent: true }); assert.equal(registered.status, 201)
     const { id } = await registered.json() as { id: string }; users.push(id)
-    if (role !== 'REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
+    sql(`UPDATE user_role SET granted_at=clock_timestamp()-interval '1 hour' WHERE user_id='${id}'`)
+    if (role !== 'REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='${role}'`)
     const login = await call('auth/login', '', { email, password }); assert.equal(login.status, 200)
     return { id, cookie: login.headers.get('set-cookie')!.split(';')[0]! }
   }
@@ -52,7 +53,7 @@ test('responsabilidades HTTP/PostgreSQL: conceder, revocar, idempotencia, revoca
     assert.equal((await call(path, admin.cookie, { ...input, operation: 'REVOKE' })).status, 200)
     sql(`UPDATE app_user SET status='SUSPENDED' WHERE id='${target.id}'`)
     assert.equal((await call(path, admin.cookie, input)).status, 409)
-    sql(`UPDATE app_user SET status='PENDING_VERIFICATION' WHERE id='${target.id}'; INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='ADMIN'`)
+    sql(`UPDATE app_user SET status='PENDING_VERIFICATION' WHERE id='${target.id}'; INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${auditor.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='ADMIN'`)
     assert.equal((await call(path, auditor.cookie, input)).status, 403)
     assert.equal((await call(`admin/users/${auditor.id}/responsibilities`, admin.cookie, input)).status, 409)
     assert.equal(sql(`SELECT count(*) FROM audit_log WHERE actor_user_id='${admin.id}' AND entity_name='user_role' AND new_values->>'source'='APPLICATION'`), '4')

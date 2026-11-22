@@ -37,7 +37,8 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
     const registered=await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName:'Ensayo',lastName:'Responsabilidades',email,password,demoConsent:true })
     assert.equal(registered.status,201)
     const { id }=await registered.json() as { id:string }; users.push(id)
-    if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`)
+    sql(`UPDATE user_role SET granted_at=clock_timestamp()-interval '1 hour' WHERE user_id='${id}'`)
+    if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='${role}';`)
     const login=await call('auth/login','',{email,password}); assert.equal(login.status,200)
     return { id,cookie:login.headers.get('set-cookie')!.split(';')[0]! }
   }
@@ -53,7 +54,7 @@ test('S3-16/02/18 PostgreSQL: permisos por responsabilidad, céntimos, cupos, ev
       if (role!=='ADMIN') assert.equal((await call(`admin/campaigns/${campaignId}/publish`,user.cookie,{confirmed:true,expectedRound:1})).status,403)
     }
     const reviewer=accounts.REVIEWER!, auditor=accounts.AUDITOR!, owner=accounts.REGISTERED_USER!, outsider=accounts.CREATOR!
-    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='ADMIN';`)
+    sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${auditor.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='ADMIN';`)
     const readOnly=await (await call('access/permissions',auditor.cookie)).json() as { permissions:string[];readOnly:boolean }
     assert.equal(readOnly.readOnly,true); assert.equal(readOnly.permissions.includes('campaign.publish'),false)
     assert.equal((await call(`admin/campaigns/${campaignId}/decision`,auditor.cookie,{decision:'APPROVED',comment:'',expectedRound:1,observations:[]})).status,403)

@@ -34,7 +34,10 @@ export function ProjectDetailPage() {
       <div><dt>Modalidad</dt><dd>{campaignTypeLabels[project.campaignType]}</dd></div>
       <div><dt>Estado</dt><dd>{project.statusReason??(project.status==='active'?(project.closingDateKnown===false?'Publicada · fecha de cierre por definir':`Publicada · ${project.daysRemaining} días restantes`):project.status==='cancelled'?'Cancelada':'Recaudación finalizada')}</dd></div>
     </dl>
-    {canSupport?<><Message tone="info" title="Aportes">Puedes ensayar una selección de apoyo. La simulación no cobra, no reserva recompensas ni registra aportes reales.</Message><ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Simular apoyo</ButtonLink></>:<p>No admite nuevos aportes en este momento. Conservamos el historial público del proyecto.</p>}
+    {canSupport && <>
+      <ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Aportar a la campaña</ButtonLink>
+      <p>El pago se realiza en una billetera de práctica, sin mover dinero real.</p>
+    </>}
     <ButtonLink variant="secondary" to="/explorar">Ver otras campañas</ButtonLink>
   </aside>
   return <>

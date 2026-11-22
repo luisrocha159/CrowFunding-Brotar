@@ -177,7 +177,10 @@ test('migraciones: REJECTED se añade sobre SQL oficial aislado, conserva datos 
     await source.query('DELETE FROM public.campaign_activity WHERE id=$1', [legacyActivity])
     assert.deepEqual(await links(), [{ activity_id: secondActivity }], 'Borrar una actividad no elimina el hito ni sus demás relaciones.')
     assert.deepEqual(await source.query('SELECT id,activity_id FROM public.milestone WHERE id=$1', [legacyMilestone]), [{ id: legacyMilestone, activity_id: null }])
-    await assert.rejects(() => source.undoLastMigration({ transaction: 'each' }), /no se revierte automáticamente/, 'No se ofrece un down que elimine restricciones o datos sin revisión.')
+    await assert.rejects(() => source.undoLastMigration({ transaction: 'each' }), /no se (?:revierte|eliminan?) automáticamente/i,
+      'La reversión automática debe rechazarse para conservar los datos.')
+    assert.deepEqual(await source.query("SELECT to_regclass('brotar_extension.support_reply_evidence') IS NOT NULL AS intacta"),
+      [{ intacta: true }], 'El intento de reversión conserva los adjuntos de las respuestas.')
     // REJECTED sigue sin permitir eliminar su ENUM; no depende de ser la última.
     const { CampaignRejected1791244800000 } = await import('../src/shared/infrastructure/database/migrations/1791244800000-CampaignRejected')
     await assert.rejects(() => new CampaignRejected1791244800000().down(), /no elimina valores ENUM/)

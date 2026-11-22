@@ -5,7 +5,7 @@ import {paymentQrPayload,paymentQrOptions} from './paymentQrPayload'
 import styles from './contributions.module.css'
 
 export function PaymentQr({ticket}:{ticket:DemoTicket}){
-  const payload=paymentQrPayload(ticket),[retry,setRetry]=useState(0)
+  const payload=paymentQrPayload(ticket,window.location.origin),[retry,setRetry]=useState(0)
   const [result,setResult]=useState<{payload:string;retry:number;src:string|null}|null>(null)
   useEffect(()=>{
     let current=true
@@ -17,6 +17,6 @@ export function PaymentQr({ticket}:{ticket:DemoTicket}){
   const ready=result?.payload===payload&&result.retry===retry
   return <figure className={styles.paymentQr}>
     {ready&&result.src?<img src={result.src} width={288} height={288} alt={`Código QR del aporte ${ticket.reference}`} decoding="async"/>:<div className={styles.qrPlaceholder}>{ready?<p role="alert">No se pudo generar el código QR. <Button variant="secondary" onClick={()=>setRetry(n=>n+1)}>Reintentar QR</Button></p>:<p role="status">Generando código QR…</p>}</div>}
-    <figcaption><h3>QR del aporte</h3><p>Escanea con un lector QR para ver la referencia y el importe de esta operación.</p><p className={styles.reference}>Referencia: {ticket.reference}</p>{ready&&result.src&&<a className={styles.qrDownload} href={result.src} download={`Brotar-QR-${ticket.reference.replace(/[^a-z0-9_-]/gi,'')}.png`}>Descargar QR</a>}</figcaption>
+    <figcaption><h3>Escanea el QR</h3><p>El código abre la billetera de práctica. Ingresa con la cuenta que creó este aporte.</p>{['localhost','127.0.0.1','[::1]'].includes(window.location.hostname)&&<p>En esta instalación local, abre la billetera en este dispositivo.</p>}<p className={styles.reference}>Referencia: {ticket.reference}</p>{ready&&result.src&&<a className={styles.qrDownload} href={result.src} download={`Brotar-QR-${ticket.reference.replace(/[^a-z0-9_-]/gi,'')}.png`}>Descargar QR</a>}</figcaption>
   </figure>
 }

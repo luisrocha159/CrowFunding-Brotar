@@ -91,7 +91,9 @@ test('sesiones reales: cookies, estados de cuenta, rotación, expiración, revoc
     // El fixture usa el mismo reloj PostgreSQL que created_at, igual que la revocación real.
     await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, { usedAt: () => 'clock_timestamp()' })
     assert.equal((await me(expires)).status, 401)
-    await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, { usedAt: null, createdAt: new Date(Date.now() - 7200000), expiresAt: new Date(Date.now() - 1000) })
+    await source.getRepository(SessionTokenSchema).update({ tokenHash: tokenHash(expires) }, {
+      usedAt: null, createdAt: () => "now() - interval '2 hours'", expiresAt: () => "now() - interval '1 hour'"
+    })
     assert.equal((await me(expires)).status, 401)
     const suspended = cookieFrom(await post('login', credentials))
     await source.getRepository(UserSchema).update({ id: ids[0] }, { status: 'SUSPENDED' })
@@ -107,7 +109,7 @@ test('sesiones reales: cookies, estados de cuenta, rotación, expiración, revoc
     for (let i = 0; i < 5; i++) assert.equal((await post('login', { ...credentials, password: 'incorrecta' })).status, 401)
     assert.equal((await post('login', credentials)).status, 403)
     assert.equal((await me(suspended)).status, 401)
-    await source.getRepository(UserSchema).update({ id: ids[0] }, { lockedUntil: new Date(Date.now() - 1000) })
+    await source.getRepository(UserSchema).update({ id: ids[0] }, { lockedUntil: () => "now() - interval '1 hour'" })
     assert.equal((await post('login', { ...credentials, password: 'incorrecta' })).status, 401)
     assert.equal((await source.getRepository(UserSchema).findOneByOrFail({ id: ids[0] })).failedLoginCount, 1)
     const persistent = cookieFrom(await post('login', credentials))

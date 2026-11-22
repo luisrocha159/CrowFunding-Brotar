@@ -63,6 +63,9 @@ test('S3-11/S3-02 PostgreSQL/HTTP: disputa privada, respuesta, escalamiento, rec
   d=await json<Case>(await act('ESCALATE'));assert.equal(d.status,'ESCALATED');assert.equal((await act('RESOLVE_NO_REFUND')).status,409)
   d=await json<Case>(await act('CLAIM'));budget()
   assert.equal((await act('RECOMMEND_REFUND',support.cookie,{recommendedAmount:'10.26'})).status,409)
+  // El reloj de la instancia puede retroceder entre la apertura y la resolución.
+  sql(`UPDATE dispute SET opened_at=clock_timestamp()+interval '20 seconds' WHERE id='${d.id}';
+      UPDATE support_case SET created_at=clock_timestamp()+interval '20 seconds' WHERE id='${report.id}'`)
   d=await json<Case>(await act('RECOMMEND_REFUND',support.cookie,{recommendedAmount:'3.10'}));assert.equal(d.status,'RESOLVED');assert.equal(d.financialHold,true)
   assert.equal(sql(`SELECT count(*) FROM refund WHERE payment_id='${paymentId}'`),'0','Soporte no crea pagos ni devoluciones')
   assert.equal((await act('CLOSE')).status,409);assert.equal(sql(`SELECT status FROM payment WHERE id='${paymentId}'`),'DISPUTED','Resuelto no libera reserva recomendada pendiente')

@@ -1,3 +1,4 @@
+import { destinationStatusLabel } from '../../shared/utils/accountLabels'
 import {LegalAcceptancePanel} from '../legal/LegalAcceptancePanel'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
@@ -47,7 +48,7 @@ export function VerificationPage() {
       </section>
       {detail&&<VerificationEditor key={`${detail.id}:${detail.version}:${legalAccepted}`} detail={detail} readOnly={readOnly||legalAccepted!==true} onSaved={saved} onReload={()=>void open(detail.id)} />}
       <section><h2>Datos de mis organizaciones</h2><p>La edición básica está disponible según tu membresía vigente y el estado del registro. Puedes administrar membresías y representación en el entorno; los cambios requieren motivo y confirmación.</p>{organizations.length?organizations.map(org=><OrganizationManager key={`${org.id}:${org.version}`} organization={org} types={orgTypes} readOnly={readOnly} onMembershipChanged={()=>{setNotice('Información institucional actualizada. Consulta las solicitudes y su estado; una propuesta pendiente no cambia la membresía.');setDetail(null);setStatus('loading');setRetry(value=>value+1)}} onSaved={value=>{setOrganizations(current=>current.map(item=>item.id===value.id?value:item));setNotice('Datos de la organización guardados.')}} />):<p>No tienes organizaciones vinculadas.</p>}<ButtonLink variant="secondary" to="/mis-organizaciones">Registrar una organización</ButtonLink></section>
-      <section className={styles.card}><h2>Cuentas destino registradas</h2><p>Consulta privada de cuentas existentes. El registro y los cambios de cuenta requieren la política de datos y el flujo de validación de destino.</p>{payouts.length?<ul>{payouts.map(account=><li key={account.id}>{account.accountHolderName} · {account.bankName??'Entidad sin registrar'} · {account.last4?`terminación ${account.last4}`:'sin terminación registrada'} · {account.currency} · {account.status}{account.status!=='VERIFIED'&&<p>Esta cuenta no consta como verificada.</p>}</li>)}</ul>:<p>No hay cuentas destino registradas.</p>}</section>
+      <section className={styles.card}><h2>Cuentas destino registradas</h2><p>Consulta privada de cuentas existentes. El registro y los cambios de cuenta requieren la política de datos y el flujo de validación de destino.</p>{payouts.length?<ul>{payouts.map(account=><li key={account.id}>{account.accountHolderName} · {account.bankName??'Entidad sin registrar'} · {account.last4?`terminación ${account.last4}`:'sin terminación registrada'} · {account.currency} · {destinationStatusLabel(account.status)}{account.status!=='VERIFIED'&&<p>Esta cuenta no consta como verificada.</p>}</li>)}</ul>:<p>No hay cuentas destino registradas.</p>}</section>
     </div>}
   </AccessShell>
 }

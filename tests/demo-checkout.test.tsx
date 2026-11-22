@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert'
 import {test} from 'node:test'
 import {renderToStaticMarkup} from 'react-dom/server'
-import {demoTicketFrom,demoFailure,demoCheckout} from '../src/features/contributions/demoClient'
+import {demoTicketFrom,demoFailure,demoCheckout,authorizeDemoPayment} from '../src/features/contributions/demoClient'
 import {paymentMethodLabel} from '../src/features/contributions/labels'
 import {SettingEditor} from '../src/features/catalogs/SettingEditor'
 import {sponsorSummaryFrom} from '../src/features/contributions/contributionsClient'
@@ -21,6 +21,20 @@ test('checkout conserva el método elegido; un pago anterior sin método no se p
    assert.equal(result.method,method);assert.equal(paymentMethodLabel(result.method),method==='TEST_QR'?'QR':'Tarjeta')
   }
   assert.equal(paymentMethodLabel(demoTicketFrom({...ticket,method:null}).method),'Método no informado')
+ }finally{globalThis.fetch=original}
+})
+test('la billetera solo autoriza el intento elegido y exige una respuesta del mismo pago',async()=>{
+ const original=globalThis.fetch,key='65e94c7d-d241-4119-bec9-e59f6270dd46'
+ try{
+  globalThis.fetch=async(url,init)=>{
+   assert.ok(String(url).endsWith(`/api/demo-payments/${ticket.paymentId}/authorize`))
+   assert.deepEqual(JSON.parse(String(init?.body)),{requestKey:key,demoConsent:true})
+   return Response.json({...ticket,status:'CONFIRMED'})
+  }
+  assert.equal((await authorizeDemoPayment(ticket.paymentId,key)).status,'CONFIRMED')
+  const other={...ticket,paymentId:key,qrPayload:`BROTAR-DEMO:${key}`}
+  globalThis.fetch=async()=>Response.json(other)
+  await assert.rejects(authorizeDemoPayment(ticket.paymentId,key))
  }finally{globalThis.fetch=original}
 })
 test('parámetros DEMO tienen límites enteros y confirmación; auditor solo consulta',()=>{

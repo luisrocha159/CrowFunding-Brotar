@@ -37,6 +37,6 @@ export function AdministrativeNavigation() {
     {error && <p role="alert">No se pudieron consultar tus permisos. Recarga para reintentar.</p>}
     {access?.readOnly && <p>Auditoría: acceso de solo lectura.</p>}
     <NavLink to="/mi-cuenta">Mi cuenta y perfil</NavLink>
-    <p>Habilitar CREATOR no acredita identidad ni KYC, ni concede permisos para mover dinero.</p>
+    <p>La habilitación de creadores permite enviar campañas a revisión.</p>
   </nav></details></aside>
 }

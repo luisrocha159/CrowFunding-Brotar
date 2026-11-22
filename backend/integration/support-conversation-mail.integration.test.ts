@@ -101,11 +101,16 @@ test('soporte bidireccional y correo: propiedad, estados, reintentos concurrente
   sql(`UPDATE brotar_extension.mail_delivery SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE notification_id IN(SELECT id FROM public.notification WHERE entity_id='${caseId}');`)
   fail=false;await mail.tick();const sent=delivered.filter(m=>m.to===owner.email);assert.equal(sent.length,2);await mail.tick();assert.equal(delivered.filter(m=>m.to===owner.email).length,2)
   for(const m of sent){assert.ok(m.text.includes(`/mis-incidencias/${caseId}`));assert.doesNotMatch(m.text,/PRIVADO_NO_ENVIAR|PRIVADO_MENSAJE|NOTA_INTERNA_NO_ENVIAR|respuesta-soporte\.pdf|evidencia-titular\.pdf|documento-interno/)}
+  const deliveryForStatus=async(status:'RESOLVED'|'CLOSED')=>{
+   const id=sql(`SELECT notification_id FROM brotar_extension.support_mail_event WHERE case_id='${caseId}' AND status='${status}' AND recipient_user_id='${owner.id}'`)
+   assert.ok(id,`Se registró el aviso para ${status}`)
+   return (await notices()).find(notice=>notice.id===id)?.delivery
+  }
   reset()
   assert.equal((await call(statusPath,staff.cookie,{status:'RESOLVED',reason:'La información fue revisada y el caso quedó resuelto.'})).status,200);await mail.collect();await mail.preference(owner.id,false);await mail.tick()
-  assert.equal((await notices()).find(n=>n.entityName==='SUPPORT_CASE')!.delivery,'CANCELLED','Cancelar el aviso si se retira la preferencia antes de enviar.')
+  assert.equal(await deliveryForStatus('RESOLVED'),'CANCELLED','Cancelar el aviso si se retira la preferencia antes de enviar.')
   assert.equal((await call(statusPath,staff.cookie,{status:'CLOSED',reason:'Se registra el cierre del caso después de resolverlo.'})).status,200);await mail.collect()
-  assert.equal((await notices()).find(n=>n.entityName==='SUPPORT_CASE')!.delivery,'IN_APP','Sin consentimiento conserva aviso interno, sin SMTP.')
+  assert.equal(await deliveryForStatus('CLOSED'),'IN_APP','Sin consentimiento conserva aviso interno, sin SMTP.')
   assert.equal((await call(ownPath,owner.cookie,reply)).status,200,'Se recupera una respuesta ya guardada incluso después del cierre.')
   assert.equal((await call(staffPath,staff.cookie,staffReply)).status,200)
   assert.equal((await call(ownPath,owner.cookie,{...reply,requestId:randomUUID()})).status,409)

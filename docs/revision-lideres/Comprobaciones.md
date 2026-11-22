@@ -55,3 +55,21 @@ La revisión manual de los líderes sigue siendo necesaria. Pagos, KYC/KYB y doc
 ## Cómo se prepara el historial
 
 El cargador usa la API real para registro, aceptación, identidad, campañas, revisión, pagos, soporte y movimientos. El bootstrap SQL queda limitado a la base dedicada: roles sintéticos, slugs legibles, vencimientos para escenarios y anclaje temporal de REV-20 a un mes ya cerrado. No exporta la base personal ni fabrica comprobantes bancarios. El manifiesto privado registra los pasos y el origen sintético; repetir la preparación conserva el avance del revisor.
+
+## Comprobación local para la defensa del 22 de noviembre de 2026
+
+En RicardoDev pasaron 310 pruebas del frontend y 251 pruebas unitarias del backend. También pasaron las ocho pruebas de administración local y las cuatro del preparador, el análisis de código, la comprobación de tipos y ambas compilaciones.
+
+En una instalación independiente, un patrocinador aportó 20 BOB por QR en escritorio y repitió el recorrido en móvil. En cada caso salió con el pago pendiente, volvió desde Mis aportes, autorizó en la billetera de práctica y recuperó el comprobante después de recargar. Los paneles de patrocinador, creador y administración se revisaron a 320, 375 y 1366 píxeles de ancho.
+
+El 22 de noviembre de 2026 se verificó la entrega final. La diapositiva 44 del corte anterior mostraba 54 de 56. En el siguiente corte pasaron 55 y falló el envío de la campaña a revisión en S3-21. Para la prueba integral se comprobó en PostgreSQL la vigencia de los roles concedidos por la API antes de usarlos. Se conservaron el inicio de sesión original y las respuestas HTTP esperadas. Tras las correcciones, la ejecución completa en una base PostgreSQL dedicada aprobó **56 de 56**, con cero fallos, cancelaciones u omisiones. Incluye las rutas HTTP y el recorrido completo de campaña S3-21. En ejecuciones anteriores se observaron fallos intermitentes de vigencia y de orden de fechas. La ejecución aprobada se realizó en una máquina virtual independiente con PostgreSQL 18.6 y datos aislados. En el entorno compartido de WSL2, una medición de 800 muestras registró cuatro retrocesos del reloj de la base, de hasta 3,48 segundos. Allí hubo pruebas dependientes del tiempo que fallaron. El reloj compartido conservó su configuración. La corrida aprobada duró 16 min 44 s con Node.js 24.13.0 y un procesador virtual activo.
+
+| Caso | Qué se verificó |
+|---|---|
+| Auditoría | Una misma sesión recibe HTTP 403 con una concesión ADMIN futura y HTTP 200 al adquirir vigencia. |
+| Identidad | La petición llegó al bloqueo del expediente. Al vencer el permiso antes de liberarlo, la API respondió HTTP 403 y el expediente continuó pendiente. Con permiso vigente, la fecha registrada de revisión respetó la fecha de envío. |
+| Ciclo y rendición | La ejecución comprobó los permisos vigentes, el cierre de plazo, la transferencia de representación y la presentación de la rendición. |
+
+Para repetir la batería, utilice una instalación de integración dedicada con su archivo de entorno y la base inicializada. Desde `backend`, ejecute `corepack pnpm run build`, establezca `$env:ALLOW_DB_TEST_WRITES='true'` y ejecute `corepack pnpm run test:integration`. La batería realiza escrituras y prepara sus propios escenarios.
+
+El resultado figura en la diapositiva 44, en sus notas y en el guion de Ricardo. [Material de defensa](../entregables/defensa-final/)

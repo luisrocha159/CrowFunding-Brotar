@@ -10,6 +10,7 @@ import { RolesModule } from '../roles/roles.module'
 import { RequirePermissions, RoleGuard, type AuthenticatedRequest } from '../roles/infrastructure/roles-http'
 import { DatabaseModule } from '../shared/infrastructure/database/database.module'
 import { DatabaseService } from '../shared/infrastructure/database/database.service'
+import { TestFixtureGuard } from '../shared/infrastructure/http/test-fixture.guard'
 import { writeBudget } from '../shared/infrastructure/http/write-budget'
 import { assertDemoEnabled, DemoPayments } from './infrastructure/demo-payments'
 import { DemoReconciliation } from './infrastructure/demo-reconciliation'
@@ -86,7 +87,11 @@ export class DemoPaymentsController {
   retry(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: ConsentDto) {
     return translate(()=>this.payments.retry(request.brotarUser.id,id,input.requestKey,input.demoConsent))
   }
-  @Post(':id/simulate') @HttpCode(200) @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)
+  @Post(':id/authorize') @HttpCode(200) @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)
+  authorize(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: ConsentDto) {
+    return translate(()=>this.payments.authorize(request.brotarUser.id,id,input.requestKey))
+  }
+  @Post(':id/simulate') @HttpCode(200) @Header('Cache-Control','no-store') @UseGuards(TestFixtureGuard,SessionMutationGuard,DemoWriteLimitGuard)
   simulate(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: SimulationDto) {
     return translate(()=>this.payments.simulate(request.brotarUser.id,id,input.outcome,input.requestKey))
   }

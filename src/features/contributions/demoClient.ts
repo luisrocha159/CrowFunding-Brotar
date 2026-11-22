@@ -16,10 +16,11 @@ export async function demoCheckout(input:{campaignId:string;rewardId:string|null
  return demoTicketFrom(v.ticket)
 }
 export async function demoTicket(id:string,signal?:AbortSignal) {if(!uuid(id))throw new SessionError(404);return demoTicketFrom(await readJson(await requestApi(`/api/demo-payments/${id}`,{signal})))}
-export async function demoResult(id:string,outcome:string,requestKey:string,signal?:AbortSignal) {
- const v=await readJson(await requestApi(`/api/demo-payments/${id}/simulate`,{method:'POST',body:{outcome,requestKey},signal}))
- if(!object(v) || v.mode!=='DEMO' || v.paymentId!==id || !['APPLIED','NEEDS_REVIEW','COMPENSATED','RECONCILED'].includes(String(v.processing)))throw new SessionError(0)
- return {ticket:await demoTicket(id,signal),processing:String(v.processing)}
+export async function authorizeDemoPayment(id:string,requestKey:string,signal?:AbortSignal) {
+ const response=await requestApi(`/api/demo-payments/${id}/authorize`,{method:'POST',body:{requestKey,demoConsent:true},signal})
+ const ticket=demoTicketFrom(await readJson(response))
+ if(ticket.paymentId!==id.toLowerCase())throw new SessionError(0)
+ return ticket
 }
 export async function demoRetry(contributionId:string,requestKey:string,signal?:AbortSignal) {
  const v=await readJson(await requestApi(`/api/demo-payments/contributions/${contributionId}/retry`,{method:'POST',body:{requestKey,demoConsent:true},signal}))
@@ -28,5 +29,5 @@ export async function demoRetry(contributionId:string,requestKey:string,signal?:
 }
 export function demoFailure(e:unknown):string {
  const status=e instanceof SessionError?e.status:0
- return status===404?'Intento no disponible o simulador apagado. Comprueba la activación del README.':status===409?'La campaña, cupo, reserva o estado cambió. Consulta el intento antes de repetir; no se confirmó un aporte nuevo.':status===400?'Revisa moneda, importe y recompensa. La selección se comprueba nuevamente en el servidor.':status===403?'Tu cuenta no está autorizada ahora para esta operación.':status===429?'Demasiados intentos. Espera un minuto y consulta el estado.':'No se pudo confirmar la operación. Consulta el estado antes de repetir con la misma selección.'
+ return status===404?'Este pago no está disponible para tu cuenta. Vuelve a Mis aportes para consultarlo.':status===409?'La disponibilidad de la campaña o de tu reserva cambió. Actualiza el estado antes de continuar.':status===400?'Revisa moneda, importe y recompensa. La selección se comprueba nuevamente en el servidor.':status===403?'Tu cuenta no está autorizada ahora para esta operación.':status===429?'Demasiados intentos. Espera un minuto y consulta el estado.':'No se pudo confirmar la operación. Consulta el estado antes de repetir con la misma selección.'
 }

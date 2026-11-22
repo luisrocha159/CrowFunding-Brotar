@@ -28,10 +28,10 @@ test('panel del creador: paginación, totales completos, pendientes y representa
       const r = await request('auth/register', '', { legalVersion:'mvp-pruebas-legal-1.1-20261109', firstName: 'Panel', lastName: 'Ensayo', email, password, demoConsent: true }); assert.equal(r.status, 201)
       users.push((await r.json() as { id: string }).id)
       const login = await request('auth/login', '', { email, password }); assert.equal(login.status, 200); cookies.push(login.headers.get('set-cookie')!.split(';')[0]!)
-      sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${users[i]}',id FROM public.role WHERE code='CREATOR';`)
+      sql(`INSERT INTO public.user_role(user_id,role_id,granted_at) SELECT '${users[i]}',id,clock_timestamp()-interval '1 hour' FROM public.role WHERE code='CREATOR';`)
     }
     sql(`INSERT INTO public.organization(id,slug,legal_name,organization_type_id,created_by) SELECT '${org}','qa-${suffix}','Organización de prueba',id,'${users[0]}' FROM public.organization_type LIMIT 1;
-      INSERT INTO public.organization_member(organization_id,user_id,organization_role) VALUES('${org}','${users[0]}','OWNER');
+      INSERT INTO public.organization_member(organization_id,user_id,organization_role,joined_at) VALUES('${org}','${users[0]}','OWNER',clock_timestamp()-interval '1 hour');
       INSERT INTO public.campaign(slug,title,campaign_type,creator_user_id,goal_amount,currency_code)
         SELECT 'qa-${suffix}-'||n,'Proyecto de prueba '||n,'DONATION','${users[0]}',100,'BOB' FROM generate_series(1,23) n;
       INSERT INTO public.campaign(slug,title,campaign_type,creator_user_id,organization_id,goal_amount,currency_code) VALUES('qa-org-${suffix}','Proyecto institucional','DONATION','${users[0]}','${org}',100,'BOB');
@@ -54,7 +54,7 @@ test('panel del creador: paginación, totales completos, pendientes y representa
     assert.equal(changed.items.find(i => i.id === id)!.verificationStatus, null)
     sql(`UPDATE public.campaign_activity SET status='COMPLETED',progress_percent=100 WHERE campaign_id='${id}';`)
     assert.equal((await panel()).items.find(i => i.id === id)!.pendingActivities, 1, 'Sin fechas reales completas sigue pendiente para ejecución y cierre')
-    sql(`UPDATE public.organization_member SET left_at=clock_timestamp() WHERE organization_id='${org}' AND user_id='${users[0]}';`)
+    sql(`UPDATE public.organization_member SET left_at=clock_timestamp()-interval '1 minute' WHERE organization_id='${org}' AND user_id='${users[0]}';`)
     assert.equal((await panel('?scope=institutional')).total, 0)
     assert.equal((await panel()).total, 23, 'La autoría histórica no permite conservar acceso institucional tras revocación')
     for (const query of ['?page=0', '?page=1e2', '?scope=someone-else']) assert.equal((await request(`campaigns/creator-dashboard${query}`, cookies[0])).status, 400)

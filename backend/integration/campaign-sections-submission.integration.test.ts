@@ -54,6 +54,7 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(registered.status, 201)
     const { id } = await registered.json() as { id: string }
     assert.match(id, /^[a-f0-9-]{36}$/); users.push(id)
+    sql(`UPDATE user_role SET granted_at=clock_timestamp()-interval '1 hour' WHERE user_id='${id}'`)
     const alteredLogin = await call('auth/login', '', { email, password: password.trim() })
     assert.equal(alteredLogin.status, 401, 'La contraseña conserva Ñ y espacios; no se normaliza.')
     const login = await call('auth/login', '', { email, password })
@@ -91,8 +92,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     }
     assert.equal((await call(`${path}/submission`, creator.cookie, {})).status, 403, 'Registro no concede CREATOR.')
     // Roles de cuentas efímeras, no provisión de roles del producto ni resolución de D06.
-    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${creator.id}',id FROM role WHERE code='CREATOR';
-      INSERT INTO user_role(user_id,role_id) SELECT '${admin.id}',id FROM role WHERE code='ADMIN';`)
+    sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${creator.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='CREATOR';
+      INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${admin.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='ADMIN';`)
     await approveDemoIdentity(call,creator.cookie,admin.cookie)
     assert.equal((await call(`${path}/submission`, other.cookie, {})).status, 403)
     const incomplete = await call(`${path}/submission`, creator.cookie, {})
@@ -249,7 +250,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     sql(`UPDATE category SET is_active=false WHERE id='${category}';`)
     assert.equal((await call(`${adminPath}/decision`, admin.cookie, approve)).status, 422, 'Aprobar revalida información y catálogos bajo bloqueo.')
     assert.equal(sql(`SELECT decision FROM campaign_review WHERE campaign_id='${id}' AND round=3;`), 'PENDING')
-    sql(`UPDATE category SET is_active=true WHERE id='${category}';`)
+    sql(`UPDATE campaign_review SET assigned_at=clock_timestamp()+interval '1 minute' WHERE campaign_id='${id}' AND round=3 AND started_at IS NULL;
+      UPDATE category SET is_active=true WHERE id='${category}';`)
     assert.equal((await call(`${adminPath}/decision`, admin.cookie, approve)).status, 200)
     assert.equal(sql(`SELECT status FROM campaign WHERE id='${id}';`), 'APPROVED')
     assert.equal(sql(`SELECT published_at IS NULL AND approved_at IS NOT NULL FROM campaign WHERE id='${id}';`), 't')
@@ -274,6 +276,8 @@ test('S2 completo PostgreSQL: constructor, revisión real, corrección, aprobaci
     assert.equal(sql(`SELECT count(*) FROM status_history WHERE entity_id='${id}' AND to_status='PUBLISHED' AND changed_by='${admin.id}';`), '1')
     assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND action='APPROVE' AND actor_user_id='${admin.id}' AND new_values->>'result'='APPLIED'`),'1','Aprobar se registra una vez y separado de publicar.')
     assert.equal(sql(`SELECT count(*) FROM audit_log WHERE entity_id='${id}' AND action='STATUS_CHANGE' AND actor_user_id='${admin.id}' AND new_values->>'result'='APPLIED'`),'3','Dos correcciones y una publicación; las carreras rechazadas no añaden acciones aplicadas.')
+    // Una lectura conserva la secuencia registrada aunque retroceda el reloj entre dos transiciones.
+    sql(`UPDATE status_history SET changed_at=clock_timestamp()+interval '1 minute' WHERE entity_type='CAMPAIGN' AND entity_id='${id}' AND from_status IS NULL;`)
     const history = await (await call(`campaigns/mine/${id}`, creator.cookie)).json() as { history: { toStatus: string; reason: string }[] }
     assert.deepEqual(history.history.map(event => event.toStatus), ['DRAFT','IN_REVIEW','CHANGES_REQUESTED','IN_REVIEW','CHANGES_REQUESTED','IN_REVIEW','APPROVED','PUBLISHED'])
     assert.equal(history.history.at(-1)!.reason, 'Publicación administrativa explícita')

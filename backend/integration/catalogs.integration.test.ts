@@ -25,6 +25,9 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
   const admin = (sql: string) => execFileSync('docker',
     ['exec', '-i', container, 'psql', '-X', '-t', '-A', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'brotar_db'],
     { input: sql, stdio: ['pipe', 'pipe', 'pipe'], timeout: 10000 })
+  // Estos roles ya están vigentes al abrir el catálogo, incluso si Docker ajusta su reloj.
+  const grantRole = (userId: string, code: 'ADMIN' | 'AUDITOR') => admin(
+    `INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${userId}',id,now()-interval '1 hour' FROM role WHERE code='${code}';`)
 
   const source = createDataSource(config)
   const suffix = randomUUID().slice(0, 8)
@@ -47,6 +50,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     assert.equal(created.status, 201)
     const { id } = await created.json() as { id: string }
     ids.push(id)
+    admin(`UPDATE user_role SET granted_at=now()-interval '1 hour' WHERE user_id='${id}' AND role_id=(SELECT id FROM role WHERE code='REGISTERED_USER');`)
     const login = await call('auth/login', '', 'POST', { email, password })
     assert.equal(login.status, 200)
     return { id, cookie: login.headers.get('set-cookie')!.split(';')[0]! }
@@ -57,7 +61,7 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     const settingsBefore = await source.query('SELECT count(*)::text AS n FROM system_setting') as { n: string }[]
     const plain = await register('simple')
     const manager = await register('admin')
-    admin(`INSERT INTO user_role(user_id, role_id) SELECT '${manager.id}', id FROM role WHERE code='ADMIN';`)
+    grantRole(manager.id, 'ADMIN')
 
     assert.equal((await call('catalogs/admin/categories', plain.cookie)).status, 403)
     assert.equal((await call('catalogs/admin/settings', plain.cookie)).status, 403)
@@ -149,14 +153,14 @@ test('catálogos reales: edición autorizada, referencias protegidas y parámetr
     assert.equal(settings[0]!.n, settingsBefore[0]!.n, 'No se escribió ningún parámetro de negocio.')
 
     const auditor = await register('auditor')
-    admin(`INSERT INTO user_role(user_id, role_id) SELECT '${auditor.id}', id FROM role WHERE code='AUDITOR';`)
+    grantRole(auditor.id, 'AUDITOR')
     assert.equal((await call('catalogs/admin/categories', auditor.cookie)).status, 200)
     assert.equal((await (await call('catalogs/admin/settings', auditor.cookie)).json() as unknown[]).length,2)
     assert.equal((await call(`catalogs/admin/settings/${responseKey}`,auditor.cookie,'PUT',{value:24})).status,403)
     assert.equal((await call(`catalogs/admin/categories/${category.id}/state`, auditor.cookie, 'PUT', { isActive: true })).status, 403)
 
     // CA 3: el auditor no edita el catálogo aunque acumule ADMIN.
-    admin(`INSERT INTO user_role(user_id, role_id) SELECT '${manager.id}', id FROM role WHERE code='AUDITOR';`)
+    grantRole(manager.id, 'AUDITOR')
     assert.equal((await call('catalogs/admin/categories', manager.cookie, 'POST',
       { ...draft, slug: `auditor-${suffix}` })).status, 403)
     assert.equal((await call('catalogs/admin/categories', manager.cookie)).status, 200, 'El auditor conserva la lectura.')

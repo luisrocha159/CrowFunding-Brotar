@@ -25,7 +25,7 @@ export function ReconciliationSummary({batch}: {batch: ReconciliationDetail}) {
   return <section className={styles.record} aria-label="Resumen de conciliación"><h2>Lote {batch.id}</h2>
     <p><strong>{batchLabels[batch.status]}</strong> · {batch.from} a {batch.to}, inclusive UTC · {batch.currencyCode}</p>
     <dl><dt>Confirmaciones internas brutas</dt><dd>{financeMoney(batch.totalInternal,batch.currencyCode)}</dd>
-      <dt>Recibos brutos</dt><dd>{financeMoney(batch.totalProvider,batch.currencyCode)}</dd><dt>Diferencia del corte (interno −)</dt><dd>{financeMoney(batch.difference,batch.currencyCode)}</dd>
+      <dt>Recibos brutos</dt><dd>{financeMoney(batch.totalProvider,batch.currencyCode)}</dd><dt>Diferencia entre confirmaciones internas y recibos</dt><dd>{financeMoney(batch.difference,batch.currencyCode)}</dd>
       <dt>Instantánea (UTC)</dt><dd><Stamp value={batch.snapshotAt} /></dd><dt>Preparó el lote</dt><dd><AccountIdentity contact={batch.createdByContact}/></dd>
       <dt>Cerró el lote</dt><dd><AccountIdentity contact={batch.closedByContact} empty="Sin cierre registrado"/></dd><dt>Fecha de cierre (UTC)</dt><dd><Stamp value={batch.closedAt} /></dd></dl>
     <p>Estos totales son el corte original, no un saldo disponible para desembolsar. Una resolución no reescribe importes ni hace desaparecer la diferencia histórica.</p>
@@ -47,7 +47,7 @@ function ResolutionForm({item,busy,onResolve}: {item: ReconciliationItem;busy: b
         <option value="RECHECK">Contrastar evidencia actual</option>
         {item.status==='MISSING_INTERNAL' && item.paymentId && <option value="COMPENSATE_DEMO">Registrar compensación sin ingreso interno</option>}
       </FormField>
-      <p>{action==='RECHECK'?'El servidor comprobará la evidencia vigente. Si sigue faltando o difiere, la referencia permanecerá abierta.':'Solo para un recibo simulado inequívoco que nunca ingresó. Otra persona de FINANCE debe resolver el aporte del interesado. No es una devolución bancaria ni de un aporte confirmado.'}</p>
+      <p>{action==='RECHECK'?'El servidor comprobará la evidencia vigente. Si sigue faltando o difiere, la referencia permanecerá abierta.':'Solo para un recibo simulado inequívoco que nunca ingresó. Otra persona de Finanzas debe resolver el aporte del interesado. No es una devolución bancaria ni de un aporte confirmado.'}</p>
       <FormField as="textarea" label="Motivo" required minLength={20} maxLength={500} value={reason} error={error || undefined} help="20–500 caracteres. Describe la evidencia; no incluyas contraseñas ni datos bancarios." onChange={event=>{setReason(event.target.value);setConfirmed(false);setError('')}} />
       <label className={styles.confirmation}><input type="checkbox" required checked={confirmed} onChange={event=>setConfirmed(event.target.checked)} />Confirmo esta acción para la referencia indicada. No autoriza dinero real.</label>
       <Button type="submit" loading={busy} loadingLabel="Comprobando…" disabled={!confirmed}>Registrar resolución</Button>
@@ -104,7 +104,7 @@ export function ReconciliationPage() {
     <header className={layout.heading}><div><h1>Conciliación</h1><p>SIMULACIÓN · SIN DINERO REAL · NO PAGAR</p></div></header>
     <p>Contrasta confirmaciones internas con recibos del simulador. No conecta con bancos, no acredita pagos reales ni autoriza desembolsos o devoluciones.</p>
     <div className={styles.actions}>{id && <ButtonLink to="/administracion/conciliacion" variant="secondary">Volver a los lotes</ButtonLink>}<Button variant="secondary" disabled={data.busy} onClick={data.refresh}>Actualizar estado</Button></div>
-    {data.state==='forbidden'?<Message tone="warning" title="Acceso restringido">Necesitas finance.read vigente. Las operaciones requieren FINANCE y no ser Auditor.</Message>:<>
+    {data.state==='forbidden'?<Message tone="warning" title="Acceso restringido">Para consultar necesitas acceso al panel financiero. Solo Finanzas puede resolver conciliaciones con permisos de escritura.</Message>:<>
       {data.state==='loading' && <p role="status" aria-busy="true">Consultando conciliación…</p>}
       {data.state==='error' && <Message tone="error" title="No se pudo consultar">{reconciliationError(data.error)} Usa Actualizar estado para reintentar.</Message>}
       {data.mutationError && <Message tone="error" title="Operación no confirmada">{reconciliationError(data.mutationError)}</Message>}

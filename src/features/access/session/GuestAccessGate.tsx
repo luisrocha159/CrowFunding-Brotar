@@ -12,7 +12,7 @@ export function GuestAccessGate({ children }: { children: ReactNode }) {
   const [params] = useSearchParams()
   if (session.checking) return <AccessShell centered title="Comprobando tu sesión" subtitle="Un momento antes de mostrar el acceso."><p role="status">Consultando tu cuenta…</p></AccessShell>
   if (session.unavailable) return <AccessShell centered title="No pudimos comprobar tu sesión" subtitle="No es necesario volver a iniciar sesión sin comprobar primero tu cuenta.">
-    <Message tone="error" title="Servicio no disponible">Comprueba la conexión con la API y vuelve a intentarlo.</Message>
+    <Message tone="error" title="Servicio no disponible">Revisa tu conexión y vuelve a intentarlo.</Message>
     <Button onClick={session.retry}>Reintentar comprobación</Button>
   </AccessShell>
   if (session.user) return <Navigate replace to={existingSessionDestination(params)} />

@@ -23,12 +23,12 @@ export function CatalogsPage() {
   return <div className={layout.adminLayout}><AdministrativeNavigation /><section className={`${layout.content} ${styles.stack}`}>
     <header className={layout.heading}><div><h1 ref={heading} tabIndex={-1}>Catálogos y parámetros</h1><p>Categorías de campaña y parámetros de negocio acordados.</p></div></header>
     {data.access === 'checking' && <p role="status">Comprobando acceso y cargando catálogos…</p>}
-    {data.access === 'forbidden' && <Message tone="warning" title="Acceso restringido">Se requiere ADMIN para administrar catálogos o AUDITOR para consultarlos.</Message>}
+    {data.access === 'forbidden' && <Message tone="warning" title="Acceso restringido">Administración gestiona los catálogos. Auditoría puede consultarlos.</Message>}
     {data.access !== 'checking' && !data.loaded && !data.error && (data.access === 'edit' || data.access === 'read') && <p role="status">Cargando categorías y parámetros…</p>}
     {data.error && <div className={styles.stack}><Message tone="error" title="Operación no completada">{data.error}</Message><div><Button variant="secondary" disabled={data.busy} onClick={reload}>Actualizar catálogo y permisos</Button></div></div>}
     {data.notice && <Message tone="success" title="Cambio confirmado">{data.notice}</Message>}
     {data.loaded && <>
-      {data.access === 'read' && <Message title="Modo de consulta">Auditor puede consultar el catálogo. Sus permisos de lectura prevalecen aunque también tenga ADMIN.</Message>}
+      {data.access === 'read' && <Message title="Modo de consulta">Auditor puede consultar el catálogo. Sus permisos de lectura prevalecen aunque la cuenta también tenga permisos de administración.</Message>}
       <div className={styles.actions}>{editable && <Button disabled={data.busy || Boolean(editing) || Boolean(stateTarget)} onClick={() => setEditing('new')}>Nueva categoría</Button>}<Button variant="secondary" disabled={data.busy} onClick={reload}>Actualizar</Button></div>
       {editing && editable && <CategoryForm key={editing === 'new' ? 'new' : editing.id} category={editing === 'new' ? undefined : editing} categories={data.categories} busy={data.busy}
         onCancel={closeEditor} onSave={async input => { const saved = await data.save(editing === 'new' ? null : editing.id, input); if (saved) closeEditor(); return saved }} />}

@@ -16,6 +16,9 @@ test('S3-15 cliente: bigint como cadena, fuente, estados y marcadores estrictos;
 test('S3-15 interfaz: diferencia ambos historiales, no inventa actor ni resultado para registros antiguos',()=>{
   const legacy:AuditPage={source:'STATUS',items:[{...page.items[0]!,actorId:null,actorRole:null,action:'STATUS_CHANGE',result:'RECORDED',fromStatus:'DRAFT',toStatus:'IN_REVIEW'}],nextCursor:null}
   const html=renderToStaticMarkup(<AuditResults page={legacy} />)
+  assert.match(html, /<dd>Borrador<\/dd>/)
+  assert.match(html, /<dd>En revisión<\/dd>/)
+  assert.match(html, /<dd>Campaña<\/dd>/)
   for (const text of ['status_history','No registrado; no se atribuye a una persona','Cambio registrado','DRAFT','IN_REVIEW']) assert.ok(html.includes(text),text)
   assert.equal(html.includes('Acción aplicada'),false)
   assert.ok(renderToStaticMarkup(<AuditResults page={{...page,items:[{...page.items[0]!,result:'UNSPECIFIED'}]}} />).includes('No especificado en el registro original'))

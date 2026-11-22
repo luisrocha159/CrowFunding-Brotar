@@ -88,7 +88,7 @@ test('identidad PostgreSQL: política ausente, propiedad, documentos/versiones/c
       INSERT INTO public.verification(id,verification_type_id,organization_id) SELECT '${orgCase}',id,'${orgId}' FROM public.verification_type WHERE code='KYB_LEGAL';
       INSERT INTO public.verification_document(verification_id,document_type_id,file_id) VALUES('${orgCase}','${organizationalDocumentTypeId}','${orgFile}');`)
     assert.equal((await request(`me/verifications/${orgCase}/documents/${orgFile}`,cookies[0])).status,200)
-    admin(`UPDATE public.organization_member SET left_at=clock_timestamp() WHERE organization_id='${orgId}' AND user_id='${users[0]}';`)
+    admin(`UPDATE public.organization_member SET joined_at=joined_at-interval '1 hour',left_at=clock_timestamp()-interval '1 minute' WHERE organization_id='${orgId}' AND user_id='${users[0]}';`)
     assert.equal((await request(`me/verifications/${orgCase}`,cookies[0])).status,404)
     assert.equal((await request(`me/verifications/${orgCase}/documents/${orgFile}`,cookies[0])).status,404)
     assert.equal((await request(`files/${ownFile}`,cookies[0])).status,403)

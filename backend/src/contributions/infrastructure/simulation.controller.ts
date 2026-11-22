@@ -1,5 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, Get, Header, NotFoundException, Param, ParseUUIDPipe, Post, Put, Req, UseGuards } from '@nestjs/common'
 import { IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator'
+import { TestFixtureGuard } from '../../shared/infrastructure/http/test-fixture.guard'
 import { SessionMutationGuard } from '../../auth/infrastructure/http/session-http'
 import { RequireRoles, RoleGuard, type AuthenticatedRequest } from '../../roles/infrastructure/roles-http'
 import { InvalidSimulation, SimulationConflict, SimulationUnavailable } from '../application/support-simulation'
@@ -40,7 +41,7 @@ export class SimulationController {
   async create(@Req() request: AuthenticatedRequest, @Body() input: CreateSimulationDto) {
     try { return await this.simulations.create(request.brotarUser.id, input) } catch (error) { translate(error) }
   }
-  @Put('simulations/:id') @UseGuards(SessionMutationGuard) @Header('Cache-Control', 'no-store')
+  @Put('simulations/:id') @UseGuards(TestFixtureGuard,SessionMutationGuard) @Header('Cache-Control', 'no-store')
   async transition(@Req() request: AuthenticatedRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body() input: TransitionSimulationDto) {
     try { return await this.simulations.transition(request.brotarUser.id, id, input) } catch (error) { translate(error) }
   }

@@ -1,3 +1,4 @@
+import { accountRoleLabel, accountStatusLabel } from '../../shared/utils/accountLabels'
 import { useRef, useState, type FormEvent } from 'react'
 import { Button } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
@@ -21,7 +22,7 @@ export function OrganizationManager({ organization, types, readOnly, onSaved, on
     finally { busy.current=false;setSaving(false) }
   }
   return <details className={styles.card}><summary>{organization.legalName} · {organization.typeName}</summary>
-    <p>Vínculo vigente: {organization.membershipRole}. Estado: {organization.status}. Estos datos no acreditan representación ni verificación institucional.</p>
+    <p>Vínculo vigente: {accountRoleLabel(organization.membershipRole)}. Estado: {accountStatusLabel(organization.status)}. Estos datos no acreditan representación ni verificación institucional.</p>
     {!organization.canEdit && <p>La edición está restringida por tu membresía o por el estado de la organización y su verificación.</p>}
     {error && <Message tone="error" title="Cambios sin confirmar">{error}</Message>}{saved && <p role="status">Datos guardados.</p>}
     <form onSubmit={submit} className={styles.form}>

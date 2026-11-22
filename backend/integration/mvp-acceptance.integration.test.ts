@@ -12,7 +12,7 @@ import {AppModule} from '../src/app.module'
 import {configureHttp} from '../src/shared/infrastructure/http/configure-http'
 import {readEnvironment} from '../src/config/environment'
 import {readDatabaseConfig} from '../src/shared/infrastructure/database/database.config'
-import {readTestDatabaseTarget} from './database-target'
+import {readTestDatabaseTarget,waitForEffectiveAssignments} from './database-target'
 import {approveDemoIdentity,removeDemoIdentityFixtures} from './demo-identity-fixture'
 import {ContactMail,ContactMailSender} from '../src/contacts/contact-mail'
 import type {ProgressState} from '../src/campaign-progress/infrastructure/progress.repository'
@@ -44,15 +44,28 @@ test('S3-21 integral: registro → campaña corregida/publicada → aporte/recom
   sql(`UPDATE brotar_extension.rate_bucket SET expires_at=clock_timestamp()-interval '1 second' WHERE key_hash IN(${keys.join(',')});`)}
  const account=async(name:string)=>{const email=`s321-${name}-${suffix}@example.invalid`,r=await data<{id:string}>(await call('auth/register','',{legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:name,email,password,demoConsent:true}),201)
   const login=await call('auth/login','',{email,password});assert.equal(login.status,200);const u={id:r.id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!};users[name]=u;return u}
+ // Una concesión inmediata confirmada por la API puede quedar por delante del reloj al reajustarse Docker.
+ // Esperamos su vigencia en PostgreSQL; una concesión ausente, revocada, programada o vencida falla.
+ const waitForImmediateGrants=async(expected:ReadonlyArray<readonly [Account,string]>)=>{
+  const pairs=expected.map(([user,role])=>`('${user.id}'::uuid,'${role}')`).join(',')
+  await waitForEffectiveAssignments(()=>JSON.parse(sql(`WITH required(user_id,code) AS (VALUES ${pairs})
+    SELECT json_agg(json_build_object('label',req.code,'age',extract(epoch FROM clock_timestamp()-ur.granted_at)))::text
+    FROM required req LEFT JOIN public.role r ON r.code=req.code
+    LEFT JOIN public.user_role ur ON ur.user_id=req.user_id AND ur.role_id=r.id
+     AND ur.revoked_at IS NULL AND ur.expires_at IS NULL`)) as {label:string;age:number|null}[])
+ }
  const file=async(u:Account,purpose='CLOSURE_EVIDENCE')=>data<{id:string}>(await call('files',u.cookie,{purpose,visibility:'PRIVATE',originalName:'DEMO-evidencia.pdf',mimeType:'application/pdf',contentBase64:Buffer.from('%PDF-1.4\nDEMO evidencia integral').toString('base64')}),201)
  try{
   await start();for(let i=0;i<100&&await mail!.collect()===100;i++){ /* Prior QA history is not this scenario. */ }
   const owner=await account('creador'),sponsor=await account('aportante'),admin=await account('admin'),reviewer=await account('revisor'),compliance=await account('cumplimiento'),finance=await account('finanzas'),support=await account('soporte'),auditor=await account('auditor')
   // Only bootstrap ADMIN is a SQL fixture. All subsequent role grants use the product API.
   sql(`INSERT INTO public.user_role(user_id,role_id) SELECT '${admin.id}',id FROM public.role WHERE code='ADMIN';`)
-  for(const [u,role] of [[reviewer,'REVIEWER'],[compliance,'COMPLIANCE'],[finance,'FINANCE'],[support,'SUPPORT'],[auditor,'AUDITOR']] as const)await data(await call(`admin/users/${u.id}/responsibilities`,admin.cookie,{role,operation:'GRANT',confirmed:true,reason:'Responsabilidad temporal en entorno QA del ensayo integral.'}))
+  await waitForImmediateGrants([[admin,'ADMIN']])
+  const staffGrants=[[reviewer,'REVIEWER'],[compliance,'COMPLIANCE'],[finance,'FINANCE'],[support,'SUPPORT'],[auditor,'AUDITOR']] as const
+  for(const [u,role] of staffGrants)await data(await call(`admin/users/${u.id}/responsibilities`,admin.cookie,{role,operation:'GRANT',confirmed:true,reason:'Responsabilidad temporal en entorno QA del ensayo integral.'}))
   assert.equal((await call(`admin/users/${owner.id}/creator`,owner.cookie,{confirmed:true,reason:'Intento sintético de escalar permisos rechazado.'})).status,403)
   await data(await call(`admin/users/${owner.id}/creator`,admin.cookie,{confirmed:true,reason:'Habilitación provisional de creador para ensayo académico.'}))
+  await waitForImmediateGrants([[owner,'CREATOR'],...staffGrants])
   phase('Registro y responsabilidades','Ocho cuentas por HTTP; roles internos separados y CREATOR concedido por ADMIN, sin autoescalamiento.')
   await data(await call('contacts/email/request',owner.cookie,{}),201)
   const raw=/token=([a-f0-9]{64})/.exec(messages.find(m=>m.to===owner.email)!.text)![1]!
@@ -100,7 +113,7 @@ test('S3-21 integral: registro → campaña corregida/publicada → aporte/recom
   assert.equal(supportAmount.ticket.payable,false)
   const duplicate=await data<typeof supportAmount>(await call('demo-payments/checkout',sponsor.cookie,checkout),201);assert.equal(duplicate.contribution.id,ticketId)
   const paymentId=supportAmount.contribution.paymentId
-  await data(await call(`demo-payments/${paymentId}/simulate`,sponsor.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()}))
+  await data(await call(`demo-payments/${paymentId}/authorize`,sponsor.cookie,{demoConsent:true,requestKey:randomUUID()}))
   assert.equal((await call('demo-payments/checkout',sponsor.cookie,{...checkout,requestKey:randomUUID()})).status,409,'Un cupo no se vende dos veces.')
   assert.equal((await call(`contributions/${ticketId}`,owner.cookie)).status,404)
   phase('Aporte DEMO','Campaña persistida tras reinicio; aporte/recibo ficticios, idempotencia, pago confirmado y cupo único comprobados.')

@@ -21,7 +21,7 @@ const profileHelp: Record<AccessProfile, string> = {
 const messages: Record<RegistrationFailure, string> = {
   invalid: 'Revisa los campos. El servidor no aceptó los datos enviados.',
   conflict: 'No se puede crear una cuenta con estos datos. El correo puede estar registrado; no se modificó la cuenta existente.',
-  unavailable: 'El servicio no está disponible. Comprueba que la API y PostgreSQL estén iniciados y vuelve a intentarlo.',
+  unavailable: 'El registro no está disponible en este momento. Vuelve a intentarlo en unos minutos.',
   busy: 'Se alcanzó el límite de solicitudes. Espera un minuto antes de volver a intentar.',
   unknown: 'No recibimos una confirmación válida. La cuenta podría haberse guardado; comprueba el estado antes de repetir. No se simulará un resultado correcto.'
 }
@@ -82,8 +82,8 @@ export function RegisterPage() {
     const next = validateRegistration(values)
     setErrors(current => ({ ...current, phoneCountryCode: next.phoneCountryCode, phoneNumber: next.phoneNumber }))
   }
-  return <AccessShell title="Crea tu cuenta" subtitle="Registra tus datos en la base de Brotar." intro="Convierte una idea en el comienzo de algo mejor"
-    notice={<><strong>Registro conectado.</strong> Estos datos sí se envían a la API y se guardan en PostgreSQL. Puedes usar tu correo propio para probar los mensajes; evita datos sensibles y usa una contraseña exclusiva. Puedes iniciar sesión después del registro, aunque tu cuenta siga pendiente de verificación.</>}>
+  return <AccessShell title="Crea tu cuenta" subtitle="Ingresa tus datos para crear una cuenta en Brotar." intro="Convierte una idea en el comienzo de algo mejor"
+    notice={<><strong>Usa un correo al que tengas acceso.</strong> Después del registro podrás iniciar sesión y verificarlo desde Mi cuenta.</>}>
     {status === 'success' ? <AccessSuccess title="Cuenta guardada en Brotar">
       <p>El usuario y su perfil se guardaron correctamente. Estado: <strong>pendiente de verificación</strong>.</p>
       <p>Ya puedes iniciar sesión, completar tu perfil y registrar una organización en borrador. Tu cuenta conserva el rol básico Usuario registrado; esto no verifica tu correo o identidad ni concede permisos de creador, patrocinador o administrador. No se envió ningún correo ni se inició una sesión automáticamente.</p>

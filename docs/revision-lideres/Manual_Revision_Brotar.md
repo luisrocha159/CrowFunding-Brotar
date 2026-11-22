@@ -1,6 +1,6 @@
 # Manual de instalación y revisión de Brotar
 
-Guía de DEV con cuentas y escenarios preparados
+Guía de main con cuentas y escenarios preparados
 
 Proyecto de Sistemas II
 
@@ -10,7 +10,7 @@ Ricardo Núñez del Prado Justiniano
 Santiago Rocha Mejia
 Alison Pizarro Apaza
 
-Paquete brotar-review-2026-11-09-v1. Preparado el 9 de noviembre de 2026.
+Paquete brotar-review-2026-11-09-v1. Recorrido de pago actualizado el 22 de noviembre de 2026.
 
 Este manual permite instalar una base independiente y recorrer el software sin crear manualmente todos los usuarios y campañas. Primero complete la instalación, después consulte las credenciales y finalmente siga los recorridos en el orden indicado.
 
@@ -45,12 +45,12 @@ docker info
 
 <!-- page -->
 
-## 2 Instalar desde DEV
+## 2 Instalar desde main
 
 En PowerShell, situado en la carpeta donde guardará el proyecto, ejecute:
 
 ```powershell
-git clone -b DEV https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar-Revision
+git clone -b main https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar-Revision
 cd Brotar-Revision
 node scripts/setup-review.mjs
 ```
@@ -287,17 +287,17 @@ Compruebe que una pestaña desactualizada no sobrescribe la ronda vigente y que 
 
 ## 14 Aportar con y sin recompensa
 
-Cuenta: patrocinador. Escenarios: REV-04 donación, REV-05 recompensa y REV-06 preventa. Entre desde el botón de apoyo del detalle público para conservar la campaña en el checkout.
+Inicie sesión como **patrocinador**. Para el primer pago, abra la campaña de donación REV-04 desde Explorar campañas y pulse el botón para aportar.
 
-1. Abra REV-04 y seleccione, por ejemplo, 25.00 BOB. Revise resumen, condiciones y confirmación requerida.
-2. Continúe al checkout integrado. El ensayo aislado y el aporte integrado son pasos diferentes: elegir un importe todavía no confirma un pago.
-3. Seleccione QR y escanéelo con cámara o lector. Debe identificar la operación interna, sin cobrar a un banco. Use los controles del simulador para confirmar el resultado.
-4. Compruebe estado confirmado, referencia, importe y método. Recargue y abra Mis aportes: no debe duplicarse la confirmación.
-5. En REV-05 introduzca menos de 50 BOB: la recompensa de 50 no debe estar habilitada. Si permite apoyar sin recompensa, seleccione esa opción. Con 50 o más elija la tarjeta de semillas y manual.
-6. Revise monto, recompensa y cupos. Importe negativo, más de dos decimales o recompensa incompatible se rechazan. La reserva no debe consumir cupos dos veces por doble clic.
-7. En REV-06 revise preventa y entrega estimada. Complete otro aporte si quiere comparar modalidades; no cambie la selección sin volver a revisar el resumen.
+1. Ingrese **25 BOB**, seleccione el método **QR** y pulse **Continuar**.
+2. En **Revisar aporte**, compruebe la campaña, el importe y la recompensa. Marque **Confirmo el importe y la recompensa de mi aporte** y pulse **Continuar al pago**.
+3. En **Estado del pago** verá la referencia y el QR. Pulse **Abrir billetera de práctica**. Si instaló el proyecto en su computadora con la dirección local, use ese botón en el mismo navegador. En una instalación accesible desde el teléfono también puede escanear el QR e iniciar sesión con la cuenta que creó el aporte.
+4. Compruebe el importe en la billetera y pulse **Autorizar pago de 25,00 BOB**. Espere la confirmación y pulse **Ver comprobante**. Revise campaña, referencia, importe y método. Recargue Mis aportes y compruebe que el mismo aporte figura una sola vez.
+5. Para observar un pago pendiente, prepare otro aporte y salga antes de autorizar. Consulte el detalle en Mis aportes. El plazo de pago figura en la pantalla. Para revisar un intento que ya venció o falló, utilice los casos preparados del apartado 15.
+6. En REV-05 ingrese menos de 50 BOB y compruebe que la recompensa de semillas queda deshabilitada. Pruebe **Sin recompensa**. Con 50 BOB o más, seleccione la recompensa y compruebe el resumen antes de autorizar.
+7. En REV-06 revise la entrega estimada de la preventa. Pruebe también un importe negativo o con tres decimales. La selección debe exigir un importe válido para continuar.
 
-El QR es escaneable pero no es bancario. No se solicita tarjeta ni se debita dinero real. Un estado pendiente, fallido o vencido no debe verse como recaudación confirmada.
+La billetera utiliza saldo simulado. Solo un pago confirmado cuenta como recaudación.
 
 <!-- page -->
 
@@ -502,4 +502,4 @@ Resultado esperado: permisos por responsabilidad y propiedad, sin autoaprobació
 
 Registre Correcto, Hallazgo o No ejecutado por fila, responsable y evidencia. Use una instalación por revisor para que otro no cambie los estados mientras documenta.
 
-Fuentes: README de DEV, rutas del software, accounts.json, scenarios.mjs y comprobaciones de esta carpeta. Las condiciones son provisionales del equipo para el alcance académico; no sustituyen aprobación legal del cliente ni habilitan operación financiera real.
+Fuentes: README de main, rutas del software, accounts.json, scenarios.mjs y comprobaciones de esta carpeta. Las condiciones son provisionales del equipo para el alcance académico; no sustituyen aprobación legal del cliente ni habilitan operación financiera real.

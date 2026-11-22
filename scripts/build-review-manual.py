@@ -31,7 +31,7 @@ footer.add_run('Paquete de evaluación    |    ').font.size=Pt(8)
 field=OxmlElement('w:fldSimple');field.set(qn('w:instr'),'PAGE');footer._p.append(field)
 doc.core_properties.author='Ricardo Núñez del Prado Justiniano, Santiago Rocha Mejia y Alison Pizarro Apaza'
 doc.core_properties.title='Manual de instalación y revisión de Brotar'
-doc.core_properties.subject='DEV con datos sintéticos, credenciales y recorridos de validación'
+doc.core_properties.subject='Brotar con datos sintéticos, credenciales y recorridos de validación'
 
 def paragraph(text):
  p=doc.add_paragraph()

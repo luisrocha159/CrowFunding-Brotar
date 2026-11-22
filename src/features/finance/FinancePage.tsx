@@ -42,7 +42,7 @@ export function FinancePage() {
     <header className={layout.heading}><div><h1>Operaciones financieras</h1><p>Consulta de pagos · solo lectura</p></div></header>
     <p><ButtonLink variant="tertiary" to="/mi-cuenta">Volver a mi cuenta</ButtonLink></p>
     <p>No confirma cobros, concilia ni autoriza desembolsos o devoluciones. Los estados de esas operaciones son independientes; aquí solo se lee el pago y la devolución ya completada vinculada a él.</p>
-    {data.state==='forbidden' ? <Message tone="warning" title="Acceso restringido">Necesitas permiso vigente finance.read: Finanzas, ADMIN o Auditor. No puedes asignártelo aquí.</Message> : <>
+    {data.state==='forbidden' ? <Message tone="warning" title="Acceso restringido">Este panel está disponible para las cuentas de Finanzas, Administración y Auditoría.</Message> : <>
       <form onSubmit={submit} className={styles.filters} aria-label="Filtros de operaciones">
         <FormField label="Campaña (UUID)" help="Opcional. Copia el identificador de la campaña, no su título." value={draft.campaignId} maxLength={36}
           pattern="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" onChange={event=>setDraft({...draft,campaignId:event.target.value})} />

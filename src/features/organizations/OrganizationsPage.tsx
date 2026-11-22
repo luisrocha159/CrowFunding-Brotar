@@ -1,3 +1,4 @@
+import { accountRoleLabel, accountStatusLabel } from '../../shared/utils/accountLabels'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { AccessShell } from '../access/AccessComponents'
@@ -9,7 +10,6 @@ import { createOrganization, myOrganizations, organizationTypes, validateOrganiz
 import styles from '../access/access.module.css'
 
 const empty: OrganizationInput = { legalName:'', tradeName:'', organizationTypeId:'', contactEmail:'', contactPhone:'' }
-const statusNames: Record<string,string> = { DRAFT:'Borrador', PENDING_VERIFICATION:'Pendiente de verificación', ACTIVE:'Activa', SUSPENDED:'Suspendida', CLOSED:'Cerrada' }
 export function OrganizationsPage() {
   const [types,setTypes] = useState<OrganizationType[]>([])
   const [organizations,setOrganizations] = useState<Organization[]>([])
@@ -39,7 +39,7 @@ export function OrganizationsPage() {
     {state==='error' && <><Message tone="error" title="No se pudieron consultar los datos">Comprueba la API y la base de datos. No se mostrará una lista vacía como si fuera una respuesta correcta.</Message><Button onClick={()=>{setState('loading');setRetry(value=>value+1)}}>Reintentar</Button></>}
     {state==='ready' && <>
       <section aria-label="Organizaciones vinculadas"><h2>Organizaciones vinculadas</h2>
-        {organizations.length===0 ? <p>Todavía no tienes organizaciones registradas.</p> : <ul>{organizations.map(organization=><li key={organization.id}><h3>{organization.tradeName || organization.legalName}</h3><p>{organization.legalName} · {organization.typeName}</p><p>Estado: {statusNames[organization.status] ?? organization.status}</p><p>Vínculo: {organization.membershipRole==='OWNER' ? 'Titular del registro' : organization.membershipRole}</p><p>{organization.contactEmail}{organization.contactPhone ? ` · ${organization.contactPhone}` : ''}</p></li>)}</ul>}
+        {organizations.length===0 ? <p>Todavía no tienes organizaciones registradas.</p> : <ul>{organizations.map(organization=><li key={organization.id}><h3>{organization.tradeName || organization.legalName}</h3><p>{organization.legalName} · {organization.typeName}</p><p>Estado: {accountStatusLabel(organization.status)}</p><p>Vínculo: {accountRoleLabel(organization.membershipRole)}</p><p>{organization.contactEmail}{organization.contactPhone ? ` · ${organization.contactPhone}` : ''}</p></li>)}</ul>}
       </section>
       <form className={styles.form} aria-label="Registrar organización" noValidate onSubmit={async event=>{
         event.preventDefault(); if(active.current) return

@@ -15,3 +15,20 @@ export function readTestDatabaseTarget(config: DatabaseConfig) {
   assert.equal(config.database, 'brotar_db')
   return { container: `${project}-postgres-1`, project, port: String(config.port) }
 }
+
+// A grant acknowledged by the API should already exist. This short settling window
+// accommodates the clock adjustments observed on Docker Desktop, without retrying a mutation.
+export async function waitForEffectiveAssignments(read: () => { label: string; age: number | null }[]) {
+  const clockMarginSeconds = 5
+  const deadline = performance.now() + 20_000
+  for (;;) {
+    const assignments = read()
+    assert.ok(assignments.length, 'Se esperaba al menos una asignación')
+    for (const { label, age } of assignments) {
+      assert.ok(age !== null && age >= -clockMarginSeconds, `Asignación inmediata ausente o futura: ${label}`)
+    }
+    if (assignments.every(({ age }) => age !== null && age >= clockMarginSeconds)) return
+    assert.ok(performance.now() < deadline, 'El reloj de PostgreSQL no estabilizó la vigencia de las asignaciones.')
+    await new Promise(resolve => setTimeout(resolve, 250))
+  }
+}

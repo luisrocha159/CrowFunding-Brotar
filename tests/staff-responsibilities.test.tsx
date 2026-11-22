@@ -17,6 +17,8 @@ test('responsabilidades cliente: confirmación, identidad y respuesta coincident
 test('responsabilidades interfaz: motivo, controles nativos, opciones cerradas, efecto AUDITOR y carga', () => {
   const html = renderToStaticMarkup(<StaffResponsibilitiesForm user={{ id: 'target', email: 'test@example.invalid', name: 'Ensayo', status: 'ACTIVE', locked: false, roles: [], canEnableCreator: false, provisional: true }} busy change={async () => {}} />)
   for (const role of staffRoles) assert.ok(html.includes(`value="${role}"`))
+  assert.match(html, /value="FINANCE">Finanzas</)
+  assert.match(html, /value="COMPLIANCE">Cumplimiento</)
   for (const text of ['disabled', 'required', 'minLength="10"', 'maxLength="500"', 'Conceder', 'Revocar conservando historial', 'Confirmo conceder']) assert.ok(html.includes(text), text)
   assert.equal(html.includes('value="ADMIN"'), false)
 })

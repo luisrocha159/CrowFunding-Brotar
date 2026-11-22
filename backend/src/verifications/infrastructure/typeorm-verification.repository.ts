@@ -223,7 +223,9 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await setAuditActor(m,actor)
       await this.record(m,actor,id,'BEFORE_CHANGE',{policyVersion:row.submittedData.policyVersion??'',fields:before.fields,documents:before.documents,resultNotes:row.resultNotes,rejectionReason:row.rejectionReason})
       for(const doc of plan.documents)await m.query('UPDATE public.verification_document SET is_valid=$3,review_notes=$4 WHERE verification_id=$1 AND file_id=$2',[id,doc.fileId,doc.isValid,doc.notes||null])
-      await m.query(`UPDATE public.verification SET status=$2::verification_status,reviewed_by=$3,reviewed_at=clock_timestamp(),result_notes=$4,
+      await transactionAccess(m,actor,'verification.review')
+      await m.query(`UPDATE public.verification SET status=$2::verification_status,reviewed_by=$3,
+        reviewed_at=GREATEST(clock_timestamp(),submitted_at,reviewed_at),result_notes=$4,
         rejection_reason=CASE WHEN $2='REJECTED' THEN $4 ELSE NULL END WHERE id=$1`,[id,plan.decision,actor,plan.reason])
       const after=await this.detailWith(m,actor,id,true)
       await this.record(m,actor,id,'REVIEW',{policyVersion:policy.version,fields:after.fields,documents:after.documents,resultNotes:plan.reason,rejectionReason:after.rejectionReason,decision:plan.decision,reviewedBy:actor})

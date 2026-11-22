@@ -56,7 +56,7 @@ export function CampaignSubmissionPanel({ id, categories, onGoTo, onStatusChange
       } else if (cause instanceof SessionError && cause.status === 429) {
         setError('Demasiados intentos. Espera un minuto antes de volver a enviar; tu borrador se conserva.')
       } else if (cause instanceof SessionError && cause.status === 403) {
-        setError('Tu cuenta necesita CREATOR para enviar la campaña. Solicita al administrador la habilitación provisional en Administración → Usuarios. Tu borrador sigue guardado y editable; elegir Creador al registrarte no concede ese permiso.')
+        setError('Tu cuenta necesita el permiso de creador para enviar la campaña. Solicita al administrador la habilitación provisional en Administración → Usuarios. Tu borrador sigue guardado y editable; elegir Creador al registrarte no concede ese permiso.')
       } else if (cause instanceof SessionError && cause.status === 409) {
         const latest = await readSubmission(id).catch(() => null)
         if (!mounted.current) return

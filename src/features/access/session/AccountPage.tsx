@@ -46,7 +46,7 @@ export function AccountPage() {
   if (status === 'anonymous') return <Navigate to="/iniciar-sesion?continuar=%2Fmi-cuenta" replace />
   return <div className={styles.page}><header className={styles.pageHeader}><p className={styles.eyebrow}>Tu espacio en Brotar</p><h1>Mi cuenta</h1><p>Gestiona tus datos, comunicaciones y accesos desde un solo lugar.</p></header>
     {status === 'loading' && <p role="status">Comprobando sesión…</p>}
-    {status === 'error' && <><Message tone="error" title="No se pudo comprobar la sesión">Comprueba que la API y la base estén disponibles. No se mostrará información privada sin validación.</Message><Button onClick={() => { setStatus('loading'); setRetry(value => value + 1) }}>Reintentar</Button></>}
+    {status === 'error' && <><Message tone="error" title="No se pudo comprobar la sesión">Revisa tu conexión y vuelve a intentar para abrir tu cuenta.</Message><Button onClick={() => { setStatus('loading'); setRetry(value => value + 1) }}>Reintentar</Button></>}
     {status === 'ready' && user && <div className={styles.layout}>
       <aside className={styles.sidebar}><nav aria-label="Secciones de mi cuenta"><p className={styles.navLabel}>En esta página</p>{sections.map(([id,label])=><a key={id} href={`#cuenta-${id}`}>{label}</a>)}</nav><p className={styles.sidebarHelp}>Tus datos personales son privados. Los permisos se comprueban por separado para cada acción.</p></aside>
       <div className={styles.content}>

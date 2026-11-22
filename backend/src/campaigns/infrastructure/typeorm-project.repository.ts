@@ -47,7 +47,7 @@ export class TypeormProjectRepository implements ProjectRepository {
         'SELECT problem, solution, beneficiaries, expected_results AS "expectedResults" FROM public.campaign_story WHERE campaign_id=$1', [id])
       const history: ProjectDetail['history'] = await manager.query(
         `SELECT from_status AS "fromStatus", to_status AS "toStatus", changed_at AS "changedAt", reason
-         FROM public.status_history WHERE entity_type='CAMPAIGN' AND entity_id=$1 ORDER BY changed_at, id`, [id])
+         FROM public.status_history WHERE entity_type='CAMPAIGN' AND entity_id=$1 ORDER BY id`, [id])
       return { ...summaries[0], location: locations[0] ?? null, story: stories[0] ?? null, history }
     }
     return manager ? read(manager) : this.database.connection().transaction('REPEATABLE READ', read)

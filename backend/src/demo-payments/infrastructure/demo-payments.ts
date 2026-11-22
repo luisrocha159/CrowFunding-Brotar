@@ -39,8 +39,10 @@ export class DemoPayments {
     paymentId=paymentId.toLowerCase()
     const providerId=await demoProvider(this.database.connection().manager)
     const [row]=await this.database.connection().query(`SELECT p.id AS "paymentId",c.id AS "contributionId",c.reference_code AS reference,
-      p.amount::text AS amount,trim(p.currency_code) AS "currencyCode",p.status,p.attempt_number AS attempt,
-      p.expires_at AS "expiresAt",p.expires_at<=now() AS expired,
+      p.amount::text AS amount,trim(p.currency_code) AS "currencyCode",
+      CASE WHEN p.status IN ('INITIATED','PENDING') AND LEAST(p.expires_at,c.expires_at)<=clock_timestamp()
+        THEN 'EXPIRED' ELSE p.status::text END AS status,p.attempt_number AS attempt,
+      p.expires_at AS "expiresAt",COALESCE(p.status IN ('INITIATED','PENDING') AND LEAST(p.expires_at,c.expires_at)<=clock_timestamp(),false) OR p.status='EXPIRED' AS expired,
       CASE WHEN p.provider_payload->>'method' IN ('TEST_QR','TEST_CARD') THEN p.provider_payload->>'method' ELSE NULL END AS method FROM public.payment p
       JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[paymentId,userId,providerId])
     if (!row) throw new NotFoundException('Intento no disponible.')
@@ -59,6 +61,29 @@ export class DemoPayments {
     return {mode:'DEMO',label:DEMO_LABEL,contribution,ticket:await this.ticket(userId,contribution.paymentId!)}
   }
 
+  async authorize(userId: string,paymentId: string,key: string) {
+    assertDemoEnabled();uuid(paymentId);requestKey(key)
+    paymentId=paymentId.toLowerCase()
+    await this.database.connection().transaction(async manager=>{
+      const providerId=await demoProvider(manager)
+      await lockDemo(manager)
+      const [owned]=await manager.query(`SELECT c.id FROM public.payment p
+        JOIN public.contribution c ON c.id=p.contribution_id JOIN public.campaign campaign ON campaign.id=c.campaign_id
+        WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3 FOR UPDATE OF campaign`,[paymentId,userId,providerId])
+      if (!owned) throw new NotFoundException('Intento no disponible.')
+      const [payment]=await manager.query(`SELECT p.status,LEAST(p.expires_at,c.expires_at)<=clock_timestamp() AS expired
+        FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 FOR UPDATE OF p,c`,[paymentId])
+      if (!['INITIATED','PENDING'].includes(payment.status)) return
+      if (payment.expired) {
+        await this.ledger.expireLocked(manager,owned.id)
+        return
+      }
+      const receipt=await this.record(manager,providerId,userId,paymentId,'CONFIRMED',key)
+      if (receipt.processing!=='APPLIED') throw new LedgerConflict('La reserva cambió. Consulta el estado del aporte.')
+    })
+    return this.ticket(userId,paymentId)
+  }
+
   async simulate(userId: string,paymentId: string,outcome: IncomingState,key: string) {
     assertDemoEnabled();uuid(paymentId);requestKey(key)
     paymentId=paymentId.toLowerCase()
@@ -66,40 +91,44 @@ export class DemoPayments {
     return this.database.connection().transaction(async manager=>{
       const providerId=await demoProvider(manager)
       await lockDemo(manager)
-      const [target]=await manager.query(`SELECT p.amount::text,trim(p.currency_code) AS currency,p.status FROM public.payment p
-        JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[paymentId,userId,providerId])
-      if (!target) throw new NotFoundException('Intento no disponible.')
-      const idempotency=digest(`demo-event:${userId}:${key.toLowerCase()}`)
-      const hash=digest(JSON.stringify([paymentId,outcome]))
-      const [old]=await manager.query('SELECT id,request_hash,processing,reason_code FROM brotar_extension.demo_event WHERE request_key=$1',[idempotency])
-      if (old) {
-        if (old.request_hash!==hash) throw new LedgerConflict('Esta clave ya se usó con otros datos.')
-        return {mode:'DEMO',label:DEMO_LABEL,eventId:old.id,paymentId,status:target.status as PaymentState,observedStatus:outcome,processing:old.processing,reasonCode:old.reason_code,replayed:true}
-      }
-      const reference=`DEMO-${paymentId}`
-      const [receipt]=await manager.query(`INSERT INTO brotar_extension.demo_event(request_key,request_hash,actor_id,payment_id,observed_status,
-        amount,currency_code,external_reference,processing) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'RECEIVED') RETURNING id`,
-      [idempotency,hash,userId,paymentId,outcome,target.amount,target.currency,reference])
-      // Se conserva el recibo incluso si la transición financiera se rechaza. No ocultar errores de BD desconocidos.
-      await manager.query('SAVEPOINT demo_apply')
-      let status: PaymentState=target.status,processing='APPLIED',reasonCode: string|null=null
-      try {
-        status=(await this.ledger.applyVerifiedEvent({providerId,paymentId,eventId:`demo:${receipt.id}`,state:outcome,
-          amount:target.amount,currencyCode:target.currency,externalReference:reference,feeAmount:'0'},manager)).status
-      } catch (error) {
-        if (!(error instanceof LedgerConflict)) throw error
-        await manager.query('ROLLBACK TO SAVEPOINT demo_apply')
-        processing=outcome==='CONFIRMED'?'NEEDS_REVIEW':'APPLIED'
-        reasonCode=outcome==='CONFIRMED'?'LEDGER_CONFLICT':'TERMINAL_NOTICE_IGNORED'
-        if (outcome==='CONFIRMED' && (await manager.query('SELECT payment_id FROM brotar_extension.demo_compensation WHERE payment_id=$1',[paymentId])).length) {
-          processing='COMPENSATED';reasonCode='ALREADY_COMPENSATED'
-        }
-      }
-      await manager.query('RELEASE SAVEPOINT demo_apply')
-      await manager.query(`UPDATE brotar_extension.demo_event SET processing=$2,reason_code=$3,processed_at=now() WHERE id=$1`,[receipt.id,processing,reasonCode])
-      await setAuditActor(manager,userId)
-      await recordAudit(manager,userId,'CREATE','demo_event',receipt.id)
-      return {mode:'DEMO',label:DEMO_LABEL,eventId:receipt.id as string,paymentId,status,observedStatus:outcome,processing,reasonCode,replayed:false}
+      return this.record(manager,providerId,userId,paymentId,outcome,key)
     })
+  }
+
+  private async record(manager: EntityManager,providerId: string,userId: string,paymentId: string,outcome: IncomingState,key: string) {
+    const [target]=await manager.query(`SELECT p.amount::text,trim(p.currency_code) AS currency,p.status FROM public.payment p
+      JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[paymentId,userId,providerId])
+    if (!target) throw new NotFoundException('Intento no disponible.')
+    const idempotency=digest(`demo-event:${userId}:${key.toLowerCase()}`)
+    const hash=digest(JSON.stringify([paymentId,outcome]))
+    const [old]=await manager.query('SELECT id,request_hash,processing,reason_code FROM brotar_extension.demo_event WHERE request_key=$1',[idempotency])
+    if (old) {
+      if (old.request_hash!==hash) throw new LedgerConflict('Esta clave ya se usó con otros datos.')
+      return {mode:'DEMO',label:DEMO_LABEL,eventId:old.id,paymentId,status:target.status as PaymentState,observedStatus:outcome,processing:old.processing,reasonCode:old.reason_code,replayed:true}
+    }
+    const reference=`DEMO-${paymentId}`
+    const [receipt]=await manager.query(`INSERT INTO brotar_extension.demo_event(request_key,request_hash,actor_id,payment_id,observed_status,
+      amount,currency_code,external_reference,processing) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'RECEIVED') RETURNING id`,
+    [idempotency,hash,userId,paymentId,outcome,target.amount,target.currency,reference])
+    // Se conserva el recibo incluso si la transición financiera se rechaza. No ocultar errores de BD desconocidos.
+    await manager.query('SAVEPOINT demo_apply')
+    let status: PaymentState=target.status,processing='APPLIED',reasonCode: string|null=null
+    try {
+      status=(await this.ledger.applyVerifiedEvent({providerId,paymentId,eventId:`demo:${receipt.id}`,state:outcome,
+        amount:target.amount,currencyCode:target.currency,externalReference:reference,feeAmount:'0'},manager)).status
+    } catch (error) {
+      if (!(error instanceof LedgerConflict)) throw error
+      await manager.query('ROLLBACK TO SAVEPOINT demo_apply')
+      processing=outcome==='CONFIRMED'?'NEEDS_REVIEW':'APPLIED'
+      reasonCode=outcome==='CONFIRMED'?'LEDGER_CONFLICT':'TERMINAL_NOTICE_IGNORED'
+      if (outcome==='CONFIRMED' && (await manager.query('SELECT payment_id FROM brotar_extension.demo_compensation WHERE payment_id=$1',[paymentId])).length) {
+        processing='COMPENSATED';reasonCode='ALREADY_COMPENSATED'
+      }
+    }
+    await manager.query('RELEASE SAVEPOINT demo_apply')
+    await manager.query(`UPDATE brotar_extension.demo_event SET processing=$2,reason_code=$3,processed_at=now() WHERE id=$1`,[receipt.id,processing,reasonCode])
+    await setAuditActor(manager,userId)
+    await recordAudit(manager,userId,'CREATE','demo_event',receipt.id)
+    return {mode:'DEMO',label:DEMO_LABEL,eventId:receipt.id as string,paymentId,status,observedStatus:outcome,processing,reasonCode,replayed:false}
   }
 }

@@ -20,12 +20,21 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
  const app=await NestFactory.create(AppModule,{logger:false});configureHttp(app,readEnvironment({NODE_ENV:'test'}));await app.listen(0,'127.0.0.1');const base=await app.getUrl()
  const users:string[]=[],files:string[]=[],organizations:string[]=[],cases:string[]=[],campaignId=randomUUID(),suffix=randomUUID(),password=randomBytes(24).toString('hex')
  const call=(path:string,cookie='',method='GET',body?:unknown,origin='http://127.0.0.1:5173')=>fetch(`${base}/api/${path}`,{method,headers:{'Content-Type':'application/json','X-Brotar-Request':'1',Origin:origin,Cookie:cookie},...(body===undefined?{}:{body:JSON.stringify(body)})})
- const account=async(role:string)=>{const email=`kyc-review-${users.length}-${suffix}@example.invalid`;const r=await call('auth/register','','POST',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Ensayo',email,password,demoConsent:true});assert.equal(r.status,201);const{id}=await r.json() as{id:string};users.push(id);if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`);const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);return{id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!}}
+ const account=async(role:string)=>{
+  const email=`kyc-review-${users.length}-${suffix}@example.invalid`
+  const r=await call('auth/register','','POST',{legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Ensayo',email,password,demoConsent:true})
+  assert.equal(r.status,201)
+  const {id}=await r.json() as {id:string};users.push(id)
+  sql(`UPDATE user_role SET granted_at=now()-interval '1 hour' WHERE user_id='${id}' AND role_id=(SELECT id FROM role WHERE code='REGISTERED_USER')`)
+  if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${id}',id,now()-interval '1 hour' FROM role WHERE code='${role}'`)
+  const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200)
+  return{id,email,cookie:login.headers.get('set-cookie')!.split(';')[0]!}
+ }
  try{
   const owner=await account('REGISTERED_USER'),reviewer=await account('COMPLIANCE'),other=await account('REGISTERED_USER'),auditor=await account('ADMIN')
   const budget=()=>sql(`DELETE FROM brotar_extension.rate_bucket WHERE key_hash IN(${[...users.map(id=>`account:${id}`),'ip:127.0.0.1'].map(k=>`'${createHash('sha256').update('mvp-case-write:'+k).digest('hex')}'`).join(',')});`)
   budget()
-  sql(`INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='AUDITOR';`)
+  sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${auditor.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='AUDITOR';`)
   const types=await(await call('me/verifications/types',owner.cookie)).json() as VerificationType[]
   const capture=async(code:string,organizationId?:string)=>{
    const type=types.find(t=>t.code===code)!,policy=type.policy;assert.ok(policy);assert.match(policy.version,/^mvp-demo-/)
@@ -50,7 +59,7 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   assert.equal((await decide(detail,'APPROVED')).status,400)
   assert.equal((await call(`admin/verifications/${detail.id}/review`,reviewer.cookie,'POST',{expectedVersion:detail.version,decision:'IN_REVIEW',reason:'Revisión explícita de datos ficticios.',documents:[]},'https://foreign.invalid')).status,403)
   assert.equal((await decide(detail,'IN_REVIEW',auditor.cookie)).status,403,'AUDITOR+ADMIN no escribe')
-  sql(`INSERT INTO user_role(user_id,role_id) SELECT '${owner.id}',id FROM role WHERE code='COMPLIANCE';`)
+  sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${owner.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='COMPLIANCE';`)
   assert.equal((await decide(detail,'IN_REVIEW',owner.cookie)).status,403)
   assert.equal((await decide(detail,'IN_REVIEW')).status,201)
   assert.equal((await decide(detail,'IN_REVIEW')).status,409)
@@ -69,6 +78,8 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   const badges=await(await call(`verification-badges/campaigns/${campaignId}`)).json() as{items:{code:string}[]};assert.deepEqual(badges.items.map(i=>i.code),['KYC_IDENTITY']);assert.equal(JSON.stringify(badges).includes(fileId),false)
   const orgTypes=await(await call('organizations/types',owner.cookie)).json() as{id:string}[]
   const organization=await call('organizations',owner.cookie,'POST',{legalName:`DEMO Organización ${suffix}`,tradeName:'DEMO',organizationTypeId:orgTypes[0]!.id,contactEmail:'demo@example.invalid',contactPhone:''});assert.equal(organization.status,201);const orgId=(await organization.json() as{id:string}).id;organizations.push(orgId)
+  // El expediente institucional corresponde a una persona que ya era representante.
+  sql(`UPDATE organization_member SET joined_at=clock_timestamp()-interval '1 hour' WHERE organization_id='${orgId}' AND user_id='${owner.id}'`)
   const kyb=await capture('KYB_LEGAL',orgId)
   sql(`UPDATE organization_member SET left_at=clock_timestamp()+interval '1 day' WHERE organization_id='${orgId}' AND user_id='${owner.id}';`)
   try{assert.equal((await decide(kyb,'IN_REVIEW',owner.cookie)).status,403,'La baja futura del representante no permite autoaprobar su organización')}finally{sql(`UPDATE organization_member SET left_at=NULL WHERE organization_id='${orgId}' AND user_id='${owner.id}';`)}
@@ -76,11 +87,38 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   assert.equal((await decide(kyb,'IN_REVIEW')).status,201);const kybReview=await read(kyb.id);assert.equal((await decide(kybReview,'APPROVED')).status,201)
   assert.equal((await call(`me/verifications/${kyb.id}`,other.cookie)).status,404)
   const rep=await capture('KYB_REPRESENTATIVE',orgId)
-  const source=app.get(DatabaseService).connection(),lock=source.createQueryRunner();await lock.connect();await lock.startTransaction();await lock.query('SELECT id FROM verification WHERE id=$1 FOR UPDATE',[rep.id])
-  sql(`UPDATE user_role SET expires_at=clock_timestamp()+interval '400 milliseconds' WHERE user_id='${reviewer.id}' AND role_id=(SELECT id FROM role WHERE code='COMPLIANCE') AND revoked_at IS NULL;`)
-  const waiting=decide(rep,'IN_REVIEW');await new Promise(r=>setTimeout(r,650));await lock.commitTransaction();await lock.release();assert.equal((await waiting).status,403,'Revalida caducidad después de esperar')
-  sql(`UPDATE user_role SET expires_at=NULL WHERE user_id='${reviewer.id}' AND role_id=(SELECT id FROM role WHERE code='COMPLIANCE') AND revoked_at IS NULL;`)
-  assert.equal((await decide(rep,'IN_REVIEW')).status,201)
+  const source=app.get(DatabaseService).connection(),lock=source.createQueryRunner()
+  const reviewGrant=`user_id='${reviewer.id}' AND role_id=(SELECT id FROM role WHERE code='COMPLIANCE') AND revoked_at IS NULL`
+  await lock.connect()
+  let waiting:Promise<Response>|undefined
+  try{
+   await lock.startTransaction()
+   await lock.query('SELECT id FROM verification WHERE id=$1 FOR UPDATE',[rep.id])
+   const [{pid}]=await lock.query('SELECT pg_backend_pid() AS pid')
+   waiting=decide(rep,'IN_REVIEW')
+   const deadline=performance.now()+10000
+   let blocked=false
+   while(performance.now()<deadline){
+    const [row]=await source.query('SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid))) AS blocked',[pid])
+    if(row.blocked){blocked=true;break}
+    await new Promise(resolve=>setTimeout(resolve,20))
+   }
+   assert.ok(blocked,'La solicitud ya autorizada llegó al bloqueo del expediente.')
+   sql(`UPDATE user_role SET expires_at=clock_timestamp()-interval '1 minute' WHERE ${reviewGrant}`)
+   await lock.commitTransaction()
+   assert.equal((await waiting).status,403,'Revalida caducidad después de esperar')
+   assert.equal(sql(`SELECT status='PENDING' AND reviewed_at IS NULL FROM verification WHERE id='${rep.id}'`),'t')
+  }finally{
+   if(lock.isTransactionActive)await lock.rollbackTransaction()
+   await lock.release()
+   if(waiting)await waiting
+   sql(`UPDATE user_role SET expires_at=NULL WHERE ${reviewGrant}`)
+  }
+  // La base conserva una fecha de envío posterior al reloj actual si el reloj retrocede.
+  sql(`UPDATE verification SET submitted_at=clock_timestamp()+interval '1 minute' WHERE id='${rep.id}'`)
+  const afterClockChange=await read(rep.id)
+  assert.equal((await decide(afterClockChange,'IN_REVIEW')).status,201)
+  assert.equal(sql(`SELECT reviewed_at>=submitted_at FROM verification WHERE id='${rep.id}'`),'t')
   sql(`UPDATE user_role SET revoked_at=clock_timestamp() WHERE user_id='${reviewer.id}' AND role_id=(SELECT id FROM role WHERE code='COMPLIANCE');`)
   assert.equal((await call(`admin/verifications/${detail.id}/documents/${fileId}`,reviewer.cookie)).status,403)
   await assert.rejects(()=>app.get(TypeormVerificationRepository).decide(reviewer.id,rep.id,rep.version,{decision:'APPROVED',reason:'Revisión sin permiso que debe rechazarse.',documents:[]}),/responsabilidad|permiso/)

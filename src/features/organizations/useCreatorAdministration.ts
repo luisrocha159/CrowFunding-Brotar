@@ -1,3 +1,4 @@
+import { accountRoleLabel } from '../../shared/utils/accountLabels'
 import { useEffect, useRef, useState } from 'react'
 import { SessionError } from '../../shared/api/sessionError'
 import { changeResponsibility, enableCreator, findManagedUser, type ManagedUser, type StaffRole } from './creatorAdministrationClient'
@@ -32,11 +33,11 @@ export function useCreatorAdministration() {
     catch (cause) {
       if (controller.signal.aborted) return
       if (cause instanceof SessionError && cause.status === 401) setAnonymous(true)
-      setError(cause instanceof SessionError && cause.status === 403 ? 'Se requiere ADMIN vigente sin AUDITOR y no puedes modificar tus propias responsabilidades.'
+      setError(cause instanceof SessionError && cause.status === 403 ? 'Necesitas acceso de administración con escritura y solo puedes modificar responsabilidades de otras cuentas.'
         : cause instanceof SessionError && cause.status === 404 ? 'No se encontró la cuenta. Comprueba el correo y que ya esté registrada.'
         : cause instanceof SessionError && cause.status === 409 ? 'La cuenta no admite el cambio. Comprueba su estado, motivo y roles; revoca expresamente concesiones futuras o vencidas antes de volver a conceder.'
         : cause instanceof SessionError && cause.status === 400 ? 'Revisa el correo, el motivo y la confirmación.'
-        : 'No se confirmó la operación. Busca de nuevo la cuenta para comprobar sus roles antes de repetir. Verifica la API y las migraciones.')
+        : 'No se confirmó la operación. Busca de nuevo la cuenta para comprobar sus roles antes de repetir.')
     } finally { if (request.current === controller) request.current = null; if (!controller.signal.aborted) setBusy(false) }
   }
   async function find(email: string) {
@@ -50,7 +51,7 @@ export function useCreatorAdministration() {
       const result = await enableCreator(target.id, reason, signal)
       if (signal.aborted) return
       setUser({ ...target, roles: [...new Set([...target.roles, 'CREATOR'])] })
-      setNotice(result.created ? 'CREATOR habilitado provisionalmente. La acción quedó registrada; no se verificó identidad ni KYC.' : 'La cuenta ya tenía CREATOR vigente; no se duplicó la concesión.')
+      setNotice(result.created ? 'Permiso de creador concedido. La cuenta ya puede enviar campañas a revisión.' : 'La cuenta ya tenía el permiso de creador.')
     })
   }
   async function changeStaff(role: StaffRole, operation: 'GRANT' | 'REVOKE', reason: string) {
@@ -61,7 +62,7 @@ export function useCreatorAdministration() {
       const refreshed = await findManagedUser(target.email, signal)
       if (!signal.aborted) {
         setUser(refreshed)
-        setNotice(result.changed ? `Responsabilidad ${role} ${operation === 'GRANT' ? 'concedida' : 'revocada'} y auditada.` : 'El estado solicitado ya estaba aplicado. No se duplicó la operación.')
+        setNotice(result.changed ? `Responsabilidad de ${accountRoleLabel(role)} ${operation === 'GRANT' ? 'concedida' : 'revocada'} y auditada.` : 'El estado solicitado ya estaba aplicado. No se duplicó la operación.')
       }
     })
   }

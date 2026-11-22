@@ -32,7 +32,9 @@ test('S3-15/16/17/18: matriz real, perfil de auditor, permisos residuales, rollb
   for(const role of roles){
    const email=`security-${role.toLowerCase()}-${suffix}@example.invalid`,r=await call('auth/register','','POST',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',email,password,firstName:'DEMO',lastName:'Ñandú',demoConsent:true});assert.equal(r.status,201)
    const {id}=await r.json() as{id:string};users.push(id)
-   if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}'`)
+   // La matriz evalúa permisos ya vigentes, incluso cuando se reajusta el reloj de Docker.
+   sql(`UPDATE user_role SET granted_at=now()-interval '1 hour' WHERE user_id='${id}' AND role_id=(SELECT id FROM role WHERE code='REGISTERED_USER')`)
+   if(role!=='REGISTERED_USER')sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${id}',id,now()-interval '1 hour' FROM role WHERE code='${role}'`)
    const login=await call('auth/login','','POST',{email,password});assert.equal(login.status,200);accounts[role]={id,cookie:login.headers.get('set-cookie')!.split(';')[0]!}
   }
   const matrix:[string,string[]][]=[
@@ -46,6 +48,11 @@ test('S3-15/16/17/18: matriz real, perfil de auditor, permisos residuales, rollb
    for(const role of roles)assert.equal((await call(path,accounts[role]!.cookie)).status,allowed.includes(role)?200:403,`${role}: ${path}`)
   }
   const owner=accounts.REGISTERED_USER!,admin=accounts.ADMIN!,auditor=accounts.AUDITOR!,profile={firstName:'DEMO Ñandú',lastName:'Prueba técnica',phoneCountryCode:'',phoneNumber:''}
+  const adminGrant=`user_id='${admin.id}' AND role_id=(SELECT id FROM role WHERE code='ADMIN')`
+  sql(`UPDATE user_role SET granted_at=now()+interval '1 hour' WHERE ${adminGrant}`)
+  assert.equal((await call('admin/audit',admin.cookie)).status,403,'La auditoría respeta la fecha de inicio de ADMIN.')
+  sql(`UPDATE user_role SET granted_at=now()-interval '1 hour' WHERE ${adminGrant}`)
+  assert.equal((await call('admin/audit',admin.cookie)).status,200,'Un ADMIN vigente puede abrir auditoría con la misma sesión.')
   assert.equal((await call('health/ready')).status,200)
   sql(`DELETE FROM role_permission rp USING role r,permission p WHERE rp.role_id=r.id AND rp.permission_id=p.id AND r.code='ADMIN' AND p.code='dashboard.read'`);readGrantRemoved=true
   assert.equal((await call('health/ready')).status,503,'Una concesión necesaria ausente impide anunciar preparación.')

@@ -34,7 +34,8 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     const email=`demo-${role.toLowerCase()}-${suffix}@example.invalid`
     const registered=await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'Prueba',lastName:'Simulador',email,password,demoConsent:true});assert.equal(registered.status,201)
     const {id}=await registered.json() as {id: string};users.push(id)
-    if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id) SELECT '${id}',id FROM role WHERE code='${role}';`)
+    sql(`UPDATE user_role SET granted_at=clock_timestamp()-interval '1 hour' WHERE user_id='${id}'`)
+    if (role!=='REGISTERED_USER') sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='${role}';`)
     const login=await call('auth/login','',{email,password});assert.equal(login.status,200)
     return {id,cookie:login.headers.get('set-cookie')!.split(';')[0]!}
   }
@@ -47,7 +48,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
   try {
     assert.ok(providerId)
     const owner=await account('REGISTERED_USER'),finance=await account('FINANCE'),admin=await account('ADMIN'),auditor=await account('AUDITOR'),other=await account('CREATOR')
-    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='FINANCE';
+    sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${auditor.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='FINANCE';
       INSERT INTO campaign(id,slug,title,summary,campaign_type,creator_user_id,status,goal_amount,currency_code,ends_at)
       VALUES('${campaignId}','demo-${suffix}','Campaña sintética de simulación','No es una campaña ni un cobro real','DONATION','${owner.id}','PUBLISHED',100,'BOB',now()+interval '1 day'),
       ('${rewardCampaign}','demo-reward-${suffix}','Cupo sintético de preventa','Una reserva de prueba','PRESALE','${owner.id}','PUBLISHED',100,'BOB',now()+interval '1 day');
@@ -178,6 +179,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_compensation WHERE payment_id='${late.paymentId}'`),'1')
     assert.equal((await (await call(`demo-payments/${late.paymentId}/simulate`,owner.cookie,{outcome:'CONFIRMED',requestKey:randomUUID()})).json() as {processing:string}).processing,'COMPENSATED')
     clearBudget()
+    sql(`UPDATE reconciliation SET created_at=clock_timestamp()+interval '1 minute' WHERE id='${batch.id}'`)
     const close=await call(`admin/finance/demo/reconciliations/${batch.id}/close`,finance.cookie,{confirmed:true});assert.equal(close.status,200)
     const closed=await close.json() as Batch;assert.equal(closed.status,'CLOSED');assert.equal(closed.closedBy,finance.id)
     assert.equal((await call(`admin/finance/demo/reconciliations/${batch.id}/close`,finance.cookie,{confirmed:true})).status,200)
@@ -240,7 +242,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     const selfBatch=await createBatch(),selfItem=selfBatch.items.find(i=>i.paymentId===ownFinance.paymentId)!
     assert.equal(selfItem.status,'MISSING_INTERNAL')
     assert.equal((await call(`admin/finance/demo/reconciliations/${selfBatch.id}/items/${selfItem.id}/resolve`,finance.cookie,resolution)).status,403)
-    sql(`INSERT INTO user_role(user_id,role_id) SELECT '${other.id}',id FROM role WHERE code='FINANCE';`)
+    sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${other.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='FINANCE';`)
     assert.equal((await call(`admin/finance/demo/reconciliations/${selfBatch.id}/items/${selfItem.id}/resolve`,other.cookie,resolution)).status,200)
     assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_compensation WHERE payment_id='${ownFinance.paymentId}'`),'1')
     assert.equal((await call(`admin/finance/demo/reconciliations/${batch.id}`,finance.cookie)).headers.get('cache-control'),'no-store')
@@ -254,6 +256,35 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal((await call('admin/finance/demo/reconciliations',finance.cookie,{...batchInput,requestKey:randomUUID()})).status,403)
     await assert.rejects(app.get(DemoReconciliation).create(admin.id,{...batchInput,requestKey:randomUUID()}),/Finanzas/)
     await assert.rejects(app.get(DemoReconciliation).create(finance.id,{...batchInput,requestKey:randomUUID()}),/Finanzas/)
+    // Flujo entregado al patrocinador: autorización explícita, vencimiento y reintento.
+    clearBudget()
+    assert.equal(raised(),'1.40')
+    const wallet=await checkout('0.70'),url=`demo-payments/${wallet.paymentId}/authorize`
+    const consent={requestKey:randomUUID(),demoConsent:true}
+    assert.equal((await call(url,'',consent)).status,401)
+    assert.equal((await call(url,other.cookie,consent)).status,404)
+    for (const body of [{...consent,outcome:'CONFIRMED'},{...consent,amount:'8.00'},{...consent,demoConsent:false}]) {
+      assert.equal((await call(url,owner.cookie,body)).status,400)
+    }
+    const testWrites=process.env.ALLOW_DB_TEST_WRITES
+    try {
+      process.env.ALLOW_DB_TEST_WRITES='false'
+      assert.equal((await call(`demo-payments/${wallet.paymentId}/simulate`,owner.cookie,event)).status,404)
+    } finally {process.env.ALLOW_DB_TEST_WRITES=testWrites}
+    assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_event WHERE payment_id='${wallet.paymentId}'`),'0')
+    sql(`UPDATE contribution SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${wallet.id}';
+      UPDATE payment SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${wallet.paymentId}';`)
+    assert.equal((await (await call(`demo-payments/${wallet.paymentId}`,owner.cookie)).json() as {status:string}).status,'EXPIRED')
+    assert.equal((await (await call(url,owner.cookie,consent)).json() as {status:string}).status,'EXPIRED')
+    assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_event WHERE payment_id='${wallet.paymentId}'`),'0')
+    const fresh=await (await call(`demo-payments/contributions/${wallet.id}/retry`,owner.cookie,{...consent,requestKey:randomUUID()})).json() as Checkout
+    assert.notEqual(fresh.contribution.paymentId,wallet.paymentId)
+    assert.equal(fresh.contribution.id,wallet.id)
+    const authorize=`demo-payments/${fresh.contribution.paymentId}/authorize`
+    const twice=await Promise.all([call(authorize,owner.cookie,consent),call(authorize,owner.cookie,{...consent,requestKey:randomUUID()})])
+    for(const response of twice){assert.equal(response.status,200);assert.equal((await response.json() as {status:string}).status,'CONFIRMED')}
+    assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_event WHERE payment_id='${fresh.contribution.paymentId}'`),'1')
+    assert.equal((await call(`me/contributions/${wallet.id}/receipt`,owner.cookie)).status,200)
     // Límite persistente compartido por una segunda instancia de guard/API; X-Forwarded-For no lo esquiva.
     clearBudget()
     for(let n=0;n<20;n++) assert.equal((await call(`demo-payments/${a.paymentId}/simulate`,owner.cookie,event,{'X-Forwarded-For':`192.0.2.${n}`})).status,200)
@@ -264,7 +295,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
         'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173'},body:JSON.stringify(event)})
       assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'60')
     } finally {await secondApp.close()}
-    assert.equal(raised(),'1.40')
+    assert.equal(raised(),'2.10','Los dos clics concurrentes solo suman los 0.70 de la billetera una vez.')
     const source=app.get(DatabaseService).connection()
     await assert.rejects(source.query("UPDATE brotar_extension.demo_event SET amount=999 WHERE id=$1",[confirmed.eventId]),/permission denied/)
     await assert.rejects(source.query('DELETE FROM brotar_extension.demo_compensation WHERE payment_id=$1',[late.paymentId]),/permission denied/)

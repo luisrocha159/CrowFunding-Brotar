@@ -94,7 +94,8 @@ export class TypeormAdministrativeRepository implements AdministrativeRepository
       if (input.decision === 'APPROVED') await this.complete(manager, id, actorId, input.expectedRound, 'APPROVE', input.duplicateReview)
       await this.actor(manager, actorId)
       await manager.query(`UPDATE public.campaign_review SET reviewer_user_id=$2,decision=$3::review_decision,
-        summary=$4,started_at=COALESCE(started_at,now()),decided_at=now() WHERE id=$1`, [round!.id, actorId, input.decision, input.comment || null])
+        summary=$4,started_at=COALESCE(started_at,GREATEST(assigned_at,statement_timestamp())),
+        decided_at=GREATEST(assigned_at,started_at,statement_timestamp()) WHERE id=$1`, [round!.id, actorId, input.decision, input.comment || null])
       for (const item of input.observations) await manager.query(`INSERT INTO public.campaign_review_observation(review_id,section,field_path,message,created_by)
         VALUES($1,$2,$3,$4,$5)`, [round!.id, item.section, item.fieldPath, item.message, actorId])
       await manager.query(`UPDATE public.campaign SET status=$2::campaign_status,

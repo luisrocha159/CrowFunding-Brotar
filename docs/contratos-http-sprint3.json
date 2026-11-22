@@ -1870,6 +1870,22 @@
     },
     {
       "method": "POST",
+      "path": "/api/demo-payments/:id/authorize",
+      "controller": "DemoPaymentsController",
+      "handler": "authorize",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "contribution.write.own"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/api/demo-payments/:id/simulate",
       "controller": "DemoPaymentsController",
       "handler": "simulate",
@@ -1877,7 +1893,8 @@
         "DemoEnabledGuard",
         "DemoWriteLimitGuard",
         "RoleGuard",
-        "SessionMutationGuard"
+        "SessionMutationGuard",
+        "TestFixtureGuard"
       ],
       "roles": [],
       "permissions": [
@@ -2645,7 +2662,8 @@
       "handler": "transition",
       "guards": [
         "RoleGuard",
-        "SessionMutationGuard"
+        "SessionMutationGuard",
+        "TestFixtureGuard"
       ],
       "roles": [
         "REGISTERED_USER"

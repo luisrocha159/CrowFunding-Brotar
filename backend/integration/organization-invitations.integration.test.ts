@@ -9,7 +9,7 @@ import {AppModule} from '../src/app.module'
 import {configureHttp} from '../src/shared/infrastructure/http/configure-http'
 import {readEnvironment} from '../src/config/environment'
 import {readDatabaseConfig} from '../src/shared/infrastructure/database/database.config'
-import {readTestDatabaseTarget} from './database-target'
+import {readTestDatabaseTarget,waitForEffectiveAssignments} from './database-target'
 interface Invitation {id:string;role:string;status:string;version:number;allowedActions:string[];events:{action:string}[]}
 test('S3-14 cierre: invitación sin acceso, aceptación propia, carreras, vencimiento, revocación y paginación',{timeout:180000},async()=>{
  const config=readDatabaseConfig(process.env);assert.ok(config.enabled&&process.env.ALLOW_DB_TEST_WRITES==='true');assert.notEqual(process.env.NODE_ENV,'production')
@@ -22,8 +22,10 @@ test('S3-14 cierre: invitación sin acceso, aceptación propia, carreras, vencim
  const account=async()=>{const email=`invitations-${randomUUID()}@example.invalid`,u=await json<{id:string}>(await call('auth/register','',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',firstName:'DEMO',lastName:'Invitado',email,password,demoConsent:true},'POST'),201),login=await call('auth/login','',{email,password},'POST');assert.equal(login.status,200);const user={id:u.id,cookie:login.headers.get('set-cookie')!.split(';')[0]!};users.push(user);return user}
  try{
   const owner=await account(),target=await account(),other=await account(),auditor=await account()
-  sql(`INSERT INTO user_role(user_id,role_id) SELECT '${auditor.id}',id FROM role WHERE code='AUDITOR';`)
+  sql(`UPDATE user_role SET granted_at=clock_timestamp()-interval '1 hour' WHERE user_id IN (${users.map(user=>`'${user.id}'`).join(',')})`)
+  sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${auditor.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='AUDITOR';`)
   const types=await json<{id:string}[]>(await call('organizations/types',owner.cookie)),org=await json<{id:string}>(await call('organizations',owner.cookie,{legalName:`DEMO Invitaciones ${randomUUID()}`,tradeName:'DEMO',organizationTypeId:types[0]!.id,contactEmail:'demo@example.invalid',contactPhone:''},'POST'),201);orgs.push(org.id)
+  sql(`UPDATE organization_member SET joined_at=clock_timestamp()-interval '1 hour' WHERE organization_id='${org.id}' AND user_id='${owner.id}'`)
   const members=`me/organizations/${org.id}/members`,list='me/organization-invitations'
   const version=async()=> (await json<{version:string}>(await call(members,owner.cookie))).version
   const invite=async(userId:string,role='MEMBER',action='ADD',cookie=owner.cookie)=>{budget();const v=await version();return call(members,cookie,{action,userId,role,expectedVersion:v,reason,confirmed:true})}
@@ -40,9 +42,16 @@ test('S3-14 cierre: invitación sin acceso, aceptación propia, carreras, vencim
   const noMarker=await fetch(`${base}/api/${list}/${first.invitationId}`,{method:'PUT',headers:{Cookie:target.cookie,Origin:'http://127.0.0.1:5173','Content-Type':'application/json'},body:JSON.stringify({action:'ACCEPT',expectedVersion:'1',reason,confirmed:true})});assert.equal(noMarker.status,403);await noMarker.arrayBuffer()
   const inbox=await json<{items:Invitation[];total:number}>(await call(list,target.cookie));assert.equal(inbox.total,1);assert.deepEqual(inbox.items[0]!.allowedActions,['ACCEPT','DECLINE'])
   const twins=await Promise.all([resolve(first.invitationId,target.cookie),resolve(first.invitationId,target.cookie)]);assert.deepEqual(twins.map(r=>r.status).sort(),[200,409]);assert.equal(sql(`SELECT count(*) FROM organization_member WHERE organization_id='${org.id}' AND user_id='${target.id}' AND left_at IS NULL`),'1')
+  const waitForMembership=(role:'MEMBER'|'ADMIN')=>waitForEffectiveAssignments(()=>{
+   const age=sql(`SELECT extract(epoch FROM clock_timestamp()-joined_at) FROM organization_member
+     WHERE organization_id='${org.id}' AND user_id='${target.id}' AND organization_role='${role}' AND left_at IS NULL`)
+   return [{label:role,age:age===''?null:Number(age)}]
+  })
+  await waitForMembership('MEMBER')
   const promotion=await json<{invitationId:string}>(await invite(target.id,'ADMIN','CHANGE'));assert.equal(sql(`SELECT organization_role FROM organization_member WHERE organization_id='${org.id}' AND user_id='${target.id}' AND left_at IS NULL`),'MEMBER')
-  sql(`INSERT INTO user_role(user_id,role_id) SELECT '${target.id}',id FROM role WHERE code='AUDITOR';`);assert.equal((await resolve(promotion.invitationId,target.cookie)).status,403);sql(`DELETE FROM user_role WHERE user_id='${target.id}' AND role_id=(SELECT id FROM role WHERE code='AUDITOR');`)
+  sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${target.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='AUDITOR';`);assert.equal((await resolve(promotion.invitationId,target.cookie)).status,403);sql(`DELETE FROM user_role WHERE user_id='${target.id}' AND role_id=(SELECT id FROM role WHERE code='AUDITOR');`)
   assert.equal((await resolve(promotion.invitationId,target.cookie)).status,200);assert.equal(sql(`SELECT organization_role FROM organization_member WHERE organization_id='${org.id}' AND user_id='${target.id}' AND left_at IS NULL`),'ADMIN')
+  await waitForMembership('ADMIN')
   assert.equal((await invite(other.id,'ADMIN','ADD',target.cookie)).status,403)
   const outgoing=await json<{invitationId:string}>(await invite(other.id,'MEMBER','ADD',target.cookie));assert.equal((await invite(target.id,'MEMBER','REMOVE')).status,200)
   assert.equal((await resolve(outgoing.invitationId,other.cookie)).status,409,'La cuenta del remitente mantiene rol global, pero no membresía: no concede acceso')
@@ -64,6 +73,7 @@ test('S3-14 cierre: invitación sin acceso, aceptación propia, carreras, vencim
   assert.equal((await call(`${list}?page=0`,other.cookie)).status,400)
   // Real waits: invitation and inviter membership expire after authorization, before acquiring target membership.
   const reinvite=await json<{invitationId:string}>(await invite(target.id));assert.equal((await resolve(reinvite.invitationId,target.cookie)).status,200)
+  await waitForMembership('MEMBER')
   for(const expiration of ['INVITATION','INVITER'] as const){
    const promotionLate=await json<{invitationId:string}>(await invite(target.id,'ADMIN','CHANGE'))
    const holder=app.get(DatabaseService).connection().createQueryRunner();await holder.connect();await holder.startTransaction()

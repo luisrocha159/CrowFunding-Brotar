@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { contributionPageFrom, contributionDetailFrom, receiptFrom, readContributions } from '../src/features/contributions/contributionsClient'
 import { ContributionRecord } from '../src/features/contributions/ContributionRecord'
+import { SponsorOverview } from '../src/features/contributions/SponsorOverview'
 const item = {
   id: 'a', reference: 'BRT-C-00000001', amount: '999999999999.99', currency: 'BOB', status: 'PENDING', createdAt: '2026-10-22T01:00:00Z', confirmedAt: null,
   campaign: { id: 'c', title: 'Campaña cerrada', slug: null, status: 'CLOSED' },
@@ -26,6 +27,33 @@ test('cliente usa filtros codificados y transporte autenticado sin caché', asyn
 })
 test('historial presenta aporte y pago por separado, sin enlace público roto ni comprobante para fallo', () => {
   const html = renderToStaticMarkup(<MemoryRouter><ContributionRecord item={contributionPageFrom({ items: [item], page: 1, pageSize: 20, total: 1 }).items[0]!} /></MemoryRouter>)
-  assert.match(html, /Aporte: Pendiente/); assert.match(html, /Pago: Fallido/); assert.match(html, /SANDBOX/)
+  assert.match(html, /Aporte: Pendiente/); assert.match(html, /Pago: Fallido/); assert.match(html, /Sin dinero real/)
   assert.match(html, /Campaña cerrada/); assert.ok(!html.includes('/proyectos/')); assert.ok(!html.includes('/comprobante'))
+})
+
+test('un aporte pendiente permite retomar únicamente su último pago interno', () => {
+  const pending = contributionPageFrom({ items: [{ ...item, payments: [
+    { ...item.payments[0], id: 'anterior', demo: true },
+    { ...item.payments[0], id: 'vigente', status: 'PENDING', demo: true },
+  ] }], page: 1, pageSize: 20, total: 1 }).items[0]!
+  const html = renderToStaticMarkup(<MemoryRouter><ContributionRecord item={pending} /></MemoryRouter>)
+  assert.match(html, /apoyo-demo\?pago=vigente/)
+  assert.doesNotMatch(html, /apoyo-demo\?pago=anterior/)
+})
+
+test('el panel del patrocinador conserva el filtro de pendientes y los importes de cada moneda', () => {
+  const summary = {
+    contributionCount: 3, campaignsSupported: 2, statusCounts: [{ status: 'PENDING' as const, count: 1 }],
+    totals: [], demoTotals: [
+      { currency: 'BOB', grossConfirmed: '20.00', refunded: '5.00', disputed: '0.00' },
+      { currency: 'USD', grossConfirmed: '11.00', refunded: '0.00', disputed: '1.00' },
+    ],
+    sandboxPaymentCount: 3, favorites: 1, following: 2, openSupportCases: 1, openDisputes: 1, pendingRefunds: 1,
+  }
+  const html = renderToStaticMarkup(<MemoryRouter><SponsorOverview summary={summary} /></MemoryRouter>)
+  assert.match(html, /mis-aportes\?status=PENDING/)
+  assert.match(html, /20,00 BOB/)
+  assert.match(html, /11,00 USD/)
+  assert.match(html, /mis-incidencias/)
+  assert.match(html, /mis-disputas/)
 })

@@ -41,10 +41,10 @@ export function creatorActions(item: PendingItem) {
     result.push({ label: 'Ciclo de campaña', href: `/mis-campanas/ciclo/${encodeURIComponent(item.id)}` })
   }
   if (['FUNDING_ENDED', 'IN_EXECUTION', 'CLOSED', 'CANCELLED'].includes(item.status)) {
-    result.push({ label: `Rendición${item.reportStatus ? ` · ${reportNames[item.reportStatus] ?? item.reportStatus}` : ' pendiente'}`, href: `${root}/rendicion` })
+    result.push({ label: `Rendición${item.reportStatus ? ` · ${reportNames[item.reportStatus] ?? 'estado por consultar'}` : ' pendiente'}`, href: `${root}/rendicion` })
     result.push({ label: 'Revisar cierre y obligaciones', href: `${root}/cierre` })
     result.push({ label: 'Desembolsos', href: `${root}/desembolsos` })
   }
   return result
 }
-export const reportNames: Record<string, string> = { DRAFT: 'borrador', SUBMITTED: 'presentada', IN_REVIEW: 'en revisión', APPROVED: 'aprobada', PUBLISHED: 'publicada', REQUIRES_CHANGES: 'requiere correcciones', REJECTED: 'rechazada' }
+export const reportNames: Record<string, string> = { DRAFT: 'borrador', SUBMITTED: 'presentada', IN_REVIEW: 'en revisión', APPROVED: 'aprobada', PUBLISHED: 'publicada', CHANGES_REQUESTED: 'requiere correcciones', REQUIRES_CHANGES: 'requiere correcciones', REJECTED: 'rechazada' }

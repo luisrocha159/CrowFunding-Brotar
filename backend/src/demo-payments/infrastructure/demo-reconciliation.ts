@@ -203,7 +203,7 @@ export class DemoReconciliation {
         if (current?.classification!=='MATCHED' && !await this.compensated(manager,current,batch.currency)) throw new LedgerConflict('La evidencia cambió desde la revisión. Abre un lote nuevo; no se fuerza el cierre.')
       }
       await setAuditActor(manager,actor)
-      await manager.query("UPDATE public.reconciliation SET status='CLOSED',closed_by=$2,closed_at=now() WHERE id=$1",[id,actor])
+      await manager.query("UPDATE public.reconciliation SET status='CLOSED',closed_by=$2,closed_at=GREATEST(statement_timestamp(),created_at) WHERE id=$1",[id,actor])
       await recordAudit(manager,actor,'STATUS_CHANGE','reconciliation',id)
     })
     return this.detail(id)
