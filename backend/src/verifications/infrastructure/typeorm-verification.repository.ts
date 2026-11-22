@@ -1,3 +1,4 @@
+import {grantCreatorAfterIdentity} from '../../roles/infrastructure/typeorm-creator-administration.repository'
 import {attachAccountContacts} from '../../shared/infrastructure/database/account-contacts'
 import {LEGAL_HASH,recordLegalAcceptance} from '../../legal/legal-record'
 import {assertLegalAcceptance} from '../../legal/domain/legal-agreement'
@@ -227,6 +228,7 @@ export class TypeormVerificationRepository implements VerificationRepository {
       await m.query(`UPDATE public.verification SET status=$2::verification_status,reviewed_by=$3,
         reviewed_at=GREATEST(clock_timestamp(),submitted_at,reviewed_at),result_notes=$4,
         rejection_reason=CASE WHEN $2='REJECTED' THEN $4 ELSE NULL END WHERE id=$1`,[id,plan.decision,actor,plan.reason])
+      if(plan.decision==='APPROVED' && row.typeCode==='KYC_IDENTITY' && !row.organizationId) await grantCreatorAfterIdentity(m,actor,id)
       const after=await this.detailWith(m,actor,id,true)
       await this.record(m,actor,id,'REVIEW',{policyVersion:policy.version,fields:after.fields,documents:after.documents,resultNotes:plan.reason,rejectionReason:after.rejectionReason,decision:plan.decision,reviewedBy:actor})
       await recordAudit(m,actor,plan.decision==='APPROVED'?'APPROVE':plan.decision==='REJECTED'?'REJECT':'STATUS_CHANGE','verification',id)

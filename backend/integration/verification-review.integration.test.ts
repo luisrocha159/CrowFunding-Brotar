@@ -44,6 +44,8 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
    const fields=Object.fromEntries(policy.fields.map(f=>[f.key,'DEMO Ejemplo ficticio']))
    const sent=await call(`me/verifications/${value.id}`,owner.cookie,'PUT',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',expectedVersion:value.version,policyVersion:policy.version,fields,documents:docs,accepted:true,submit:true});assert.equal(sent.status,200);return await sent.json() as VerificationDetail
   }
+  const creatorGrants = () => sql(`SELECT count(*) FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id
+    WHERE ur.user_id='${owner.id}' AND r.code='CREATOR'`)
   const detail=await capture('KYC_IDENTITY');const fileId=detail.documents[0]!.fileId
   assert.equal((await call('admin/verifications')).status,401)
   assert.equal((await call('admin/verifications',other.cookie)).status,403)
@@ -66,12 +68,17 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   let current=await read(detail.id)
   assert.equal((await decide(current,'APPROVED',reviewer.cookie,{documents:[]})).status,400)
   assert.equal((await decide(current,'REQUIRES_INFO')).status,201)
+  assert.equal(creatorGrants(), '0', 'Enviar la identidad o pedir corrección no concede el rol')
   const ownerCase=await(await call(`me/verifications/${detail.id}`,owner.cookie)).json() as VerificationDetail
   assert.equal(ownerCase.status,'REQUIRES_INFO');assert.ok(ownerCase.resultNotes)
   const resubmit=await call(`me/verifications/${detail.id}`,owner.cookie,'PUT',{ legalVersion:'mvp-pruebas-legal-1.1-20261109',expectedVersion:ownerCase.version,policyVersion:ownerCase.policy!.version,fields:ownerCase.fields,documents:ownerCase.documents.map(d=>({documentTypeId:d.documentTypeId,fileId:d.fileId})),accepted:true,submit:true});assert.equal(resubmit.status,200)
   current=await read(detail.id);assert.equal(current.status,'PENDING')
   assert.equal((await decide(current,'IN_REVIEW')).status,201);current=await read(detail.id)
   assert.equal((await decide(current,'APPROVED')).status,201);current=await read(detail.id);assert.equal(current.status,'APPROVED');assert.ok(current.revisions.filter(r=>r.operation==='REVIEW').length>=4)
+  assert.equal(creatorGrants(), '1', 'La aprobación personal concede CREATOR en la misma transacción')
+  assert.equal(sql(`SELECT count(*) FROM public.audit_log WHERE actor_user_id='${reviewer.id}'
+    AND entity_name='user_role' AND new_values->>'source'='KYC_APPROVAL'
+    AND new_values->>'verificationId'='${detail.id}'`),'1')
   assert.equal(sql(`SELECT reviewed_by FROM verification WHERE id='${detail.id}'`),reviewer.id)
   assert.equal(sql(`SELECT status FROM app_user WHERE id='${owner.id}'`),'PENDING_VERIFICATION','Revisión no activa cuenta ni acepta legal')
   sql(`INSERT INTO campaign(id,slug,title,campaign_type,creator_user_id,status,published_at,goal_amount,currency_code) VALUES('${campaignId}','kyc-review-${suffix}','DEMO Campaña','DONATION','${owner.id}','PUBLISHED',now(),100,'BOB');`)
@@ -86,6 +93,7 @@ test('S2-08 PostgreSQL/HTTP: colas, revisión KYC/KYB, documentos privados, corr
   const orgQueue=await(await call('admin/verifications?kind=ORGANIZATION&status=PENDING',reviewer.cookie)).json() as{items:{id:string}[]};assert.ok(orgQueue.items.some(i=>i.id===kyb.id))
   assert.equal((await decide(kyb,'IN_REVIEW')).status,201);const kybReview=await read(kyb.id);assert.equal((await decide(kybReview,'APPROVED')).status,201)
   assert.equal((await call(`me/verifications/${kyb.id}`,other.cookie)).status,404)
+  assert.equal(creatorGrants(), '1', 'La aprobación institucional no duplica el rol personal')
   const rep=await capture('KYB_REPRESENTATIVE',orgId)
   const source=app.get(DatabaseService).connection(),lock=source.createQueryRunner()
   const reviewGrant=`user_id='${reviewer.id}' AND role_id=(SELECT id FROM role WHERE code='COMPLIANCE') AND revoked_at IS NULL`

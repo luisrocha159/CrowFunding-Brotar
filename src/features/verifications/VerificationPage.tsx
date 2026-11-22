@@ -35,7 +35,7 @@ export function VerificationPage() {
     {status==='ready'&&<div className={styles.page}><LegalAcceptancePanel onStatusChange={setLegalAccepted}/>
       <RepresentationRequests/>
       {notice&&<p role="status">{notice}</p>}{readOnly&&<p>Tu rol auditor permite consultar. Las modificaciones están deshabilitadas.</p>}
-      <section className={styles.card}><h2>Mis verificaciones</h2><p>La carga de documentos y el envío no acreditan identidad. La decisión corresponde al equipo autorizado.</p>
+      <section className={styles.card}><h2>Mis verificaciones</h2><p>Cumplimiento revisa tu expediente. Si aprueba tu identidad personal, tu cuenta registrada podrá enviar campañas a revisión cuando se habilite el rol de creador.</p>
         {legalAccepted!==true&&<Message tone="info" title={legalAccepted===null?'Comprobando tu aceptación':'Acepta las condiciones para continuar'}>Puedes consultar tus expedientes. Para iniciar uno o modificar sus datos y documentos, registra primero tu aceptación en el bloque de condiciones y privacidad.</Message>}
         {cases.length?<ul className={styles.list}>{cases.map(item=><li key={item.id}><span>{item.typeName}{item.organizationName?` · ${item.organizationName}`:''}<br/><strong>{verificationStatus(item.status)}</strong></span><Button variant="secondary" disabled={busy} onClick={()=>void open(item.id)}>Consultar caso</Button></li>)}</ul>:<p>No tienes casos registrados.</p>}
         {error&&<Message tone="error" title="Operación sin confirmar">{error}</Message>}{busy&&<p role="status">Consultando o guardando el caso…</p>}

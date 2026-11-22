@@ -64,14 +64,17 @@ test('S3-21 integral: registro → campaña corregida/publicada → aporte/recom
   const staffGrants=[[reviewer,'REVIEWER'],[compliance,'COMPLIANCE'],[finance,'FINANCE'],[support,'SUPPORT'],[auditor,'AUDITOR']] as const
   for(const [u,role] of staffGrants)await data(await call(`admin/users/${u.id}/responsibilities`,admin.cookie,{role,operation:'GRANT',confirmed:true,reason:'Responsabilidad temporal en entorno QA del ensayo integral.'}))
   assert.equal((await call(`admin/users/${owner.id}/creator`,owner.cookie,{confirmed:true,reason:'Intento sintético de escalar permisos rechazado.'})).status,403)
-  await data(await call(`admin/users/${owner.id}/creator`,admin.cookie,{confirmed:true,reason:'Habilitación provisional de creador para ensayo académico.'}))
-  await waitForImmediateGrants([[owner,'CREATOR'],...staffGrants])
-  phase('Registro y responsabilidades','Ocho cuentas por HTTP; roles internos separados y CREATOR concedido por ADMIN, sin autoescalamiento.')
+  await waitForImmediateGrants(staffGrants)
+  phase('Registro y responsabilidades','Ocho cuentas por HTTP; roles internos separados y alta de personal concedida por ADMIN, sin autoescalamiento.')
   await data(await call('contacts/email/request',owner.cookie,{}),201)
   const raw=/token=([a-f0-9]{64})/.exec(messages.find(m=>m.to===owner.email)!.text)![1]!
   assert.equal((await call('contacts/email/confirm',sponsor.cookie,{token:raw})).status,400)
   await data(await call('contacts/email/confirm',owner.cookie,{token:raw}),201);await data(await call('contacts/email/preferences',owner.cookie,{enabled:true},'PUT'))
+  const grants = () => sql(`SELECT count(*) FROM public.user_role ur JOIN public.role r ON r.id=ur.role_id WHERE ur.user_id='${owner.id}' AND r.code='CREATOR'`)
+  assert.equal(grants(), '0')
   await approveDemoIdentity(call,owner.cookie,compliance.cookie)
+  assert.equal(grants(), '1')
+  await waitForImmediateGrants([[owner,'CREATOR']])
   phase('Correo e identidad DEMO','Token propio de un uso y captura/revisión KYC independiente; transporte sustituido, sin buzón real acreditado.')
   const draft=await data<{id:string}>(await call('campaigns/drafts',owner.cookie,{title:`DEMO Huerto integral Ñandú ${suffix.slice(0,8)}`,summary:'Recorrido integral de una iniciativa comunitaria de prueba.',campaignType:'REWARD'}),201);campaignId=draft.id
   const own=`campaigns/drafts/${campaignId}`,adminPath=`admin/campaigns/${campaignId}`

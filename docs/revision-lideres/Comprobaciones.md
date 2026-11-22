@@ -73,3 +73,7 @@ El 22 de noviembre de 2026 se verificó la entrega final. La diapositiva 44 del 
 Para repetir la batería, utilice una instalación de integración dedicada con su archivo de entorno y la base inicializada. Desde `backend`, ejecute `corepack pnpm run build`, establezca `$env:ALLOW_DB_TEST_WRITES='true'` y ejecute `corepack pnpm run test:integration`. La batería realiza escrituras y prepara sus propios escenarios.
 
 El resultado figura en la diapositiva 44, en sus notas y en el guion de Ricardo. [Material de defensa](../entregables/defensa-final/)
+
+## Habilitación automática de cuentas creadoras
+
+El 22 de noviembre de 2026 pasaron las 56 pruebas de integración en una sola ejecución con PostgreSQL 18.6. En S3-21 el titular se registró sin el rol de creador, Cumplimiento aprobó su identidad personal y el titular envió su campaña a revisión con la misma sesión. Se verificaron la concesión única, su auditoría y la conservación de los roles personales al aprobar una representación institucional. También pasaron 310 pruebas de interfaz y 251 unitarias del servidor.

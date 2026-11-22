@@ -63,6 +63,9 @@ test('S2-07 formal representation: no early access, target consent and independe
   for(const user of [owner,target]){sql(`INSERT INTO user_role(user_id,role_id,granted_at) SELECT '${user.id}',id,clock_timestamp()-interval '1 hour' FROM role WHERE code='ADMIN';`);assert.equal((await action(d,user,'APPROVE',true)).status,403);sql(`DELETE FROM user_role WHERE user_id='${user.id}' AND role_id=(SELECT id FROM role WHERE code='ADMIN');`)}
   sql(`UPDATE app_user SET status='SUSPENDED' WHERE id='${target.id}';`);assert.equal((await action(d,admin,'APPROVE',true)).status,403);sql(`UPDATE app_user SET status='PENDING_VERIFICATION' WHERE id='${target.id}';`)
   budget();await approveDemoIdentity(call,target.cookie,admin.cookie);budget()
+  const globalRoles = () => sql(`SELECT string_agg(r.code::text, ',' ORDER BY r.code::text) FROM user_role ur JOIN role r ON r.id=ur.role_id WHERE ur.user_id='${target.id}' AND ur.revoked_at IS NULL`)
+  const verifiedRoles = globalRoles()
+  assert.equal(verifiedRoles, 'CREATOR,REGISTERED_USER')
   assert.equal((await action(d,admin,'APPROVE',true,{expectedVersion:1})).status,409)
   // A pending representation blocks real identity and money operations before any irreversible decision.
   const source=app.get(DatabaseService).connection()
@@ -81,7 +84,7 @@ test('S2-07 formal representation: no early access, target consent and independe
   assert.equal(sql(`SELECT organization_role FROM organization_member WHERE organization_id='${org}' AND user_id='${target.id}' AND left_at IS NULL`),'OWNER')
   assert.equal((await call(`me/organizations/${org}/members`,owner.cookie)).status,404)
   assert.equal((await call(`me/organizations/${org}/members`,target.cookie)).status,200)
-  assert.equal(sql(`SELECT count(*) FROM user_role ur JOIN role r ON r.id=ur.role_id WHERE ur.user_id='${target.id}' AND r.code<>'REGISTERED_USER'`),'0')
+  assert.equal(globalRoles(), verifiedRoles, 'Aprobar la representación no modifica los roles personales')
   for(const input of [{action:'TRANSFER',role:'MEMBER',userId:owner.id},{action:'ADD',role:'LEGAL_REPRESENTATIVE',userId:stranger.id},{action:'CHANGE',role:'MEMBER',userId:target.id}]){
    const v=await(await call(`me/organizations/${org}/members`,target.cookie)).json() as{version:string};assert.equal((await call(`me/organizations/${org}/members`,target.cookie,{...input,expectedVersion:v.version,reason,confirmed:true},'PUT')).status,409)
   }

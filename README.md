@@ -46,6 +46,8 @@ Las instrucciones numeradas siguientes siguen siendo la instalación ordinaria s
 
 Descubrimiento público, cuenta y sesiones, recuperación y verificación de correo, perfiles, organizaciones y representación, KYC/KYB sintético, constructor completo, revisión/corrección/publicación, aportes y comprobantes de prueba, favoritos, avances y recompensas, rendición, ciclo/cierre, desembolsos, devoluciones/disputas, soporte, catálogos, parámetros, permisos y auditoría.
 
+**Cómo habilitar una cuenta creadora.** El titular se registra, acepta las condiciones en Mi cuenta y envía su expediente de identidad personal. Cumplimiento revisa los documentos desde Administración → Verificaciones. Al aprobar la identidad, el sistema registra quién tomó la decisión y asigna el rol de creador a la cuenta elegible. El titular puede volver a su borrador y enviarlo a revisión. Una solicitud de corrección o la aprobación de una organización no activa este flujo. La habilitación manual existente sigue disponible para Administración.
+
 **43 migraciones, 219 rutas HTTP y 73 patrones de rutas de interfaz.** Fuente del estado: [planificación local](docs/planificacion-sprints.json), con el estado de preparación/publicación separado del histórico de Trello. [Entrega final y límites](docs/entrega-final-s3-20-2026-10-29.md).
 
 ## 2. Requisitos
