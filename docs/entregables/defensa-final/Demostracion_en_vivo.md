@@ -1,31 +1,32 @@
 # Demostración en vivo de Brotar
 
-En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tres momentos de su ciclo. Preparar tres perfiles de navegador independientes para conservar las sesiones. La cuenta de Santiago ya tiene la identidad aprobada y el rol de creador. Los importes de los tres escenarios son independientes. La billetera registra pagos de práctica.
+En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tres momentos de su ciclo. Preparar tres perfiles de navegador independientes para conservar las sesiones. La cuenta de Santiago ya tiene la identidad aprobada y el rol de creador. Los importes de los tres escenarios son independientes. Ricardo interviene desde Finanzas para verificar el aporte de Alison antes de pasar al desembolso de otra campaña. Los códigos REV son referencias internas de esta guía. Busquen las campañas por el título visible y su portada.
 
 | Turno | Cuenta | Contraseña de práctica | Caso |
 |---|---|---|---|
-| Santiago | creador@brotar.test | creador1234567890 | REV-01 · Borrador para completar |
-| Alison | patrocinador@brotar.test | patrocinador1234567890 | REV-04 · Huerto por donación |
-| Ricardo | finanzas@brotar.test | finanzas1234567890 | REV-09 · Solicitud de desembolso lista |
+| Santiago | creador@brotar.test | creador1234567890 | REV-01 · Semilleros para el barrio |
+| Alison | patrocinador@brotar.test | patrocinador1234567890 | REV-04 · Huertos familiares de Samaipata |
+| Ricardo | finanzas@brotar.test | finanzas1234567890 | REV-09 · Riego para el vivero comunitario |
 
 ### Santiago · Del borrador a la revisión
 
-1. Abrir **Mis proyectos**, localizar REV-01 y continuar con el borrador. Sus datos y su categoría ya están cargados.
+1. Abrir **Mis proyectos**, localizar **Semilleros para el barrio** y continuar con el borrador. Sus datos y su categoría ya están cargados.
 2. Avanzar hasta **Revisión y envío**. Mostrar la meta de 600 BOB y el presupuesto de 500 BOB. La diferencia es un aviso informativo.
-3. Pulsar **Enviar a revisión**. Volver a abrir REV-01 en Mis proyectos y mostrar **En revisión**. La publicación corresponde a una etapa posterior.
+3. Pulsar **Enviar a revisión**. Volver a abrir la campaña en Mis proyectos y mostrar **En revisión**. La publicación corresponde a una etapa posterior.
 4. Dar paso a Alison: «Para ver qué hace un patrocinador, vamos a usar otra campaña que ya está publicada».
 
-### Alison · Del aporte al comprobante
+### Alison y Ricardo · Del aporte pendiente al comprobante
 
-1. Desde **Explorar proyectos**, abrir REV-04 y pulsar **Aportar a la campaña**. Ingresar **25 BOB** y continuar.
-2. Confirmar el importe, continuar al pago y mostrar el QR con el aporte pendiente.
-3. Abrir **Mis aportes**, entrar al detalle del aporte recién creado y elegir **Continuar con el pago**.
-4. Abrir la **billetera de práctica**, autorizar los 25 BOB y pulsar **Ver comprobante**. Mostrar el método QR, el estado confirmado y la referencia. Recargar para demostrar que el comprobante persiste.
-5. Dar paso a Ricardo: «Ahora veremos cómo Finanzas desembolsa los fondos de una campaña que ya terminó su recaudación».
+1. Alison abre **Huertos familiares de Samaipata** en Explorar proyectos, pulsa **Aportar a la campaña**, elige QR, ingresa **25 BOB** y continúa.
+2. Revisa el resumen, confirma el importe y pulsa **Continuar al pago**. Muestra el QR y **Pendiente de verificación**. Anota la referencia BRT-C completa. El QR permite volver a consultar el intento.
+3. Para representar la recepción en este ejercicio, usen una constancia de práctica independiente con su identificador, la campaña, la cuenta aportante, la referencia BRT-C del intento y los 25 BOB. Cuando falta el respaldo o algún dato difiere, el pago queda pendiente.
+4. Ricardo abre **Administración → Finanzas → Revisar pagos pendientes** desde su perfil. Localiza la tarjeta por la referencia y comprueba que coincidan la cuenta, la campaña y el importe. Despliega **Revisar pago**, escribe el identificador en **Referencia de la constancia**, marca la casilla de cotejo y pulsa **Confirmar pago**.
+5. Alison pulsa **Actualizar estado** en su sesión. Abre **Ver comprobante** y muestra el importe, el método y la referencia. Pulsa **Imprimir o guardar PDF** para ver la hoja. Vuelve a **Mis aportes** y reabre el comprobante de la misma referencia.
+6. Alison da paso a Ricardo: «El aporte quedó confirmado. Ahora Ricardo mostrará cómo se desembolsan los fondos de otra campaña que ya terminó su recaudación».
 
 ### Ricardo · De la solicitud al desembolso completado
 
-1. En **Administración → Desembolsos**, buscar REV-09 y abrir **Ver desembolso e historial**. Mostrar la cuenta solicitante, el destino y los **600 BOB**.
+1. En **Administración → Desembolsos**, buscar **Riego para el vivero comunitario** y abrir **Ver desembolso e historial**. Mostrar la cuenta solicitante, el destino y los **600 BOB**.
 2. En **Operar desembolso**, elegir **Autorizar desembolso**, escribir el motivo de la decisión (al menos 20 caracteres), confirmar y pulsar **Registrar acción**.
 3. Elegir **Iniciar procesamiento**, justificar y registrar. Luego elegir **Completar desembolso** y registrar la última acción con su justificación.
 4. Recargar, mostrar el estado completado y el historial. Volver a la diapositiva **46** para las conclusiones.

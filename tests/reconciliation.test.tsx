@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ReconciliationItems, ReconciliationSummary, PendingResults } from '../src/features/finance/ReconciliationPage'
 import { financeMoney } from '../src/features/finance/financeClient'
-import { pendingFrom, periodError, reasonError, reconciliationDetailFrom, reconciliationError, reconciliationListFrom, type ReconciliationDetail } from '../src/features/finance/reconciliationClient'
+import { confirmPendingPayment, pendingFrom, periodError, reasonError, reconciliationDetailFrom, reconciliationError, reconciliationListFrom, type ReconciliationDetail } from '../src/features/finance/reconciliationClient'
 import { SessionError } from '../src/shared/api/sessionError'
 
 const id='11111111-1111-4111-8111-111111111111',itemId='22222222-2222-4222-8222-222222222222'
@@ -51,5 +51,26 @@ test('S3-07: lectura, resoluciones y pendientes accesibles, escapados y separado
   const parsed=pendingFrom({...demo,items:[pending],nextCursor:null})
   assert.throws(()=>pendingFrom({...demo,items:[{...pending,amount:0.3}],nextCursor:null}))
   const pendHtml=renderToStaticMarkup(<PendingResults items={parsed.items} />)
-  assert.ok(pendHtml.includes('Aviso que requiere revisión'));assert.ok(pendHtml.includes('No equivale a un ingreso confirmado'));assert.equal(pendHtml.includes('<script>'),false)
+  assert.ok(pendHtml.includes('Aviso que requiere revisión'));assert.doesNotMatch(pendHtml,/Confirmar pago/);assert.equal(pendHtml.includes('<script>'),false)
+})
+
+test('la revisión manual exige permiso operativo, un intento vigente y la referencia del respaldo',async()=>{
+  const pending={id,contributionId:id,campaignId:id,campaignTitle:'Huerto',reference:'BRT-C-00000001',amount:'25.00',currencyCode:'BOB',status:'INITIATED' as const,createdAt:'2026-10-22T12:00:00.000Z',expiresAt:null,expired:false,needsReview:false}
+  const noop=async()=>{}
+  assert.doesNotMatch(renderToStaticMarkup(<PendingResults items={[pending]}/>),/Confirmar pago/)
+  assert.doesNotMatch(renderToStaticMarkup(<PendingResults items={[{...pending,expired:true}]} onConfirm={noop}/>),/Confirmar pago/)
+  const form=renderToStaticMarkup(<PendingResults items={[pending]} onConfirm={noop}/>)
+  assert.match(form,/Referencia de la constancia/);assert.match(form,/Confirmar pago/)
+  const original=globalThis.fetch
+  try {
+    globalThis.fetch=async(url,init)=>{
+      assert.ok(String(url).endsWith(`/api/admin/finance/demo/payments/${id}/confirm`))
+      assert.deepEqual(JSON.parse(String(init?.body)),{requestKey:itemId,confirmed:true,evidenceReference:'Constancia 725'})
+      return Response.json({paymentId:id,status:'CONFIRMED'})
+    }
+    assert.equal(await confirmPendingPayment(id,' Constancia 725 ',itemId),'CONFIRMED')
+    await assert.rejects(confirmPendingPayment(id,'     ',itemId))
+    globalThis.fetch=async()=>Response.json({paymentId:itemId,status:'CONFIRMED'})
+    await assert.rejects(confirmPendingPayment(id,'Constancia 725',itemId))
+  } finally {globalThis.fetch=original}
 })

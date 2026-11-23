@@ -41,7 +41,7 @@ export function FinancePage() {
   return <div className={layout.adminLayout}><AdministrativeNavigation /><section className={layout.content}>
     <header className={layout.heading}><div><h1>Operaciones financieras</h1><p>Consulta de pagos · solo lectura</p></div></header>
     <p><ButtonLink variant="tertiary" to="/mi-cuenta">Volver a mi cuenta</ButtonLink></p>
-    <p>No confirma cobros, concilia ni autoriza desembolsos o devoluciones. Los estados de esas operaciones son independientes; aquí solo se lee el pago y la devolución ya completada vinculada a él.</p>
+    {data.state==='ready' && <ButtonLink to="/administracion/conciliacion#pagos-pendientes">Revisar pagos pendientes</ButtonLink>}
     {data.state==='forbidden' ? <Message tone="warning" title="Acceso restringido">Este panel está disponible para las cuentas de Finanzas, Administración y Auditoría.</Message> : <>
       <form onSubmit={submit} className={styles.filters} aria-label="Filtros de operaciones">
         <FormField label="Campaña (UUID)" help="Opcional. Copia el identificador de la campaña, no su título." value={draft.campaignId} maxLength={36}

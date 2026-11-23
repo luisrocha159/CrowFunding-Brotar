@@ -116,7 +116,7 @@ test('S3-21 integral: registro → campaña corregida/publicada → aporte/recom
   assert.equal(supportAmount.ticket.payable,false)
   const duplicate=await data<typeof supportAmount>(await call('demo-payments/checkout',sponsor.cookie,checkout),201);assert.equal(duplicate.contribution.id,ticketId)
   const paymentId=supportAmount.contribution.paymentId
-  await data(await call(`demo-payments/${paymentId}/authorize`,sponsor.cookie,{demoConsent:true,requestKey:randomUUID()}))
+  await data(await call(`admin/finance/demo/payments/${paymentId}/confirm`,finance.cookie,{confirmed:true,evidenceReference:'Constancia del recorrido integral',requestKey:randomUUID()}))
   assert.equal((await call('demo-payments/checkout',sponsor.cookie,{...checkout,requestKey:randomUUID()})).status,409,'Un cupo no se vende dos veces.')
   assert.equal((await call(`contributions/${ticketId}`,owner.cookie)).status,404)
   phase('Aporte DEMO','Campaña persistida tras reinicio; aporte/recibo ficticios, idempotencia, pago confirmado y cupo único comprobados.')

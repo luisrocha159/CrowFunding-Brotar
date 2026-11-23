@@ -399,6 +399,22 @@
       ]
     },
     {
+      "method": "POST",
+      "path": "/api/admin/finance/demo/payments/:id/confirm",
+      "controller": "DemoReconciliationController",
+      "handler": "confirmPayment",
+      "guards": [
+        "DemoEnabledGuard",
+        "DemoWriteLimitGuard",
+        "RoleGuard",
+        "SessionMutationGuard"
+      ],
+      "roles": [],
+      "permissions": [
+        "finance.operate"
+      ]
+    },
+    {
       "method": "GET",
       "path": "/api/admin/finance/demo/pending",
       "controller": "DemoReconciliationController",
@@ -1866,22 +1882,6 @@
       "roles": [],
       "permissions": [
         "contribution.read.own"
-      ]
-    },
-    {
-      "method": "POST",
-      "path": "/api/demo-payments/:id/authorize",
-      "controller": "DemoPaymentsController",
-      "handler": "authorize",
-      "guards": [
-        "DemoEnabledGuard",
-        "DemoWriteLimitGuard",
-        "RoleGuard",
-        "SessionMutationGuard"
-      ],
-      "roles": [],
-      "permissions": [
-        "contribution.write.own"
       ]
     },
     {

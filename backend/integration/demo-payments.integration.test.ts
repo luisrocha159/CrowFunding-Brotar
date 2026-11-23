@@ -256,15 +256,19 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     assert.equal((await call('admin/finance/demo/reconciliations',finance.cookie,{...batchInput,requestKey:randomUUID()})).status,403)
     await assert.rejects(app.get(DemoReconciliation).create(admin.id,{...batchInput,requestKey:randomUUID()}),/Finanzas/)
     await assert.rejects(app.get(DemoReconciliation).create(finance.id,{...batchInput,requestKey:randomUUID()}),/Finanzas/)
-    // Flujo entregado al patrocinador: autorización explícita, vencimiento y reintento.
+    // Solo Finanzas confirma una constancia ajena y el patrocinador conserva la consulta.
     clearBudget()
     assert.equal(raised(),'1.40')
-    const wallet=await checkout('0.70'),url=`demo-payments/${wallet.paymentId}/authorize`
+    const wallet=await checkout('0.70'),url=`admin/finance/demo/payments/${wallet.paymentId}/confirm`
     const consent={requestKey:randomUUID(),demoConsent:true}
-    assert.equal((await call(url,'',consent)).status,401)
-    assert.equal((await call(url,other.cookie,consent)).status,404)
-    for (const body of [{...consent,outcome:'CONFIRMED'},{...consent,amount:'8.00'},{...consent,demoConsent:false}]) {
-      assert.equal((await call(url,owner.cookie,body)).status,400)
+    const evidence={requestKey:randomUUID(),confirmed:true,evidenceReference:'CONSTANCIA-PRÁCTICA-004'}
+    assert.equal((await call(`demo-payments/${wallet.paymentId}/authorize`,owner.cookie,consent)).status,404)
+    assert.equal((await call(url,'',evidence)).status,401)
+    for(const actor of [owner,admin,auditor,finance])assert.equal((await call(url,actor.cookie,evidence)).status,403)
+    sql(`UPDATE user_role SET revoked_at=NULL WHERE user_id='${finance.id}' AND role_id=(SELECT id FROM role WHERE code='FINANCE')`)
+    assert.equal((await call(`admin/finance/demo/payments/${ownFinance.paymentId}/confirm`,finance.cookie,evidence)).status,403)
+    for (const body of [{...evidence,amount:'8.00'},{...evidence,confirmed:false},{...evidence,evidenceReference:'     '}]) {
+      assert.equal((await call(url,finance.cookie,body)).status,400)
     }
     const testWrites=process.env.ALLOW_DB_TEST_WRITES
     try {
@@ -275,15 +279,17 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
     sql(`UPDATE contribution SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${wallet.id}';
       UPDATE payment SET created_at=now()-interval '2 hours',expires_at=now()-interval '1 hour' WHERE id='${wallet.paymentId}';`)
     assert.equal((await (await call(`demo-payments/${wallet.paymentId}`,owner.cookie)).json() as {status:string}).status,'EXPIRED')
-    assert.equal((await (await call(url,owner.cookie,consent)).json() as {status:string}).status,'EXPIRED')
+    assert.equal((await (await call(url,finance.cookie,evidence)).json() as {status:string}).status,'EXPIRED')
     assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_event WHERE payment_id='${wallet.paymentId}'`),'0')
     const fresh=await (await call(`demo-payments/contributions/${wallet.id}/retry`,owner.cookie,{...consent,requestKey:randomUUID()})).json() as Checkout
     assert.notEqual(fresh.contribution.paymentId,wallet.paymentId)
     assert.equal(fresh.contribution.id,wallet.id)
-    const authorize=`demo-payments/${fresh.contribution.paymentId}/authorize`
-    const twice=await Promise.all([call(authorize,owner.cookie,consent),call(authorize,owner.cookie,{...consent,requestKey:randomUUID()})])
+    const authorize=`admin/finance/demo/payments/${fresh.contribution.paymentId}/confirm`
+    const twice=await Promise.all([call(authorize,finance.cookie,evidence),call(authorize,finance.cookie,{...evidence,requestKey:randomUUID()})])
     for(const response of twice){assert.equal(response.status,200);assert.equal((await response.json() as {status:string}).status,'CONFIRMED')}
     assert.equal(sql(`SELECT count(*) FROM brotar_extension.demo_event WHERE payment_id='${fresh.contribution.paymentId}'`),'1')
+    assert.equal(sql(`SELECT count(*) FROM public.audit_log WHERE actor_user_id='${finance.id}' AND entity_id='${fresh.contribution.paymentId}'
+      AND new_values->>'evidenceReference'='CONSTANCIA-PRÁCTICA-004'`),'1')
     assert.equal((await call(`me/contributions/${wallet.id}/receipt`,owner.cookie)).status,200)
     // Límite persistente compartido por una segunda instancia de guard/API; X-Forwarded-For no lo esquiva.
     clearBudget()
@@ -295,7 +301,7 @@ test('S3-01/02/07 PostgreSQL/HTTP: checkout DEMO, idempotencia, privacidad, expi
         'Content-Type':'application/json','X-Brotar-Request':'1',Origin:'http://127.0.0.1:5173'},body:JSON.stringify(event)})
       assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'60')
     } finally {await secondApp.close()}
-    assert.equal(raised(),'2.10','Los dos clics concurrentes solo suman los 0.70 de la billetera una vez.')
+    assert.equal(raised(),'2.10','Dos confirmaciones simultáneas solo suman el pago una vez.')
     const source=app.get(DatabaseService).connection()
     await assert.rejects(source.query("UPDATE brotar_extension.demo_event SET amount=999 WHERE id=$1",[confirmed.eventId]),/permission denied/)
     await assert.rejects(source.query('DELETE FROM brotar_extension.demo_compensation WHERE payment_id=$1',[late.paymentId]),/permission denied/)

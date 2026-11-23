@@ -8,19 +8,20 @@ import {paymentQrPayload,paymentQrOptions} from '../src/features/contributions/p
 const ticket=demoTicketFrom({paymentId:'8cdca2ce-4764-44a1-8aab-584f70ede7df',contributionId:'7ca21b07-2ad1-478f-9940-08030cb37190',reference:'BRT-TEST',amount:'10.00',currencyCode:'BOB',status:'INITIATED',attempt:1,expiresAt:null,expired:false,mode:'DEMO',payable:false,qrPayload:'BROTAR-DEMO:8cdca2ce-4764-44a1-8aab-584f70ede7df'})
 
 const origin='https://brotar.example'
-test('QR del aporte abre la billetera propia sin datos privados ni autorización de cobro',()=>{
+test('QR del aporte abre el estado del pago sin datos privados ni autorización de cobro',()=>{
  const decorated={...ticket,email:'privado@example.invalid',password:'no-incluir'}
  const text=paymentQrPayload(decorated,origin)
- assert.equal(text,`${origin}/apoyo-demo?pago=${ticket.paymentId}#billetera`)
+ assert.equal(text,`${origin}/apoyo-demo?pago=${ticket.paymentId}`)
  assert.doesNotMatch(text,/privado@example|no-incluir/)
  assert.notEqual(paymentQrPayload({...ticket,paymentId:'06ec727d-4664-45c9-b704-01880c7a8832'},origin),text)
 })
 
-test('el QR vuelve a su billetera tras autenticar y conserva únicamente el fragmento permitido',()=>{
+test('el QR vuelve al pago tras autenticar y conserva únicamente el fragmento permitido',()=>{
  const qr=new URL(paymentQrPayload(ticket,origin)),path=qr.pathname+qr.search+qr.hash
  const login=new URL(accessHref('/iniciar-sesion',new URLSearchParams({continuar:path})),origin)
  assert.equal(existingSessionDestination(login.searchParams),path)
- for(const invalid of [path+'extra',path.replace('#billetera','#otro'),origin+path,path.replace('pago=','seleccion=')]) {
+ assert.equal(authenticatedContinuation(path+'#billetera'),path)
+ for(const invalid of [path+'extra',path+'#otro',origin+path]) {
   assert.equal(authenticatedContinuation(invalid),'/explorar')
  }
 })

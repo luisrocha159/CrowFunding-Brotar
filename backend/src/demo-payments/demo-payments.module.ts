@@ -46,6 +46,11 @@ export class ResolutionDto {
   @IsString() @MinLength(20) @MaxLength(500) reason!: string
 }
 export class ExpirationDto { @IsInt() @Min(1) @Max(100) limit=100 }
+export class ConfirmPaymentDto {
+  @IsUUID('4') requestKey!: string
+  @IsBoolean() @Equals(true) confirmed!: true
+  @IsString() @MinLength(5) @MaxLength(120) evidenceReference!: string
+}
 export class CloseDto { @IsBoolean() @Equals(true) confirmed!: true }
 
 @Injectable()
@@ -87,10 +92,6 @@ export class DemoPaymentsController {
   retry(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: ConsentDto) {
     return translate(()=>this.payments.retry(request.brotarUser.id,id,input.requestKey,input.demoConsent))
   }
-  @Post(':id/authorize') @HttpCode(200) @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)
-  authorize(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: ConsentDto) {
-    return translate(()=>this.payments.authorize(request.brotarUser.id,id,input.requestKey))
-  }
   @Post(':id/simulate') @HttpCode(200) @Header('Cache-Control','no-store') @UseGuards(TestFixtureGuard,SessionMutationGuard,DemoWriteLimitGuard)
   simulate(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id: string,@Body() input: SimulationDto) {
     return translate(()=>this.payments.simulate(request.brotarUser.id,id,input.outcome,input.requestKey))
@@ -99,7 +100,11 @@ export class DemoPaymentsController {
 
 @Controller('admin/finance/demo') @UseGuards(DemoEnabledGuard,RoleGuard) @RequirePermissions('finance.read')
 export class DemoReconciliationController {
-  constructor(private readonly reconciliation: DemoReconciliation) {}
+  constructor(private readonly reconciliation: DemoReconciliation, private readonly payments: DemoPayments) {}
+  @Post('payments/:id/confirm') @HttpCode(200) @RequirePermissions('finance.operate') @Header('Cache-Control','no-store') @UseGuards(SessionMutationGuard,DemoWriteLimitGuard)
+  confirmPayment(@Req() request: AuthenticatedRequest,@Param('id',new ParseUUIDPipe()) id:string,@Body() input:ConfirmPaymentDto){
+    return translate(()=>this.payments.confirmPayment(request.brotarUser.id,id,input.requestKey,input.evidenceReference))
+  }
   @Get('currencies') @Header('Cache-Control','no-store')
   currencies() {return translate(()=>this.reconciliation.currencies())}
   @Get('pending') @Header('Cache-Control','no-store')

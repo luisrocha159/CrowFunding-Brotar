@@ -77,3 +77,11 @@ El resultado figura en la diapositiva 44, en sus notas y en el guion de Ricardo.
 ## Habilitación automática de cuentas creadoras
 
 El 22 de noviembre de 2026 pasaron las 56 pruebas de integración en una sola ejecución con PostgreSQL 18.6. En S3-21 el titular se registró sin el rol de creador, Cumplimiento aprobó su identidad personal y el titular envió su campaña a revisión con la misma sesión. Se verificaron la concesión única, su auditoría y la conservación de los roles personales al aprobar una representación institucional. También pasaron 310 pruebas de interfaz y 251 unitarias del servidor.
+
+## Confirmación manual del aporte y comprobante del 23 de noviembre de 2026
+
+En navegador, un patrocinador abrió un aporte por 25 BOB. El aporte quedó pendiente. Desde una segunda cuenta, Finanzas cotejó la referencia y confirmó el pago. Al consultar nuevamente el aporte, el patrocinador pudo abrir su comprobante. La ruta de autorización por el propio patrocinador fue retirada. Los importes corresponden a la simulación académica.
+
+Se comprobó también un aporte existente de 50 BOB en la instalación de la defensa. Su comprobante conservó el importe y la campaña, se mostró sin desbordamiento a 375 px y se exportó en una página A4 con la navegación y los controles de pantalla excluidos.
+
+Pasaron 310 pruebas de interfaz, 251 unitarias del servidor y los recorridos específicos de pagos y S3-21. En la instalación limpia se verificaron 18 cuentas y 20 escenarios. El catálogo público mostró las portadas y los títulos de las 15 campañas visibles. La corrida general en el WSL compartido aprobó 52 de 56. Las cuatro incidencias correspondieron a historia de campaña, recorrido integral, seguimiento de recompensas y representación. El resultado histórico del 22 de noviembre corresponde a aquel corte.

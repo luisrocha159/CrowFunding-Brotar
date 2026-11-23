@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react'
 import {SessionError} from '../../shared/api/sessionError'
 import {readSimulation,type SupportSimulation} from './simulationClient'
-import {authorizeDemoPayment,demoCheckout,demoFailure,demoRetry,demoTicket,type DemoTicket} from './demoClient'
+import {demoCheckout,demoFailure,demoRetry,demoTicket,type DemoTicket} from './demoClient'
 
 export function useDemoCheckout(selectionId:string|null,paymentId:string|null) {
   const [selection,setSelection]=useState<SupportSimulation|null>(null),[ticket,setTicket]=useState<DemoTicket|null>(null)
@@ -57,6 +57,5 @@ export function useDemoCheckout(selectionId:string|null,paymentId:string|null) {
   }
   return {selection,ticket,error,loading,busy,anonymous,reload:()=>{if(!active.current)setRevision(value=>value+1)},
     create:()=>selection?perform(selection.id,(requestKey,signal)=>demoCheckout({campaignId:selection.campaignId,rewardId:selection.rewardId,amount:selection.amount,currencyCode:selection.currency,requestKey,demoConsent:true,method:selection.method},signal)):Promise.resolve(null),
-    authorize:()=>ticket?perform(ticket.paymentId,(key,signal)=>authorizeDemoPayment(ticket.paymentId,key,signal)):Promise.resolve(null),
     retry:()=>ticket?perform(ticket.paymentId,(key,signal)=>demoRetry(ticket.contributionId,key,signal)):Promise.resolve(null)}
 }

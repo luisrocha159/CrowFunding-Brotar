@@ -1,6 +1,6 @@
 # Manual de instalación y revisión de Brotar
 
-Guía de main con cuentas y escenarios preparados
+Guía de DEV con cuentas y escenarios preparados
 
 Proyecto de Sistemas II
 
@@ -45,12 +45,12 @@ docker info
 
 <!-- page -->
 
-## 2 Instalar desde main
+## 2 Instalar desde DEV
 
 En PowerShell, situado en la carpeta donde guardará el proyecto, ejecute:
 
 ```powershell
-git clone -b main https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar-Revision
+git clone -b DEV https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar-Revision
 cd Brotar-Revision
 node scripts/setup-review.mjs
 ```
@@ -167,18 +167,18 @@ Auditor combinado: ADMIN junto a AUDITOR mantiene la restricción de escritura. 
 
 | Código | Campaña | Situación inicial |
 |---|---|---|
-| REV-01 | Borrador para completar | Borrador |
-| REV-02 | Campaña pendiente de revisión | En revisión |
-| REV-03 | Campaña aprobada para publicar | Aprobada |
-| REV-04 | Huerto por donación | Publicada |
-| REV-05 | Huerto con recompensas | Publicada con recompensa |
-| REV-06 | Kit de cultivo en preventa | Publicada con preventa |
-| REV-07 | Recaudación vencida para evaluar | Vencida para evaluar |
-| REV-08 | Destino pendiente para desembolso | En ejecución destino pendiente |
-| REV-09 | Solicitud de desembolso lista | Desembolso solicitado |
-| REV-10 | Ejecución con fondos disponibles | Desembolso completado |
+| REV-01 | Semilleros para el barrio | Borrador |
+| REV-02 | Zanahorias de la quebrada | En revisión |
+| REV-03 | Un huerto en el patio de la escuela | Aprobada |
+| REV-04 | Huertos familiares de Samaipata | Publicada |
+| REV-05 | Semillas que pasan de mano en mano | Publicada con recompensa |
+| REV-06 | Cultiva tu primera huerta | Publicada con preventa |
+| REV-07 | Terrazas verdes del valle | Vencida para evaluar |
+| REV-08 | Agua para las parcelas | En ejecución destino pendiente |
+| REV-09 | Riego para el vivero comunitario | Desembolso solicitado |
+| REV-10 | Hortalizas junto al río | Desembolso completado |
 
-Busque el código REV en la lista correspondiente. Cada campaña tiene UUID y slug propios. El archivo privado backend/private/review-dataset.json muestra los identificadores de su instalación si necesita una referencia técnica.
+Use la tabla para buscar la campaña por su título visible. Los códigos REV identifican casos en este manual. Cada campaña tiene UUID y slug propios. El archivo privado backend/private/review-dataset.json muestra los identificadores de su instalación si necesita una referencia técnica.
 
 Los pasos válidos cambian el estado y se conservan al recargar. Una campaña cerrada no sirve para probar un pago nuevo. Use un escenario distinto para cada camino.
 
@@ -188,16 +188,16 @@ Los pasos válidos cambian el estado y se conservan al recargar. Una campaña ce
 
 | Código | Campaña | Situación inicial |
 |---|---|---|
-| REV-11 | Rendición final para revisión | Final presentada |
-| REV-12 | Campaña cerrada de referencia | Cerrada |
-| REV-13 | Todo o nada con meta incumplida | Todo o nada vencida |
-| REV-14 | Cancelación solicitada | Cancelación solicitada |
-| REV-15 | Consulta y devolución del aportante | Caso y devolución parcial |
-| REV-16 | Disputa para atender | Disputa abierta |
-| REV-17 | Campaña institucional | Institucional publicada |
-| REV-18 | Publicación bloqueada por identidad | Aprobada con KYC pendiente |
-| REV-19 | Campaña observada para corregir | Cambios solicitados |
-| REV-20 | Rendición mensual y recompensas | Informe mensual presentado |
+| REV-11 | Tomates del valle | Final presentada |
+| REV-12 | La huerta del encuentro | Cerrada |
+| REV-13 | Frutales para el barrio | Todo o nada vencida |
+| REV-14 | Un techo para los plantines | Cancelación solicitada |
+| REV-15 | Herramientas compartidas | Caso y devolución parcial |
+| REV-16 | Del almácigo a la mesa | Disputa abierta |
+| REV-17 | La parcela de Semillas del Valle | Institucional publicada |
+| REV-18 | Raíces para el futuro | Aprobada con KYC pendiente |
+| REV-19 | Bancales para cultivar juntos | Cambios solicitados |
+| REV-20 | Aulas entre surcos | Informe mensual presentado |
 
 Las fechas se calculan respecto al día de la primera preparación. REV-20 representa deliberadamente un mes calendario anterior para revisar rendición mensual sin cambiar el reloj de la computadora. Su historial está identificado como sintético.
 
@@ -209,7 +209,7 @@ La cuenta creador administra las campañas personales; organizacion administra R
 
 Inicio sin sesión. Recorrido: / → /explorar → detalle público → /registro → /mi-cuenta.
 
-1. Abra inicio, Cómo funciona y Para creadores. Entre a Explorar, busque REV-04 y abra su detalle. Debe mostrar meta, progreso, modalidad y portada. REV-01 no aparece públicamente.
+1. Abra inicio, Cómo funciona y Para creadores. Entre a Explorar, busque **Huertos familiares de Samaipata** (REV-04) y abra su detalle. Debe mostrar meta, progreso, modalidad y portada. REV-01 no aparece públicamente.
 2. Busque texto inexistente y pruebe filtros; un resultado vacío debe explicarse. Abra REV-12: permite consultar su historia, pero no aportar de nuevo.
 3. Abra Registro. Use un correo nuevo, por ejemplo visitanteextra@brotar.test, nombre María y apellido Núñez. El correo va primero y se valida al salir del campo. Use una frase de al menos 15 caracteres y confirme exactamente la contraseña.
 4. Pruebe antes correo mal formado, usuario@brotar.test ya registrado, nombre solo con espacios, contraseña corta y confirmación diferente. Debe señalar el campo y conservar los otros datos válidos.
@@ -287,17 +287,17 @@ Compruebe que una pestaña desactualizada no sobrescribe la ronda vigente y que 
 
 ## 14 Aportar con y sin recompensa
 
-Inicie sesión como **patrocinador**. Para el primer pago, abra la campaña de donación REV-04 desde Explorar campañas y pulse el botón para aportar.
+Inicie sesión como **patrocinador**. Para el primer pago, abra **Huertos familiares de Samaipata** (REV-04) desde Explorar campañas y pulse el botón para aportar.
 
 1. Ingrese **25 BOB**, seleccione el método **QR** y pulse **Continuar**.
 2. En **Revisar aporte**, compruebe la campaña, el importe y la recompensa. Marque **Confirmo el importe y la recompensa de mi aporte** y pulse **Continuar al pago**.
-3. En **Estado del pago** verá la referencia y el QR. Pulse **Abrir billetera de práctica**. Si instaló el proyecto en su computadora con la dirección local, use ese botón en el mismo navegador. En una instalación accesible desde el teléfono también puede escanear el QR e iniciar sesión con la cuenta que creó el aporte.
-4. Compruebe el importe en la billetera y pulse **Autorizar pago de 25,00 BOB**. Espere la confirmación y pulse **Ver comprobante**. Revise campaña, referencia, importe y método. Recargue Mis aportes y compruebe que el mismo aporte figura una sola vez.
-5. Para observar un pago pendiente, prepare otro aporte y salga antes de autorizar. Consulte el detalle en Mis aportes. El plazo de pago figura en la pantalla. Para revisar un intento que ya venció o falló, utilice los casos preparados del apartado 15.
-6. En REV-05 ingrese menos de 50 BOB y compruebe que la recompensa de semillas queda deshabilitada. Pruebe **Sin recompensa**. Con 50 BOB o más, seleccione la recompensa y compruebe el resumen antes de autorizar.
+3. En **Estado del pago**, anote la referencia BRT-C y muestre **Pendiente de verificación**. El QR permite reabrir la consulta del aporte desde la cuenta titular.
+4. En otro perfil de navegador, entre como **finanzas**. Abra **Administración → Finanzas → Revisar pagos pendientes**. Busque la referencia, despliegue **Revisar pago** y coteje campaña, cuenta e importe con la constancia del ejercicio. Registre su identificador, marque el cotejo y pulse **Confirmar pago**. Si falta la constancia, déjelo pendiente.
+5. Vuelva al perfil patrocinador, pulse **Actualizar estado** y **Ver comprobante**. Revise los 25 BOB, la campaña, el método y la referencia. En **Imprimir o guardar PDF**, revise la hoja antes de guardarla. Abra de nuevo el comprobante desde **Mis aportes** para verificar que persiste.
+6. En REV-05 ingrese menos de 50 BOB y compruebe que la recompensa de semillas queda deshabilitada. Pruebe **Sin recompensa**. Con 50 BOB o más, seleccione la recompensa y compruebe el resumen antes de registrar el intento.
 7. En REV-06 revise la entrega estimada de la preventa. Pruebe también un importe negativo o con tres decimales. La selección debe exigir un importe válido para continuar.
 
-La billetera utiliza saldo simulado. Solo un pago confirmado cuenta como recaudación.
+Solo el pago confirmado cuenta como recaudación. El comprobante de Brotar es informativo.
 
 <!-- page -->
 
@@ -502,4 +502,4 @@ Resultado esperado: permisos por responsabilidad y propiedad, sin autoaprobació
 
 Registre Correcto, Hallazgo o No ejecutado por fila, responsable y evidencia. Use una instalación por revisor para que otro no cambie los estados mientras documenta.
 
-Fuentes: README de main, rutas del software, accounts.json, scenarios.mjs y comprobaciones de esta carpeta. Las condiciones son provisionales del equipo para el alcance académico; no sustituyen aprobación legal del cliente ni habilitan operación financiera real.
+Fuentes: README de DEV, rutas del software, accounts.json, scenarios.mjs y comprobaciones de esta carpeta. Las condiciones son provisionales del equipo para el alcance académico; no sustituyen aprobación legal del cliente ni habilitan operación financiera real.

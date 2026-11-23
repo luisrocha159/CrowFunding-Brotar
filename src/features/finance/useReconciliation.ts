@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SessionError } from '../../shared/api/sessionError'
-import { closeReconciliation, createReconciliation, expireDemoPayments, pendingPayments, reconciliationCurrencies, reconciliationDetail, reconciliationList,
+import { confirmPendingPayment, closeReconciliation, createReconciliation, expireDemoPayments, pendingPayments, reconciliationCurrencies, reconciliationDetail, reconciliationList,
   resolveReconciliation, type Page, type PendingPayment, type ReconciliationBatch, type ReconciliationDetail, type ReconciliationFilters, type ResolutionAction } from './reconciliationClient'
 
 interface Overview {batches: Page<ReconciliationBatch>;pending: Page<PendingPayment>;currencies: {code: string;name: string}[]}
@@ -39,13 +39,13 @@ export function useReconciliation(id?: string) {
   const error=mutationError ?? current?.error
   const restricted=error instanceof SessionError && [401,403].includes(error.status)
   const state=restricted ? error.status===401?'anonymous':'forbidden' : !current?'loading':current.error?'error':'ready'
-  async function mutate(action: (signal: AbortSignal)=>Promise<ReconciliationDetail|number>) {
+  async function mutate<T>(action: (signal: AbortSignal)=>Promise<T>, describe?: (result:T)=>string) {
     if(operation.current)return null
     const controller=new AbortController();operation.current=controller;setBusy(true);setMessage('');setMutationError(null)
     try {
       const value=await action(controller.signal)
       if(controller.signal.aborted)return null
-      setMessage(typeof value==='number'?`Expiración completada: ${value} intentos vencidos. No se confirmó ni devolvió dinero.`:'Operación confirmada por el servidor. Se conserva el historial del lote.')
+      setMessage(describe ? describe(value) : typeof value==='number'?`Expiración completada: ${value} intentos vencidos. No se confirmó ni devolvió dinero.`:'Operación confirmada por el servidor. Se conserva el historial del lote.')
       setRetry(n=>n+1)
       return value
     } catch(error) {
@@ -64,6 +64,8 @@ export function useReconciliation(id?: string) {
     return response
   }
   return {state,overview:restricted?null:current?.overview,detail:restricted?null:current?.detail,error,mutationError,busy,message,filters,refresh,apply,create,
+    confirmPayment:(id:string,reference:string,key:string,number:string)=>mutate(signal=>confirmPendingPayment(id,reference,key,signal),
+      status=>status==='EXPIRED' ? `El plazo del aporte ${number} venció antes de confirmar el pago.` : `Pago confirmado para el aporte ${number}. El titular ya puede consultar su comprobante.`),
     resolve:(itemId: string,action: ResolutionAction,reason: string)=>id?mutate(signal=>resolveReconciliation(id,itemId,action,reason,signal)):Promise.resolve(null),
     close:()=>id?mutate(signal=>closeReconciliation(id,signal)):Promise.resolve(null),expire:()=>mutate(expireDemoPayments),
     batchPrevious:batchCursors.length>1,pendingPrevious:pendingCursors.length>1,

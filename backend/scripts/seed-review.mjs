@@ -1,3 +1,4 @@
+import {refreshReviewCatalog} from '../review/catalog-edition.mjs'
 import 'reflect-metadata'
 import pg from 'pg'
 import {execFileSync} from 'node:child_process'
@@ -94,6 +95,7 @@ try{
     await sql("UPDATE brotar_review.dataset SET status='COMPLETE',manifest=$1::jsonb,updated_at=clock_timestamp() WHERE name='leaders'",[JSON.stringify(manifest)])
     console.log(`Preparación completa: ${manifest.accounts.length} cuentas y ${manifest.scenarios.length} escenarios.`)
   }
+  await refreshReviewCatalog(client,manifest,resolve(backend,appEnv.FILE_STORAGE_DIR??'private/review-files'))
   mkdirSync(resolve(backend,'private'),{recursive:true})
   writeFileSync(resolve(backend,'private/review-dataset.json'),JSON.stringify(manifest,null,2)+'\n',{mode:0o600})
   console.log('Manifiesto y rutas locales: backend/private/review-dataset.json. Credenciales públicas de prueba: manual de revisión.')

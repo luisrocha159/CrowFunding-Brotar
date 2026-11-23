@@ -1,5 +1,5 @@
 import {AccountIdentity} from '../../shared/components/AccountIdentity'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Button, ButtonLink } from '../../shared/components/Button'
 import { FormField } from '../../shared/components/FormField'
@@ -13,12 +13,33 @@ import layout from '../campaigns/projects.module.css'
 import styles from './finance.module.css'
 
 function Stamp({value}: {value: string|null}) {return <>{value?<time dateTime={value}>{value.replace('T',' ').replace('Z',' UTC')}</time>:'No registrado'}</>}
-export function PendingResults({items}: {items: PendingPayment[]}) {
+type ConfirmPayment = (id:string,reference:string,key:string,number:string)=>Promise<unknown>
+function PaymentReview({item,busy,onConfirm}:{item:PendingPayment;busy:boolean;onConfirm:ConfirmPayment}) {
+  const [reference,setReference]=useState(''),[checked,setChecked]=useState(false)
+  const intent=useRef<{value:string;key:string}|null>(null)
+  const valid=reference.trim().length>=5 && reference.trim().length<=120
+  function submit(event:FormEvent){
+    event.preventDefault()
+    if(!valid || !checked || busy)return
+    const value=reference.trim()
+    if(intent.current?.value!==value)intent.current={value,key:crypto.randomUUID()}
+    void onConfirm(item.id,value,intent.current.key,item.reference)
+  }
+  return <details className={styles.paymentReview}><summary>Revisar pago</summary>
+    <form onSubmit={submit}><fieldset disabled={busy}><legend>Verificar con una constancia</legend>
+      <p>Compara el importe y la referencia del aporte con la constancia disponible. Si falta respaldo, deja el pago pendiente.</p>
+      <FormField label="Referencia de la constancia" required minLength={5} maxLength={120} value={reference} onChange={e=>{setReference(e.target.value);setChecked(false)}} />
+      <label className={styles.confirmation}><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>Verifiqué que el importe y la referencia corresponden a este aporte.</label>
+      <Button type="submit" disabled={!valid || !checked || busy}>Confirmar pago</Button>
+    </fieldset></form></details>
+}
+export function PendingResults({items,busy=false,onConfirm}: {items: PendingPayment[];busy?:boolean;onConfirm?: ConfirmPayment}) {
   return <div className={styles.records}>{items.map(item=><article className={styles.record} key={item.id}>
-    <h3>{item.campaignTitle}</h3><p><strong>{item.needsReview?'Aviso que requiere revisión':item.expired?'Reserva vencida pendiente de mantenimiento':'Intento pendiente'}</strong></p>
-    <dl><dt>Referencia del aporte</dt><dd>{item.reference}</dd><dt>ID del pago</dt><dd>{item.id}</dd><dt>Cuenta aportante</dt><dd><AccountIdentity contact={item.sponsorContact}/></dd><dt>Estado interno</dt><dd>{paymentLabels[item.status]}</dd>
-      <dt>Importe</dt><dd>{financeMoney(item.amount,item.currencyCode)}</dd><dt>Creado (UTC)</dt><dd><Stamp value={item.createdAt} /></dd><dt>Vence (UTC)</dt><dd><Stamp value={item.expiresAt} /></dd></dl>
-    <p>No equivale a un ingreso confirmado. Para avisos tardíos confirmados, crea un lote que incluya el día de la primera observación.</p>
+    <header className={styles.paymentHeading}><div><span>{item.reference}</span><h3>{item.campaignTitle}</h3></div><strong>{financeMoney(item.amount,item.currencyCode)}</strong></header>
+    <p>{item.needsReview?'Aviso que requiere revisión':item.expired?'Reserva vencida':'Pendiente de verificación'}</p>
+    <dl><dt>Cuenta aportante</dt><dd><AccountIdentity contact={item.sponsorContact}/></dd><dt>Registrado (UTC)</dt><dd><Stamp value={item.createdAt} /></dd><dt>Vencimiento (UTC)</dt><dd><Stamp value={item.expiresAt} /></dd></dl>
+    {item.needsReview && <p>Revisa el aviso en un lote de conciliación que incluya la fecha de la primera observación.</p>}
+    {onConfirm && !item.expired && !item.needsReview && ['INITIATED','PENDING'].includes(item.status) && <PaymentReview item={item} busy={busy} onConfirm={onConfirm}/>}
   </article>)}</div>
 }
 export function ReconciliationSummary({batch}: {batch: ReconciliationDetail}) {
@@ -101,8 +122,8 @@ export function ReconciliationPage() {
   const operate=permissions.can('finance.operate') && data.state==='ready'
   if(data.state==='anonymous')return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent('/administracion/conciliacion'+(id?`/${id}`:''))}`} />
   return <div className={layout.adminLayout}><AdministrativeNavigation /><section className={layout.content}>
-    <header className={layout.heading}><div><h1>Conciliación</h1><p>SIMULACIÓN · SIN DINERO REAL · NO PAGAR</p></div></header>
-    <p>Contrasta confirmaciones internas con recibos del simulador. No conecta con bancos, no acredita pagos reales ni autoriza desembolsos o devoluciones.</p>
+    <header className={layout.heading}><div><h1>Conciliación</h1><p>Revisión de pagos y conciliación de aportes</p></div></header>
+    <p>Finanzas verifica los pagos pendientes y revisa las diferencias entre los registros de la plataforma y sus recibos.</p>
     <div className={styles.actions}>{id && <ButtonLink to="/administracion/conciliacion" variant="secondary">Volver a los lotes</ButtonLink>}<Button variant="secondary" disabled={data.busy} onClick={data.refresh}>Actualizar estado</Button></div>
     {data.state==='forbidden'?<Message tone="warning" title="Acceso restringido">Para consultar necesitas acceso al panel financiero. Solo Finanzas puede resolver conciliaciones con permisos de escritura.</Message>:<>
       {data.state==='loading' && <p role="status" aria-busy="true">Consultando conciliación…</p>}
@@ -113,9 +134,10 @@ export function ReconciliationPage() {
         {permissions.error && <Message tone="warning" title="No se pudieron consultar permisos de operación">Solo se mostrará lectura. Recarga antes de intentar operar.</Message>}
         {!operate && <p>Acceso de consulta: no puedes crear, resolver, expirar ni cerrar operaciones desde este perfil.</p>}
         {data.overview && <>
-          <OverviewForm filters={data.filters} currencies={data.overview.currencies} busy={data.busy} operate={operate} onApply={data.apply} onCreate={async filters=>{const result=await data.create(filters);if(result && typeof result!=='number')navigate(`/administracion/conciliacion/${result.id}`)}} onExpire={data.expire} />
-          <h2>Intentos pendientes y avisos por revisar</h2><p>No forman parte de los totales confirmados del lote. La lista cambia cuando se resuelven intentos; actualiza desde el inicio para revisar nuevos registros.</p>
-          {data.overview.pending.items.length?<PendingResults items={data.overview.pending.items} />:<EmptyState title="Sin pendientes en esta página" description="No hay intentos ni avisos por revisar para el período, moneda y posición consultados." />}
+
+          <h2 id="pagos-pendientes">Pagos pendientes de verificación</h2><p>Localiza la referencia del aporte para revisar el importe y la cuenta.</p>
+          <details className={styles.queueFilters}><summary>Período, moneda y operaciones del lote</summary><OverviewForm filters={data.filters} currencies={data.overview.currencies} busy={data.busy} operate={operate} onApply={data.apply} onCreate={async filters=>{const result=await data.create(filters);if(result && typeof result!=='number')navigate(`/administracion/conciliacion/${result.id}`)}} onExpire={data.expire} /></details>
+          {data.overview.pending.items.length?<PendingResults items={data.overview.pending.items} busy={data.busy} onConfirm={operate ? data.confirmPayment : undefined} />:<EmptyState title="Sin pendientes en esta página" description="No hay intentos ni avisos por revisar para el período, moneda y posición consultados." />}
           <nav className={styles.actions} aria-label="Páginas de pendientes"><Button variant="secondary" disabled={data.busy || !data.pendingPrevious} onClick={data.pendingBack}>Pendientes anteriores</Button><Button variant="secondary" disabled={data.busy || !data.overview.pending.nextCursor} onClick={data.pendingNext}>Pendientes siguientes</Button></nav>
           <h2>Lotes registrados</h2><p>Historial de todas las fechas y monedas; el filtro superior define pendientes y nuevos lotes, no oculta lotes históricos.</p>
           {data.overview.batches.items.length?<div className={styles.records}>{data.overview.batches.items.map(batch=><article className={styles.record} key={batch.id}><h3>{batch.from} a {batch.to} · {batch.currencyCode}</h3><p>{batchLabels[batch.status]}</p><p><strong>Preparó el lote:</strong> <AccountIdentity contact={batch.createdByContact}/></p><p>ID: {batch.id}</p><p>Diferencia bruta del corte: {financeMoney(batch.difference,batch.currencyCode)}</p><ButtonLink variant="secondary" to={`/administracion/conciliacion/${batch.id}`}>Revisar lote</ButtonLink></article>)}</div>:<EmptyState title="Sin lotes en esta página" description="Finanzas puede crear un lote para contrastar el período y moneda seleccionados." />}

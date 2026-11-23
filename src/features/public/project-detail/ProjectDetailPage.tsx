@@ -36,7 +36,7 @@ export function ProjectDetailPage() {
     </dl>
     {canSupport && <>
       <ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Aportar a la campaña</ButtonLink>
-      <p>El pago se realiza en una billetera de práctica, sin mover dinero real.</p>
+      <p>Finanzas verificará el aporte antes de emitir el comprobante.</p>
     </>}
     <ButtonLink variant="secondary" to="/explorar">Ver otras campañas</ButtonLink>
   </aside>

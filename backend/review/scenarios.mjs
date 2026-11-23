@@ -1,3 +1,4 @@
+import {campaignEdition} from './catalog-edition.mjs'
 import {readFileSync,readdirSync} from 'node:fs'
 import {resolve} from 'node:path'
 import {createRequire} from 'node:module'
@@ -89,19 +90,20 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
   const category=categories[0].id
   const campaigns={}
   async function campaign(code,title,{type='DONATION',state='PUBLISHED',user=owner,organizationId=null}={}){
+    const edition=campaignEdition(code)
     const result=await step('campana:'+code,async()=>{
-      const draft=await checkpoint('borrador:'+code,()=>call('campaigns/drafts',user,{title:`${code} ${title}`,summary:'Iniciativa comunitaria preparada para la revisión funcional del equipo.',campaignType:type,...(organizationId?{organizationId}:{})}))
+      const draft=await checkpoint('borrador:'+code,()=>call('campaigns/drafts',user,{title:edition.title,summary:edition.summary,campaignType:type,...(organizationId?{organizationId}:{})}))
       const path=`campaigns/drafts/${draft.id}`,administrative=`admin/campaigns/${draft.id}`
       const[current]=await sql('SELECT status FROM public.campaign WHERE id=$1',[draft.id])
       if(['DRAFT','CHANGES_REQUESTED'].includes(current.status)){
-        await call(path+'/general',user,{title:`${code} ${title}`,summary:'Recuperar espacios comunitarios mediante actividades y recursos documentados.',categoryId:category,location:{countryCode:'BO',locality:'Samaipata',addressLine:'Espacio comunitario de revisión',reference:'Zona central de la iniciativa'}},'PUT')
+        await call(path+'/general',user,{title:edition.title,summary:edition.summary,categoryId:category,location:{countryCode:'BO',locality:'Samaipata',addressLine:'Espacio comunitario de revisión',reference:'Zona central de la iniciativa'}},'PUT')
         await call(path+'/story',user,{problem:'El barrio no dispone de herramientas suficientes para recuperar sus espacios verdes.',solution:'Adquirir herramientas, organizar jornadas y registrar los resultados de cada actividad.',beneficiaries:'Veinte familias del sector participan de las actividades comunitarias.',expectedResults:'Recuperar el espacio y dejar evidencia verificable del trabajo realizado.',indicators:[{name:'Familias participantes',description:'Cantidad de familias que participan del proyecto.',unit:'familias',baselineValue:0,targetValue:20}]},'PUT')
         await call(path+'/plan',user,{activities:[{name:'Preparar terreno comunitario',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end},{name:'Instalar el huerto comunitario',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end}],milestones:[{name:'Huerto comunitario habilitado',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end,activityIndexes:[0,1]}]},'PUT')
         await call(path+'/budget',user,{items:[{categoryId:expense.id,description:'Herramientas para el huerto comunitario',quantity:10,unitPrice:50,plannedAmount:500,notes:'Compra prevista de herramientas y materiales.'}],risks:[{title:'Retraso por lluvias intensas',description:'La lluvia puede dificultar la preparación del terreno.',likelihood:'30',impact:'Medio',mitigation:'Reprogramar jornadas y proteger los materiales.'}]},'PUT')
         await call(path+'/funding',user,{goalAmount:600,currencyCode:'BOB',durationDays:30,fundingModel:code==='REV-13'?'ALL_OR_NOTHING':'FLEXIBLE',startsAt:today+'T00:00:00-04:00',endsAt:end+'T00:00:00-04:00'},'PUT')
         if(type!=='DONATION')await call(path+'/rewards',user,{rewards:[{title:type==='PRESALE'?'Kit de cultivo en preventa':'Semillas y manual comunitario',description:'Reconocimiento de la campaña preparado para el recorrido de revisión.',rewardKind:type==='PRESALE'?'PRESALE':'REWARD',minAmount:50,quantityTotal:100,estimatedDeliveryOn:addDays(end,10)}]},'PUT')
-        const cover=await upload(user,'portada-'+code,'CAMPAIGN_PUBLIC_IMAGE','PUBLIC')
-        await call(path+'/cover',user,{fileId:cover.id,altText:'Ilustración del huerto comunitario de revisión'},'PATCH')
+        const cover=await checkpoint('archivo:'+user.user+':portada-'+code,()=>call('files',user,{purpose:'CAMPAIGN_PUBLIC_IMAGE',visibility:'PUBLIC',originalName:code+'.webp',mimeType:'image/webp',contentBase64:readFileSync(edition.cover).toString('base64')}))
+        await call(path+'/cover',user,{fileId:cover.id,altText:edition.alt},'PATCH')
         if(state!=='DRAFT')await call(path+'/submission',user,{})
       }
       const[c]=await sql('SELECT status FROM public.campaign WHERE id=$1',[draft.id])
@@ -111,7 +113,7 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
       if(state==='PUBLISHED'&&approved.status==='APPROVED')await call(administrative+'/publish',u.administrador,{confirmed:true,expectedRound:1})
       const slug=code.toLowerCase()+'-'+title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-$/,'')
       await sql('UPDATE public.campaign SET slug=$2 WHERE id=$1',[draft.id,slug])
-      return{id:draft.id,code,title:`${code} ${title}`,slug,owner:user.user,type,initialState:state}
+      return{id:draft.id,code,title:edition.title,slug,owner:user.user,type,initialState:state}
     })
     campaigns[code]=result
     return result
@@ -138,7 +140,7 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
       const checkout=await call('demo-payments/checkout',sponsor,{campaignId:c.id,...(rewardId?{rewardId}:{}),amount,currencyCode:'BOB',method:'TEST_QR',requestKey:key('checkout:'+code+':'+suffix),demoConsent:true})
       const paymentId=checkout.contribution.paymentId
       const requestKey=key('resultado:'+code+':'+suffix)
-      if(outcome==='CONFIRMED')await call(`demo-payments/${paymentId}/authorize`,sponsor,{requestKey,demoConsent:true})
+      if(outcome==='CONFIRMED')await call(`admin/finance/demo/payments/${paymentId}/confirm`,u.finanzas,{requestKey,confirmed:true,evidenceReference:`CONSTANCIA-${code}-${suffix}`})
       else if(outcome!=='INITIATED')await seedPaymentOutcome(sponsor.id,paymentId,outcome,requestKey)
       return{contributionId:checkout.contribution.id,paymentId:checkout.contribution.paymentId,amount,outcome}
     })

@@ -4,7 +4,6 @@ import {Button} from '../../shared/components/Button'
 import {ContributionSession} from './ContributionPages'
 import {useDemoCheckout} from './useDemoCheckout'
 import {PaymentQr} from './PaymentQrCode'
-import {walletPath} from './paymentQrPayload'
 import {stateLabels,dateLabel,paymentMethodLabel} from './labels'
 import styles from './contributions.module.css'
 
@@ -15,11 +14,10 @@ export function DemoCheckoutPage(){
 function Checkout({selectionId,paymentId}:{selectionId:string|null;paymentId:string|null}) {
   const data=useDemoCheckout(selectionId,paymentId),navigate=useNavigate(),location=useLocation()
   const [consent,setConsent]=useState(false)
-  if(data.anonymous)return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent(location.pathname+location.search+(location.hash==='#billetera'?'#billetera':''))}`}/>
+  if(data.anonymous)return <Navigate replace to={`/iniciar-sesion?continuar=${encodeURIComponent(location.pathname+location.search)}`}/>
   const {selection,ticket}=data
   const pending=ticket?.status==='INITIATED'||ticket?.status==='PENDING'
   const retry=ticket?.status==='FAILED'||ticket?.status==='EXPIRED'
-  const wallet=pending&&location.hash==='#billetera'
   const value=ticket??selection
   const currency=ticket?.currencyCode??selection?.currency
   const amount=value&&currency?`${Number(value.amount).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})} ${currency}`:''
@@ -28,7 +26,7 @@ function Checkout({selectionId,paymentId}:{selectionId:string|null;paymentId:str
   }
   return <section className={styles.layout}>
     <nav className={styles.actions} aria-label="Aportes"><Link to="/panel-patrocinador">Mi panel</Link><Link to="/mis-aportes">Mis aportes</Link></nav>
-    <header><h1>{wallet?'Billetera de práctica':ticket?'Estado del pago':'Revisar aporte'}</h1><p>Este recorrido utiliza un saldo simulado, sin movimientos bancarios.</p></header>
+    <header><h1>{ticket?'Estado del pago':'Revisar aporte'}</h1><p>Registro de aportes en el entorno académico.</p></header>
     {data.loading&&<p role="status">Consultando el aporte…</p>}
     {data.error&&<div role="alert" className={styles.notice}>{data.error} <Button variant="secondary" disabled={data.busy} onClick={data.reload}>Volver a consultar</Button></div>}
     {!ticket&&selection&&<section className={styles.checkoutCard}>
@@ -40,14 +38,14 @@ function Checkout({selectionId,paymentId}:{selectionId:string|null;paymentId:str
       <div><Button disabled={!consent||data.busy} loading={data.busy} loadingLabel="Preparando pago…" onClick={()=>void data.create().then(viewPayment)}>Continuar al pago</Button></div>
     </section>}
     {ticket&&<section className={styles.checkoutCard}>
-      <div className={styles.checkoutTop}><h2>Aporte {ticket.reference}</h2><strong role="status" className={styles.checkoutState}>{pending?'Pendiente de pago':stateLabels[ticket.status]}</strong></div>
-      <div className={styles.checkoutAmount}><span>{ticket.status==='CONFIRMED'?'Pago confirmado':pending?'Importe a autorizar':'Importe del intento'}</span><strong>{amount}</strong></div>
+      <div className={styles.checkoutTop}><h2>Aporte {ticket.reference}</h2><strong role="status" className={styles.checkoutState}>{pending?'Pendiente de verificación':stateLabels[ticket.status]}</strong></div>
+      <div className={styles.checkoutAmount}><span>{ticket.status==='CONFIRMED'?'Pago confirmado':pending?'Importe pendiente':'Importe del intento'}</span><strong>{amount}</strong></div>
       <dl className={styles.checkoutFacts}><div><dt>Método</dt><dd>{paymentMethodLabel(ticket.method)}</dd></div>{pending&&ticket.expiresAt&&<div><dt>Disponible hasta</dt><dd>{dateLabel(ticket.expiresAt)}</dd></div>}</dl>
-      {pending&&!wallet&&<>
+      {pending&&<>
         {ticket.method==='TEST_QR'&&<PaymentQr key={ticket.paymentId} ticket={ticket}/>}
-        <div className={styles.actions}><Link className={styles.checkoutCta} to={walletPath(ticket.paymentId)}>Abrir billetera de práctica</Link><Button variant="secondary" disabled={data.busy} onClick={data.reload}>Actualizar estado</Button></div>
+        <p>Finanzas revisará la referencia y el importe del aporte. Cuando confirme el pago, podrás consultar el comprobante desde Mis aportes.</p>
+        <div className={styles.actions}><Button variant="secondary" disabled={data.busy} onClick={data.reload}>Actualizar estado</Button></div>
       </>}
-      {wallet&&<><p>Al autorizar, la billetera enviará la confirmación a Brotar. Tu comprobante estará disponible cuando se registre el pago.</p><div className={styles.actions}><Button loading={data.busy} loadingLabel="Autorizando…" disabled={data.busy} onClick={()=>void data.authorize()}>Autorizar pago de {amount}</Button><Link to={`/apoyo-demo?pago=${ticket.paymentId}`}>Volver al pago</Link></div></>}
       {retry&&<><p>{ticket.status==='EXPIRED'?'Venció el plazo para pagar.':'El pago no se completó.'} Puedes solicitar un nuevo intento para este mismo aporte, sujeto a disponibilidad.</p>
         <label className={styles.confirmation}><input type="checkbox" checked={consent} disabled={data.busy} onChange={event=>setConsent(event.target.checked)}/>Quiero reintentar el pago de este aporte.</label>
         <div><Button disabled={data.busy||!consent} loading={data.busy} loadingLabel="Preparando pago…" onClick={()=>void data.retry().then(viewPayment)}>Reintentar pago</Button></div></>}

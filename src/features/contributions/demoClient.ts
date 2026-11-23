@@ -16,12 +16,6 @@ export async function demoCheckout(input:{campaignId:string;rewardId:string|null
  return demoTicketFrom(v.ticket)
 }
 export async function demoTicket(id:string,signal?:AbortSignal) {if(!uuid(id))throw new SessionError(404);return demoTicketFrom(await readJson(await requestApi(`/api/demo-payments/${id}`,{signal})))}
-export async function authorizeDemoPayment(id:string,requestKey:string,signal?:AbortSignal) {
- const response=await requestApi(`/api/demo-payments/${id}/authorize`,{method:'POST',body:{requestKey,demoConsent:true},signal})
- const ticket=demoTicketFrom(await readJson(response))
- if(ticket.paymentId!==id.toLowerCase())throw new SessionError(0)
- return ticket
-}
 export async function demoRetry(contributionId:string,requestKey:string,signal?:AbortSignal) {
  const v=await readJson(await requestApi(`/api/demo-payments/contributions/${contributionId}/retry`,{method:'POST',body:{requestKey,demoConsent:true},signal}))
  if(!object(v) || v.mode!=='DEMO')throw new SessionError(0)

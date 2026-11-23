@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {transactionAccess} from '../../roles/infrastructure/transaction-access'
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import type { EntityManager } from 'typeorm'
 import { ContributionLedger } from '../../contributions/infrastructure/contribution-ledger'
-import { LedgerConflict, type IncomingState, type PaymentState, uuid } from '../../contributions/domain/payment'
+import { LedgerConflict, LedgerInvalid, type IncomingState, type PaymentState, uuid } from '../../contributions/domain/payment'
 import { DatabaseService } from '../../shared/infrastructure/database/database.service'
 import { recordAudit, setAuditActor } from '../../shared/infrastructure/database/audit'
 import { isDemoEnabled, DEMO_LABEL, DEMO_PROVIDER, digest, requestKey } from '../domain/demo'
@@ -61,27 +62,36 @@ export class DemoPayments {
     return {mode:'DEMO',label:DEMO_LABEL,contribution,ticket:await this.ticket(userId,contribution.paymentId!)}
   }
 
-  async authorize(userId: string,paymentId: string,key: string) {
+  async confirmPayment(actor:string,paymentId:string,key:string,evidenceReference:string) {
     assertDemoEnabled();uuid(paymentId);requestKey(key)
+    const evidence=evidenceReference.trim()
+    if(evidence.length<5 || evidence.length>120 || /\p{Cc}/u.test(evidence)) throw new LedgerInvalid('Ingresa una referencia de constancia de 5 a 120 caracteres.')
     paymentId=paymentId.toLowerCase()
-    await this.database.connection().transaction(async manager=>{
+    return this.database.connection().transaction(async manager=>{
       const providerId=await demoProvider(manager)
       await lockDemo(manager)
-      const [owned]=await manager.query(`SELECT c.id FROM public.payment p
-        JOIN public.contribution c ON c.id=p.contribution_id JOIN public.campaign campaign ON campaign.id=c.campaign_id
-        WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3 FOR UPDATE OF campaign`,[paymentId,userId,providerId])
-      if (!owned) throw new NotFoundException('Intento no disponible.')
+      await transactionAccess(manager,actor,'finance.operate')
+      const [target]=await manager.query(`SELECT c.id,c.user_id AS sponsor,cam.creator_user_id AS creator FROM public.payment p
+        JOIN public.contribution c ON c.id=p.contribution_id JOIN public.campaign cam ON cam.id=c.campaign_id
+        WHERE p.id=$1 AND p.provider_id=$2 FOR UPDATE OF cam`,[paymentId,providerId])
+      if(!target)throw new NotFoundException('Intento no disponible.')
+      if(actor===target.sponsor || actor===target.creator)throw new ForbiddenException('La confirmación requiere una cuenta de Finanzas independiente.')
       const [payment]=await manager.query(`SELECT p.status,LEAST(p.expires_at,c.expires_at)<=clock_timestamp() AS expired
         FROM public.payment p JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 FOR UPDATE OF p,c`,[paymentId])
-      if (!['INITIATED','PENDING'].includes(payment.status)) return
-      if (payment.expired) {
-        await this.ledger.expireLocked(manager,owned.id)
-        return
+      await transactionAccess(manager,actor,'finance.operate')
+      if(payment.status==='CONFIRMED'||payment.status==='EXPIRED')return {paymentId,status:payment.status as PaymentState}
+      if(!['INITIATED','PENDING'].includes(payment.status))throw new LedgerConflict('Este intento ya no admite confirmación.')
+      if(payment.expired){
+        await this.ledger.expireLocked(manager,target.id)
+        return {paymentId,status:'EXPIRED'}
       }
-      const receipt=await this.record(manager,providerId,userId,paymentId,'CONFIRMED',key)
-      if (receipt.processing!=='APPLIED') throw new LedgerConflict('La reserva cambió. Consulta el estado del aporte.')
+      const event=await this.record(manager,providerId,target.sponsor,paymentId,'CONFIRMED',key,actor)
+      if(event.processing!=='APPLIED')throw new LedgerConflict('La reserva cambió. Consulta el estado del aporte.')
+      await manager.query(`INSERT INTO public.audit_log(actor_user_id,actor_role,action,entity_name,entity_id,description,new_values)
+        VALUES($1,'FINANCE','STATUS_CHANGE','payment',$2,'Confirmación manual de aporte',
+        jsonb_build_object('source','FINANCE_CONFIRMATION','evidenceReference',$3::text,'eventId',$4::text))`,[actor,paymentId,evidence,event.eventId])
+      return {paymentId,status:'CONFIRMED'}
     })
-    return this.ticket(userId,paymentId)
   }
 
   async simulate(userId: string,paymentId: string,outcome: IncomingState,key: string) {
@@ -95,11 +105,11 @@ export class DemoPayments {
     })
   }
 
-  private async record(manager: EntityManager,providerId: string,userId: string,paymentId: string,outcome: IncomingState,key: string) {
+  private async record(manager: EntityManager,providerId: string,userId: string,paymentId: string,outcome: IncomingState,key: string,actorId=userId) {
     const [target]=await manager.query(`SELECT p.amount::text,trim(p.currency_code) AS currency,p.status FROM public.payment p
       JOIN public.contribution c ON c.id=p.contribution_id WHERE p.id=$1 AND c.user_id=$2 AND p.provider_id=$3`,[paymentId,userId,providerId])
     if (!target) throw new NotFoundException('Intento no disponible.')
-    const idempotency=digest(`demo-event:${userId}:${key.toLowerCase()}`)
+    const idempotency=digest(`demo-event:${actorId}:${key.toLowerCase()}`)
     const hash=digest(JSON.stringify([paymentId,outcome]))
     const [old]=await manager.query('SELECT id,request_hash,processing,reason_code FROM brotar_extension.demo_event WHERE request_key=$1',[idempotency])
     if (old) {
@@ -109,7 +119,7 @@ export class DemoPayments {
     const reference=`DEMO-${paymentId}`
     const [receipt]=await manager.query(`INSERT INTO brotar_extension.demo_event(request_key,request_hash,actor_id,payment_id,observed_status,
       amount,currency_code,external_reference,processing) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'RECEIVED') RETURNING id`,
-    [idempotency,hash,userId,paymentId,outcome,target.amount,target.currency,reference])
+    [idempotency,hash,actorId,paymentId,outcome,target.amount,target.currency,reference])
     // Se conserva el recibo incluso si la transición financiera se rechaza. No ocultar errores de BD desconocidos.
     await manager.query('SAVEPOINT demo_apply')
     let status: PaymentState=target.status,processing='APPLIED',reasonCode: string|null=null
@@ -127,8 +137,8 @@ export class DemoPayments {
     }
     await manager.query('RELEASE SAVEPOINT demo_apply')
     await manager.query(`UPDATE brotar_extension.demo_event SET processing=$2,reason_code=$3,processed_at=now() WHERE id=$1`,[receipt.id,processing,reasonCode])
-    await setAuditActor(manager,userId)
-    await recordAudit(manager,userId,'CREATE','demo_event',receipt.id)
+    await setAuditActor(manager,actorId)
+    await recordAudit(manager,actorId,'CREATE','demo_event',receipt.id)
     return {mode:'DEMO',label:DEMO_LABEL,eventId:receipt.id as string,paymentId,status,observedStatus:outcome,processing,reasonCode,replayed:false}
   }
 }

@@ -1,6 +1,6 @@
 # Brotar
 
-La entrega final del MVP académico de crowdfunding se instala desde **main**. [Presentación y guion para la defensa](docs/entregables/defensa-final/) · [Resultados de las pruebas](docs/revision-lideres/Comprobaciones.md). Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+La entrega final del MVP académico de crowdfunding se instala desde **DEV**. [Presentación y guion para la defensa](docs/entregables/defensa-final/) · [Resultados de las pruebas](docs/revision-lideres/Comprobaciones.md). Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
 Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
@@ -14,9 +14,9 @@ Los paneles administrativos identifican las cuentas vinculadas por nombre y corr
 
 ## Revisión de líderes con todos los datos preparados
 
-**Recorrido del patrocinador con QR.** Abra REV-04 con la cuenta patrocinadora, ingrese 25 BOB, elija **QR** y pulse **Continuar**. Revise el resumen, marque la casilla de conformidad y pulse **Continuar al pago**. Desde **Abrir billetera de práctica**, autorice el importe. Al confirmarse, pulse **Ver comprobante**. La billetera usa saldo simulado. Si sale antes de autorizar, puede consultar el aporte pendiente en **Mis aportes**. En una instalación en localhost, abra la billetera desde el mismo navegador. [Manual de revisión, apartados 14 y 15](docs/revision-lideres/Manual_Revision_Brotar.md#14-aportar-con-y-sin-recompensa).
+**Aporte con QR y confirmación por Finanzas.** Desde Huertos familiares de Samaipata, el patrocinador registra un aporte de 25 BOB por QR y anota la referencia. En otra sesión, Finanzas abre Revisar pagos pendientes, compara esa referencia y el importe con la constancia del ejercicio y registra la confirmación. El patrocinador actualiza el estado y abre su comprobante informativo, que puede imprimir o guardar como PDF. [Guía de los tres recorridos](docs/entregables/defensa-final/Demostracion_en_vivo.md).
 
-En una **carpeta nueva**, después de clonar main, ejecute desde la raíz:
+En una **carpeta nueva**, después de clonar DEV, ejecute desde la raíz:
 
 ```powershell
 node scripts/setup-review.mjs
@@ -72,10 +72,10 @@ Comprobar en PowerShell: `git --version`, `node --version`, `bun --version`, `do
 
 ## 3. Primera instalación completa
 
-En una carpeta nueva, obtener la entrega de main en PowerShell:
+En una carpeta nueva, obtener la entrega de DEV en PowerShell:
 
 ```powershell
-git clone --branch main --single-branch `
+git clone --branch DEV --single-branch `
   https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar
 cd Brotar
 ```
@@ -153,13 +153,13 @@ En otra terminal de la raíz: `bun run dev`. Conservar .env, volumen Docker y ba
 
 ## 5. Actualizar una copia existente
 
-Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar main sin forzar:
+Guardar trabajo propio y revisar el diff. Respaldar base y archivos desde backend compilado con `node scripts/drill-recovery.mjs --with-files`; conserva respaldo privado y prueba recuperación aislada. Detener la API para actualizar. Desde una copia sin cambios propios pendientes, actualizar DEV sin forzar:
 
 ```powershell
 git status --short
 git fetch origin
-git switch main
-git pull --ff-only origin main
+git switch DEV
+git pull --ff-only origin DEV
 ```
 
 Si hay trabajo propio o el pull no puede avanzar, conservarlo y revisar CONTRIBUTING; no hacer reset ni forzar. Iniciar Docker Desktop y, desde la raíz, actualizar dependencias y base existente:

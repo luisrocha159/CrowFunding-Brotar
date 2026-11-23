@@ -116,3 +116,13 @@ export async function expireDemoPayments(signal?: AbortSignal): Promise<number> 
   if (!demo(v) || !Number.isInteger(v.expired) || Number(v.expired)<0 || Number(v.expired)>100) throw new SessionError(0)
   return v.expired as number
 }
+
+export async function confirmPendingPayment(paymentId: string, evidenceReference: string, requestKey: string, signal?: AbortSignal) {
+  const reference=evidenceReference.trim()
+  if (!uuid(paymentId) || !uuid(requestKey) || reference.length<5 || reference.length>120 || [...reference].some(c=>c.charCodeAt(0)<32 || c.charCodeAt(0)===127)) throw new SessionError(400)
+  const result=await readJson(await requestApi(`${prefix}/payments/${paymentId}/confirm`, {
+    method:'POST',body:{requestKey,confirmed:true,evidenceReference:reference},signal
+  }))
+  if (!record(result) || result.paymentId!==paymentId || (result.status!=='CONFIRMED' && result.status!=='EXPIRED')) throw new SessionError(0)
+  return result.status
+}
