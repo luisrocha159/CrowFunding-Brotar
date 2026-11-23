@@ -87,7 +87,10 @@ try{
       if(!response.ok)throw new Error(`Preparación ${method} ${path}: HTTP ${response.status}. ${JSON.stringify(data?.message??'Operación no confirmada').slice(0,1200)}`)
       return{data,status:response.status,cookie:response.headers.get('set-cookie')?.split(';')[0]}
     }
-    await buildReviewDataset({root,backend,manifest,checkpoint,key,sql,api})
+    const {DemoPayments}=require('../dist/demo-payments/infrastructure/demo-payments.js')
+    const payments=instance.get(DemoPayments)
+    const seedPaymentOutcome=(userId,paymentId,outcome,requestKey)=>payments.simulate(userId,paymentId,outcome,requestKey)
+    await buildReviewDataset({root,backend,manifest,checkpoint,key,sql,api,seedPaymentOutcome})
     await sql("UPDATE brotar_review.dataset SET status='COMPLETE',manifest=$1::jsonb,updated_at=clock_timestamp() WHERE name='leaders'",[JSON.stringify(manifest)])
     console.log(`Preparación completa: ${manifest.accounts.length} cuentas y ${manifest.scenarios.length} escenarios.`)
   }

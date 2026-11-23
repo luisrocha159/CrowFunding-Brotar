@@ -263,10 +263,10 @@ export class ContributionLedger {
           (payment.external_reference !== reference || money(payment.fee,true)!==money(fee,true))) throw new LedgerConflict('La confirmación ya registrada tiene otra referencia o comisión.')
         if (next !== payment.status) {
           await manager.query(`UPDATE public.payment SET status=$2::payment_status,fee_amount=$3,external_reference=$4,
-            confirmed_at=CASE WHEN $2::payment_status='CONFIRMED' THEN now() ELSE NULL END WHERE id=$1`,
+            confirmed_at=CASE WHEN $2::payment_status='CONFIRMED' THEN GREATEST(clock_timestamp(),created_at) ELSE NULL END WHERE id=$1`,
           [event.paymentId,next,next === 'CONFIRMED' ? fee : '0.00',next === 'CONFIRMED' ? reference : null])
-          if (next === 'CONFIRMED') await manager.query("UPDATE public.contribution SET status='CONFIRMED',confirmed_at=now() WHERE id=$1", [target.id])
-          else if (next === 'FAILED' || next === 'EXPIRED') await manager.query(`UPDATE public.contribution SET status=$2::contribution_status,cancelled_at=CASE WHEN $2::contribution_status='CANCELLED' THEN now() ELSE NULL END WHERE id=$1`, [target.id,next === 'FAILED' ? 'CANCELLED' : 'EXPIRED'])
+          if (next === 'CONFIRMED') await manager.query("UPDATE public.contribution SET status='CONFIRMED',confirmed_at=GREATEST(clock_timestamp(),created_at) WHERE id=$1", [target.id])
+          else if (next === 'FAILED' || next === 'EXPIRED') await manager.query(`UPDATE public.contribution SET status=$2::contribution_status,cancelled_at=CASE WHEN $2::contribution_status='CANCELLED' THEN GREATEST(clock_timestamp(),created_at) ELSE NULL END WHERE id=$1`, [target.id,next === 'FAILED' ? 'CANCELLED' : 'EXPIRED'])
         }
         await manager.query(`INSERT INTO public.payment_event(payment_id,provider_event_id,event_type,previous_status,new_status,payload)
           VALUES($1,$2,'sandbox.verified',$3,$4,jsonb_build_object('hash',$5::text,'incomingStatus',$6::text))`,

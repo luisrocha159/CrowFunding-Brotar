@@ -3,7 +3,7 @@ import {resolve} from 'node:path'
 import {createRequire} from 'node:module'
 
 const reason='Preparación sintética autorizada para la revisión académica de Brotar.'
-export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,api}){
+export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,api,seedPaymentOutcome}){
   const definitions=JSON.parse(readFileSync(new URL('./accounts.json',import.meta.url),'utf8'))
   const require=createRequire(import.meta.url),{LEGAL_VERSION}=require('../dist/legal/domain/legal-v2-20261109.js')
   const users={}
@@ -136,7 +136,10 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
       const c=campaigns[code]
       const rewardId=withReward?(await call('campaigns/public/'+c.slug,sponsor)).rewards[0].id:undefined
       const checkout=await call('demo-payments/checkout',sponsor,{campaignId:c.id,...(rewardId?{rewardId}:{}),amount,currencyCode:'BOB',method:'TEST_QR',requestKey:key('checkout:'+code+':'+suffix),demoConsent:true})
-      if(outcome!=='INITIATED')await call(`demo-payments/${checkout.contribution.paymentId}/simulate`,sponsor,{outcome,requestKey:key('resultado:'+code+':'+suffix)})
+      const paymentId=checkout.contribution.paymentId
+      const requestKey=key('resultado:'+code+':'+suffix)
+      if(outcome==='CONFIRMED')await call(`demo-payments/${paymentId}/authorize`,sponsor,{requestKey,demoConsent:true})
+      else if(outcome!=='INITIATED')await seedPaymentOutcome(sponsor.id,paymentId,outcome,requestKey)
       return{contributionId:checkout.contribution.id,paymentId:checkout.contribution.paymentId,amount,outcome}
     })
   }
