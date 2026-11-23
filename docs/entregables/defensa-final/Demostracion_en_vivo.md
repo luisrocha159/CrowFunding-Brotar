@@ -1,5 +1,24 @@
 # Demostración en vivo de Brotar
 
+## Preparar la instalación desde main
+
+En una PC con Windows, abra Docker Desktop con el motor Linux y espere a que esté activo. Necesitará Git, Node.js 24.13 o posterior de la serie 24, Bun 1.4.2 y Corepack con pnpm 11.19.0. En PowerShell, desde una carpeta nueva, ejecute:
+
+```powershell
+git clone --branch main https://github.com/luisrocha159/CrowFunding-Brotar.git Brotar-Defensa
+cd Brotar-Defensa
+node scripts/setup-review.mjs
+```
+
+Espere a que el instalador termine de cargar las 18 cuentas y los 20 escenarios. Abra dos terminales en la carpeta Brotar-Defensa y deje ambas abiertas.
+
+- **Terminal 1 · servidor** — `node scripts/start-review.mjs backend`
+- **Terminal 2 · interfaz** — `node scripts/start-review.mjs frontend`
+
+Abra **http://127.0.0.1:5173**. Para la defensa, usen una misma instalación en la computadora que se proyecta, con tres perfiles distintos de navegador. Cada integrante puede instalar su propia copia para practicar individualmente. Cada copia tiene su propia base de datos. El recorrido utiliza el buzón local y funciona sin configurar Gmail.
+
+## Antes de proyectar
+
 En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tres momentos de su ciclo. Preparar tres perfiles de navegador independientes para conservar las sesiones. La cuenta de Santiago ya tiene la identidad aprobada y el rol de creador. Los importes de los tres escenarios son independientes. Ricardo interviene desde Finanzas para verificar el aporte de Alison antes de pasar al desembolso de otra campaña. Los códigos REV son referencias internas de esta guía. Busquen las campañas por el título visible y su portada.
 
 | Turno | Cuenta | Contraseña de práctica | Caso |
@@ -17,7 +36,7 @@ En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tr
 
 ### Alison y Ricardo · Del aporte pendiente al comprobante
 
-1. Alison abre **Huertos familiares de Samaipata** en Explorar proyectos, pulsa **Aportar a la campaña**, elige QR, ingresa **25 BOB** y continúa.
+1. Alison abre **Huertos familiares de Samaipata** en Explorar proyectos, pulsa **Aportar a la campaña**, ingresa **25 BOB**, elige QR y continúa.
 2. Revisa el resumen, confirma el importe y pulsa **Continuar al pago**. Muestra el QR y **Pendiente de verificación**. Anota la referencia BRT-C completa. El QR permite volver a consultar el intento.
 3. Para representar la recepción en este ejercicio, usen una constancia de práctica independiente con su identificador, la campaña, la cuenta aportante, la referencia BRT-C del intento y los 25 BOB. Cuando falta el respaldo o algún dato difiere, el pago queda pendiente.
 4. Ricardo abre **Administración → Finanzas → Revisar pagos pendientes** desde su perfil. Localiza la tarjeta por la referencia y comprueba que coincidan la cuenta, la campaña y el importe. Despliega **Revisar pago**, escribe el identificador en **Referencia de la constancia**, marca la casilla de cotejo y pulsa **Confirmar pago**.
@@ -33,7 +52,7 @@ En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tr
 
 ### Preparar otro ensayo
 
-Desde una copia nueva de DEV, con Docker en ejecución, seguir el [manual de instalación](../../revision-lideres/Manual_Revision_Brotar.md). Para una segunda copia en la misma PC, utilizar otro nombre de proyecto y puertos libres. Ejecutar en esa copia:
+Desde una copia nueva de main, con Docker en ejecución, seguir el [manual de instalación](../../revision-lideres/Manual_Revision_Brotar.md). Para una segunda copia en la misma PC, utilizar otro nombre de proyecto y puertos libres. Ejecutar en esa copia:
 
 ```powershell
 node scripts/setup-review.mjs --project=brotar-revision-otro-ensayo --db-port=15590 --api-port=3090 --web-port=5290

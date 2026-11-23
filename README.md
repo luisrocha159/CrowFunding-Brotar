@@ -1,6 +1,6 @@
 # Brotar
 
-La entrega final del MVP académico de crowdfunding se instala desde **DEV**. [Presentación y guion para la defensa](docs/entregables/defensa-final/) · [Resultados de las pruebas](docs/revision-lideres/Comprobaciones.md). Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
+La entrega final del MVP académico de crowdfunding se instala desde **main**. [Presentación y guion para la defensa](docs/entregables/defensa-final/) · [Resultados de las pruebas](docs/revision-lideres/Comprobaciones.md). Integra los tres sprints y la aceptación de Ricardo del recorrido S3-21. **Pagos, QR, destinos y operaciones económicas son simulados**; las condiciones legales son provisionales del equipo. El correo Gmail funciona con configuración privada autorizada.
 
 Publicación de S3-20 autorizada por Ricardo en DEV. [Registro del corte y comprobaciones](docs/entrega-dev-2026-10-30.md). La revisión manual adicional del equipo se organiza en [tres recorridos que cubren las 73 rutas](docs/pruebas-manuales-equipo-2026-10-30.md); sus resultados se registran aparte y no se presuponen aprobados. El paquete privado de correo se comparte por separado; no está en Git.
 
@@ -14,9 +14,9 @@ Los paneles administrativos identifican las cuentas vinculadas por nombre y corr
 
 ## Revisión de líderes con todos los datos preparados
 
-**Aporte con QR y confirmación por Finanzas.** Desde Huertos familiares de Samaipata, el patrocinador registra un aporte de 25 BOB por QR y anota la referencia. En otra sesión, Finanzas abre Revisar pagos pendientes, compara esa referencia y el importe con la constancia del ejercicio y registra la confirmación. El patrocinador actualiza el estado y abre su comprobante informativo, que puede imprimir o guardar como PDF. [Guía de los tres recorridos](docs/entregables/defensa-final/Demostracion_en_vivo.md).
+**Aporte con QR y confirmación por Finanzas.** Desde Huertos familiares de Samaipata, el patrocinador registra un aporte de 25 BOB por QR y anota la referencia. En otra sesión, Finanzas abre Revisar pagos pendientes, compara esa referencia y el importe con la constancia del ejercicio y registra la confirmación. El patrocinador actualiza el estado y abre su comprobante informativo, que puede imprimir o guardar como PDF. [PDF para compartir](docs/entregables/defensa-final/Demostracion_en_vivo.pdf) · [Guía de los tres recorridos](docs/entregables/defensa-final/Demostracion_en_vivo.md).
 
-En una **carpeta nueva**, después de clonar DEV, ejecute desde la raíz:
+En una **carpeta nueva**, después de clonar main, ejecute desde la raíz:
 
 ```powershell
 node scripts/setup-review.mjs

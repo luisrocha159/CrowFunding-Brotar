@@ -85,3 +85,5 @@ En navegador, un patrocinador abrió un aporte por 25 BOB. El aporte quedó pend
 Se comprobó también un aporte existente de 50 BOB en la instalación de la defensa. Su comprobante conservó el importe y la campaña, se mostró sin desbordamiento a 375 px y se exportó en una página A4 con la navegación y los controles de pantalla excluidos.
 
 Pasaron 310 pruebas de interfaz, 251 unitarias del servidor y los recorridos específicos de pagos y S3-21. En la instalación limpia se verificaron 18 cuentas y 20 escenarios. El catálogo público mostró las portadas y los títulos de las 15 campañas visibles. La corrida general en el WSL compartido aprobó 52 de 56. Las cuatro incidencias correspondieron a historia de campaña, recorrido integral, seguimiento de recompensas y representación. El resultado histórico del 22 de noviembre corresponde a aquel corte.
+
+El 23 de noviembre terminó la repetición en PostgreSQL independiente con 56 de 56 integraciones aprobadas, cero fallos, cancelaciones u omisiones. Duración de la batería: 18 min 2 s. Incluye la confirmación manual del aporte y el recorrido integral S3-21.
