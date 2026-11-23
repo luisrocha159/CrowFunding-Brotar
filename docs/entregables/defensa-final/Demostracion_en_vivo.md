@@ -17,10 +17,10 @@ En la diapositiva 45, explicar que se utilizarán tres campañas distintas en tr
 
 ### Alison · Del aporte al comprobante
 
-1. Desde **Explorar proyectos**, abrir REV-04 y pulsar **Aportar a la campaña**. Ingresar **20 BOB** y continuar.
+1. Desde **Explorar proyectos**, abrir REV-04 y pulsar **Aportar a la campaña**. Ingresar **25 BOB** y continuar.
 2. Confirmar el importe, continuar al pago y mostrar el QR con el aporte pendiente.
 3. Abrir **Mis aportes**, entrar al detalle del aporte recién creado y elegir **Continuar con el pago**.
-4. Abrir la **billetera de práctica**, autorizar los 20 BOB y pulsar **Ver comprobante**. Mostrar el método QR, el estado confirmado y la referencia. Recargar para demostrar que el comprobante persiste.
+4. Abrir la **billetera de práctica**, autorizar los 25 BOB y pulsar **Ver comprobante**. Mostrar el método QR, el estado confirmado y la referencia. Recargar para demostrar que el comprobante persiste.
 5. Dar paso a Ricardo: «Ahora veremos cómo Finanzas desembolsa los fondos de una campaña que ya terminó su recaudación».
 
 ### Ricardo · De la solicitud al desembolso completado
