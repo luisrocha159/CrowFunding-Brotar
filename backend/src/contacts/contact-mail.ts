@@ -77,7 +77,7 @@ export class ContactMail implements OnModuleInit, OnModuleDestroy {
    await setAuditActor(m,user)
    await m.query('UPDATE public.app_user SET email_verified_at=clock_timestamp() WHERE id=$1',[user])
    await m.query(`INSERT INTO brotar_extension.mail_preference(user_id,verified_email) SELECT id,email FROM public.app_user WHERE id=$1 ON CONFLICT(user_id) DO UPDATE SET verified_email=EXCLUDED.verified_email,enabled=false,updated_at=clock_timestamp()`,[user])
-   await m.query('UPDATE public.user_token SET used_at=clock_timestamp() WHERE id=$1',[t.id])
+   await m.query('UPDATE public.user_token SET used_at=GREATEST(clock_timestamp(),created_at) WHERE id=$1',[t.id])
    await recordAudit(m,user,'UPDATE','app_user',user)
    return {verified:true}
   })

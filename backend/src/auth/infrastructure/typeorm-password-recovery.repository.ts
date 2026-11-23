@@ -43,7 +43,7 @@ export class TypeormPasswordRecoveryRepository implements PasswordRecoveryReposi
         UPDATE public.app_user
         SET password_hash=$2, failed_login_count=0, locked_until=NULL, updated_at=clock_timestamp()
         WHERE id=$1 AND deleted_at IS NULL`, [token.userId, passwordHash])
-      await manager.query(`UPDATE public.user_token SET used_at=clock_timestamp() WHERE id=$1`, [token.id])
+      await manager.query(`UPDATE public.user_token SET used_at=GREATEST(clock_timestamp(),created_at) WHERE id=$1`, [token.id])
       await manager.query(`
         UPDATE public.user_token SET revoked_at=clock_timestamp()
         WHERE user_id=$1 AND revoked_at IS NULL AND used_at IS NULL
