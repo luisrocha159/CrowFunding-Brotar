@@ -40,3 +40,7 @@ node scripts/setup-review.mjs --project=brotar-revision-otro-ensayo --db-port=15
 ```
 
 En dos terminales de la misma carpeta, iniciar `node scripts/start-review.mjs backend` y `node scripts/start-review.mjs frontend`. Abrir http://127.0.0.1:5290. Repetir el instalador en una copia usada conserva su avance. Para practicar los tres finales otra vez, usar una copia y una base nuevas.
+
+### Variante opcional para mostrar recompensas
+
+Alison puede mostrar **Semillas que pasan de mano en mano** en Explorar proyectos. En la ficha, **Ver recompensas disponibles** lleva a **Semillas y manual comunitario**, disponible desde **50 BOB**. Para mostrar la selección, abrir **Aportar a la campaña** e ingresar 50 BOB. Si eligen completar este aporte durante la defensa, usar su propia referencia y cotejar exactamente 50 BOB desde Finanzas. Para mostrar una preventa, **Cultiva tu primera huerta** ofrece un kit de cultivo desde 50 BOB. El recorrido central de las tres cuentas conserva el aporte de 25 BOB en Huertos familiares de Samaipata.

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Button } from '../../shared/components/Button'
 import { usePublicSession } from '../access/session/useHeaderSession'
 import { readBookmarkState, setBookmark, type BookmarkKind, type BookmarkState } from './bookmarksClient'
-import styles from '../public/public.module.css'
+import styles from '../public/project-detail/detail.module.css'
 
 export function BookmarkActions({ campaignId }: { campaignId: string }) {
   const session = usePublicSession()
@@ -31,12 +31,12 @@ function OwnBookmarkActions({ campaignId }: { campaignId: string }) {
     catch { if (!controller.signal.aborted) setError('No pudimos confirmar el cambio. Comprueba tu sesión y reintenta; no cambiamos la selección mostrada.') }
     finally { if (active.current === controller) active.current = null; if (!controller.signal.aborted) setBusy(false) }
   }
-  return <section aria-label="Guardar o seguir campaña"><p>Guardar añade esta campaña a tu lista. Seguir muestra sus novedades en Brotar.</p>
+  return <section className={styles.preferences} aria-label="Guardar o seguir campaña">
+    <div className={styles.preferenceHeader}><h2>Tu seguimiento</h2><Link to="/mis-guardados">Ver mis guardados</Link></div>
     {error && <p role="alert">{error}</p>}
-    {!state ? error ? <Button variant="secondary" onClick={() => { setError(''); setAttempt(value => value + 1) }}>Reintentar preferencias</Button> : <p role="status">Cargando preferencias…</p> : <div className={styles.actions}>
+    {!state ? error ? <Button variant="secondary" onClick={() => { setError(''); setAttempt(value => value + 1) }}>Reintentar preferencias</Button> : <p role="status">Cargando preferencias…</p> : <div className={styles.preferenceButtons}>
       <Button variant="secondary" aria-pressed={state.favorite} disabled={busy} onClick={() => { void change('FAVORITE', !state.favorite) }}>{state.favorite ? 'Quitar de guardadas' : 'Guardar campaña'}</Button>
       <Button variant="secondary" aria-pressed={state.following} disabled={busy} onClick={() => { void change('FOLLOW', !state.following) }}>{state.following ? 'Dejar de seguir novedades' : 'Seguir novedades'}</Button>
     </div>}
-    <Link to="/mis-guardados">Mis campañas guardadas y novedades</Link>
   </section>
 }

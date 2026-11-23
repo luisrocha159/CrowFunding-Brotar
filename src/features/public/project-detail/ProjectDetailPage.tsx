@@ -35,6 +35,7 @@ export function ProjectDetailPage() {
       <div><dt>Estado</dt><dd>{project.statusReason??(project.status==='active'?(project.closingDateKnown===false?'Publicada · fecha de cierre por definir':`Publicada · ${project.daysRemaining} días restantes`):project.status==='cancelled'?'Cancelada':'Recaudación finalizada')}</dd></div>
     </dl>
     {canSupport && <>
+      {Boolean(project.rewards?.length) && <a className={styles.rewardLink} href="#recompensas">Ver recompensas disponibles</a>}
       <ButtonLink to={`/simulacion-apoyo?campaignId=${project.id}`}>Aportar a la campaña</ButtonLink>
       <p>Finanzas verificará el aporte antes de emitir el comprobante.</p>
     </>}
@@ -47,9 +48,9 @@ export function ProjectDetailPage() {
         <div className={styles.overview}>
         <div className={shared.actions}><Badge tone="success">{project.category}</Badge><Badge>{campaignTypeLabels[project.campaignType]}</Badge></div>
         <h1>{project.name}</h1><p className="lead">{project.summary}</p><p>{project.creator}{project.location ? ` · ${project.location}` : ''}</p>
-        <figure className={styles.figure}><img className={styles.cover} src={project.image} alt={project.imageAlt} width={768} height={427} /><figcaption>{project.imageCaption}</figcaption></figure>
-        <BookmarkActions campaignId={project.id} />
-        <p><Link to={`/mis-incidencias/nueva?campaignId=${encodeURIComponent(project.id)}`}>Reportar información incorrecta o un problema de ejecución</Link></p>
+        <figure className={styles.figure}><img className={styles.cover} src={project.image} alt={project.imageAlt} width={768} height={427} />{project.imageCaption && <figcaption>{project.imageCaption}</figcaption>}</figure>
+        <div className={styles.tools}><BookmarkActions campaignId={project.id} /></div>
+
         <VerificationBadges campaignId={project.id}/>
         </div>
         {funding}
@@ -62,6 +63,7 @@ export function ProjectDetailPage() {
         <p><Link to={`/campanas/${project.id}/rendicion-publica`}>Consultar rendición pública</Link></p>
         <PublicUpdates key={`updates:${project.id}`} campaignId={project.id} />
         <section id="recompensas" className={shared.contentSection}><h2>Recompensas</h2>{project.rewards?.length ? project.rewards.map(reward => <article key={reward.id} className={shared.panel}><h3>{reward.title}</h3><p>{reward.description}</p><p>Desde {reward.currency} {amount.format(reward.minAmount)}</p></article>) : <p>Esta campaña no publica recompensas.</p>}</section>
+        <footer className={styles.report}><span>¿Hay algún problema con esta campaña?</span><Link to={`/mis-incidencias/nueva?campaignId=${encodeURIComponent(project.id)}`}>Reportar un problema</Link></footer>
         </div>
     </div>
   </>

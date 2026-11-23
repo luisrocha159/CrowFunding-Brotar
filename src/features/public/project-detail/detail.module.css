@@ -22,3 +22,16 @@
 .update time { color: var(--color-muted); font-size: 13px; }
 @media(max-width: 900px) { .layout { display: flex; flex-direction: column; gap: 28px; } .overview, .story { width: 100%; } .funding { position: static; width: 100%; } }
 @media(max-width: 480px) { .metrics { grid-template-columns: 1fr; } }
+
+.tools { margin: 20px 0 36px; padding: 20px 24px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.preferenceHeader, .report { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; }
+.preferenceHeader h2 { margin: 0; font: 600 20px var(--font-heading); }
+.preferenceHeader a, .report a, .rewardLink { font-weight: 600; text-underline-offset: 3px; }
+.preferenceButtons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.preferenceButtons button[aria-pressed="true"] { background: var(--color-brand); color: white; }
+.report { border-top: 1px solid var(--color-border); padding-top: 20px; margin-top: 32px; font-size: 0.95rem; }
+.rewardLink { display: inline-block; }
+@media (max-width: 480px) {
+  .tools { padding: 16px; }
+  .preferenceButtons { display: grid; }
+}

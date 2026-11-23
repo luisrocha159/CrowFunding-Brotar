@@ -47,7 +47,7 @@ export function mapPublicCampaign(value: unknown): Project {
     campaignType: types[value.campaignType]!, description: text(value.description), problem: text(value.problem),
     solution: text(value.solution), beneficiaries: text(value.beneficiaries), expectedResults: text(value.expectedResults),
     impact, creatorDescription: text(value.creatorDescription), trustSignals: [], updates: [], featured: false,
-    publishedAt, endsAt, imageCaption: 'Imagen pública de la campaña.', rewards, isDemo: false
+    publishedAt, endsAt, imageCaption: '', rewards, isDemo: false
   }
 }
 export async function listPublicCampaigns(signal?: AbortSignal): Promise<readonly Project[]> {
