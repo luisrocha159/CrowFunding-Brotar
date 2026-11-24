@@ -14,7 +14,9 @@ Los paneles administrativos identifican las cuentas vinculadas por nombre y corr
 
 ## Revisión de líderes con todos los datos preparados
 
-**Aporte con QR y confirmación por Finanzas.** Desde Huertos familiares de Samaipata, el patrocinador registra un aporte de 25 BOB por QR y anota la referencia. En otra sesión, Finanzas abre Revisar pagos pendientes, compara esa referencia y el importe con la constancia del ejercicio y registra la confirmación. El patrocinador actualiza el estado y abre su comprobante informativo, que puede imprimir o guardar como PDF. [PDF para compartir](docs/entregables/defensa-final/Demostracion_en_vivo.pdf) · [Guía de los tres recorridos](docs/entregables/defensa-final/Demostracion_en_vivo.md).
+**Aporte con QR y confirmación por Finanzas.** Desde Huertos familiares de Samaipata, el patrocinador registra un aporte de 25 BOB por QR y anota la referencia. En otra sesión, Finanzas abre Revisar pagos pendientes, compara esa referencia y el importe con la constancia del ejercicio y registra la confirmación. El patrocinador actualiza el estado y abre su comprobante informativo, que puede imprimir o guardar como PDF. [PDF para compartir](docs/entregables/defensa-final/Demostracion_en_vivo.pdf) · [Guía de las cinco escenas](docs/entregables/defensa-final/Demostracion_en_vivo.md).
+
+Para la defensa, la guía incorpora la aprobación del expediente personal de **usuario@brotar.test** y la revisión y el cierre de **Tomates del valle**, además del borrador, el aporte y el desembolso. Cada integrante conserva sesiones separadas según su responsabilidad.
 
 En una **carpeta nueva**, después de clonar main, ejecute desde la raíz:
 

@@ -72,6 +72,7 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
   }
   for(const user of [owner,u.organizacion,u.creadorajeno])await step('identidad-aprobada:'+user.user,()=>verification(user,'KYC_IDENTITY'))
   const identityPending=await step('identidad-pendiente',()=>verification(u.identidadpendiente,'KYC_IDENTITY','PENDING'))
+  const firstCreator=await step('identidad-primer-creador',()=>verification(u.usuario,'KYC_IDENTITY','PENDING'))
   const identityChanges=await step('identidad-observada',()=>verification(u.observaciones,'KYC_IDENTITY','REQUIRES_INFO'))
   const org=await step('organizacion',async()=>{
     const types=await call('organizations/types',u.organizacion)
@@ -98,7 +99,9 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
       if(['DRAFT','CHANGES_REQUESTED'].includes(current.status)){
         await call(path+'/general',user,{title:edition.title,summary:edition.summary,categoryId:category,location:{countryCode:'BO',locality:'Samaipata',addressLine:'Espacio comunitario de revisión',reference:'Zona central de la iniciativa'}},'PUT')
         await call(path+'/story',user,{problem:'El barrio no dispone de herramientas suficientes para recuperar sus espacios verdes.',solution:'Adquirir herramientas, organizar jornadas y registrar los resultados de cada actividad.',beneficiaries:'Veinte familias del sector participan de las actividades comunitarias.',expectedResults:'Recuperar el espacio y dejar evidencia verificable del trabajo realizado.',indicators:[{name:'Familias participantes',description:'Cantidad de familias que participan del proyecto.',unit:'familias',baselineValue:0,targetValue:20}]},'PUT')
-        await call(path+'/plan',user,{activities:[{name:'Preparar terreno comunitario',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end},{name:'Instalar el huerto comunitario',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end}],milestones:[{name:'Huerto comunitario habilitado',responsibleName:user.name,plannedStartOn:today,plannedEndOn:end,activityIndexes:[0,1]}]},'PUT')
+        // La preparación inicial puede cruzar medianoche antes de guardar el plan.
+        const planDay=new Intl.DateTimeFormat('en-CA',{timeZone:'America/La_Paz'}).format(new Date())
+        await call(path+'/plan',user,{activities:[{name:'Preparar terreno comunitario',responsibleName:user.name,plannedStartOn:planDay,plannedEndOn:end},{name:'Instalar el huerto comunitario',responsibleName:user.name,plannedStartOn:planDay,plannedEndOn:end}],milestones:[{name:'Huerto comunitario habilitado',responsibleName:user.name,plannedStartOn:planDay,plannedEndOn:end,activityIndexes:[0,1]}]},'PUT')
         await call(path+'/budget',user,{items:[{categoryId:expense.id,description:'Herramientas para el huerto comunitario',quantity:10,unitPrice:50,plannedAmount:500,notes:'Compra prevista de herramientas y materiales.'}],risks:[{title:'Retraso por lluvias intensas',description:'La lluvia puede dificultar la preparación del terreno.',likelihood:'30',impact:'Medio',mitigation:'Reprogramar jornadas y proteger los materiales.'}]},'PUT')
         await call(path+'/funding',user,{goalAmount:600,currencyCode:'BOB',durationDays:30,fundingModel:code==='REV-13'?'ALL_OR_NOTHING':'FLEXIBLE',startsAt:today+'T00:00:00-04:00',endsAt:end+'T00:00:00-04:00'},'PUT')
         if(type!=='DONATION')await call(path+'/rewards',user,{rewards:[{title:type==='PRESALE'?'Kit de cultivo en preventa':'Semillas y manual comunitario',description:'Reconocimiento de la campaña preparado para el recorrido de revisión.',rewardKind:type==='PRESALE'?'PRESALE':'REWARD',minAmount:50,quantityTotal:100,estimatedDeliveryOn:addDays(end,10)}]},'PUT')
@@ -238,7 +241,7 @@ export async function buildReviewDataset({backend,manifest,checkpoint,key,sql,ap
   await step('cuenta-restringida',()=>sql("UPDATE public.app_user SET status='SUSPENDED' WHERE id=$1",[u.restringido.id]))
   for(const c of Object.values(campaigns)){const [r]=await sql('SELECT status FROM public.campaign WHERE id=$1',[c.id]);c.initialState=r.status}
   manifest.scenarios=Object.values(campaigns).map(c=>({...c,routes:{public:'/proyectos/'+c.slug,creator:'/mis-proyectos/'+c.id,review:'/administracion/campanas/'+c.id,cycle:'/administracion/ciclo-campanas/'+c.id,closure:'/administracion/cierre-campanas/'+c.id},payment:paid[c.code]??null,destination:destinations[c.code]??null,payout:payouts[c.code]??null,report:reports[c.code]??null}))
-  manifest.verifications={pending:identityPending,changes:identityChanges}
+  manifest.verifications={pending:identityPending,changes:identityChanges,firstCreator}
   manifest.organization={id:org.id,name:'Fundación Semillas del Valle'}
   manifest.monthly=monthly;manifest.support=incident;manifest.refund={id:refund.id,status:refund.status};manifest.dispute=dispute;manifest.reconciliation={id:reconciliation.id}
   manifest.nextSteps='Consultar el manual de revisión; los escenarios son independientes y mantienen su progreso.'
