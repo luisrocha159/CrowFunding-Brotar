@@ -1,0 +1,200 @@
+1
+00:00:00,000 --> 00:00:05,638
+Bienvenidos a Brotar, la plataforma
+académica de financiamiento colectivo
+
+2
+00:00:05,638 --> 00:00:08,032
+para iniciativas comunitarias.
+
+3
+00:00:08,032 --> 00:00:13,117
+Vamos a seguir una campaña desde la
+consulta pública hasta la comprobación
+
+4
+00:00:13,117 --> 00:00:15,454
+de un aporte en la base de datos.
+
+5
+00:00:15,454 --> 00:00:18,949
+La aplicación que ven está en ejecución.
+
+6
+00:00:18,949 --> 00:00:24,039
+Todos los importes y las cuentas de este
+recorrido corresponden al entorno
+
+7
+00:00:24,039 --> 00:00:24,796
+académico.
+
+8
+00:00:24,796 --> 00:00:27,870
+Entramos con una cuenta creadora.
+
+9
+00:00:27,870 --> 00:00:33,244
+En Mis proyectos se reúnen las campañas
+que esa persona puede gestionar.
+
+10
+00:00:33,244 --> 00:00:38,120
+Desde el detalle se consultan los datos
+del proyecto y el estado de la
+
+11
+00:00:38,120 --> 00:00:38,817
+revisión.
+
+12
+00:00:38,817 --> 00:00:43,717
+El borrador y la ficha pública
+corresponden a etapas diferentes.
+
+13
+00:00:43,717 --> 00:00:48,322
+El equipo de revisión evalúa el proyecto
+antes de que Administración
+
+14
+00:00:48,322 --> 00:00:49,744
+publique la campaña.
+
+15
+00:00:49,744 --> 00:00:53,239
+Ahora consultamos una cuenta
+patrocinadora.
+
+16
+00:00:53,239 --> 00:00:57,996
+En Mis aportes elegimos un aporte
+confirmado para Huertos familiares de
+
+17
+00:00:57,996 --> 00:00:58,732
+Samaipata.
+
+18
+00:00:58,732 --> 00:01:01,532
+El importe es de veinte bolivianos.
+
+19
+00:01:01,532 --> 00:01:06,102
+El comprobante identifica el aporte y deja
+una referencia que se puede
+
+20
+00:01:06,102 --> 00:01:06,885
+contrastar.
+
+21
+00:01:06,885 --> 00:01:10,874
+Este registro académico no representa un
+cobro bancario.
+
+22
+00:01:10,874 --> 00:01:13,997
+Cambiamos al perfil de Finanzas.
+
+23
+00:01:13,997 --> 00:01:19,245
+El panel reúne las operaciones financieras
+y permite abrir la revisión de
+
+24
+00:01:19,245 --> 00:01:20,539
+pagos pendientes.
+
+25
+00:01:20,539 --> 00:01:26,228
+El equipo responsable coteja la
+constancia, la referencia y el monto.
+
+26
+00:01:26,228 --> 00:01:30,427
+Aquí consultamos la bandeja sin confirmar
+otro pago.
+
+27
+00:01:30,427 --> 00:01:35,677
+La cuenta patrocinadora y la cuenta de
+Finanzas tienen responsabilidades
+
+28
+00:01:35,677 --> 00:01:36,479
+distintas.
+
+29
+00:01:36,479 --> 00:01:40,359
+Contrastamos el comprobante con
+PostgreSQL.
+
+30
+00:01:40,359 --> 00:01:45,398
+La consulta enlaza el aporte con su pago y
+con su campaña utilizando sus
+
+31
+00:01:45,398 --> 00:01:45,958
+claves.
+
+32
+00:01:45,958 --> 00:01:49,217
+Filtramos por la referencia que acabamos
+de ver.
+
+33
+00:01:49,217 --> 00:01:54,130
+El resultado devuelve Huertos familiares
+de Samaipata, veinte bolivianos y
+
+34
+00:01:54,130 --> 00:01:55,591
+el estado confirmado.
+
+35
+00:01:55,591 --> 00:01:59,084
+La consulta se ejecuta en modo de solo
+lectura.
+
+36
+00:01:59,084 --> 00:02:03,983
+Por último, comprobamos la instalación que
+sirvió estas pantallas.
+
+37
+00:02:03,983 --> 00:02:06,823
+El navegador abre la interfaz de React.
+
+38
+00:02:06,823 --> 00:02:11,811
+El servidor web conduce las solicitudes de
+la aplicación a la API de Nest.
+
+39
+00:02:11,811 --> 00:02:15,361
+Esta consulta los datos en PostgreSQL.
+
+40
+00:02:15,361 --> 00:02:18,456
+Los tres servicios se ejecutan en Docker.
+
+41
+00:02:18,456 --> 00:02:23,106
+La comprobación de disponibilidad responde
+que el servicio está listo y la
+
+42
+00:02:23,106 --> 00:02:24,425
+base está conectada.
+
+43
+00:02:24,425 --> 00:02:29,340
+Así verificamos, en una misma instalación,
+el recorrido desde la pantalla de
+
+44
+00:02:29,340 --> 00:02:32,767
+la persona que aporta hasta su registro
+persistente.

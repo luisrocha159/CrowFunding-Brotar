@@ -48,6 +48,47 @@ El preparador instala dependencias, aplica las migraciones y carga las categorí
 
 </details>
 
+<details>
+<summary>Arrancar los tres servicios en Docker</summary>
+
+Desde la raíz de un clon nuevo de main, con las herramientas indicadas arriba, ejecutá estos comandos en orden.
+
+```powershell
+node scripts/setup-review.mjs --project=brotar-revision-v3docker --db-port=15597 --api-port=3097 --web-port=5297
+node scripts/docker-review.mjs up --build -d --wait
+node scripts/docker-review.mjs ps
+node backend/scripts/verify-review.mjs
+```
+
+Comprobá que frontend, backend y postgres estén saludables. Abrí el [catálogo local](http://127.0.0.1:5297/explorar) y la [sonda de la API](http://127.0.0.1:3097/api/health/ready).
+
+</details>
+
+<details>
+<summary>Cuentas de práctica por rol</summary>
+
+| Rol | Correo | Contraseña local |
+| --- | --- | --- |
+| ADMIN | administrador@brotar.test | administrador1234567890 |
+| REVIEWER | revisor@brotar.test | revisor1234567890 |
+| COMPLIANCE | cumplimiento@brotar.test | cumplimiento1234567890 |
+| FINANCE | finanzas@brotar.test | finanzas1234567890 |
+| SUPPORT | soporte@brotar.test | soporte1234567890 |
+| AUDITOR | auditor@brotar.test | auditor1234567890 |
+| CREATOR | creador@brotar.test | creador1234567890 |
+| SPONSOR | patrocinador@brotar.test | patrocinador1234567890 |
+| REGISTERED_USER | usuario@brotar.test | usuario1234567890 |
+
+[Consultar las 18 cuentas y el propósito de cada escenario](docs/revision-lideres/Credenciales_Revision.csv).
+
+</details>
+
+## Verificación de la entrega V3
+
+El 26 de noviembre de 2026 se comprobó la instalación local con los tres contenedores activos. El catálogo respondió por HTTP y la API confirmó su conexión con PostgreSQL. El verificador del paquete completó **140 comprobaciones** sobre los datos de revisión, incluidos **36 archivos íntegros, 18 cuentas y 20 escenarios**. La aceptación docente de esta modalidad de despliegue está pendiente.
+
+[Reproducir la instalación y sus comprobaciones](docs/docker-v3.md) · [Descargar el video de Brotar (2 min 33 s)](docs/video/Brotar.mp4?raw=true) · [Subtítulos en español](docs/video/Brotar.es.srt)
+
 ## Cómo está construido
 
 ```mermaid

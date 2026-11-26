@@ -63,3 +63,17 @@ docker network create --driver bridge --subnet 10.246.147.0/28 --label com.docke
 ```
 
 Para pausar esta instalación conservando la red asignada, ejecute `node scripts/docker-review.mjs stop`. Reanude con `node scripts/docker-review.mjs start` y consulte `ps` hasta que los tres servicios estén saludables. Si se retiró la red con `down` y los rangos automáticos siguen agotados, vuelva a crearla antes de ejecutar `up`.
+
+## Repetir la verificación de la entrega V3
+
+Desde la raíz de la copia preparada, ejecute estos comandos antes de modificar las campañas de evaluación. Si eligió otros puertos durante la preparación, sustituya 5297 y 3097 por los de esa copia.
+
+```powershell
+node scripts/docker-review.mjs ps
+(Invoke-WebRequest -UseBasicParsing http://127.0.0.1:5297/explorar).StatusCode
+Invoke-RestMethod http://127.0.0.1:5297/api/health/ready
+Invoke-RestMethod http://127.0.0.1:3097/api/health/ready
+node backend/scripts/verify-review.mjs
+```
+
+Compruebe que los tres servicios indiquen `healthy`, el catálogo responda 200 y ambas peticiones de preparación indiquen `ok` y `connected`. Compare la última salida con las cifras de «Evidencia de instalación». El procedimiento acredita el funcionamiento local. La aceptación de esta modalidad de despliegue para la entrega V3 queda pendiente de confirmación docente. [Video de Brotar (MP4)](video/Brotar.mp4)
