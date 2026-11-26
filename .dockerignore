@@ -1,0 +1,17 @@
+**
+!backend/
+!backend/package.json
+!backend/pnpm-lock.yaml
+!backend/tsconfig*.json
+!backend/src/
+!backend/src/**
+!bun.lock
+!index.html
+!infra/
+!infra/docker/
+!infra/docker/**
+!package.json
+!src/
+!src/**
+!tsconfig*.json
+!vite.config.ts

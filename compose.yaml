@@ -1,0 +1,47 @@
+# The isolated review installer creates both env files before the first start.
+name: ${BROTAR_COMPOSE_PROJECT:?Load infra/postgres-v2/.env}
+services:
+  postgres:
+    extends:
+      file: infra/postgres-v2/compose.yaml
+      service: postgres
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5297}:8080"
+      - "127.0.0.1:${PORT:-3097}:8081"
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    network_mode: service:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: backend/.env
+    environment:
+      HOST: 127.0.0.1
+      PORT: "3000"
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+    volumes:
+      - ./backend/private/review-files:/app/private/review-files
+      - ./backend/private/review-mail:/app/private/review-mail
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+    network_mode: service:postgres
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/health/ready"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+volumes:
+  brotar_pgdata_v2:
