@@ -87,7 +87,7 @@ Comprobá que frontend, backend y postgres estén saludables. Abrí el [catálog
 
 El 26 de noviembre de 2026 se comprobó la instalación local con los tres contenedores activos. El catálogo respondió por HTTP y la API confirmó su conexión con PostgreSQL. El verificador del paquete completó **140 comprobaciones** sobre los datos de revisión, incluidos **36 archivos íntegros, 18 cuentas y 20 escenarios**. La aceptación docente de esta modalidad de despliegue está pendiente.
 
-[Reproducir la instalación y sus comprobaciones](docs/docker-v3.md) · [Descargar el video de Brotar (2 min 33 s)](docs/video/Brotar.mp4?raw=true) · [Subtítulos en español](docs/video/Brotar.es.srt)
+[Reproducir la instalación y sus comprobaciones](docs/docker-v3.md) · [Descargar el video de Brotar (2 min 18 s)](docs/video/Brotar.mp4?raw=true) · [Subtítulos en español](docs/video/Brotar.es.srt)
 
 ## Cómo está construido
 
