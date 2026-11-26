@@ -1,203 +1,198 @@
 1
-00:00:00,797 --> 00:00:03,782
-¿Cómo sabemos que un aporte
-llegó a la campaña correcta?
+00:00:00,349 --> 00:00:03,138
+¿A qué campaña llegaron
+estos veinte bolivianos?
 
 2
-00:00:04,437 --> 00:00:06,581
-Vamos a seguir veinte bolivianos destinados
+00:00:03,842 --> 00:00:06,839
+El comprobante dice Huertos
+familiares de Samaipata.
 
 3
-00:00:06,616 --> 00:00:08,570
-a Huertos familiares de Samaipata.
+00:00:07,545 --> 00:00:09,589
+Y hay un dato que nos permite comprobarlo:
 
 4
-00:00:09,240 --> 00:00:12,155
-Primero veremos qué puede
-consultar cualquier visitante.
+00:00:09,769 --> 00:00:12,081
+la referencia del aporte termina en doce.
 
 5
-00:00:12,825 --> 00:00:15,541
-Después entraremos con las
-cuentas de quienes crean campañas,
+00:00:13,472 --> 00:00:16,188
+En el catálogo escribimos
+Huertos familiares.
 
 6
-00:00:15,672 --> 00:00:17,696
-las apoyan y revisan sus pagos.
+00:00:16,892 --> 00:00:19,437
+Esta es la campaña que
+figura en el comprobante.
 
 7
-00:00:19,067 --> 00:00:21,627
-Desde el catálogo buscamos
-Huertos familiares y abrimos
+00:00:20,142 --> 00:00:22,441
+Al abrirla, cualquier visitante puede leer
 
 8
-00:00:21,662 --> 00:00:25,405
-la campaña de Samaipata.
-Aquí, antes de registrarse,
+00:00:22,476 --> 00:00:24,911
+qué propone el proyecto
+y dónde se desarrolla.
 
 9
-00:00:25,563 --> 00:00:28,398
-una persona puede conocer el
-proyecto que piensa apoyar.
+00:00:25,604 --> 00:00:27,807
+Aquí vemos la iniciativa desde fuera.
 
 10
-00:00:29,045 --> 00:00:31,175
-Fíjense en el nombre de la iniciativa.
+00:00:28,500 --> 00:00:29,884
+Para saber quién la gestiona,
 
 11
-00:00:31,811 --> 00:00:33,346
-Al final volveremos a encontrarlo en
+00:00:30,076 --> 00:00:32,267
+vamos a entrar con la cuenta de su creador.
 
 12
-00:00:33,381 --> 00:00:35,466
-el comprobante y en la base de datos.
+00:00:33,712 --> 00:00:37,613
+El creador abre Mis proyectos y elige
+Huertos familiares de Samaipata.
 
 13
-00:00:36,877 --> 00:00:39,042
-Ahora entramos con una cuenta creadora.
+00:00:38,317 --> 00:00:41,058
+El detalle indica que la
+campaña está publicada.
 
 14
-00:00:39,697 --> 00:00:42,202
-En Mis proyectos abrimos
-Semilleros para el barrio.
+00:00:41,763 --> 00:00:43,208
+También muestra quién la creó,
 
 15
-00:00:42,860 --> 00:00:45,341
-Es otra campaña, todavía en borrador.
+00:00:43,388 --> 00:00:45,615
+dónde se lleva a cabo y cuál es su meta.
 
 16
-00:00:46,012 --> 00:00:48,200
-Esta es la vista de
-trabajo de su responsable,
+00:00:46,321 --> 00:00:49,929
+Esa meta es lo que se quiere recaudar
+entre todos los participantes.
 
 17
-00:00:48,355 --> 00:00:51,293
-donde puede preparar el contenido
-antes de enviarlo a revisión.
+00:00:51,446 --> 00:00:53,820
+El patrocinador puede ver cuánto puso él.
 
 18
-00:00:51,951 --> 00:00:54,257
-Volvamos ahora al aporte de Samaipata.
+00:00:54,524 --> 00:00:56,639
+En Mis aportes selecciona los confirmados y
 
 19
-00:00:55,744 --> 00:00:58,975
-El patrocinador abre Mis aportes
-y filtra los confirmados.
+00:00:56,674 --> 00:00:59,109
+abre el de Huertos familiares de Samaipata.
 
 20
-00:00:59,642 --> 00:01:01,434
-Entra al detalle de Huertos familiares
+00:00:59,815 --> 00:01:02,592
+En el detalle aparecen
+sus veinte bolivianos.
 
 21
-00:01:01,469 --> 00:01:03,412
-de Samaipata y abre su comprobante.
+00:01:03,297 --> 00:01:06,001
+Al abrir el comprobante
+encontramos el método de pago,
 
 22
-00:01:04,082 --> 00:01:07,477
-Observemos tres datos: el
-método fue código cu erre,
+00:01:06,169 --> 00:01:09,508
+código QR, y la referencia
+que termina en doce.
 
 23
-00:01:07,573 --> 00:01:10,991
-el importe fue veinte bolivianos
-y la referencia termina en doce.
+00:01:10,213 --> 00:01:11,815
+Guardemos ese número para buscar el
 
 24
-00:01:11,662 --> 00:01:14,834
-Con esa referencia se puede seguir
-el mismo aporte entre pantallas,
+00:01:11,850 --> 00:01:14,151
+registro exacto en la base de datos.
 
 25
-00:01:14,953 --> 00:01:17,938
-incluso si otra persona
-apoya a la misma campaña.
+00:01:15,582 --> 00:01:17,455
+Ahora cambiamos a Finanzas.
 
 26
-00:01:19,347 --> 00:01:21,969
-En Finanzas abrimos
-Revisar pagos pendientes.
+00:01:18,159 --> 00:01:20,372
+Desde Operaciones
+financieras elegimos la misma
 
 27
-00:01:22,636 --> 00:01:23,945
-Al desplegar un registro,
+00:01:20,407 --> 00:01:23,087
+campaña y filtramos los pagos confirmados.
 
 28
-00:01:24,100 --> 00:01:26,862
-el equipo tiene a mano los
-datos para cotejar el importe,
+00:01:23,792 --> 00:01:25,712
+En la fila de veinte bolivianos vemos la
 
 29
-00:01:27,005 --> 00:01:28,702
-la referencia y la constancia.
+00:01:25,747 --> 00:01:28,096
+cuenta que hizo el aporte y su referencia.
 
 30
-00:01:29,372 --> 00:01:31,724
-El pago de Samaipata ya está confirmado.
+00:01:28,802 --> 00:01:31,444
+Termina en doce, igual
+que en el comprobante.
 
 31
-00:01:32,383 --> 00:01:34,327
-Aquí mostramos dónde se revisaría un nuevo
+00:01:32,150 --> 00:01:34,412
+Finanzas puede consultar
+aquí el registro sin
 
 32
-00:01:34,362 --> 00:01:36,996
-pago y dejamos intacto
-el registro pendiente.
+00:01:34,447 --> 00:01:36,808
+tener que entrar a la
+cuenta del patrocinador.
 
 33
-00:01:38,484 --> 00:01:40,637
-Comprobemos ahora el dato en su origen.
+00:01:38,319 --> 00:01:41,658
+Con la referencia del comprobante
+buscamos el aporte en PostgreSQL.
 
 34
-00:01:41,304 --> 00:01:43,038
-La consulta de solo lectura busca la
+00:01:42,362 --> 00:01:45,494
+La consulta enlaza el aporte
+con su campaña y su pago.
 
 35
-00:01:43,073 --> 00:01:45,543
-referencia del comprobante
-y reúne el aporte,
+00:01:46,187 --> 00:01:49,013
+Devuelve una sola fila: veinte bolivianos,
 
 36
-00:01:45,662 --> 00:01:49,045
-la campaña y el pago.
-El resultado coincide:
+00:01:49,119 --> 00:01:52,006
+Huertos familiares de
+Samaipata y pago confirmado.
 
 37
-00:01:49,141 --> 00:01:50,814
-Huertos familiares de Samaipata,
+00:01:52,699 --> 00:01:54,817
+Esta consulta es de solo lectura.
 
 38
-00:01:50,969 --> 00:01:53,111
-veinte bolivianos y pago confirmado.
+00:01:55,522 --> 00:01:57,969
+Docker muestra los tres servicios activos.
 
 39
-00:01:53,769 --> 00:01:57,445
-Luego consultamos los servicios
-de Docker. La interfaz,
+00:01:58,675 --> 00:02:00,387
+La respuesta de la aplicación confirma
 
 40
-00:01:57,565 --> 00:02:00,198
-el servidor y la base
-de datos están activos.
+00:02:00,422 --> 00:02:02,857
+que pudo conectarse con la base de datos.
 
 41
-00:02:00,868 --> 00:02:02,462
-La última respuesta confirma que la
+00:02:04,632 --> 00:02:06,602
+Comparemos los dos registros.
 
 42
-00:02:02,497 --> 00:02:04,533
-aplicación tiene conexión con la base.
+00:02:07,307 --> 00:02:08,762
+Tanto el comprobante como PostgreSQL
 
 43
-00:02:06,297 --> 00:02:09,144
-Así se puede seguir un aporte
-desde la campaña pública hasta
+00:02:08,797 --> 00:02:10,951
+muestran Huertos familiares de Samaipata,
 
 44
-00:02:09,179 --> 00:02:12,140
-su comprobante y contrastarlo
-con el registro financiero.
+00:02:11,070 --> 00:02:13,957
+veinte bolivianos y la
+referencia que termina en doce.
 
 45
-00:02:12,796 --> 00:02:16,366
-El caso que acabamos de ver corresponde
-al entorno académico de Brotar.
+00:02:14,663 --> 00:02:16,609
+Es el mismo aporte confirmado.
